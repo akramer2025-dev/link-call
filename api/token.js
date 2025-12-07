@@ -19,27 +19,19 @@ module.exports = async (req, res) => {
             return res.status(500).json({ error: 'Missing credentials' });
         }
 
-        // إنشاء Twilio Client
-        const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-        
-        // إنشاء API Key تلقائياً لهذا الطلب
-        const apiKey = await client.newKeys.create({
-            friendlyName: 'TempKey_' + Date.now()
-        });
-
         const identity = 'link_call_user_' + Date.now();
         
         const AccessToken = twilio.jwt.AccessToken;
         const VoiceGrant = AccessToken.VoiceGrant;
         
-        // استخدام الـ API Key المؤقت
+        // استخدام Account SID و Auth Token مباشرة (بدون API Keys)
         const token = new AccessToken(
             TWILIO_ACCOUNT_SID,
-            apiKey.sid,
-            apiKey.secret,
+            TWILIO_ACCOUNT_SID,
+            TWILIO_AUTH_TOKEN,
             { 
                 identity: identity,
-                ttl: 3600
+                ttl: 14400  // 4 hours
             }
         );
 

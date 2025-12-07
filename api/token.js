@@ -12,16 +12,14 @@ module.exports = async (req, res) => {
 
     try {
         const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-        const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
-        const TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
+        const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
         const TWILIO_TWIML_APP_SID = process.env.TWILIO_TWIML_APP_SID;
 
         // التحقق من وجود المتغيرات المطلوبة
-        if (!TWILIO_ACCOUNT_SID || !TWILIO_API_KEY || !TWILIO_API_SECRET || !TWILIO_TWIML_APP_SID) {
+        if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_TWIML_APP_SID) {
             console.error('Missing environment variables!');
             console.log('TWILIO_ACCOUNT_SID:', TWILIO_ACCOUNT_SID ? 'Set' : 'MISSING');
-            console.log('TWILIO_API_KEY:', TWILIO_API_KEY ? 'Set' : 'MISSING');
-            console.log('TWILIO_API_SECRET:', TWILIO_API_SECRET ? 'Set' : 'MISSING');
+            console.log('TWILIO_AUTH_TOKEN:', TWILIO_AUTH_TOKEN ? 'Set' : 'MISSING');
             console.log('TWILIO_TWIML_APP_SID:', TWILIO_TWIML_APP_SID ? 'Set' : 'MISSING');
             return res.status(500).json({ 
                 error: 'Server configuration error - missing credentials'
@@ -33,10 +31,11 @@ module.exports = async (req, res) => {
         const AccessToken = twilio.jwt.AccessToken;
         const VoiceGrant = AccessToken.VoiceGrant;
         
+        // استخدام Account SID و Auth Token مباشرة
         const token = new AccessToken(
             TWILIO_ACCOUNT_SID,
-            TWILIO_API_KEY,
-            TWILIO_API_SECRET,
+            TWILIO_ACCOUNT_SID,
+            TWILIO_AUTH_TOKEN,
             { 
                 identity: identity,
                 ttl: 3600

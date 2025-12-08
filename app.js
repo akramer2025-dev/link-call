@@ -56,6 +56,19 @@ async function initializeApp() {
         console.log('🔄 جاري تهيئة Twilio Device...');
         updateConnectionStatus('connecting', 'جاري الاتصال...');
         
+        // طلب إذن الميكروفون أولاً
+        try {
+            console.log('🎤 طلب إذن الميكروفون...');
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            console.log('✅ تم الحصول على إذن الميكروفون');
+            // إيقاف الـ stream بعد الحصول على الإذن
+            stream.getTracks().forEach(track => track.stop());
+        } catch (micError) {
+            console.error('❌ فشل الحصول على إذن الميكروفون:', micError);
+            alert('يرجى السماح باستخدام الميكروفون لإجراء المكالمات');
+            throw new Error('لم يتم منح إذن الميكروفون');
+        }
+        
         // انتظار تحميل Twilio SDK
         let attempts = 0;
         while (typeof Twilio === 'undefined' && attempts < 30) {
@@ -203,6 +216,18 @@ async function makeCall() {
         
         // إجراء المكالمة عبر Device
         console.log('📞 جاري الاتصال بـ:', formattedNumber);
+        
+        // التأكد من إذن الميكروفون قبل المكالمة
+        try {
+            const testStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            console.log('✅ الميكروفون جاهز للمكالمة');
+            testStream.getTracks().forEach(track => track.stop());
+        } catch (micError) {
+            console.error('❌ الميكروفون غير متاح:', micError);
+            alert('يرجى السماح باستخدام الميكروفون');
+            endCall();
+            return;
+        }
         
         const employeeId = localStorage.getItem('employeeId') || 'unknown';
         

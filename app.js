@@ -204,9 +204,14 @@ async function makeCall() {
         // إجراء المكالمة عبر Device
         console.log('📞 جاري الاتصال بـ:', formattedNumber);
         
+        const employeeId = localStorage.getItem('employeeId') || 'unknown';
+        
         const params = {
-            To: formattedNumber
+            To: formattedNumber,
+            employeeId: employeeId  // إرسال معرف الموظف
         };
+        
+        console.log('👤 معرف الموظف للمكالمة:', employeeId);
         
         currentCall = await device.connect({ params });
         
@@ -455,10 +460,24 @@ async function stopRecording() {
 async function loadRecordings() {
     try {
         const baseUrl = window.location.origin;
+        const employeeId = localStorage.getItem('employeeId');
+        
         const response = await fetch(`${baseUrl}/recordings`);
         const data = await response.json();
         
-        recordings = data.recordings || [];
+        // تصفية التسجيلات للموظف الحالي فقط
+        const allRecordings = data.recordings || [];
+        recordings = allRecordings.filter(rec => {
+            // إذا كان للتسجيل employeeId محفوظ
+            if (rec.employeeId) {
+                return rec.employeeId === employeeId;
+            }
+            // إذا لم يكن محفوظ، عرض للجميع (تسجيلات قديمة)
+            return true;
+        });
+        
+        console.log(`📊 إجمالي التسجيلات: ${allRecordings.length}, تسجيلات الموظف: ${recordings.length}`);
+        
         displayRecordings();
         updateRecordingsBadge(recordings.length);
         

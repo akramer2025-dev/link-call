@@ -243,18 +243,29 @@ app.all('/simple-dial', (req, res) => {
 });
 
 // TwiML للمكالمات الصادرة من المتصفح (Voice URL لـ TwiML App)
+// حفظ معرفات الموظفين للمكالمات (في الذاكرة مؤقتاً)
+const callEmployeeMap = new Map();
+
 app.post('/outgoing-call', (req, res) => {
     const toNumber = req.body.To;
+    const employeeId = req.body.employeeId || 'unknown';
     
     console.log('📞 اتصال صادر من المتصفح إلى:', toNumber);
+    console.log('👤 معرف الموظف:', employeeId);
     
     const twiml = new twilio.twiml.VoiceResponse();
     
     if (toNumber) {
         const dial = twiml.dial({
-            callerId: TWILIO_PHONE_NUMBER
+            callerId: TWILIO_PHONE_NUMBER,
+            record: 'record-from-answer',
+            recordingStatusCallback: '/recording-status',
+            recordingStatusCallbackEvent: ['completed']
         });
         dial.number(toNumber);
+        
+        // حفظ معرف الموظف مع رقم الهاتف
+        callEmployeeMap.set(toNumber, employeeId);
     } else {
         twiml.say({ voice: 'Polly.Zeina', language: 'ar-AE' }, 'لم يتم تحديد رقم للاتصال');
     }
@@ -460,6 +471,9 @@ app.get('/recordings', async (req, res) => {
                 // جلب معلومات المكالمة
                 const call = await twilioClient.calls(recording.callSid).fetch();
                 
+                // البحث عن معرف الموظف
+                const employeeId = callEmployeeMap.get(call.to) || callEmployeeMap.get(call.from);
+                
                 return {
                     sid: recording.sid,
                     callSid: recording.callSid,
@@ -469,7 +483,8 @@ app.get('/recordings', async (req, res) => {
                     // معلومات المكالمة
                     from: call.from,
                     to: call.to,
-                    direction: call.direction
+                    direction: call.direction,
+                    employeeId: employeeId  // إضافة معرف الموظف
                 };
             } catch (error) {
                 // إذا فشل جلب معلومات المكالمة، نرجع البيانات الأساسية فقط
@@ -481,7 +496,8 @@ app.get('/recordings', async (req, res) => {
                     uri: recording.uri,
                     from: 'غير معروف',
                     to: 'غير معروف',
-                    direction: 'outbound-api'
+                    direction: 'outbound-api',
+                    employeeId: null  // لا يوجد معرف موظف
                 };
             }
         }));

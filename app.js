@@ -1,10 +1,10 @@
 // معلومات Twilio
-const TWILIO_PHONE_NUMBER = '+13204336644'; // رقمك السحابي من Twilio
-let twilioDevice;
-let currentConnection;
+const TWILIO_PHONE_NUMBER = '+13204336644';
+let currentCallSid = null;
 let callStartTime;
 let callTimer;
 let isRecording = false;
+let callCheckInterval = null;
 
 // عناصر الواجهة
 const displayNumber = document.getElementById('display-number');
@@ -47,80 +47,72 @@ let phoneNumber = '';
 let isMuted = false;
 let isOnHold = false;
 let recordings = [];
+let device = null;
+let currentCall = null;
 
-// تهيئة التطبيق
+// تهيئة التطبيق مع Twilio Voice SDK v2
 async function initializeApp() {
     try {
-        // جلب التوكن من الخادم
+        console.log('🔄 جاري تهيئة Twilio Device...');
+        updateConnectionStatus('connecting', 'جاري الاتصال...');
+        
+        // انتظار تحميل Twilio SDK
+        let attempts = 0;
+        while (typeof Twilio === 'undefined' && attempts < 30) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (typeof Twilio === 'undefined' || !Twilio.Device) {
+            throw new Error('Twilio SDK غير محمل. تأكد من الاتصال بالإنترنت.');
+        }
+        
+        console.log('✅ Twilio SDK محمل بنجاح');
+        
+        // الحصول على Access Token
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/token`, {
-            cache: 'no-cache',
-            headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            }
-        });
+        const response = await fetch(`${baseUrl}/token?identity=employee_${Date.now()}`);
         const data = await response.json();
         
         if (!data.token) {
-            throw new Error('لم يتم الحصول على التوكن');
+            throw new Error('فشل الحصول على Token');
         }
-
-        console.log('Token received:', data.token.substring(0, 50) + '...');
-
-        // تهيئة Twilio Device باستخدام setup للإصدار 1.x
-        Twilio.Device.setup(data.token, {
+        
+        console.log('✅ تم الحصول على Token');
+        
+        device = new Twilio.Device(data.token, {
             codecPreferences: ['opus', 'pcmu'],
             fakeLocalDTMF: true,
             enableRingingState: true,
-            debug: true,
-            answerOnBridge: true,
-            closeProtection: true
+            logLevel: 1
         });
         
-        twilioDevice = Twilio.Device;
-
         // معالجة الأحداث
-        twilioDevice.on('ready', () => {
-            console.log('Twilio Device جاهز');
-            updateConnectionStatus('connected', 'متصل بـ Twilio');
+        device.on('registered', () => {
+            console.log('✅ Device مسجل ومستعد');
+            updateConnectionStatus('connected', 'جاهز للمكالمات 📞');
         });
-
-        twilioDevice.on('error', (error) => {
-            console.error('خطأ في Twilio:', error);
-            console.error('Error code:', error.code);
-            console.error('Error message:', error.message);
-            console.error('Full error:', JSON.stringify(error, null, 2));
-            updateConnectionStatus('error', 'خطأ في الاتصال: ' + (error.message || 'Unknown error'));
+        
+        device.on('error', (error) => {
+            console.error('❌ خطأ في Device:', error);
+            updateConnectionStatus('error', 'خطأ: ' + error.message);
         });
-
-        twilioDevice.on('connect', (conn) => {
-            console.log('تم الاتصال بنجاح');
-            currentConnection = conn;
-            startCallTimer();
-            updateCallStatus('متصل');
-            
-            // بدء التسجيل تلقائياً
-            startRecording();
+        
+        device.on('incoming', (call) => {
+            console.log('📱 مكالمة واردة من:', call.parameters.From);
+            handleIncomingCall(call);
         });
-
-        twilioDevice.on('disconnect', () => {
-            console.log('تم إنهاء المكالمة');
-            endCall();
-        });
-
-        twilioDevice.on('incoming', (conn) => {
-            console.log('مكالمة واردة من:', conn.parameters.From);
-            handleIncomingCall(conn);
-        });
-
-        // تحميل التسجيلات المحفوظة
+        
+        // تسجيل الـ Device
+        await device.register();
+        
+        // تحميل التسجيلات
         loadRecordings();
-
+        
     } catch (error) {
-        console.error('خطأ في التهيئة:', error);
-        updateConnectionStatus('error', 'فشل الاتصال بالخادم');
-        alert('تأكد من تشغيل الخادم على المنفذ 3000');
+        console.error('❌ خطأ في التهيئة:', error);
+        updateConnectionStatus('error', 'خطأ: ' + error.message);
+        alert('فشل الاتصال بالخادم. تأكد من أن الخادم يعمل.');
     }
 }
 
@@ -161,63 +153,181 @@ function updateDeleteButton() {
     }
 }
 
-// إجراء مكالمة
-function makeCall() {
+// إجراء مكالمة باستخدام REST API
+async function makeCall() {
     if (!phoneNumber) {
         alert('الرجاء إدخال رقم الهاتف');
         return;
     }
 
-    if (!twilioDevice) {
-        alert('جاري الاتصال بالخادم...');
-        return;
+    // تحويل الرقم للصيغة الدولية
+    let formattedNumber = phoneNumber.replace(/[\s-]/g, '');
+    
+    // تحويل الأرقام السعودية
+    if (formattedNumber.startsWith('05')) {
+        formattedNumber = '+966' + formattedNumber.substring(1);
+    } else if (formattedNumber.startsWith('00966')) {
+        formattedNumber = '+' + formattedNumber.substring(2);
+    } else if (formattedNumber.startsWith('9665') && !formattedNumber.startsWith('+')) {
+        formattedNumber = '+' + formattedNumber;
+    }
+    // تحويل الأرقام المصرية
+    else if (formattedNumber.startsWith('01')) {
+        formattedNumber = '+20' + formattedNumber.substring(1);
+    } else if (formattedNumber.startsWith('0020')) {
+        formattedNumber = '+' + formattedNumber.substring(2);
+    } else if (formattedNumber.startsWith('201') && !formattedNumber.startsWith('+')) {
+        formattedNumber = '+' + formattedNumber;
+    }
+    // إذا لم يبدأ بـ + ولم يكن رقم محلي معروف
+    else if (!formattedNumber.startsWith('+') && formattedNumber.length > 10) {
+        formattedNumber = '+' + formattedNumber;
+    }
+    // إذا رقم قصير (محلي سعودي)
+    else if (!formattedNumber.startsWith('+') && formattedNumber.length <= 10) {
+        formattedNumber = '+966' + formattedNumber;
     }
 
-    console.log('إجراء مكالمة إلى:', phoneNumber);
+    console.log('📞 اتصال مباشر إلى:', formattedNumber);
     
     try {
-        // إجراء المكالمة
-        const params = {
-            To: phoneNumber,
-            From: TWILIO_PHONE_NUMBER
-        };
-        
-        currentConnection = twilioDevice.connect(params);
+        if (!device) {
+            throw new Error('Device غير جاهز. أعد تحميل الصفحة.');
+        }
         
         // إظهار شاشة المكالمة
         dialpad.classList.add('hidden');
         callScreen.classList.remove('hidden');
-        callNumber.textContent = phoneNumber;
+        callNumber.textContent = formattedNumber;
         updateCallStatus('جاري الاتصال...');
         
+        // إجراء المكالمة عبر Device
+        console.log('📞 جاري الاتصال بـ:', formattedNumber);
+        
+        const params = {
+            To: formattedNumber
+        };
+        
+        currentCall = await device.connect({ params });
+        
+        // معالجة أحداث المكالمة
+        currentCall.on('accept', () => {
+            console.log('✅ تم قبول المكالمة');
+            updateCallStatus('متصل ✅');
+            startCallTimer();
+        });
+        
+        currentCall.on('disconnect', () => {
+            console.log('⏹️ انتهت المكالمة');
+            endCall();
+        });
+        
+        currentCall.on('cancel', () => {
+            console.log('🚫 تم إلغاء المكالمة');
+            endCall();
+        });
+        
+        currentCall.on('reject', () => {
+            console.log('❌ تم رفض المكالمة');
+            endCall();
+        });
+        
+        currentCall.on('error', (error) => {
+            console.error('❌ خطأ في المكالمة:', error);
+            alert('خطأ في المكالمة: ' + error.message);
+            endCall();
+        });
+        
     } catch (error) {
-        console.error('خطأ في المكالمة:', error);
-        alert('فشل إجراء المكالمة');
+        console.error('❌ خطأ في المكالمة:', error);
+        alert('فشل إجراء المكالمة: ' + error.message);
+        endCall();
     }
 }
 
-// معالجة المكالمات الواردة
-function handleIncomingCall(connection) {
-    currentConnection = connection;
-    const incomingNumber = connection.parameters.From;
-    
-    if (confirm(`مكالمة واردة من ${incomingNumber}\nهل تريد الرد؟`)) {
-        connection.accept();
+// معالجة مكالمة واردة
+function handleIncomingCall(call) {
+    if (confirm(`مكالمة واردة من ${call.parameters.From}. هل تريد الرد؟`)) {
+        currentCall = call;
+        call.accept();
+        
         dialpad.classList.add('hidden');
         callScreen.classList.remove('hidden');
-        callNumber.textContent = incomingNumber;
-        phoneNumber = incomingNumber;
+        callNumber.textContent = call.parameters.From;
+        updateCallStatus('متصل ✅');
+        startCallTimer();
+        
+        call.on('disconnect', () => {
+            endCall();
+        });
     } else {
-        connection.reject();
+        call.reject();
     }
+}
+
+// مراقبة حالة المكالمة (لن تُستخدم مع SDK)
+function startCallMonitoring() {
+    // لا حاجة لها مع SDK - الأحداث تُعالج مباشرة
+    if (callCheckInterval) {
+        clearInterval(callCheckInterval);
+    }
+    
+    callCheckInterval = setInterval(async () => {
+        if (!currentCallSid) {
+            clearInterval(callCheckInterval);
+            return;
+        }
+        
+        try {
+            const baseUrl = window.location.origin;
+            const response = await fetch(`${baseUrl}/call-status/${currentCallSid}`);
+            const data = await response.json();
+            
+            if (data.status === 'completed' || data.status === 'failed' || data.status === 'canceled' || 
+                data.status === 'busy' || data.status === 'no-answer') {
+                endCall();
+            } else if (data.status === 'in-progress') {
+                updateCallStatus('متصل ✅');
+                if (!callTimer) startCallTimer();
+            } else if (data.status === 'ringing') {
+                updateCallStatus('جاري الاتصال... 📞');
+            }
+        } catch (error) {
+            console.error('خطأ في مراقبة المكالمة:', error);
+        }
+    }, 2000);
 }
 
 // إنهاء المكالمة
-function endCall() {
-    if (currentConnection) {
-        currentConnection.disconnect();
-        currentConnection = null;
+async function endCall() {
+    if (callCheckInterval) {
+        clearInterval(callCheckInterval);
+        callCheckInterval = null;
     }
+    
+    // إنهاء المكالمة عبر SDK
+    if (currentCall) {
+        try {
+            currentCall.disconnect();
+            console.log('✅ تم إنهاء المكالمة');
+        } catch (error) {
+            console.error('خطأ في إنهاء المكالمة:', error);
+        }
+        currentCall = null;
+    }
+    
+    // حفظ المكالمة في السجل
+    if (phoneNumber) {
+        saveCallToHistory({
+            to: phoneNumber,
+            direction: 'outbound',
+            status: 'completed',
+            startTime: new Date().toISOString(),
+            duration: callDuration.textContent
+        });
+    }
+    
+    currentCallSid = null;
     
     stopCallTimer();
     stopRecording();
@@ -230,9 +340,12 @@ function endCall() {
     phoneNumber = '';
     displayNumber.textContent = '';
     callDuration.textContent = '00:00';
+    updateDeleteButton();
     
     isMuted = false;
     isOnHold = false;
+    
+    updateConnectionStatus('connected', 'جاهز للمكالمات');
 }
 
 // بدء عداد المكالمة
@@ -256,10 +369,13 @@ function stopCallTimer() {
 
 // كتم الصوت
 function toggleMute() {
-    if (!currentConnection) return;
+    if (!currentCall) return;
     
     isMuted = !isMuted;
-    currentConnection.mute(isMuted);
+    
+    // استخدام SDK لكتم الصوت
+    currentCall.mute(isMuted);
+    console.log(isMuted ? '🔇 تم كتم الصوت' : '🔊 تم إلغاء كتم الصوت');
     
     muteBtn.style.background = isMuted ? '#f44336' : '#f5f5f5';
     muteBtn.style.color = isMuted ? 'white' : 'black';
@@ -267,15 +383,13 @@ function toggleMute() {
 
 // إيقاف مؤقت
 function toggleHold() {
-    if (!currentConnection) return;
+    if (!currentCallSid) return;
     
     isOnHold = !isOnHold;
     
     if (isOnHold) {
-        currentConnection.mute(true);
         updateCallStatus('في الانتظار');
     } else {
-        currentConnection.mute(isMuted);
         updateCallStatus('متصل');
     }
     
@@ -285,10 +399,10 @@ function toggleHold() {
 
 // بدء التسجيل
 async function startRecording() {
-    if (!currentConnection) return;
+    if (!currentCallSid) return;
     
     try {
-        const callSid = currentConnection.parameters.CallSid;
+        const callSid = currentCallSid;
         const response = await fetch('http://localhost:3000/start-recording', {
             method: 'POST',
             headers: {
@@ -311,7 +425,24 @@ async function startRecording() {
 
 // إيقاف التسجيل
 async function stopRecording() {
-    if (!isRecording) return;
+    if (!isRecording || !currentCallSid) return;
+    
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/stop-recording`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ callSid: currentCallSid })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('⏹️ تم إيقاف التسجيل');
+        }
+    } catch (error) {
+        console.error('خطأ في إيقاف التسجيل:', error);
+    }
     
     recordingStatus.classList.add('hidden');
     isRecording = false;
@@ -358,21 +489,58 @@ function displayRecordings() {
         return;
     }
     
+    // الحصول على اسم المستخدم الحالي
+    const currentUser = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'غير معروف';
+    
     recordings.forEach((recording, index) => {
         const item = document.createElement('div');
         item.className = 'recording-item';
         
         const date = new Date(recording.dateCreated);
-        const formattedDate = date.toLocaleString('ar-EG');
+        const formattedDate = date.toLocaleDateString('ar-EG', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        // استخراج رقم الهاتف من callSid أو from/to
+        const phoneNumber = recording.to || recording.from || 'غير محدد';
+        
+        // حساب المدة بالدقائق والثواني
+        const duration = recording.duration || 0;
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        const durationText = minutes > 0 ? `${minutes} د ${seconds} ث` : `${seconds} ث`;
         
         item.innerHTML = `
             <div class="recording-info">
-                <div class="recording-number">${recording.callSid}</div>
-                <div class="recording-date">${formattedDate} - ${recording.duration} ثانية</div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <span style="font-size: 24px;">📞</span>
+                    <div>
+                        <div class="recording-number" style="font-weight: bold; font-size: 16px; color: #333;">
+                            ${phoneNumber}
+                        </div>
+                        <div style="font-size: 12px; color: #666;">
+                            بواسطة: ${currentUser}
+                        </div>
+                    </div>
+                </div>
+                <div class="recording-date" style="font-size: 13px; color: #888;">
+                    📅 ${formattedDate} • ⏱️ ${durationText}
+                </div>
             </div>
             <div class="recording-controls">
-                <button class="play-btn" onclick="playRecording('${recording.sid}')">▶️ تشغيل</button>
-                <button class="download-btn" onclick="downloadRecording('${recording.sid}')">⬇️ تحميل</button>
+                <button class="play-btn" onclick="playRecording('${recording.sid}')" style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    ▶️ تشغيل
+                </button>
+                <button class="download-btn" onclick="downloadRecording('${recording.sid}', '${phoneNumber}')" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    ⬇️ تحميل
+                </button>
+                <button class="delete-btn" onclick="deleteRecording('${recording.sid}')" style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    🗑️ حذف
+                </button>
             </div>
         `;
         
@@ -384,35 +552,68 @@ function displayRecordings() {
 async function playRecording(recordingSid) {
     try {
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/recording/${recordingSid}`);
-        const data = await response.json();
-        
-        if (data.url) {
-            const audio = new Audio(data.url);
-            audio.play();
-        }
+        // استخدام endpoint الجديد الذي لا يحتاج authentication
+        const audioUrl = `${baseUrl}/play-recording/${recordingSid}`;
+        const audio = new Audio(audioUrl);
+        audio.play();
+        console.log('🎵 تشغيل التسجيل:', recordingSid);
     } catch (error) {
         console.error('خطأ في تشغيل التسجيل:', error);
         alert('فشل تشغيل التسجيل');
     }
 }
 
-// تحميل التسجيل
-async function downloadRecording(recordingSid) {
+// حذف التسجيل
+async function deleteRecording(recordingSid) {
+    if (!confirm('هل أنت متأكد من حذف هذا التسجيل؟')) {
+        return;
+    }
+    
     try {
+        console.log('🗑️ جاري حذف التسجيل:', recordingSid);
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/recording/${recordingSid}`);
+        const response = await fetch(`${baseUrl}/delete-recording/${recordingSid}`, {
+            method: 'DELETE'
+        });
+        
         const data = await response.json();
         
-        if (data.url) {
-            const a = document.createElement('a');
-            a.href = data.url;
-            a.download = `recording_${recordingSid}.mp3`;
-            a.click();
+        if (data.success) {
+            console.log('✅ تم حذف التسجيل');
+            alert('تم حذف التسجيل بنجاح');
+            loadRecordings(); // إعادة تحميل القائمة
+        } else {
+            throw new Error(data.error || 'فشل حذف التسجيل');
         }
     } catch (error) {
-        console.error('خطأ في تحميل التسجيل:', error);
-        alert('فشل تحميل التسجيل');
+        console.error('خطأ في حذف التسجيل:', error);
+        alert('فشل حذف التسجيل: ' + error.message);
+    }
+}
+
+// تحميل التسجيل مباشرة
+async function downloadRecording(recordingSid, phoneNumber) {
+    try {
+        console.log('⬇️ جاري تحميل التسجيل:', recordingSid);
+        
+        const baseUrl = window.location.origin;
+        
+        // تحميل مباشر من السيرفر
+        const downloadUrl = `${baseUrl}/download-recording/${recordingSid}`;
+        
+        // إنشاء رابط تحميل
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `recording_${phoneNumber}_${recordingSid}.mp3`;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        console.log('✅ تم بدء التحميل');
+    } catch (error) {
+        console.error('❌ خطأ في تحميل التسجيل:', error);
+        alert('فشل تحميل التسجيل: ' + error.message);
     }
 }
 
@@ -422,10 +623,7 @@ document.querySelectorAll('.num-btn').forEach(btn => {
         const digit = btn.dataset.num;
         addDigit(digit);
         
-        // إرسال DTMF أثناء المكالمة
-        if (currentConnection) {
-            currentConnection.sendDigits(digit);
-        }
+        // DTMF غير متاح في REST API
     });
 });
 
@@ -451,6 +649,19 @@ function removeAllActiveStates() {
     contactsBtn.classList.remove('active');
     recordingsBtn.classList.remove('active');
     settingsBtn.classList.remove('active');
+}
+
+// عرض الإعدادات
+function showSettings() {
+    hideAllSections();
+    removeAllActiveStates();
+    settingsPanel.classList.remove('hidden');
+    settingsBtn.classList.add('active');
+    // التركيز على حقل رقم الهاتف
+    const userPhoneInput = document.getElementById('user-phone-number');
+    if (userPhoneInput) {
+        setTimeout(() => userPhoneInput.focus(), 100);
+    }
 }
 
 // معالجة أزرار القائمة
@@ -547,36 +758,41 @@ function saveEmployees(employees) {
 }
 
 // عرض قائمة الموظفين
-function loadEmployeesList() {
+async function loadEmployeesList() {
     if (!checkAdminAccess()) return;
     
     const container = document.getElementById('employees-list-container');
     if (!container) return;
     
-    const employees = getEmployees();
-    
-    if (employees.length === 0) {
-        container.innerHTML = '<p class="no-employees">لا يوجد موظفين مضافين</p>';
-        return;
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/employees`);
+        const data = await response.json();
+        
+        const employees = data.employees || [];
+        
+        if (employees.length === 0) {
+            container.innerHTML = '<p class="no-employees">لا يوجد موظفين مضافين</p>';
+            return;
+        }
+        
+        container.innerHTML = employees.map(emp => `
+            <div class="employee-card">
+                <div class="employee-header">
+                    <div class="employee-info">
+                        <h6>${emp.fullname}</h6>
+                        <span class="employee-username">@${emp.username}</span>
+                        <span class="employee-phone">📱 ${emp.phone}</span>
+                        <span class="employee-dept">📂 ${emp.departmentArabic}</span>
+                    </div>
+                    <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${emp.fullname}')" title="حذف">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('خطأ في تحميل الموظفين:', error);
+        container.innerHTML = '<p class="no-employees">خطأ في تحميل البيانات</p>';
     }
-    
-    container.innerHTML = employees.map(emp => `
-        <div class="employee-card">
-            <div class="employee-header">
-                <div class="employee-info">
-                    <h6>${emp.fullname}</h6>
-                    <span class="employee-username">@${emp.username}</span>
-                </div>
-                <button class="delete-employee-btn" onclick="deleteEmployee('${emp.username}')" title="حذف">🗑️</button>
-            </div>
-            <div class="employee-permissions">
-                <span class="permissions-label">الصلاحيات:</span>
-                <div class="permissions-tags">
-                    ${emp.permissions.map(p => `<span class="permission-tag">${getPermissionLabel(p)}</span>`).join('')}
-                </div>
-            </div>
-        </div>
-    `).join('');
 }
 
 // الحصول على تسمية الصلاحية بالعربي
@@ -593,7 +809,7 @@ function getPermissionLabel(permission) {
 // إضافة موظف جديد
 const addEmployeeBtn = document.getElementById('add-employee-btn');
 if (addEmployeeBtn) {
-    addEmployeeBtn.addEventListener('click', () => {
+    addEmployeeBtn.addEventListener('click', async () => {
         if (!checkAdminAccess()) {
             alert('ليس لديك صلاحية للوصول لهذه الميزة!');
             return;
@@ -602,72 +818,79 @@ if (addEmployeeBtn) {
         const username = document.getElementById('emp-username').value.trim();
         const password = document.getElementById('emp-password').value.trim();
         const fullname = document.getElementById('emp-fullname').value.trim();
+        const phone = document.getElementById('emp-phone').value.trim();
+        const department = document.getElementById('emp-department').value;
         
-        if (!username || !password || !fullname) {
+        if (!username || !password || !fullname || !phone || !department) {
             alert('الرجاء ملء جميع الحقول!');
             return;
         }
         
-        // التحقق من عدم تكرار اسم المستخدم
-        const employees = getEmployees();
-        if (employees.some(emp => emp.username === username)) {
-            alert('اسم المستخدم موجود بالفعل!');
-            return;
+        try {
+            const baseUrl = window.location.origin;
+            const response = await fetch(`${baseUrl}/employees`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username,
+                    password,
+                    fullname,
+                    phone,
+                    department
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // تنظيف النموذج
+                document.getElementById('emp-username').value = '';
+                document.getElementById('emp-password').value = '';
+                document.getElementById('emp-fullname').value = '';
+                document.getElementById('emp-phone').value = '';
+                document.getElementById('emp-department').value = '';
+                
+                // تحديث القائمة
+                loadEmployeesList();
+                
+                alert('تم إضافة الموظف بنجاح! ✅');
+            } else {
+                alert('خطأ: ' + (data.error || 'فشل في إضافة الموظف'));
+            }
+        } catch (error) {
+            console.error('خطأ في إضافة موظف:', error);
+            alert('فشل في إضافة الموظف');
         }
-        
-        // جمع الصلاحيات المحددة
-        const permissionCheckboxes = document.querySelectorAll('.emp-permission:checked');
-        const permissions = Array.from(permissionCheckboxes).map(cb => cb.value);
-        
-        if (permissions.length === 0) {
-            alert('الرجاء تحديد صلاحية واحدة على الأقل!');
-            return;
-        }
-        
-        // إضافة الموظف الجديد
-        const newEmployee = {
-            username,
-            password,
-            fullname,
-            permissions,
-            createdAt: new Date().toISOString()
-        };
-        
-        employees.push(newEmployee);
-        saveEmployees(employees);
-        
-        // تنظيف النموذج
-        document.getElementById('emp-username').value = '';
-        document.getElementById('emp-password').value = '';
-        document.getElementById('emp-fullname').value = '';
-        document.querySelectorAll('.emp-permission').forEach(cb => {
-            cb.checked = cb.value === 'make_calls';
-        });
-        
-        // تحديث القائمة
-        loadEmployeesList();
-        
-        alert('تم إضافة الموظف بنجاح! ✅');
     });
 }
 
 // حذف موظف
-function deleteEmployee(username) {
+async function deleteEmployee(employeeId, fullname) {
     if (!checkAdminAccess()) {
         alert('ليس لديك صلاحية للوصول لهذه الميزة!');
         return;
     }
     
-    if (!confirm(`هل تريد حذف الموظف ${username}؟`)) {
+    if (!confirm(`هل تريد حذف الموظف ${fullname}؟`)) {
         return;
     }
     
-    let employees = getEmployees();
-    employees = employees.filter(emp => emp.username !== username);
-    saveEmployees(employees);
-    loadEmployeesList();
-    
-    alert('تم حذف الموظف بنجاح! ✅');
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/employees/${employeeId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            loadEmployeesList();
+            alert('تم حذف الموظف بنجاح! ✅');
+        } else {
+            alert('فشل في حذف الموظف');
+        }
+    } catch (error) {
+        console.error('خطأ في حذف موظف:', error);
+        alert('فشل في حذف الموظف');
+    }
 }
 
 // جعل الدالة متاحة عالمياً
@@ -746,17 +969,34 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// حفظ المكالمة في السجل المحلي
+function saveCallToHistory(call) {
+    try {
+        const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
+        calls.unshift(call); // إضافة في البداية
+        
+        // الاحتفاظ بآخر 100 مكالمة فقط
+        if (calls.length > 100) {
+            calls.splice(100);
+        }
+        
+        localStorage.setItem('callHistory', JSON.stringify(calls));
+        console.log('✅ تم حفظ المكالمة في السجل');
+    } catch (error) {
+        console.error('خطأ في حفظ المكالمة:', error);
+    }
+}
+
 // تحميل سجل المكالمات
 async function loadCallHistory() {
     try {
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/call-history`);
-        const data = await response.json();
+        // تحميل المكالمات من localStorage بدلاً من السيرفر
+        const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
         
         const container = document.getElementById('call-history-container');
         container.innerHTML = '';
         
-        if (!data.calls || data.calls.length === 0) {
+        if (calls.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">📞</div>
@@ -766,7 +1006,10 @@ async function loadCallHistory() {
             return;
         }
         
-        data.calls.forEach(call => {
+        // ترتيب المكالمات من الأحدث للأقدم
+        calls.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        
+        calls.forEach(call => {
             const date = new Date(call.startTime);
             const formattedDate = date.toLocaleString('ar-EG');
             const duration = call.duration ? `${call.duration} ثانية` : 'لم تكتمل';

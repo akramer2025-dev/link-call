@@ -1,0 +1,36 @@
+{
+  "employees": [
+    {
+      "id": 1,
+      "username": "akram",
+      "password": "Aazxc",
+      "fullname": "أكرم المصري",
+      "phone": "+201234567890",
+      "department": "admin",
+      "departmentArabic": "الإدارة",
+      "role": "admin"
+    }
+  ],
+  "departments": {
+    "1": {
+      "name": "حجز وحدات الضيافة والفنادق",
+      "employees": []
+    },
+    "2": {
+      "name": "تأجير السيارات",
+      "employees": []
+    },
+    "3": {
+      "name": "البرامج والجولات السياحية",
+      "employees": []
+    },
+    "0": {
+      "name": "خدمة العملاء",
+      "employees": []
+    },
+    "9": {
+      "name": "الشكاوى",
+      "employees": []
+    }
+  }
+}

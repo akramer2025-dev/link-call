@@ -6,6 +6,8 @@
     <title>Link Call</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📞</text></svg>">
     <link rel="stylesheet" href="style.css">
+    <!-- Twilio Voice SDK v2 - استخدام NPM CDN -->
+    <script src="https://unpkg.com/@twilio/voice-sdk@2.11.2/dist/twilio.min.js"></script>
 </head>
 <body>
     <div class="stars" id="stars"></div>
@@ -214,6 +216,10 @@
                     <div class="settings-section">
                         <h4>معلومات الحساب</h4>
                         <div class="setting-item">
+                            <span class="setting-label">رقمك الشخصي</span>
+                            <input type="tel" id="user-phone-number" class="setting-input" placeholder="+966559902557" value="">
+                        </div>
+                        <div class="setting-item">
                             <span class="setting-label">رقم Twilio</span>
                             <span class="setting-value">+1 320 433 6644</span>
                         </div>
@@ -240,6 +246,13 @@
                                 <option value="low">منخفضة</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- قسم إدارة الموظفين (للأدمن فقط) -->
+                    <div class="settings-section" id="employee-management-section" style="display: none;">
+                        <h4>إدارة الموظفين</h4>
+                        <button class="btn-primary" id="add-employee-btn">➕ إضافة موظف جديد</button>
+                        <div id="employees-list" class="employees-list"></div>
                     </div>
 
                     <div class="settings-section">
@@ -275,25 +288,18 @@
                                     <input type="text" id="emp-fullname" placeholder="الاسم الكامل" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>الصلاحيات:</label>
-                                    <div class="permissions-grid">
-                                        <label class="permission-item">
-                                            <input type="checkbox" class="emp-permission" value="make_calls" checked>
-                                            <span>إجراء مكالمات</span>
-                                        </label>
-                                        <label class="permission-item">
-                                            <input type="checkbox" class="emp-permission" value="view_history">
-                                            <span>عرض السجل</span>
-                                        </label>
-                                        <label class="permission-item">
-                                            <input type="checkbox" class="emp-permission" value="view_recordings">
-                                            <span>عرض التسجيلات</span>
-                                        </label>
-                                        <label class="permission-item">
-                                            <input type="checkbox" class="emp-permission" value="manage_contacts">
-                                            <span>إدارة جهات الاتصال</span>
-                                        </label>
-                                    </div>
+                                    <input type="tel" id="emp-phone" placeholder="رقم الهاتف (+966...)" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>القسم:</label>
+                                    <select id="emp-department" class="setting-select" required>
+                                        <option value="">-- اختر القسم --</option>
+                                        <option value="1">حجز وحدات الضيافة والفنادق</option>
+                                        <option value="2">تأجير السيارات</option>
+                                        <option value="3">البرامج والجولات السياحية</option>
+                                        <option value="0">خدمة العملاء</option>
+                                        <option value="9">الشكاوى</option>
+                                    </select>
                                 </div>
                                 <button class="add-employee-btn" id="add-employee-btn">➕ إضافة موظف</button>
                             </div>
@@ -331,8 +337,9 @@
             window.location.href = 'login.html';
         }
     </script>
-    <script src="https://sdk.twilio.com/js/client/releases/1.14.0/twilio.min.js"></script>
+    <!-- App Script - REST API Mode -->
     <script src="app.js"></script>
+    
     <script>
         // إنشاء النجوم المتحركة
         function createStars() {

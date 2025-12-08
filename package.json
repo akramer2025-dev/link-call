@@ -7,13 +7,20 @@
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
-  "keywords": ["twilio", "softphone", "voip", "recording"],
+  "keywords": [
+    "twilio",
+    "softphone",
+    "voip",
+    "recording"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@twilio/voice-sdk": "^2.17.0",
+    "@vercel/kv": "^3.0.0",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "twilio": "^4.19.0",
-    "cors": "^2.8.5"
+    "twilio": "^4.19.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

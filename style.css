@@ -981,6 +981,24 @@ body::before {
     font-weight: 600;
 }
 
+.setting-input {
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 100%;
+    max-width: 300px;
+    direction: ltr;
+    text-align: left;
+    transition: all 0.3s ease;
+}
+
+.setting-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+}
+
 .status-online {
     color: var(--success-color);
     display: flex;

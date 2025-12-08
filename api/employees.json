@@ -1,0 +1,105 @@
+{
+  "employees": [
+    {
+      "id": 1,
+      "name": "أميرة",
+      "username": "amira",
+      "password": "Aa123456",
+      "department": "1",
+      "phone": "",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      },
+      "createdAt": "2025-12-08T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "ساهر",
+      "username": "saher",
+      "password": "Aa123456",
+      "department": "2",
+      "phone": "",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      },
+      "createdAt": "2025-12-08T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "شاكر",
+      "username": "shaker",
+      "password": "Aa123456",
+      "department": "3",
+      "phone": "",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      },
+      "createdAt": "2025-12-08T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "تسنيم",
+      "username": "tasneem",
+      "password": "Aa123456",
+      "department": "4",
+      "phone": "",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      },
+      "createdAt": "2025-12-08T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "إسلام",
+      "username": "eslam",
+      "password": "Aa123456",
+      "department": "5",
+      "phone": "",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      },
+      "createdAt": "2025-12-08T00:00:00.000Z"
+    }
+  ],
+  "departments": {
+    "1": {
+      "name": "الحجوزات",
+      "employees": []
+    },
+    "2": {
+      "name": "المبيعات",
+      "employees": []
+    },
+    "3": {
+      "name": "خدمة العملاء",
+      "employees": []
+    },
+    "4": {
+      "name": "الحسابات",
+      "employees": []
+    },
+    "5": {
+      "name": "الدعم الفنى",
+      "employees": []
+    },
+    "6": {
+      "name": "الشكاوى والاقتراحات",
+      "employees": []
+    }
+  }
+}

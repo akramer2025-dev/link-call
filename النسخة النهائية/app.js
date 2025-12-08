@@ -484,11 +484,12 @@ async function stopRecording() {
 // تحميل التسجيلات
 async function loadRecordings() {
     try {
-        // التحقق من صلاحية مشاهدة التسجيلات
-        const canViewRecordings = sessionStorage.getItem('canViewRecordings') === 'true';
         const userRole = sessionStorage.getItem('userRole');
+        const canViewOwn = sessionStorage.getItem('canViewOwnRecordings') === 'true';
+        const canViewAll = sessionStorage.getItem('canViewAllRecordings') === 'true';
         
-        if (!canViewRecordings && userRole !== 'admin') {
+        // التحقق من الصلاحيات
+        if (userRole !== 'admin' && !canViewOwn && !canViewAll) {
             recordingsContainer.innerHTML = '<p style="text-align: center; color: #ff6b6b; padding: 20px;">⚠️ ليس لديك صلاحية لمشاهدة التسجيلات</p>';
             updateRecordingsBadge(0);
             return;
@@ -500,23 +501,20 @@ async function loadRecordings() {
         const response = await fetch(`${baseUrl}/recordings`);
         const data = await response.json();
         
-        // تصفية التسجيلات للموظف الحالي فقط (إلا إذا كان admin)
         const allRecordings = data.recordings || [];
         
-        if (userRole === 'admin') {
-            // المطور يرى كل التسجيلات
+        // تصفية التسجيلات حسب الصلاحيات
+        if (userRole === 'admin' || canViewAll) {
+            // المطور أو من لديه صلاحية التسجيلات العامة يرى كل شيء
             recordings = allRecordings;
+            console.log('📊 عرض جميع التسجيلات:', allRecordings.length);
+        } else if (canViewOwn) {
+            // من لديه صلاحية التسجيلات الخاصة يرى تسجيلاته فقط
+            recordings = allRecordings.filter(rec => rec.employeeId === employeeId);
+            console.log(`📊 عرض التسجيلات الخاصة: ${recordings.length} من ${allRecordings.length}`);
         } else {
-            // الموظف يرى تسجيلاته فقط
-            recordings = allRecordings.filter(rec => {
-                if (rec.employeeId) {
-                    return rec.employeeId === employeeId;
-                }
-                return false; // لا تعرض التسجيلات بدون employeeId للموظفين
-            });
+            recordings = [];
         }
-        
-        console.log(`📊 إجمالي التسجيلات: ${allRecordings.length}, تسجيلات الموظف: ${recordings.length}`);
         
         displayRecordings();
         updateRecordingsBadge(recordings.length);
@@ -573,6 +571,11 @@ function displayRecordings() {
         const seconds = duration % 60;
         const durationText = minutes > 0 ? `${minutes} د ${seconds} ث` : `${seconds} ث`;
         
+        // التحقق من صلاحية الحذف
+        const userRole = sessionStorage.getItem('userRole');
+        const canDelete = sessionStorage.getItem('canDeleteRecordings') === 'true';
+        const showDeleteBtn = userRole === 'admin' || canDelete;
+        
         item.innerHTML = `
             <div class="recording-info">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -597,9 +600,11 @@ function displayRecordings() {
                 <button class="download-btn" onclick="downloadRecording('${recording.sid}', '${phoneNumber}')" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     ⬇️ تحميل
                 </button>
+                ${showDeleteBtn ? `
                 <button class="delete-btn" onclick="deleteRecording('${recording.sid}')" style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
                     🗑️ حذف
                 </button>
+                ` : ''}
             </div>
         `;
         
@@ -675,6 +680,15 @@ async function playRecording(recordingSid) {
 
 // حذف التسجيل
 async function deleteRecording(recordingSid) {
+    // التحقق من الصلاحية
+    const userRole = sessionStorage.getItem('userRole');
+    const canDelete = sessionStorage.getItem('canDeleteRecordings') === 'true';
+    
+    if (userRole !== 'admin' && !canDelete) {
+        alert('⚠️ ليس لديك صلاحية لحذف التسجيلات');
+        return;
+    }
+    
     if (!confirm('هل أنت متأكد من حذف هذا التسجيل؟')) {
         return;
     }
@@ -690,14 +704,14 @@ async function deleteRecording(recordingSid) {
         
         if (data.success) {
             console.log('✅ تم حذف التسجيل');
-            alert('تم حذف التسجيل بنجاح');
+            alert('✅ تم حذف التسجيل بنجاح');
             loadRecordings(); // إعادة تحميل القائمة
         } else {
             throw new Error(data.error || 'فشل حذف التسجيل');
         }
     } catch (error) {
-        console.error('خطأ في حذف التسجيل:', error);
-        alert('فشل حذف التسجيل: ' + error.message);
+        console.error('❌ خطأ في حذف التسجيل:', error);
+        alert('❌ فشل حذف التسجيل: ' + error.message);
     }
 }
 
@@ -886,7 +900,15 @@ async function loadEmployeesList() {
             return;
         }
         
-        container.innerHTML = employees.map(emp => `
+        container.innerHTML = employees.map(emp => {
+            const perms = emp.permissions || {};
+            const permsList = [];
+            if (perms.viewOwnRecordings) permsList.push('📹 تسجيلات خاصة');
+            if (perms.viewAllRecordings) permsList.push('📊 تسجيلات عامة');
+            if (perms.deleteRecordings) permsList.push('🗑️ مسح');
+            if (perms.editProfile) permsList.push('✏️ تعديل');
+            
+            return `
             <div class="employee-card">
                 <div class="employee-header">
                     <div class="employee-info">
@@ -894,14 +916,17 @@ async function loadEmployeesList() {
                         <span class="employee-username">@${emp.username}</span>
                         <span class="employee-phone">📱 ${emp.phone || 'غير محدد'}</span>
                         <span class="employee-dept">📂 ${emp.departmentName}</span>
-                        <span class="employee-perm ${emp.canViewRecordings ? 'has-perm' : 'no-perm'}">
-                            ${emp.canViewRecordings ? '✅ يمكنه مشاهدة التسجيلات' : '❌ لا يمكنه مشاهدة التسجيلات'}
-                        </span>
+                        <div class="employee-perms" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;">
+                            ${permsList.length > 0 
+                                ? permsList.map(p => `<span style="background: #e3f2fd; padding: 3px 8px; border-radius: 12px; font-size: 11px;">${p}</span>`).join('') 
+                                : '<span style="color: #999; font-size: 11px;">لا توجد صلاحيات</span>'}
+                        </div>
                     </div>
                     <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${emp.name.replace(/'/g, "\\'")}')" title="حذف">🗑️</button>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     } catch (error) {
         console.error('خطأ في تحميل الموظفين:', error);
         container.innerHTML = '<p class="no-employees">خطأ في تحميل البيانات</p>';
@@ -922,44 +947,65 @@ function getPermissionLabel(permission) {
 // إضافة موظف جديد
 const addEmployeeBtn = document.getElementById('add-employee-btn');
 if (addEmployeeBtn) {
-    addEmployeeBtn.addEventListener('click', async () => {
+    addEmployeeBtn.addEventListener('click', async (e) => {
+        e.preventDefault(); // منع إعادة تحميل الصفحة
+        
         if (!checkAdminAccess()) {
             alert('ليس لديك صلاحية للوصول لهذه الميزة!');
             return;
         }
         
-        const username = document.getElementById('emp-username').value.trim();
-        const password = document.getElementById('emp-password').value.trim();
-        const name = document.getElementById('emp-fullname').value.trim();
-        const phone = document.getElementById('emp-phone').value.trim();
-        const department = document.getElementById('emp-department').value;
-        const canViewRecordings = document.getElementById('emp-can-view-recordings')?.checked || false;
+        const username = document.getElementById('emp-username')?.value.trim();
+        const password = document.getElementById('emp-password')?.value.trim();
+        const name = document.getElementById('emp-fullname')?.value.trim();
+        const phone = document.getElementById('emp-phone')?.value.trim() || '';
+        const department = document.getElementById('emp-department')?.value;
+        
+        // جمع الصلاحيات
+        const permissions = {
+            viewOwnRecordings: document.getElementById('emp-perm-view-own-recordings')?.checked || false,
+            viewAllRecordings: document.getElementById('emp-perm-view-all-recordings')?.checked || false,
+            deleteRecordings: document.getElementById('emp-perm-delete-recordings')?.checked || false,
+            editProfile: document.getElementById('emp-perm-edit-profile')?.checked || false
+        };
+        
+        console.log('📝 بيانات الموظف:', { username, name, department, permissions });
         
         if (!username || !password || !name || !department) {
-            alert('الرجاء ملء جميع الحقول المطلوبة (اسم المستخدم، كلمة المرور، الاسم، القسم)!');
+            alert('الرجاء ملء جميع الحقول المطلوبة:\n- اسم المستخدم\n- كلمة المرور\n- الاسم الكامل\n- القسم');
             return;
         }
         
-        console.log('📝 إضافة موظف:', { username, name, department, canViewRecordings });
+        // تعطيل الزر أثناء الحفظ
+        addEmployeeBtn.disabled = true;
+        addEmployeeBtn.textContent = '⏳ جاري الحفظ...';
         
         try {
             const baseUrl = window.location.origin;
+            console.log('🔄 إرسال البيانات إلى:', `${baseUrl}/employees`);
+            
             const response = await fetch(`${baseUrl}/employees`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
                 body: JSON.stringify({
                     username,
                     password,
                     name,
                     phone,
                     department,
-                    canViewRecordings
+                    permissions
                 })
             });
             
-            const data = await response.json();
+            console.log('📡 استجابة الخادم:', response.status);
             
-            if (response.ok) {
+            const data = await response.json();
+            console.log('📄 البيانات المستلمة:', data);
+            
+            if (response.ok && data.success) {
                 console.log('✅ تمت إضافة الموظف بنجاح');
                 
                 // تنظيف النموذج
@@ -967,22 +1013,32 @@ if (addEmployeeBtn) {
                 document.getElementById('emp-password').value = '';
                 document.getElementById('emp-fullname').value = '';
                 document.getElementById('emp-phone').value = '';
-                document.getElementById('emp-department').value = '1';
-                if (document.getElementById('emp-can-view-recordings')) {
-                    document.getElementById('emp-can-view-recordings').checked = false;
-                }
+                document.getElementById('emp-department').value = '';
+                
+                // إلغاء تحديد جميع الصلاحيات
+                document.getElementById('emp-perm-view-own-recordings').checked = false;
+                document.getElementById('emp-perm-view-all-recordings').checked = false;
+                document.getElementById('emp-perm-delete-recordings').checked = false;
+                document.getElementById('emp-perm-edit-profile').checked = false;
                 
                 // تحديث القائمة
                 await loadEmployeesList();
                 
-                alert('تم إضافة الموظف بنجاح! ✅\n\nاسم المستخدم: ' + username + '\nكلمة المرور: ' + password);
+                alert('✅ تم إضافة الموظف بنجاح!\n\n' +
+                      '👤 اسم المستخدم: ' + username + '\n' +
+                      '🔑 كلمة المرور: ' + password + '\n' +
+                      '📝 الاسم: ' + name);
             } else {
-                console.error('❌ خطأ في إضافة الموظف:', data.error);
-                alert('خطأ: ' + (data.error || 'فشل في إضافة الموظف'));
+                console.error('❌ خطأ في إضافة الموظف:', data);
+                alert('❌ خطأ في إضافة الموظف:\n' + (data.error || 'فشل في الحفظ'));
             }
         } catch (error) {
-            console.error('❌ خطأ في إضافة موظف:', error);
-            alert('فشل في إضافة الموظف: ' + error.message);
+            console.error('❌ خطأ شبكة:', error);
+            alert('❌ خطأ في الاتصال بالخادم:\n' + error.message);
+        } finally {
+            // إعادة تفعيل الزر
+            addEmployeeBtn.disabled = false;
+            addEmployeeBtn.textContent = '➕ إضافة موظف';
         }
     });
 }

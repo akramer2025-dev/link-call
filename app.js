@@ -1332,5 +1332,18 @@ if (contactSearch) {
     });
 }
 
+// تسجيل Service Worker للـ PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('✅ Service Worker مُسجل بنجاح:', registration.scope);
+            })
+            .catch(error => {
+                console.log('❌ فشل تسجيل Service Worker:', error);
+            });
+    });
+}
+
 // تهيئة التطبيق عند التحميل
 initializeApp();

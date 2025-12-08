@@ -303,10 +303,25 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" id="emp-can-view-recordings" style="width: auto;">
-                                        <span>السماح بمشاهدة التسجيلات</span>
-                                    </label>
+                                    <label style="font-weight: bold; margin-bottom: 10px; display: block;">🔐 الصلاحيات:</label>
+                                    <div style="display: grid; gap: 8px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
+                                            <input type="checkbox" id="emp-perm-view-own-recordings" style="width: auto;">
+                                            <span>📹 مشاهدة التسجيلات الخاصة</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
+                                            <input type="checkbox" id="emp-perm-view-all-recordings" style="width: auto;">
+                                            <span>📊 مشاهدة التسجيلات العامة</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
+                                            <input type="checkbox" id="emp-perm-delete-recordings" style="width: auto;">
+                                            <span>🗑️ مسح التسجيل</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
+                                            <input type="checkbox" id="emp-perm-edit-profile" style="width: auto;">
+                                            <span>✏️ تعديل الملف الشخصي</span>
+                                        </label>
+                                    </div>
                                 </div>
                                 <button class="add-employee-btn" id="add-employee-btn">➕ إضافة موظف</button>
                             </div>

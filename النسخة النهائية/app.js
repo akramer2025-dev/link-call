@@ -484,22 +484,37 @@ async function stopRecording() {
 // تحميل التسجيلات
 async function loadRecordings() {
     try {
+        // التحقق من صلاحية مشاهدة التسجيلات
+        const canViewRecordings = sessionStorage.getItem('canViewRecordings') === 'true';
+        const userRole = sessionStorage.getItem('userRole');
+        
+        if (!canViewRecordings && userRole !== 'admin') {
+            recordingsContainer.innerHTML = '<p style="text-align: center; color: #ff6b6b; padding: 20px;">⚠️ ليس لديك صلاحية لمشاهدة التسجيلات</p>';
+            updateRecordingsBadge(0);
+            return;
+        }
+        
         const baseUrl = window.location.origin;
         const employeeId = localStorage.getItem('employeeId');
         
         const response = await fetch(`${baseUrl}/recordings`);
         const data = await response.json();
         
-        // تصفية التسجيلات للموظف الحالي فقط
+        // تصفية التسجيلات للموظف الحالي فقط (إلا إذا كان admin)
         const allRecordings = data.recordings || [];
-        recordings = allRecordings.filter(rec => {
-            // إذا كان للتسجيل employeeId محفوظ
-            if (rec.employeeId) {
-                return rec.employeeId === employeeId;
-            }
-            // إذا لم يكن محفوظ، عرض للجميع (تسجيلات قديمة)
-            return true;
-        });
+        
+        if (userRole === 'admin') {
+            // المطور يرى كل التسجيلات
+            recordings = allRecordings;
+        } else {
+            // الموظف يرى تسجيلاته فقط
+            recordings = allRecordings.filter(rec => {
+                if (rec.employeeId) {
+                    return rec.employeeId === employeeId;
+                }
+                return false; // لا تعرض التسجيلات بدون employeeId للموظفين
+            });
+        }
         
         console.log(`📊 إجمالي التسجيلات: ${allRecordings.length}, تسجيلات الموظف: ${recordings.length}`);
         
@@ -507,7 +522,7 @@ async function loadRecordings() {
         updateRecordingsBadge(recordings.length);
         
     } catch (error) {
-        console.error('خطك في تحميل التسجيلات:', error);
+        console.error('خطأ في تحميل التسجيلات:', error);
     }
 }
 
@@ -875,12 +890,15 @@ async function loadEmployeesList() {
             <div class="employee-card">
                 <div class="employee-header">
                     <div class="employee-info">
-                        <h6>${emp.fullname}</h6>
+                        <h6>${emp.name}</h6>
                         <span class="employee-username">@${emp.username}</span>
-                        <span class="employee-phone">📱 ${emp.phone}</span>
-                        <span class="employee-dept">📂 ${emp.departmentArabic}</span>
+                        <span class="employee-phone">📱 ${emp.phone || 'غير محدد'}</span>
+                        <span class="employee-dept">📂 ${emp.departmentName}</span>
+                        <span class="employee-perm ${emp.canViewRecordings ? 'has-perm' : 'no-perm'}">
+                            ${emp.canViewRecordings ? '✅ يمكنه مشاهدة التسجيلات' : '❌ لا يمكنه مشاهدة التسجيلات'}
+                        </span>
                     </div>
-                    <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${emp.fullname}')" title="حذف">🗑️</button>
+                    <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${emp.name.replace(/'/g, "\\'")}')" title="حذف">🗑️</button>
                 </div>
             </div>
         `).join('');
@@ -912,14 +930,17 @@ if (addEmployeeBtn) {
         
         const username = document.getElementById('emp-username').value.trim();
         const password = document.getElementById('emp-password').value.trim();
-        const fullname = document.getElementById('emp-fullname').value.trim();
+        const name = document.getElementById('emp-fullname').value.trim();
         const phone = document.getElementById('emp-phone').value.trim();
         const department = document.getElementById('emp-department').value;
+        const canViewRecordings = document.getElementById('emp-can-view-recordings')?.checked || false;
         
-        if (!username || !password || !fullname || !phone || !department) {
-            alert('الرجاء ملء جميع الحقول!');
+        if (!username || !password || !name || !department) {
+            alert('الرجاء ملء جميع الحقول المطلوبة (اسم المستخدم، كلمة المرور، الاسم، القسم)!');
             return;
         }
+        
+        console.log('📝 إضافة موظف:', { username, name, department, canViewRecordings });
         
         try {
             const baseUrl = window.location.origin;
@@ -929,32 +950,39 @@ if (addEmployeeBtn) {
                 body: JSON.stringify({
                     username,
                     password,
-                    fullname,
+                    name,
                     phone,
-                    department
+                    department,
+                    canViewRecordings
                 })
             });
             
             const data = await response.json();
             
             if (response.ok) {
+                console.log('✅ تمت إضافة الموظف بنجاح');
+                
                 // تنظيف النموذج
                 document.getElementById('emp-username').value = '';
                 document.getElementById('emp-password').value = '';
                 document.getElementById('emp-fullname').value = '';
                 document.getElementById('emp-phone').value = '';
-                document.getElementById('emp-department').value = '';
+                document.getElementById('emp-department').value = '1';
+                if (document.getElementById('emp-can-view-recordings')) {
+                    document.getElementById('emp-can-view-recordings').checked = false;
+                }
                 
                 // تحديث القائمة
-                loadEmployeesList();
+                await loadEmployeesList();
                 
-                alert('تم إضافة الموظف بنجاح! ✅');
+                alert('تم إضافة الموظف بنجاح! ✅\n\nاسم المستخدم: ' + username + '\nكلمة المرور: ' + password);
             } else {
+                console.error('❌ خطأ في إضافة الموظف:', data.error);
                 alert('خطأ: ' + (data.error || 'فشل في إضافة الموظف'));
             }
         } catch (error) {
-            console.error('خطأ في إضافة موظف:', error);
-            alert('فشل في إضافة الموظف');
+            console.error('❌ خطأ في إضافة موظف:', error);
+            alert('فشل في إضافة الموظف: ' + error.message);
         }
     });
 }

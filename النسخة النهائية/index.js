@@ -790,12 +790,7 @@ app.post('/login', async (req, res) => {
                 username: employee.username,
                 department: employee.department,
                 departmentName: data.departments[employee.department]?.name || '',
-                permissions: employee.permissions || {
-                    viewOwnRecordings: false,
-                    viewAllRecordings: false,
-                    deleteRecordings: false,
-                    editProfile: false
-                },
+                canViewRecordings: employee.canViewRecordings || false,
                 phone: employee.phone
             }
         });
@@ -808,20 +803,11 @@ app.post('/login', async (req, res) => {
 // إضافة أو تعديل موظف
 app.post('/employees', async (req, res) => {
     try {
-        const { id, name, username, password, department, phone, permissions } = req.body;
+        const { id, name, username, password, department, phone, canViewRecordings } = req.body;
         
-        console.log('👤 حفظ موظف:', { name, username, department, permissions });
+        console.log('👤 حفظ موظف:', { name, username, department, canViewRecordings });
         
         const data = await getEmployeesData();
-        
-        // التحقق من عدم تكرار اسم المستخدم
-        if (!id) {
-            const existingUser = data.employees.find(emp => emp.username === username);
-            if (existingUser) {
-                console.log('❌ اسم المستخدم موجود مسبقاً:', username);
-                return res.status(400).json({ error: 'اسم المستخدم موجود مسبقاً' });
-            }
-        }
         
         if (id) {
             // تعديل موظف موجود
@@ -836,11 +822,10 @@ app.post('/employees', async (req, res) => {
                 ...data.employees[employeeIndex],
                 name,
                 username,
-                password: password || data.employees[employeeIndex].password,
+                password: password || data.employees[employeeIndex].password, // الاحتفاظ بكلمة المرور القديمة إذا لم تتغير
                 department,
                 phone,
-                permissions: permissions || {},
-                updatedAt: new Date().toISOString()
+                canViewRecordings: canViewRecordings || false
             };
             
             console.log('✅ تم تحديث الموظف:', name);
@@ -856,13 +841,8 @@ app.post('/employees', async (req, res) => {
                 username,
                 password,
                 department,
-                phone: phone || '',
-                permissions: permissions || {
-                    viewOwnRecordings: false,
-                    viewAllRecordings: false,
-                    deleteRecordings: false,
-                    editProfile: false
-                },
+                phone,
+                canViewRecordings: canViewRecordings || false,
                 createdAt: new Date().toISOString()
             };
             
@@ -873,22 +853,18 @@ app.post('/employees', async (req, res) => {
                 if (!data.departments[department].employees) {
                     data.departments[department].employees = [];
                 }
-                if (phone) {
-                    data.departments[department].employees.push(phone);
-                }
+                data.departments[department].employees.push(phone);
             }
             
-            console.log('✅ تم إضافة موظف جديد:', name, 'بمعرف:', newId);
+            console.log('✅ تم إضافة موظف جديد:', name);
         }
         
         // حفظ البيانات
         const saved = await saveEmployeesData(data);
         
         if (!saved) {
-            throw new Error('فشل في حفظ البيانات في قاعدة البيانات');
+            throw new Error('فشل في حفظ البيانات');
         }
-        
-        console.log('💾 تم حفظ البيانات بنجاح');
         
         res.json({ success: true, message: 'تم حفظ الموظف بنجاح' });
     } catch (error) {

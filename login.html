@@ -158,12 +158,20 @@
                     sessionStorage.setItem('username', data.employee.username);
                     sessionStorage.setItem('userRole', 'employee');
                     sessionStorage.setItem('fullname', data.employee.name);
-                    sessionStorage.setItem('canViewRecordings', data.employee.canViewRecordings.toString());
                     sessionStorage.setItem('departmentName', data.employee.departmentName);
                     localStorage.setItem('employeeId', data.employee.id.toString());
                     localStorage.setItem('employeeName', data.employee.name);
                     
+                    // حفظ الصلاحيات
+                    const permissions = data.employee.permissions || {};
+                    sessionStorage.setItem('permissions', JSON.stringify(permissions));
+                    sessionStorage.setItem('canViewOwnRecordings', permissions.viewOwnRecordings ? 'true' : 'false');
+                    sessionStorage.setItem('canViewAllRecordings', permissions.viewAllRecordings ? 'true' : 'false');
+                    sessionStorage.setItem('canDeleteRecordings', permissions.deleteRecordings ? 'true' : 'false');
+                    sessionStorage.setItem('canEditProfile', permissions.editProfile ? 'true' : 'false');
+                    
                     console.log('✅ تم تسجيل الدخول:', data.employee.name);
+                    console.log('🔐 الصلاحيات:', permissions);
                     
                     loginForm.classList.add('success');
                     setTimeout(() => {

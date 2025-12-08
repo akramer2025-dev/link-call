@@ -522,8 +522,14 @@ async function loadRecordings() {
             console.log('📊 عرض جميع التسجيلات:', allRecordings.length);
         } else if (canViewOwn) {
             // من لديه صلاحية التسجيلات الخاصة يرى تسجيلاته فقط
-            recordings = allRecordings.filter(rec => rec.employeeId === employeeId);
+            recordings = allRecordings.filter(rec => {
+                const recEmpId = rec.employeeId ? rec.employeeId.toString() : 'unknown';
+                const currentEmpId = employeeId ? employeeId.toString() : 'unknown';
+                console.log(`🔍 مقارنة: ${recEmpId} === ${currentEmpId}`, recEmpId === currentEmpId);
+                return recEmpId === currentEmpId;
+            });
             console.log(`📊 عرض التسجيلات الخاصة: ${recordings.length} من ${allRecordings.length}`);
+            console.log(`👤 معرف الموظف الحالي: ${employeeId}`);
         } else {
             recordings = [];
         }
@@ -912,7 +918,11 @@ function saveEmployees(employees) {
 
 // عرض قائمة الموظفين
 async function loadEmployeesList() {
-    if (!checkAdminAccess()) return;
+    const userRole = sessionStorage.getItem('userRole');
+    if (userRole !== 'admin') {
+        console.log('⚠️ الموظف لا يمكنه رؤية قائمة الموظفين');
+        return;
+    }
     
     const container = document.getElementById('employees-list-container');
     if (!container) return;
@@ -1120,11 +1130,16 @@ function displayUserInfo() {
     const fullname = sessionStorage.getItem('fullname');
     const role = sessionStorage.getItem('userRole');
     
+    console.log('📋 معلومات المستخدم:', { username, fullname, role });
+    
     const headerUsername = document.getElementById('header-username');
     const headerRole = document.getElementById('header-role');
     
     if (headerUsername) {
-        headerUsername.textContent = fullname || username || 'مستخدم';
+        // تأكد من عرض الاسم بشكل صحيح
+        const displayName = fullname || username || 'مستخدم';
+        console.log('✅ عرض الاسم:', displayName);
+        headerUsername.textContent = displayName;
     }
     
     if (headerRole) {

@@ -282,14 +282,38 @@ app.all('/simple-dial', (req, res) => {
 
 // TwiML للمكالمات الصادرة من المتصفح (Voice URL لـ TwiML App)
 // حفظ معرفات الموظفين للمكالمات (في الذاكرة مؤقتاً)
-const callEmployeeMap = new Map();
+// تخزين علاقة المكالمات بالموظفين في Vercel KV
+async function saveCallEmployeeMapping(callSid, employeeId) {
+    try {
+        if (kv) {
+            await kv.set(`call:${callSid}`, employeeId, { ex: 604800 }); // حفظ لمدة 7 أيام
+            console.log(`✅ حفظ علاقة المكالمة ${callSid} بالموظف ${employeeId}`);
+        }
+    } catch (error) {
+        console.error('خطأ في حفظ علاقة المكالمة:', error);
+    }
+}
+
+async function getCallEmployeeId(callSid) {
+    try {
+        if (kv) {
+            const employeeId = await kv.get(`call:${callSid}`);
+            return employeeId;
+        }
+    } catch (error) {
+        console.error('خطأ في جلب معرف الموظف:', error);
+    }
+    return null;
+}
 
 app.post('/outgoing-call', (req, res) => {
     const toNumber = req.body.To;
     const employeeId = req.body.employeeId || 'unknown';
+    const callSid = req.body.CallSid; // معرف المكالمة من Twilio
     
     console.log('📞 اتصال صادر من المتصفح إلى:', toNumber);
     console.log('👤 معرف الموظف:', employeeId);
+    console.log('📱 معرف المكالمة:', callSid);
     
     const twiml = new twilio.twiml.VoiceResponse();
     
@@ -297,13 +321,15 @@ app.post('/outgoing-call', (req, res) => {
         const dial = twiml.dial({
             callerId: TWILIO_PHONE_NUMBER,
             record: 'record-from-answer',
-            recordingStatusCallback: '/recording-status',
+            recordingStatusCallback: `/recording-status?employeeId=${employeeId}`,
             recordingStatusCallbackEvent: ['completed']
         });
         dial.number(toNumber);
         
-        // حفظ معرف الموظف مع رقم الهاتف
-        callEmployeeMap.set(toNumber, employeeId);
+        // حفظ معرف الموظف في KV
+        if (callSid) {
+            saveCallEmployeeMapping(callSid, employeeId);
+        }
     } else {
         twiml.say({ voice: 'Polly.Zeina', language: 'ar-AE' }, 'لم يتم تحديد رقم للاتصال');
     }
@@ -468,10 +494,21 @@ app.post('/call-events', (req, res) => {
 });
 
 // معالجة حالة التسجيل
-app.post('/recording-status', (req, res) => {
-    console.log('تم إكمال التسجيل:', req.body.RecordingSid);
-    console.log('مدة التسجيل:', req.body.RecordingDuration);
-    console.log('رابط التسجيل:', req.body.RecordingUrl);
+app.post('/recording-status', async (req, res) => {
+    const recordingSid = req.body.RecordingSid;
+    const callSid = req.body.CallSid;
+    const employeeId = req.query.employeeId || req.body.employeeId;
+    
+    console.log('✅ تم إكمال التسجيل:', recordingSid);
+    console.log('📞 مكالمة:', callSid);
+    console.log('👤 موظف:', employeeId);
+    console.log('⏱️ مدة:', req.body.RecordingDuration);
+    
+    // حفظ علاقة التسجيل بالموظف
+    if (callSid && employeeId) {
+        await saveCallEmployeeMapping(callSid, employeeId);
+    }
+    
     res.sendStatus(200);
 });
 
@@ -509,8 +546,16 @@ app.get('/recordings', async (req, res) => {
                 // جلب معلومات المكالمة
                 const call = await twilioClient.calls(recording.callSid).fetch();
                 
-                // البحث عن معرف الموظف
-                const employeeId = callEmployeeMap.get(call.to) || callEmployeeMap.get(call.from);
+                // البحث عن معرف الموظف من KV
+                let employeeId = await getCallEmployeeId(recording.callSid);
+                
+                // إذا لم نجد في KV، نحاول استخراجه من StatusCallback URL
+                if (!employeeId && recording.uri) {
+                    const match = recording.uri.match(/employeeId=([^&]+)/);
+                    if (match) {
+                        employeeId = match[1];
+                    }
+                }
                 
                 return {
                     sid: recording.sid,
@@ -522,10 +567,11 @@ app.get('/recordings', async (req, res) => {
                     from: call.from,
                     to: call.to,
                     direction: call.direction,
-                    employeeId: employeeId  // إضافة معرف الموظف
+                    employeeId: employeeId || 'unknown'  // إضافة معرف الموظف
                 };
             } catch (error) {
                 // إذا فشل جلب معلومات المكالمة، نرجع البيانات الأساسية فقط
+                console.error('خطأ في جلب معلومات تسجيل:', error);
                 return {
                     sid: recording.sid,
                     callSid: recording.callSid,
@@ -535,7 +581,7 @@ app.get('/recordings', async (req, res) => {
                     from: 'غير معروف',
                     to: 'غير معروف',
                     direction: 'outbound-api',
-                    employeeId: null  // لا يوجد معرف موظف
+                    employeeId: 'unknown'  // لا يوجد معرف موظف
                 };
             }
         }));
@@ -914,6 +960,51 @@ app.get('/employees', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ خطأ في جلب الموظفين:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// تحديث الملف الشخصي للموظف
+app.post('/update-profile', async (req, res) => {
+    try {
+        const { employeeId, username, currentPassword, newName, newPhone, newPassword } = req.body;
+        
+        console.log('📝 تحديث ملف شخصي:', employeeId);
+        
+        const data = await getEmployeesData();
+        
+        // البحث عن الموظف
+        const employee = data.employees.find(emp => emp.id === employeeId);
+        
+        if (!employee) {
+            return res.status(404).json({ error: 'الموظف غير موجود' });
+        }
+        
+        // التحقق من كلمة المرور الحالية
+        if (employee.password !== currentPassword) {
+            return res.status(401).json({ error: 'كلمة المرور الحالية غير صحيحة' });
+        }
+        
+        // تحديث البيانات
+        employee.name = newName;
+        if (newPhone) employee.phone = newPhone;
+        if (newPassword) employee.password = newPassword;
+        
+        await saveEmployeesData(data);
+        
+        console.log('✅ تم تحديث الملف الشخصي:', employee.name);
+        
+        res.json({
+            success: true,
+            message: 'تم تحديث الملف الشخصي بنجاح',
+            employee: {
+                id: employee.id,
+                name: employee.name,
+                phone: employee.phone
+            }
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تحديث الملف:', error);
         res.status(500).json({ error: error.message });
     }
 });

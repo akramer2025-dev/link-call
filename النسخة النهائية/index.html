@@ -223,7 +223,8 @@
                         </div>
                     </div>
 
-                    <div class="settings-section">
+                    <!-- قسم معلومات الحساب (للمطور فقط) -->
+                    <div class="settings-section" id="admin-account-section" style="display: none;">
                         <h4>معلومات الحساب</h4>
                         <div class="setting-item">
                             <span class="setting-label">رقمك الشخصي</span>
@@ -239,7 +240,8 @@
                         </div>
                     </div>
 
-                    <div class="settings-section">
+                    <!-- قسم إعدادات الصوت (للمطور فقط) -->
+                    <div class="settings-section" id="admin-audio-section" style="display: none;">
                         <h4>إعدادات الصوت</h4>
                         <div class="setting-item">
                             <span class="setting-label">تسجيل المكالمات تلقائياً</span>
@@ -282,7 +284,29 @@
                         </div>
                     </div>
 
-                    <div class="settings-section" id="employees-section">
+                    <!-- قسم تعديل الملف الشخصي (للموظفين فقط) -->
+                    <div class="settings-section" id="employee-profile-section" style="display: none;">
+                        <h4>✏️ الملف الشخصي</h4>
+                        <div class="form-group">
+                            <label>الاسم الكامل:</label>
+                            <input type="text" id="profile-fullname" placeholder="الاسم الكامل" class="setting-input">
+                        </div>
+                        <div class="form-group">
+                            <label>رقم الهاتف:</label>
+                            <input type="tel" id="profile-phone" placeholder="+966..." class="setting-input">
+                        </div>
+                        <div class="form-group">
+                            <label>كلمة المرور الحالية:</label>
+                            <input type="password" id="profile-current-password" placeholder="كلمة المرور الحالية" class="setting-input">
+                        </div>
+                        <div class="form-group">
+                            <label>كلمة المرور الجديدة:</label>
+                            <input type="password" id="profile-new-password" placeholder="اتركها فارغة إن لم ترد التغيير" class="setting-input">
+                        </div>
+                        <button class="btn-primary" id="update-profile-btn">💾 حفظ التعديلات</button>
+                    </div>
+
+                    <!-- قسم إدارة الموظفين (للأدمن فقط) -->
                         <h4>🔐 إدارة الموظفين (للمطور فقط)</h4>
                         <div class="employees-container">
                             <div class="add-employee-form">

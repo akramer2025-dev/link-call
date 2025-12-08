@@ -874,11 +874,28 @@ function checkAdminAccess() {
     return username === 'akram';
 }
 
-// إخفاء/إظهار قسم الموظفين حسب الصلاحية
+// إخفاء/إظهار الأقسام حسب الصلاحية
+const userRole = sessionStorage.getItem('userRole');
 const employeesSection = document.getElementById('employees-section');
-if (employeesSection) {
-    if (!checkAdminAccess()) {
-        employeesSection.style.display = 'none';
+const adminAccountSection = document.getElementById('admin-account-section');
+const adminAudioSection = document.getElementById('admin-audio-section');
+const employeeProfileSection = document.getElementById('employee-profile-section');
+
+if (userRole === 'admin') {
+    // المطور يرى إدارة الموظفين والإعدادات
+    if (employeesSection) employeesSection.style.display = 'block';
+    if (adminAccountSection) adminAccountSection.style.display = 'block';
+    if (adminAudioSection) adminAudioSection.style.display = 'block';
+    if (employeeProfileSection) employeeProfileSection.style.display = 'none';
+} else {
+    // الموظف يرى فقط تعديل ملفه الشخصي
+    if (employeesSection) employeesSection.style.display = 'none';
+    if (adminAccountSection) adminAccountSection.style.display = 'none';
+    if (adminAudioSection) adminAudioSection.style.display = 'none';
+    if (employeeProfileSection) {
+        employeeProfileSection.style.display = 'block';
+        // تحميل بيانات الموظف
+        loadEmployeeProfile();
     }
 }
 
@@ -1118,6 +1135,99 @@ function displayUserInfo() {
 
 // تحميل معلومات المستخدم عند فتح الصفحة
 displayUserInfo();
+
+// تحميل بيانات الملف الشخصي للموظف
+function loadEmployeeProfile() {
+    const fullname = sessionStorage.getItem('fullname');
+    const username = sessionStorage.getItem('username');
+    
+    // الحصول على بيانات الموظف من السيرفر
+    const employeeId = localStorage.getItem('employeeId');
+    
+    if (employeeId) {
+        // تحميل بيانات الموظف من API
+        const baseUrl = window.location.origin;
+        fetch(`${baseUrl}/employees`)
+            .then(res => res.json())
+            .then(data => {
+                const employee = data.employees.find(emp => emp.id === parseInt(employeeId));
+                if (employee) {
+                    document.getElementById('profile-fullname').value = employee.name || '';
+                    document.getElementById('profile-phone').value = employee.phone || '';
+                }
+            })
+            .catch(error => {
+                console.error('خطأ في تحميل بيانات الموظف:', error);
+            });
+    }
+}
+
+// تحديث الملف الشخصي للموظف
+const updateProfileBtn = document.getElementById('update-profile-btn');
+if (updateProfileBtn) {
+    updateProfileBtn.addEventListener('click', async () => {
+        const employeeId = localStorage.getItem('employeeId');
+        const username = sessionStorage.getItem('username');
+        const currentPassword = document.getElementById('profile-current-password').value.trim();
+        const newFullname = document.getElementById('profile-fullname').value.trim();
+        const newPhone = document.getElementById('profile-phone').value.trim();
+        const newPassword = document.getElementById('profile-new-password').value.trim();
+        
+        if (!currentPassword) {
+            alert('يرجى إدخال كلمة المرور الحالية للتأكيد');
+            return;
+        }
+        
+        if (!newFullname) {
+            alert('يرجى إدخال الاسم الكامل');
+            return;
+        }
+        
+        try {
+            updateProfileBtn.disabled = true;
+            updateProfileBtn.textContent = 'جاري الحفظ...';
+            
+            const baseUrl = window.location.origin;
+            const response = await fetch(`${baseUrl}/update-profile`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    employeeId: parseInt(employeeId),
+                    username,
+                    currentPassword,
+                    newName: newFullname,
+                    newPhone,
+                    newPassword: newPassword || undefined
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                alert('✅ تم تحديث الملف الشخصي بنجاح!');
+                
+                // تحديث الاسم في sessionStorage
+                sessionStorage.setItem('fullname', newFullname);
+                localStorage.setItem('employeeName', newFullname);
+                displayUserInfo();
+                
+                // مسح كلمات المرور
+                document.getElementById('profile-current-password').value = '';
+                document.getElementById('profile-new-password').value = '';
+            } else {
+                alert('❌ ' + (data.error || 'فشل التحديث'));
+            }
+        } catch (error) {
+            console.error('خطأ في تحديث الملف:', error);
+            alert('حدث خطأ أثناء التحديث');
+        } finally {
+            updateProfileBtn.disabled = false;
+            updateProfileBtn.textContent = '💾 حفظ التعديلات';
+        }
+    });
+}
 
 // زر تسجيل الخروج في الهيدر
 const logoutHeaderBtn = document.getElementById('logout-header-btn');

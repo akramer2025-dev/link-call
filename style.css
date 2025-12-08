@@ -90,8 +90,11 @@ body::before {
 
 .container {
     display: flex;
-    width: 800px;
-    height: 600px;
+    width: 95%;
+    max-width: 800px;
+    height: auto;
+    min-height: 500px;
+    max-height: 95vh;
     background: white;
     border-radius: 20px;
     overflow: hidden;
@@ -1353,40 +1356,116 @@ input:checked + .slider:before {
     body {
         font-size: 14px;
         padding: 5px;
+        align-items: flex-start;
+        padding-top: 20px;
     }
     
     .container {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 15px !important;
-        margin: 0 !important;
+        height: auto !important;
+        min-height: auto !important;
+        flex-direction: column !important;
         border-radius: 15px !important;
     }
     
-    .login-container {
-        width: 95% !important;
-        padding: 20px !important;
+    .sidebar {
+        width: 100% !important;
+        padding: 15px !important;
+    }
+    
+    .main-content {
+        width: 100% !important;
+        padding: 15px !important;
+    }
+    
+    .header {
+        padding: 15px !important;
+        flex-wrap: wrap;
+    }
+    
+    .user-info {
+        font-size: 0.85em !important;
+    }
+    
+    .logout-btn {
+        padding: 8px 15px !important;
+        font-size: 13px !important;
+    }
+    
+    .nav-item {
+        padding: 12px 15px !important;
+        font-size: 14px !important;
     }
     
     input, button, select, textarea {
-        font-size: 16px !important; /* منع zoom في iOS */
+        font-size: 16px !important;
         padding: 12px !important;
     }
     
     .section-content {
-        padding: 10px !important;
+        padding: 15px !important;
+    }
+    
+    .form-group {
+        margin-bottom: 15px !important;
     }
     
     .recording-item {
-        padding: 10px !important;
+        padding: 12px !important;
         font-size: 13px;
+        flex-direction: column;
+        align-items: flex-start !important;
     }
     
-    h2, h3, h4 {
+    .recording-item button {
+        margin-top: 10px;
+        width: 100%;
+    }
+    
+    h2 {
+        font-size: 1.3em !important;
+    }
+    
+    h3, h4 {
+        font-size: 1.1em !important;
+    }
+    
+    .phone-input-container input {
+        font-size: 16px !important;
+    }
+    
+    .call-btn {
+        padding: 15px !important;
+        font-size: 16px !important;
+    }
+    
+    .checkbox-group {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .checkbox-group label {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 2px;
+    }
+    
+    .container {
+        border-radius: 10px !important;
+    }
+    
+    h2 {
         font-size: 1.2em !important;
     }
     
-    .user-info {
-        font-size: 0.9em !important;
+    .nav-item {
+        font-size: 13px !important;
+        padding: 10px !important;
     }
 }

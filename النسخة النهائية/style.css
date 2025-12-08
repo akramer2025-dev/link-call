@@ -1,0 +1,1348 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, white, transparent),
+        radial-gradient(2px 2px at 60px 70px, white, transparent),
+        radial-gradient(1px 1px at 50px 50px, white, transparent),
+        radial-gradient(1px 1px at 130px 80px, white, transparent),
+        radial-gradient(2px 2px at 90px 10px, white, transparent),
+        radial-gradient(1px 1px at 150px 120px, white, transparent),
+        radial-gradient(2px 2px at 200px 60px, white, transparent),
+        radial-gradient(1px 1px at 180px 30px, white, transparent),
+        radial-gradient(2px 2px at 220px 100px, white, transparent),
+        radial-gradient(1px 1px at 270px 50px, white, transparent);
+    background-repeat: repeat;
+    background-size: 300px 200px;
+    animation: starsAnimation 100s linear infinite;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+@keyframes starsAnimation {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-200px);
+    }
+}
+
+.stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 3s infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+}
+
+:root {
+    --primary-color: #667eea;
+    --primary-dark: #5568d3;
+    --secondary-color: #764ba2;
+    --accent-color: #f093fb;
+    --success-color: #4facfe;
+    --danger-color: #fa709a;
+    --text-dark: #2d3748;
+    --text-light: #718096;
+    --bg-light: #f7fafc;
+    --bg-card: #ffffff;
+}
+
+.container {
+    display: flex;
+    width: 800px;
+    height: 600px;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.1);
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* الشريط الجانبي */
+.sidebar {
+    width: 200px;
+    background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+    overflow: hidden;
+    padding: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s;
+    background: transparent;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+}
+
+.menu-item {
+    width: 100%;
+    padding: 15px;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(-5px);
+}
+
+.menu-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-right: 4px solid var(--accent-color);
+    box-shadow: inset 0 0 20px rgba(240, 147, 251, 0.3);
+}
+
+.menu-item .icon {
+    font-size: 30px;
+    margin-bottom: 5px;
+}
+
+.menu-item .label {
+    font-size: 12px;
+}
+
+.badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+}
+
+.online-indicator {
+    width: 14px;
+    height: 14px;
+    background: var(--success-color);
+    border-radius: 50%;
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: pulse-indicator 2s infinite;
+}
+
+@keyframes pulse-indicator {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(79, 172, 254, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(79, 172, 254, 0);
+    }
+}
+
+.bottom-logo-container {
+    margin-top: auto;
+    width: 115px;
+    height: 115px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px auto;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+}
+
+.bottom-logo-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* المحتوى الرئيسي */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.header h1 {
+    color: #333;
+    font-size: 24px;
+    margin: 0;
+}
+
+.user-info-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1));
+    padding: 8px 15px;
+    border-radius: 12px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.user-icon {
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name-header {
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.user-role-header {
+    color: #667eea;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.logout-header-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--danger-color), #fee140);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
+}
+
+.logout-header-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(250, 112, 154, 0.5);
+}
+
+.logout-icon {
+    font-size: 16px;
+}
+
+.phone-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    min-height: 50px;
+}
+
+.phone-number {
+    font-size: 28px;
+    color: #666;
+    min-height: 40px;
+    letter-spacing: 2px;
+    flex: 1;
+    text-align: center;
+}
+
+.delete-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    background: linear-gradient(135deg, var(--danger-color), #fe5196);
+    color: white;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 10px rgba(250, 112, 154, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(250, 112, 154, 0.4);
+}
+
+.delete-btn:active {
+    transform: scale(0.95);
+}
+
+/* لوحة الأرقام */
+.dialpad {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.number-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.num-btn {
+    width: 65px;
+    height: 65px;
+    border: none;
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.num-btn:hover {
+    background: linear-gradient(145deg, var(--primary-color), var(--accent-color));
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.num-btn:hover .number {
+    color: white;
+}
+
+.num-btn:hover .letters {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.num-btn:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.num-btn .number {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+}
+
+.num-btn .letters {
+    font-size: 10px;
+    color: #0066cc;
+    margin-top: 2px;
+}
+
+.call-btn {
+    width: 58px;
+    height: 58px;
+    border: none;
+    background: linear-gradient(135deg, var(--success-color) 0%, #00c6ff 100%);
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4), inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.call-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.call-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 35px rgba(79, 172, 254, 0.5);
+}
+
+.call-btn:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.call-btn:active {
+    transform: scale(0.95);
+}
+
+.quick-dial {
+    margin-top: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* شاشة المكالمة */
+.call-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    text-align: center;
+}
+
+.call-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.call-status {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.call-number {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.call-duration {
+    font-size: 24px;
+    color: var(--primary-color);
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.recording-status {
+    margin-top: 15px;
+    color: #f44336;
+    font-size: 16px;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.call-controls {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.control-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    border: none;
+    background: #f5f5f5;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.control-btn:hover {
+    background: #e0e0e0;
+    transform: translateY(-2px);
+}
+
+.control-btn.end-call {
+    background: linear-gradient(135deg, var(--danger-color) 0%, #fe5196 100%);
+    color: white;
+}
+
+.control-btn.end-call:hover {
+    background: linear-gradient(135deg, #fe5196 0%, var(--danger-color) 100%);
+}
+
+.control-btn .icon {
+    font-size: 20px;
+}
+
+.control-btn .label {
+    font-size: 11px;
+}
+
+/* قائمة التسجيلات */
+.recordings-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.recordings-list h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+#recordings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.recording-item {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.recording-info {
+    flex: 1;
+}
+
+.recording-number {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.recording-date {
+    font-size: 12px;
+    color: #666;
+}
+
+.recording-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.recording-controls button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.play-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.play-btn:hover {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.download-btn {
+    background: linear-gradient(135deg, var(--success-color), #00c6ff);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    background: linear-gradient(135deg, #00c6ff, var(--success-color));
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+.recording-controls button:hover {
+    transform: scale(1.05);
+}
+
+/* حالة الاتصال */
+.connection-status {
+    position: absolute;
+    bottom: 10px;
+    right: 220px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    font-size: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffa500;
+    animation: blink 1.5s infinite;
+}
+
+.connection-status.connected .status-dot {
+    background: #4caf50;
+    animation: none;
+}
+
+.connection-status.error .status-dot {
+    background: #f44336;
+    animation: none;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* سجل المكالمات */
+.call-history-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.call-history-list h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+#call-history-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.call-item {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.call-item:hover {
+    background: #e8e8e8;
+    transform: translateX(-3px);
+}
+
+.call-item-info {
+    flex: 1;
+}
+
+.call-item-number {
+    font-weight: bold;
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.call-item-details {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #666;
+}
+
+.call-item-type {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.call-item-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.call-item-actions button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+/* جهات الاتصال */
+.contacts-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.contacts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.contacts-header h2 {
+    color: #333;
+    margin: 0;
+}
+
+.add-contact-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+}
+
+.add-contact-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+}
+
+.search-box {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 40px 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+}
+
+#contacts-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.contact-item {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.contact-item:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(240, 147, 251, 0.08));
+    transform: translateX(-3px);
+}
+
+.contact-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.contact-info {
+    flex: 1;
+}
+
+.contact-name {
+    font-weight: bold;
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.contact-phone {
+    color: #666;
+    font-size: 14px;
+}
+
+.contact-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.contact-actions button {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.contact-call-btn {
+    background: linear-gradient(135deg, var(--success-color), #00c6ff);
+    color: white;
+}
+
+.contact-call-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+/* الإعدادات */
+.settings-panel {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.settings-panel h2 {
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.settings-section {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.settings-section h4 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.app-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.app-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.app-info h3 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.version {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 3px;
+}
+
+.build-date {
+    color: #999;
+    font-size: 12px;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-label {
+    color: #333;
+    font-size: 14px;
+}
+
+.setting-value {
+    color: #666;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.setting-input {
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 100%;
+    max-width: 300px;
+    direction: ltr;
+    text-align: left;
+    transition: all 0.3s ease;
+}
+
+.setting-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+}
+
+.status-online {
+    color: var(--success-color);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-online::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--success-color);
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Switch Toggle */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background: linear-gradient(135deg, var(--success-color), #00c6ff);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+.setting-select {
+    padding: 8px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.setting-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.about-text {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.about-text p {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.copyright {
+    color: #999;
+    font-size: 12px;
+}
+
+/* إدارة الموظفين */
+.employees-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.add-employee-form {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.add-employee-form h5 {
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    color: #333;
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.permissions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.permission-item:hover {
+    background: #f0f0f0;
+}
+
+.permission-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.permission-item span {
+    color: #333;
+    font-size: 13px;
+}
+
+.add-employee-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.add-employee-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.employees-list {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.employees-list h5 {
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+#employees-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.no-employees {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    padding: 30px 0;
+}
+
+.employee-card {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s;
+}
+
+.employee-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+}
+
+.employee-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+.employee-info h6 {
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.employee-username {
+    color: #667eea;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.delete-employee-btn {
+    background: linear-gradient(135deg, var(--danger-color), #fee140);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-employee-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+}
+
+.employee-permissions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.permissions-label {
+    color: #666;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.permissions-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.permission-tag {
+    display: inline-block;
+    padding: 5px 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.empty-state p {
+    color: #999;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.add-contact-btn-empty {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+}
+
+.add-contact-btn-empty:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* إخفاء العناصر */
+.hidden {
+    display: none !important;
+}

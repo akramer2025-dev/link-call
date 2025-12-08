@@ -20,12 +20,11 @@ const PORT = 3000;
 let employeesData = {
     employees: [],
     departments: {
-        "1": { name: "الحجوزات", employees: [] },
-        "2": { name: "المبيعات", employees: [] },
-        "3": { name: "خدمة العملاء", employees: [] },
-        "4": { name: "الحسابات", employees: [] },
-        "5": { name: "الدعم الفنى", employees: [] },
-        "6": { name: "الشكاوى والاقتراحات", employees: [] }
+        "1": { name: "حجز وحدات الضيافة والفنادق", employees: [] },
+        "2": { name: "تأجير السيارات", employees: [] },
+        "3": { name: "البرامج والجولات السياحية", employees: [] },
+        "0": { name: "خدمة العملاء", employees: [] },
+        "9": { name: "الشكاوى", employees: [] }
     }
 };
 
@@ -758,138 +757,6 @@ app.post('/employees', async (req, res) => {
         res.json({ success: true, employee: newEmployee });
     } catch (error) {
         console.error('خطأ في إضافة موظف:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// تسجيل دخول الموظف
-app.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        console.log('🔐 محاولة تسجيل دخول:', username);
-        
-        const data = await getEmployeesData();
-        
-        // البحث عن الموظف
-        const employee = data.employees.find(emp => 
-            emp.username === username && emp.password === password
-        );
-        
-        if (!employee) {
-            console.log('❌ فشل تسجيل الدخول: بيانات خاطئة');
-            return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
-        }
-        
-        console.log('✅ تم تسجيل الدخول:', employee.name);
-        
-        res.json({
-            success: true,
-            employee: {
-                id: employee.id,
-                name: employee.name,
-                username: employee.username,
-                department: employee.department,
-                departmentName: data.departments[employee.department]?.name || '',
-                canViewRecordings: employee.canViewRecordings || false,
-                phone: employee.phone
-            }
-        });
-    } catch (error) {
-        console.error('❌ خطأ في تسجيل الدخول:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// إضافة أو تعديل موظف
-app.post('/employees', async (req, res) => {
-    try {
-        const { id, name, username, password, department, phone, canViewRecordings } = req.body;
-        
-        console.log('👤 حفظ موظف:', { name, username, department, canViewRecordings });
-        
-        const data = await getEmployeesData();
-        
-        if (id) {
-            // تعديل موظف موجود
-            const employeeIndex = data.employees.findIndex(emp => emp.id === id);
-            
-            if (employeeIndex === -1) {
-                return res.status(404).json({ error: 'الموظف غير موجود' });
-            }
-            
-            // تحديث البيانات
-            data.employees[employeeIndex] = {
-                ...data.employees[employeeIndex],
-                name,
-                username,
-                password: password || data.employees[employeeIndex].password, // الاحتفاظ بكلمة المرور القديمة إذا لم تتغير
-                department,
-                phone,
-                canViewRecordings: canViewRecordings || false
-            };
-            
-            console.log('✅ تم تحديث الموظف:', name);
-        } else {
-            // إضافة موظف جديد
-            const newId = data.employees.length > 0 
-                ? Math.max(...data.employees.map(e => e.id)) + 1 
-                : 1;
-            
-            const newEmployee = {
-                id: newId,
-                name,
-                username,
-                password,
-                department,
-                phone,
-                canViewRecordings: canViewRecordings || false,
-                createdAt: new Date().toISOString()
-            };
-            
-            data.employees.push(newEmployee);
-            
-            // إضافة للقسم
-            if (data.departments[department]) {
-                if (!data.departments[department].employees) {
-                    data.departments[department].employees = [];
-                }
-                data.departments[department].employees.push(phone);
-            }
-            
-            console.log('✅ تم إضافة موظف جديد:', name);
-        }
-        
-        // حفظ البيانات
-        const saved = await saveEmployeesData(data);
-        
-        if (!saved) {
-            throw new Error('فشل في حفظ البيانات');
-        }
-        
-        res.json({ success: true, message: 'تم حفظ الموظف بنجاح' });
-    } catch (error) {
-        console.error('❌ خطأ في حفظ الموظف:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// جلب قائمة الموظفين
-app.get('/employees', async (req, res) => {
-    try {
-        const data = await getEmployeesData();
-        
-        // إرسال الموظفين مع أسماء الأقسام
-        const employeesWithDepts = data.employees.map(emp => ({
-            ...emp,
-            departmentName: data.departments[emp.department]?.name || ''
-        }));
-        
-        res.json({
-            employees: employeesWithDepts,
-            departments: data.departments
-        });
-    } catch (error) {
-        console.error('❌ خطأ في جلب الموظفين:', error);
         res.status(500).json({ error: error.message });
     }
 });

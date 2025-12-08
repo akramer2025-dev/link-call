@@ -115,73 +115,31 @@
         });
         
         // معالجة النموذج
-        loginForm.addEventListener('submit', async (e) => {
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
             
-            // تحديد المطور الرئيسي
-            if (username === adminUsername && password === adminPassword) {
-                // حفظ بيانات المطور
+            const loginResult = validateLogin(username, password);
+            
+            if (loginResult.valid) {
+                // حفظ بيانات تسجيل الدخول
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('username', username);
-                sessionStorage.setItem('userRole', 'admin');
-                sessionStorage.setItem('fullname', 'المطور الرئيسي');
-                sessionStorage.setItem('canViewRecordings', 'true');
-                localStorage.setItem('employeeId', 'admin');
-                localStorage.setItem('employeeName', 'المطور الرئيسي');
+                sessionStorage.setItem('userRole', loginResult.role);
+                sessionStorage.setItem('fullname', loginResult.fullname);
+                sessionStorage.setItem('permissions', JSON.stringify(loginResult.permissions));
                 
+                // إضافة تأثير نجاح
                 loginForm.classList.add('success');
+                
+                // الانتقال إلى الصفحة الرئيسية
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 500);
-                return;
-            }
-            
-            // محاولة تسجيل دخول موظف
-            try {
-                const baseUrl = window.location.origin;
-                const response = await fetch(`${baseUrl}/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    // حفظ بيانات الموظف
-                    sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('username', data.employee.username);
-                    sessionStorage.setItem('userRole', 'employee');
-                    sessionStorage.setItem('fullname', data.employee.name);
-                    sessionStorage.setItem('canViewRecordings', data.employee.canViewRecordings.toString());
-                    sessionStorage.setItem('departmentName', data.employee.departmentName);
-                    localStorage.setItem('employeeId', data.employee.id.toString());
-                    localStorage.setItem('employeeName', data.employee.name);
-                    
-                    console.log('✅ تم تسجيل الدخول:', data.employee.name);
-                    
-                    loginForm.classList.add('success');
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 500);
-                } else {
-                    // إظهار رسالة خطأ
-                    errorMessage.textContent = '⚠️ ' + (data.error || 'اسم المستخدم أو كلمة المرور غير صحيحة');
-                    errorMessage.classList.remove('hidden');
-                    loginForm.classList.add('shake');
-                    
-                    setTimeout(() => {
-                        loginForm.classList.remove('shake');
-                    }, 500);
-                }
-            } catch (error) {
-                console.error('❌ خطأ في تسجيل الدخول:', error);
-                errorMessage.textContent = '⚠️ خطأ في الاتصال بالخادم';
+            } else {
+                // إظهار رسالة خطأ
                 errorMessage.classList.remove('hidden');
                 loginForm.classList.add('shake');
                 

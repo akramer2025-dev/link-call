@@ -116,15 +116,23 @@ try {
 
 // دوال مساعدة للتعامل مع KV أو الملف
 async function getEmployeesData() {
-    if (kv && process.env.VERCEL) {
-        try {
-            const data = await kv.get('employees_data');
-            return data || employeesData;
-        } catch (error) {
-            console.error('خطأ في قراءة KV:', error);
-            return employeesData;
+    // على Vercel نحاول KV أولاً، وإذا فشل نرجع البيانات الافتراضية
+    if (process.env.VERCEL) {
+        if (kv) {
+            try {
+                const data = await kv.get('employees_data');
+                if (data && data.employees && data.employees.length > 0) {
+                    return data;
+                }
+                console.log('⚠️ KV فارغ، استخدام البيانات الافتراضية');
+            } catch (error) {
+                console.error('❌ خطأ في قراءة KV:', error);
+            }
         }
+        // إرجاع البيانات المدمجة في الكود
+        return employeesData;
     }
+    // تشغيل محلي
     return employeesData;
 }
 
@@ -581,13 +589,13 @@ app.post('/call-events', (req, res) => {
 // webhook لحالة المكالمة
 app.post('/call-status-webhook', async (req, res) => {
     const callSid = req.body.CallSid;
-    const employeeId = req.query.employeeId;
+    const employeeId = req.query.employeeId || req.body.employeeId;
     const callStatus = req.body.CallStatus;
     
     console.log(`📞 حالة المكالمة ${callSid}: ${callStatus}, موظف: ${employeeId}`);
     
-    // حفظ علاقة المكالمة بالموظف عند بدء المكالمة
-    if (callSid && employeeId && callStatus === 'initiated') {
+    // حفظ علاقة المكالمة بالموظف في جميع الحالات (ليس فقط initiated)
+    if (callSid && employeeId) {
         await saveCallEmployeeMapping(callSid, employeeId);
         console.log(`✅ تم ربط المكالمة ${callSid} بالموظف ${employeeId}`);
     }
@@ -640,6 +648,9 @@ app.post('/start-recording', async (req, res) => {
 // جلب قائمة التسجيلات
 app.get('/recordings', async (req, res) => {
     try {
+        const { employeeId, viewAll } = req.query;
+        console.log('📼 جلب التسجيلات - employeeId:', employeeId, 'viewAll:', viewAll);
+        
         const recordings = await twilioClient.recordings.list({ limit: 50 });
         
         // جلب معلومات المكالمات لكل تسجيل
@@ -649,13 +660,13 @@ app.get('/recordings', async (req, res) => {
                 const call = await twilioClient.calls(recording.callSid).fetch();
                 
                 // البحث عن معرف الموظف من KV
-                let employeeId = await getCallEmployeeId(recording.callSid);
+                let recordingEmployeeId = await getCallEmployeeId(recording.callSid);
                 
                 // إذا لم نجد في KV، نحاول استخراجه من StatusCallback URL
-                if (!employeeId && recording.uri) {
+                if (!recordingEmployeeId && recording.uri) {
                     const match = recording.uri.match(/employeeId=([^&]+)/);
                     if (match) {
-                        employeeId = match[1];
+                        recordingEmployeeId = match[1];
                     }
                 }
                 
@@ -669,7 +680,7 @@ app.get('/recordings', async (req, res) => {
                     from: call.from,
                     to: call.to,
                     direction: call.direction,
-                    employeeId: employeeId || 'unknown'  // إضافة معرف الموظف
+                    employeeId: recordingEmployeeId || 'unknown'  // إضافة معرف الموظف
                 };
             } catch (error) {
                 // إذا فشل جلب معلومات المكالمة، نرجع البيانات الأساسية فقط
@@ -688,7 +699,18 @@ app.get('/recordings', async (req, res) => {
             }
         }));
         
-        res.json({ recordings: recordingsData });
+        // فلترة التسجيلات حسب الصلاحيات
+        let filteredRecordings = recordingsData;
+        
+        if (employeeId && viewAll !== 'true') {
+            // إذا كان موظف وليس لديه صلاحية رؤية الكل، نعرض تسجيلاته فقط
+            filteredRecordings = recordingsData.filter(rec => 
+                rec.employeeId === employeeId || rec.employeeId === String(employeeId)
+            );
+            console.log('🔍 تم فلترة:', filteredRecordings.length, 'من إجمالي', recordingsData.length);
+        }
+        
+        res.json({ recordings: filteredRecordings });
     } catch (error) {
         console.error('خطأ في جلب التسجيلات:', error);
         res.json({ recordings: [] }); // إرجاع قائمة فارغة بدلاً من خطأ

@@ -508,31 +508,34 @@ async function loadRecordings() {
         }
         
         const baseUrl = window.location.origin;
-        const employeeId = localStorage.getItem('employeeId');
+        const employeeId = sessionStorage.getItem('employeeId');
         
-        const response = await fetch(`${baseUrl}/recordings`);
+        console.log('📋 جلب التسجيلات - employeeId:', employeeId, 'userRole:', userRole);
+        
+        // بناء URL مع المعاملات
+        let url = `${baseUrl}/recordings`;
+        const params = new URLSearchParams();
+        
+        if (employeeId && (userRole !== 'admin')) {
+            params.append('employeeId', employeeId);
+        }
+        
+        if (canViewAll || userRole === 'admin') {
+            params.append('viewAll', 'true');
+        }
+        
+        if (params.toString()) {
+            url += '?' + params.toString();
+        }
+        
+        console.log('🌐 URL:', url);
+        
+        const response = await fetch(url);
         const data = await response.json();
         
-        const allRecordings = data.recordings || [];
+        recordings = data.recordings || [];
         
-        // تصفية التسجيلات حسب الصلاحيات
-        if (userRole === 'admin' || canViewAll) {
-            // المطور أو من لديه صلاحية التسجيلات العامة يرى كل شيء
-            recordings = allRecordings;
-            console.log('📊 عرض جميع التسجيلات:', allRecordings.length);
-        } else if (canViewOwn) {
-            // من لديه صلاحية التسجيلات الخاصة يرى تسجيلاته فقط
-            recordings = allRecordings.filter(rec => {
-                const recEmpId = rec.employeeId ? rec.employeeId.toString() : 'unknown';
-                const currentEmpId = employeeId ? employeeId.toString() : 'unknown';
-                console.log(`🔍 مقارنة: ${recEmpId} === ${currentEmpId}`, recEmpId === currentEmpId);
-                return recEmpId === currentEmpId;
-            });
-            console.log(`📊 عرض التسجيلات الخاصة: ${recordings.length} من ${allRecordings.length}`);
-            console.log(`👤 معرف الموظف الحالي: ${employeeId}`);
-        } else {
-            recordings = [];
-        }
+        console.log(`📊 تم جلب ${recordings.length} تسجيل`);
         
         displayRecordings();
         updateRecordingsBadge(recordings.length);

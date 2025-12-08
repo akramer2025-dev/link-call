@@ -136,26 +136,11 @@ app.get('/token', async (req, res) => {
     try {
         const identity = req.query.identity || 'employee_' + Date.now();
         
-        // إنشاء API Key تلقائياً إذا لم يكن موجود
-        let apiKey = TWILIO_API_KEY;
-        let apiSecret = TWILIO_API_SECRET;
+        // استخدام API Key الموجود في المتغيرات
+        const apiKey = process.env.TWILIO_API_KEY || process.env.TWILIO_ACCOUNT_SID;
+        const apiSecret = process.env.TWILIO_API_SECRET || process.env.TWILIO_AUTH_TOKEN;
         
-        if (!apiKey || !apiSecret) {
-            console.log('📝 إنشاء API Key جديد...');
-            try {
-                const newKey = await twilioClient.newKeys.create({
-                    friendlyName: 'Link Call Auto Key'
-                });
-                apiKey = newKey.sid;
-                apiSecret = newKey.secret;
-                console.log('✅ تم إنشاء API Key:', apiKey);
-            } catch (keyError) {
-                console.error('❌ فشل إنشاء API Key:', keyError);
-                // استخدام Account SID كـ fallback (قد لا يعمل)
-                apiKey = TWILIO_ACCOUNT_SID;
-                apiSecret = TWILIO_AUTH_TOKEN;
-            }
-        }
+        console.log('🔑 استخدام API Key:', apiKey);
         
         const AccessToken = twilio.jwt.AccessToken;
         const VoiceGrant = AccessToken.VoiceGrant;

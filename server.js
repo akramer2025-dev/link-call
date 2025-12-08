@@ -115,6 +115,23 @@ app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
+// Routes للملفات الثابتة (CSS, JS, Images)
+app.get('/style.css', (req, res) => {
+    res.sendFile(path.join(__dirname, 'style.css'));
+});
+
+app.get('/login-style.css', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login-style.css'));
+});
+
+app.get('/app.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app.js'));
+});
+
+app.get('/logo.jpg', (req, res) => {
+    res.sendFile(path.join(__dirname, 'logo.jpg'));
+});
+
 // توليد Token للعميل (للمكالمات من المتصفح مباشرة)
 app.get('/token', async (req, res) => {
     try {

@@ -7,12 +7,13 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    padding: 10px;
 }
 
 body::before {
@@ -1345,4 +1346,47 @@ input:checked + .slider:before {
 /* إخفاء العناصر */
 .hidden {
     display: none !important;
+}
+
+/* تحسينات للموبايل */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+        padding: 5px;
+    }
+    
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 15px !important;
+        margin: 0 !important;
+        border-radius: 15px !important;
+    }
+    
+    .login-container {
+        width: 95% !important;
+        padding: 20px !important;
+    }
+    
+    input, button, select, textarea {
+        font-size: 16px !important; /* منع zoom في iOS */
+        padding: 12px !important;
+    }
+    
+    .section-content {
+        padding: 10px !important;
+    }
+    
+    .recording-item {
+        padding: 10px !important;
+        font-size: 13px;
+    }
+    
+    h2, h3, h4 {
+        font-size: 1.2em !important;
+    }
+    
+    .user-info {
+        font-size: 0.9em !important;
+    }
 }

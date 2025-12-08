@@ -309,11 +309,9 @@ async function getCallEmployeeId(callSid) {
 app.post('/outgoing-call', (req, res) => {
     const toNumber = req.body.To;
     const employeeId = req.body.employeeId || 'unknown';
-    const callSid = req.body.CallSid; // معرف المكالمة من Twilio
     
     console.log('📞 اتصال صادر من المتصفح إلى:', toNumber);
     console.log('👤 معرف الموظف:', employeeId);
-    console.log('📱 معرف المكالمة:', callSid);
     
     const twiml = new twilio.twiml.VoiceResponse();
     
@@ -321,15 +319,12 @@ app.post('/outgoing-call', (req, res) => {
         const dial = twiml.dial({
             callerId: TWILIO_PHONE_NUMBER,
             record: 'record-from-answer',
-            recordingStatusCallback: `/recording-status?employeeId=${employeeId}`,
-            recordingStatusCallbackEvent: ['completed']
+            recordingStatusCallback: `/recording-status?employeeId=${employeeId}&to=${encodeURIComponent(toNumber)}`,
+            recordingStatusCallbackEvent: ['completed'],
+            statusCallback: `/call-status-webhook?employeeId=${employeeId}`,
+            statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed']
         });
         dial.number(toNumber);
-        
-        // حفظ معرف الموظف في KV
-        if (callSid) {
-            saveCallEmployeeMapping(callSid, employeeId);
-        }
     } else {
         twiml.say({ voice: 'Polly.Zeina', language: 'ar-AE' }, 'لم يتم تحديد رقم للاتصال');
     }
@@ -494,6 +489,23 @@ app.post('/call-events', (req, res) => {
 });
 
 // معالجة حالة التسجيل
+// webhook لحالة المكالمة
+app.post('/call-status-webhook', async (req, res) => {
+    const callSid = req.body.CallSid;
+    const employeeId = req.query.employeeId;
+    const callStatus = req.body.CallStatus;
+    
+    console.log(`📞 حالة المكالمة ${callSid}: ${callStatus}, موظف: ${employeeId}`);
+    
+    // حفظ علاقة المكالمة بالموظف عند بدء المكالمة
+    if (callSid && employeeId && callStatus === 'initiated') {
+        await saveCallEmployeeMapping(callSid, employeeId);
+        console.log(`✅ تم ربط المكالمة ${callSid} بالموظف ${employeeId}`);
+    }
+    
+    res.sendStatus(200);
+});
+
 app.post('/recording-status', async (req, res) => {
     const recordingSid = req.body.RecordingSid;
     const callSid = req.body.CallSid;
@@ -504,9 +516,10 @@ app.post('/recording-status', async (req, res) => {
     console.log('👤 موظف:', employeeId);
     console.log('⏱️ مدة:', req.body.RecordingDuration);
     
-    // حفظ علاقة التسجيل بالموظف
+    // حفظ علاقة التسجيل بالموظف (backup)
     if (callSid && employeeId) {
         await saveCallEmployeeMapping(callSid, employeeId);
+        console.log(`✅ تم تأكيد ربط التسجيل ${callSid} بالموظف ${employeeId}`);
     }
     
     res.sendStatus(200);

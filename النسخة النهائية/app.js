@@ -522,8 +522,14 @@ async function loadRecordings() {
             console.log('📊 عرض جميع التسجيلات:', allRecordings.length);
         } else if (canViewOwn) {
             // من لديه صلاحية التسجيلات الخاصة يرى تسجيلاته فقط
-            recordings = allRecordings.filter(rec => rec.employeeId === employeeId);
+            recordings = allRecordings.filter(rec => {
+                const recEmpId = rec.employeeId ? rec.employeeId.toString() : 'unknown';
+                const currentEmpId = employeeId ? employeeId.toString() : 'unknown';
+                console.log(`🔍 مقارنة: ${recEmpId} === ${currentEmpId}`, recEmpId === currentEmpId);
+                return recEmpId === currentEmpId;
+            });
             console.log(`📊 عرض التسجيلات الخاصة: ${recordings.length} من ${allRecordings.length}`);
+            console.log(`👤 معرف الموظف الحالي: ${employeeId}`);
         } else {
             recordings = [];
         }
@@ -912,20 +918,44 @@ function saveEmployees(employees) {
 
 // عرض قائمة الموظفين
 async function loadEmployeesList() {
-    if (!checkAdminAccess()) return;
+    const userRole = sessionStorage.getItem('userRole');
+    console.log('🔄 تحميل قائمة الموظفين... Role:', userRole);
+    
+    if (userRole !== 'admin') {
+        console.log('⚠️ الموظف لا يمكنه رؤية قائمة الموظفين');
+        return;
+    }
     
     const container = document.getElementById('employees-list-container');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ لم يتم العثور على employees-list-container');
+        return;
+    }
+    
+    console.log('✅ Container موجود، جاري جلب البيانات...');
     
     try {
         const baseUrl = window.location.origin;
+        console.log('🌐 جاري جلب البيانات من:', `${baseUrl}/employees`);
+        
         const response = await fetch(`${baseUrl}/employees`);
+        
+        console.log('📡 استجابة السيرفر:', response.status, response.statusText);
+        
+        if (!response.ok) {
+            throw new Error(`خطأ في السيرفر: ${response.status}`);
+        }
+        
         const data = await response.json();
+        
+        console.log('📊 البيانات المستلمة:', data);
         
         const employees = data.employees || [];
         
+        console.log('👥 عدد الموظفين:', employees.length);
+        
         if (employees.length === 0) {
-            container.innerHTML = '<p class="no-employees">لا يوجد موظفين مضافين</p>';
+            container.innerHTML = '<p class="no-employees">لا يوجد موظفين مضافين. اضغط "إضافة موظف" لإضافة أول موظف.</p>';
             return;
         }
         
@@ -957,8 +987,9 @@ async function loadEmployeesList() {
         `;
         }).join('');
     } catch (error) {
-        console.error('خطأ في تحميل الموظفين:', error);
-        container.innerHTML = '<p class="no-employees">خطأ في تحميل البيانات</p>';
+        console.error('❌ خطأ في تحميل الموظفين:', error);
+        console.error('تفاصيل الخطأ:', error.message, error.stack);
+        container.innerHTML = `<p class="no-employees" style="color: #ff6b6b;">خطأ في تحميل البيانات<br><small>${error.message}</small></p>`;
     }
 }
 
@@ -1107,12 +1138,17 @@ window.deleteEmployee = deleteEmployee;
 // تحميل قائمة الموظفين عند فتح الإعدادات
 if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
-        loadEmployeesList();
+        console.log('⚙️ تم النقر على زر الإعدادات');
+        setTimeout(() => {
+            loadEmployeesList();
+        }, 100); // انتظار قصير للتأكد من ظهور الـ container
     });
 }
 
 // تحميل القائمة عند تحميل الصفحة
-loadEmployeesList();
+setTimeout(() => {
+    loadEmployeesList();
+}, 500);
 
 // عرض معلومات المستخدم في الهيدر
 function displayUserInfo() {
@@ -1120,11 +1156,16 @@ function displayUserInfo() {
     const fullname = sessionStorage.getItem('fullname');
     const role = sessionStorage.getItem('userRole');
     
+    console.log('📋 معلومات المستخدم:', { username, fullname, role });
+    
     const headerUsername = document.getElementById('header-username');
     const headerRole = document.getElementById('header-role');
     
     if (headerUsername) {
-        headerUsername.textContent = fullname || username || 'مستخدم';
+        // تأكد من عرض الاسم بشكل صحيح
+        const displayName = fullname || username || 'مستخدم';
+        console.log('✅ عرض الاسم:', displayName);
+        headerUsername.textContent = displayName;
     }
     
     if (headerRole) {

@@ -835,12 +835,40 @@ app.post('/employees', async (req, res) => {
 });
 
 // تسجيل دخول الموظف
+// تهيئة KV من الملف (للمطور فقط)
+app.get('/init-kv', async (req, res) => {
+    if (!kv || !process.env.VERCEL) {
+        return res.json({ error: 'KV غير متاح (تشغيل محلي)' });
+    }
+    
+    try {
+        console.log('🔄 تهيئة Vercel KV من الملف...');
+        const success = await saveEmployeesData(employeesData);
+        
+        if (success) {
+            const saved = await kv.get('employees_data');
+            return res.json({
+                success: true,
+                message: 'تم تهيئة KV بنجاح',
+                employeesCount: saved?.employees?.length || 0,
+                employees: saved?.employees || []
+            });
+        } else {
+            return res.status(500).json({ error: 'فشل في حفظ البيانات' });
+        }
+    } catch (error) {
+        console.error('❌ خطأ في تهيئة KV:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         console.log('🔐 محاولة تسجيل دخول:', username);
         
         const data = await getEmployeesData();
+        console.log('📊 عدد الموظفين في القاعدة:', data.employees.length);
         
         // البحث عن الموظف
         const employee = data.employees.find(emp => 

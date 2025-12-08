@@ -136,22 +136,19 @@ app.get('/token', async (req, res) => {
     try {
         const identity = req.query.identity || 'employee_' + Date.now();
         
-        // استخدام API Key الموجود في المتغيرات
-        const apiKey = process.env.TWILIO_API_KEY || process.env.TWILIO_ACCOUNT_SID;
-        const apiSecret = process.env.TWILIO_API_SECRET || process.env.TWILIO_AUTH_TOKEN;
-        
-        console.log('🔑 استخدام API Key:', apiKey);
+        console.log('🔑 توليد Token للموظف:', identity);
         
         const AccessToken = twilio.jwt.AccessToken;
         const VoiceGrant = AccessToken.VoiceGrant;
         
+        // استخدام Account SID و Auth Token مباشرة (الطريقة الأبسط والأضمن)
         const token = new AccessToken(
             TWILIO_ACCOUNT_SID,
-            apiKey,
-            apiSecret,
+            TWILIO_ACCOUNT_SID,
+            TWILIO_AUTH_TOKEN,
             { 
                 identity: identity,
-                ttl: 14400 // 4 ساعات
+                ttl: 3600 // ساعة واحدة
             }
         );
 
@@ -162,10 +159,11 @@ app.get('/token', async (req, res) => {
 
         token.addGrant(voiceGrant);
         
-        console.log('✅ Token تم إنشاؤه للموظف:', identity);
+        const jwt = token.toJwt();
+        console.log('✅ Token تم إنشاؤه بنجاح');
 
         res.json({
-            token: token.toJwt(),
+            token: jwt,
             identity: identity
         });
     } catch (error) {

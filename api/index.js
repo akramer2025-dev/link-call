@@ -419,7 +419,10 @@ app.post('/outgoing-call', (req, res) => {
             recordingStatusCallback: `/recording-status?employeeId=${employeeId}&to=${encodeURIComponent(toNumber)}`,
             recordingStatusCallbackEvent: ['completed'],
             statusCallback: `/call-status-webhook?employeeId=${employeeId}`,
-            statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed']
+            statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+            // تحسينات جودة الصوت وتقليل التأخير
+            timeout: 30,
+            answerOnBridge: true  // تقليل latency - يبدأ التسجيل لما العميل يرد فعلاً
         });
         dial.number(toNumber);
     } else {

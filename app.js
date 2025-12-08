@@ -936,7 +936,16 @@ async function loadEmployeesList() {
     
     try {
         const baseUrl = window.location.origin;
+        console.log('🌐 جاري جلب البيانات من:', `${baseUrl}/employees`);
+        
         const response = await fetch(`${baseUrl}/employees`);
+        
+        console.log('📡 استجابة السيرفر:', response.status, response.statusText);
+        
+        if (!response.ok) {
+            throw new Error(`خطأ في السيرفر: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         console.log('📊 البيانات المستلمة:', data);
@@ -946,7 +955,7 @@ async function loadEmployeesList() {
         console.log('👥 عدد الموظفين:', employees.length);
         
         if (employees.length === 0) {
-            container.innerHTML = '<p class="no-employees">لا يوجد موظفين مضافين</p>';
+            container.innerHTML = '<p class="no-employees">لا يوجد موظفين مضافين. اضغط "إضافة موظف" لإضافة أول موظف.</p>';
             return;
         }
         
@@ -978,8 +987,9 @@ async function loadEmployeesList() {
         `;
         }).join('');
     } catch (error) {
-        console.error('خطأ في تحميل الموظفين:', error);
-        container.innerHTML = '<p class="no-employees">خطأ في تحميل البيانات</p>';
+        console.error('❌ خطأ في تحميل الموظفين:', error);
+        console.error('تفاصيل الخطأ:', error.message, error.stack);
+        container.innerHTML = `<p class="no-employees" style="color: #ff6b6b;">خطأ في تحميل البيانات<br><small>${error.message}</small></p>`;
     }
 }
 

@@ -102,9 +102,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('.'));
 
-// Route للصفحة الرئيسية
+// Routes للصفحات الرئيسية
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 // توليد Token للعميل (للمكالمات من المتصفح مباشرة)

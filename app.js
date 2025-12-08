@@ -919,20 +919,31 @@ function saveEmployees(employees) {
 // عرض قائمة الموظفين
 async function loadEmployeesList() {
     const userRole = sessionStorage.getItem('userRole');
+    console.log('🔄 تحميل قائمة الموظفين... Role:', userRole);
+    
     if (userRole !== 'admin') {
         console.log('⚠️ الموظف لا يمكنه رؤية قائمة الموظفين');
         return;
     }
     
     const container = document.getElementById('employees-list-container');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ لم يتم العثور على employees-list-container');
+        return;
+    }
+    
+    console.log('✅ Container موجود، جاري جلب البيانات...');
     
     try {
         const baseUrl = window.location.origin;
         const response = await fetch(`${baseUrl}/employees`);
         const data = await response.json();
         
+        console.log('📊 البيانات المستلمة:', data);
+        
         const employees = data.employees || [];
+        
+        console.log('👥 عدد الموظفين:', employees.length);
         
         if (employees.length === 0) {
             container.innerHTML = '<p class="no-employees">لا يوجد موظفين مضافين</p>';
@@ -1117,12 +1128,17 @@ window.deleteEmployee = deleteEmployee;
 // تحميل قائمة الموظفين عند فتح الإعدادات
 if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
-        loadEmployeesList();
+        console.log('⚙️ تم النقر على زر الإعدادات');
+        setTimeout(() => {
+            loadEmployeesList();
+        }, 100); // انتظار قصير للتأكد من ظهور الـ container
     });
 }
 
 // تحميل القائمة عند تحميل الصفحة
-loadEmployeesList();
+setTimeout(() => {
+    loadEmployeesList();
+}, 500);
 
 // عرض معلومات المستخدم في الهيدر
 function displayUserInfo() {

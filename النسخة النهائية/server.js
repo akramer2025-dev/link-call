@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const twilio = require('twilio');
 const cors = require('cors');
 const path = require('path');
@@ -16,7 +16,7 @@ try {
 const app = express();
 const PORT = 3000;
 
-// قراءة بيانات الموظفين (للتشغيل المحلي فقط)
+// قراءة بيانات المديرين (للتشغيل المحلي فقط)
 let employeesData = {
     employees: [],
     departments: {
@@ -32,7 +32,7 @@ let employeesData = {
 try {
     const data = fs.readFileSync(path.join(__dirname, 'employees.json'), 'utf8');
     employeesData = JSON.parse(data);
-    console.log('✅ تم تحميل بيانات الموظفين من الملف');
+    console.log('✅ تم تحميل بيانات المديرين من الملف');
 } catch (error) {
     console.log('⚠️ سيتم استخدام KV للتخزين');
 }
@@ -178,7 +178,7 @@ app.get('/token', async (req, res) => {
 
         token.addGrant(voiceGrant);
         
-        console.log('✅ Token تم إنشاؤه للموظف:', identity);
+        console.log('✅ Token تم إنشاؤه للمدير:', identity);
 
         res.json({
             token: token.toJwt(),
@@ -273,7 +273,7 @@ app.all('/simple-dial', (req, res) => {
 });
 
 // TwiML للمكالمات الصادرة من المتصفح (Voice URL لـ TwiML App)
-// حفظ معرفات الموظفين للمكالمات (في الذاكرة مؤقتاً)
+// حفظ معرفات المديرين للمكالمات (في الذاكرة مؤقتاً)
 const callEmployeeMap = new Map();
 
 app.post('/outgoing-call', (req, res) => {
@@ -281,7 +281,7 @@ app.post('/outgoing-call', (req, res) => {
     const employeeId = req.body.employeeId || 'unknown';
     
     console.log('📞 اتصال صادر من المتصفح إلى:', toNumber);
-    console.log('👤 معرف الموظف:', employeeId);
+    console.log('👤 معرف المدير:', employeeId);
     
     const twiml = new twilio.twiml.VoiceResponse();
     
@@ -294,7 +294,7 @@ app.post('/outgoing-call', (req, res) => {
         });
         dial.number(toNumber);
         
-        // حفظ معرف الموظف مع رقم الهاتف
+        // حفظ معرف المدير مع رقم الهاتف
         callEmployeeMap.set(toNumber, employeeId);
     } else {
         twiml.say({ voice: 'Polly.Zeina', language: 'ar-AE' }, 'لم يتم تحديد رقم للاتصال');
@@ -412,12 +412,12 @@ app.post('/ivr-response', async (req, res) => {
     
     console.log('🔢 العميل اختار:', digit);
     
-    // الحصول على بيانات الموظفين
+    // الحصول على بيانات المديرين
     const data = await getEmployeesData();
     const department = data.departments[digit];
     
     if (department && department.employees.length > 0) {
-        // اختيار موظف عشوائي (أو أول موظف متاح)
+        // اختيار مدير عشوائي (أو أول مدير متاح)
         const employeePhone = department.employees[0];
         
         twiml.say({
@@ -425,20 +425,20 @@ app.post('/ivr-response', async (req, res) => {
             language: 'ar-AE'
         }, `جاري تحويلك إلى قسم ${department.name}. الرجاء الانتظار.`);
         
-        // تحويل المكالمة للموظف
+        // تحويل المكالمة للمدير
         const dial = twiml.dial({
             timeout: 30,
             callerId: TWILIO_PHONE_NUMBER
         });
         dial.number(employeePhone);
         
-        // إذا لم يرد الموظف
+        // إذا لم يرد المدير
         twiml.say({
             voice: 'Polly.Zeina',
             language: 'ar-AE'
-        }, 'عذراً، جميع موظفينا مشغولون حالياً. يرجى المحاولة لاحقاً. شكراً لاتصالك بنا.');
+        }, 'عذراً، جميع مديرينا مشغولون حالياً. يرجى المحاولة لاحقاً. شكراً لاتصالك بنا.');
     } else {
-        // لا يوجد موظفين متاحين في هذا القسم
+        // لا يوجد مديرين متاحين في هذا القسم
         twiml.say({
             voice: 'Polly.Zeina',
             language: 'ar-AE'
@@ -501,7 +501,7 @@ app.get('/recordings', async (req, res) => {
                 // جلب معلومات المكالمة
                 const call = await twilioClient.calls(recording.callSid).fetch();
                 
-                // البحث عن معرف الموظف
+                // البحث عن معرف المدير
                 const employeeId = callEmployeeMap.get(call.to) || callEmployeeMap.get(call.from);
                 
                 return {
@@ -514,7 +514,7 @@ app.get('/recordings', async (req, res) => {
                     from: call.from,
                     to: call.to,
                     direction: call.direction,
-                    employeeId: employeeId  // إضافة معرف الموظف
+                    employeeId: employeeId  // إضافة معرف المدير
                 };
             } catch (error) {
                 // إذا فشل جلب معلومات المكالمة، نرجع البيانات الأساسية فقط
@@ -527,7 +527,7 @@ app.get('/recordings', async (req, res) => {
                     from: 'غير معروف',
                     to: 'غير معروف',
                     direction: 'outbound-api',
-                    employeeId: null  // لا يوجد معرف موظف
+                    employeeId: null  // لا يوجد معرف مدير
                 };
             }
         }));
@@ -703,22 +703,22 @@ app.get('/call-history', async (req, res) => {
     }
 });
 
-// ========== إدارة الموظفين ==========
+// ========== إدارة المديرين ==========
 
-// جلب قائمة الموظفين
+// جلب قائمة المديرين
 app.get('/employees', async (req, res) => {
     const data = await getEmployeesData();
     res.json(data);
 });
 
-// إضافة موظف جديد
+// إضافة مدير جديد
 app.post('/employees', async (req, res) => {
     try {
         const { username, password, fullname, phone, department } = req.body;
         
         const data = await getEmployeesData();
         
-        // التحقق من عدم وجود موظف بنفس اسم المستخدم
+        // التحقق من عدم وجود مدير بنفس اسم المستخدم
         const exists = data.employees.find(emp => emp.username === username);
         if (exists) {
             return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل' });
@@ -737,7 +737,7 @@ app.post('/employees', async (req, res) => {
         
         data.employees.push(newEmployee);
         
-        // إضافة الموظف لقسمه
+        // إضافة المدير لقسمه
         if (data.departments[department]) {
             if (!data.departments[department].employees.includes(phone)) {
                 data.departments[department].employees.push(phone);
@@ -749,12 +749,12 @@ app.post('/employees', async (req, res) => {
         
         res.json({ success: true, employee: newEmployee });
     } catch (error) {
-        console.error('خطأ في إضافة موظف:', error);
+        console.error('خطأ في إضافة مدير:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// حذف موظف
+// حذف مدير
 app.delete('/employees/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -763,7 +763,7 @@ app.delete('/employees/:id', async (req, res) => {
         const employeeIndex = data.employees.findIndex(emp => emp.id === id);
         
         if (employeeIndex === -1) {
-            return res.status(404).json({ error: 'الموظف غير موجود' });
+            return res.status(404).json({ error: 'المدير غير موجود' });
         }
         
         const employee = data.employees[employeeIndex];
@@ -784,7 +784,7 @@ app.delete('/employees/:id', async (req, res) => {
         
         res.json({ success: true });
     } catch (error) {
-        console.error('خطأ في حذف موظف:', error);
+        console.error('خطأ في حذف مدير:', error);
         res.status(500).json({ error: error.message });
     }
 });

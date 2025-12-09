@@ -1098,7 +1098,7 @@ input:checked + .slider:before {
     font-size: 12px;
 }
 
-/* إدارة الموظفين */
+/* إدارة المديرين */
 .employees-container {
     display: flex;
     flex-direction: column;

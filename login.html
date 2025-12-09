@@ -88,7 +88,7 @@
         const adminUsername = 'akram';
         const adminPassword = 'Aazxc';
         
-        // الحصول على قائمة الموظفين
+        // الحصول على قائمة المديرين
         function getEmployees() {
             const employees = localStorage.getItem('employees');
             return employees ? JSON.parse(employees) : [];
@@ -101,7 +101,7 @@
                 return { valid: true, role: 'admin', fullname: 'المطور الرئيسي', permissions: ['all'] };
             }
             
-            // التحقق من الموظفين
+            // التحقق من المديرين
             const employees = getEmployees();
             const employee = employees.find(emp => emp.username === username && emp.password === password);
             
@@ -149,7 +149,7 @@
                 return;
             }
             
-            // محاولة تسجيل دخول موظف
+            // محاولة تسجيل دخول مدير
             try {
                 const baseUrl = window.location.origin;
                 const response = await fetch(`${baseUrl}/login`, {
@@ -163,7 +163,7 @@
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
-                    // حفظ بيانات الموظف
+                    // حفظ بيانات المدير
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('username', data.employee.username);
                     sessionStorage.setItem('userRole', 'employee');

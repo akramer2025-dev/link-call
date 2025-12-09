@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const twilio = require('twilio');
 const cors = require('cors');
 const path = require('path');
@@ -16,7 +16,7 @@ try {
 const app = express();
 const PORT = 3000;
 
-// قراءة بيانات الموظفين (للتشغيل المحلي فقط)
+// قراءة بيانات المديرين (للتشغيل المحلي فقط)
 let employeesData = {
     employees: [
         {
@@ -109,7 +109,7 @@ let employeesData = {
 try {
     const data = fs.readFileSync(path.join(__dirname, 'employees.json'), 'utf8');
     employeesData = JSON.parse(data);
-    console.log('✅ تم تحميل بيانات الموظفين من الملف');
+    console.log('✅ تم تحميل بيانات المديرين من الملف');
 } catch (error) {
     console.log('⚠️ سيتم استخدام KV للتخزين');
 }
@@ -150,7 +150,7 @@ async function saveEmployeesData(data) {
             
             // التحقق من الحفظ
             const saved = await kv.get('employees_data');
-            console.log('✅ تم التحقق: عدد الموظفين المحفوظين:', saved?.employees?.length || 0);
+            console.log('✅ تم التحقق: عدد المديرين المحفوظين:', saved?.employees?.length || 0);
             
             return true;
         } catch (error) {
@@ -234,7 +234,7 @@ app.get('/token', async (req, res) => {
     try {
         const identity = req.query.identity || 'employee_' + Date.now();
         
-        console.log('🔑 توليد Token للموظف:', identity);
+        console.log('🔑 توليد Token للمدير:', identity);
         console.log('🔑 Account SID:', TWILIO_ACCOUNT_SID);
         console.log('🔑 API Key exists:', !!TWILIO_API_KEY);
         console.log('🔑 TwiML App SID:', TWILIO_TWIML_APP_SID);
@@ -378,13 +378,17 @@ app.all('/simple-dial', (req, res) => {
 });
 
 // TwiML للمكالمات الصادرة من المتصفح (Voice URL لـ TwiML App)
-// حفظ معرفات الموظفين للمكالمات (في الذاكرة مؤقتاً)
-// تخزين علاقة المكالمات بالموظفين في Vercel KV
-async function saveCallEmployeeMapping(callSid, employeeId) {
+// حفظ معرفات المديرين للمكالمات (في الذاكرة مؤقتاً)
+// تخزين علاقة المكالمات بالمديرين في Vercel KV
+async function saveCallEmployeeMapping(callSid, employeeId, toNumber = null) {
     try {
         if (kv) {
-            await kv.set(`call:${callSid}`, employeeId, { ex: 604800 }); // حفظ لمدة 7 أيام
-            console.log(`✅ حفظ علاقة المكالمة ${callSid} بالموظف ${employeeId}`);
+            const data = { employeeId };
+            if (toNumber) {
+                data.to = toNumber;
+            }
+            await kv.set(`call:${callSid}`, JSON.stringify(data), { ex: 604800 }); // حفظ لمدة 7 أيام
+            console.log(`✅ حفظ علاقة المكالمة ${callSid} بالمدير ${employeeId}${toNumber ? ' ورقم ' + toNumber : ''}`);
         }
     } catch (error) {
         console.error('خطأ في حفظ علاقة المكالمة:', error);
@@ -394,11 +398,20 @@ async function saveCallEmployeeMapping(callSid, employeeId) {
 async function getCallEmployeeId(callSid) {
     try {
         if (kv) {
-            const employeeId = await kv.get(`call:${callSid}`);
-            return employeeId;
+            const data = await kv.get(`call:${callSid}`);
+            if (data) {
+                // التعامل مع البيانات القديمة (نص فقط) والجديدة (JSON)
+                try {
+                    const parsed = JSON.parse(data);
+                    return parsed;
+                } catch {
+                    // بيانات قديمة - مجرد employeeId
+                    return { employeeId: data, to: null };
+                }
+            }
         }
     } catch (error) {
-        console.error('خطأ في جلب معرف الموظف:', error);
+        console.error('خطأ في جلب معرف المدير:', error);
     }
     return null;
 }
@@ -408,7 +421,7 @@ app.post('/outgoing-call', (req, res) => {
     const employeeId = req.body.employeeId || 'unknown';
     
     console.log('📞 اتصال صادر من المتصفح إلى:', toNumber);
-    console.log('👤 معرف الموظف:', employeeId);
+    console.log('👤 معرف المدير:', employeeId);
     
     const twiml = new twilio.twiml.VoiceResponse();
     
@@ -541,12 +554,12 @@ app.post('/ivr-response', async (req, res) => {
     
     console.log('🔢 العميل اختار:', digit);
     
-    // الحصول على بيانات الموظفين
+    // الحصول على بيانات المديرين
     const data = await getEmployeesData();
     const department = data.departments[digit];
     
     if (department && department.employees.length > 0) {
-        // اختيار موظف عشوائي (أو أول موظف متاح)
+        // اختيار مدير عشوائي (أو أول مدير متاح)
         const employeePhone = department.employees[0];
         
         twiml.say({
@@ -554,20 +567,20 @@ app.post('/ivr-response', async (req, res) => {
             language: 'ar-AE'
         }, `جاري تحويلك إلى قسم ${department.name}. الرجاء الانتظار.`);
         
-        // تحويل المكالمة للموظف
+        // تحويل المكالمة للمدير
         const dial = twiml.dial({
             timeout: 30,
             callerId: TWILIO_PHONE_NUMBER
         });
         dial.number(employeePhone);
         
-        // إذا لم يرد الموظف
+        // إذا لم يرد المدير
         twiml.say({
             voice: 'Polly.Zeina',
             language: 'ar-AE'
-        }, 'عذراً، جميع موظفينا مشغولون حالياً. يرجى المحاولة لاحقاً. شكراً لاتصالك بنا.');
+        }, 'عذراً، جميع مديرينا مشغولون حالياً. يرجى المحاولة لاحقاً. شكراً لاتصالك بنا.');
     } else {
-        // لا يوجد موظفين متاحين في هذا القسم
+        // لا يوجد مديرين متاحين في هذا القسم
         twiml.say({
             voice: 'Polly.Zeina',
             language: 'ar-AE'
@@ -594,13 +607,14 @@ app.post('/call-status-webhook', async (req, res) => {
     const callSid = req.body.CallSid;
     const employeeId = req.query.employeeId || req.body.employeeId;
     const callStatus = req.body.CallStatus;
+    const toNumber = req.body.To || req.body.Called;
     
-    console.log(`📞 حالة المكالمة ${callSid}: ${callStatus}, موظف: ${employeeId}`);
+    console.log(`📞 حالة المكالمة ${callSid}: ${callStatus}, مدير: ${employeeId}, إلى: ${toNumber}`);
     
-    // حفظ علاقة المكالمة بالموظف في جميع الحالات (ليس فقط initiated)
+    // حفظ علاقة المكالمة بالمدير ورقم الهاتف في جميع الحالات
     if (callSid && employeeId) {
-        await saveCallEmployeeMapping(callSid, employeeId);
-        console.log(`✅ تم ربط المكالمة ${callSid} بالموظف ${employeeId}`);
+        await saveCallEmployeeMapping(callSid, employeeId, toNumber);
+        console.log(`✅ تم ربط المكالمة ${callSid} بالمدير ${employeeId}`);
     }
     
     res.sendStatus(200);
@@ -610,16 +624,18 @@ app.post('/recording-status', async (req, res) => {
     const recordingSid = req.body.RecordingSid;
     const callSid = req.body.CallSid;
     const employeeId = req.query.employeeId || req.body.employeeId;
+    const toNumber = req.query.to || req.body.To || req.body.Called;
     
     console.log('✅ تم إكمال التسجيل:', recordingSid);
     console.log('📞 مكالمة:', callSid);
-    console.log('👤 موظف:', employeeId);
+    console.log('👤 مدير:', employeeId);
+    console.log('📱 إلى:', toNumber);
     console.log('⏱️ مدة:', req.body.RecordingDuration);
     
-    // حفظ علاقة التسجيل بالموظف (backup)
+    // حفظ علاقة التسجيل بالمدير ورقم الهاتف (backup)
     if (callSid && employeeId) {
-        await saveCallEmployeeMapping(callSid, employeeId);
-        console.log(`✅ تم تأكيد ربط التسجيل ${callSid} بالموظف ${employeeId}`);
+        await saveCallEmployeeMapping(callSid, employeeId, toNumber);
+        console.log(`✅ تم تأكيد ربط التسجيل ${callSid} بالمدير ${employeeId}`);
     }
     
     res.sendStatus(200);
@@ -659,11 +675,13 @@ app.get('/recordings', async (req, res) => {
         // جلب معلومات المكالمات لكل تسجيل
         const recordingsData = await Promise.all(recordings.map(async (recording) => {
             try {
+                // البحث عن معرف المدير ورقم الهاتف من KV أولاً
+                const callData = await getCallEmployeeId(recording.callSid);
+                let recordingEmployeeId = callData?.employeeId || null;
+                let savedToNumber = callData?.to || null;
+                
                 // جلب معلومات المكالمة
                 const call = await twilioClient.calls(recording.callSid).fetch();
-                
-                // البحث عن معرف الموظف من KV
-                let recordingEmployeeId = await getCallEmployeeId(recording.callSid);
                 
                 // إذا لم نجد في KV، نحاول استخراجه من StatusCallback URL
                 if (!recordingEmployeeId && recording.uri) {
@@ -673,6 +691,9 @@ app.get('/recordings', async (req, res) => {
                     }
                 }
                 
+                // استخدام الرقم المحفوظ أو من المكالمة
+                const toNumber = savedToNumber || call.to;
+                
                 return {
                     sid: recording.sid,
                     callSid: recording.callSid,
@@ -681,13 +702,14 @@ app.get('/recordings', async (req, res) => {
                     uri: recording.uri,
                     // معلومات المكالمة
                     from: call.from,
-                    to: call.to,
+                    to: toNumber || 'غير محدد',
                     direction: call.direction,
-                    employeeId: recordingEmployeeId || 'unknown'  // إضافة معرف الموظف
+                    employeeId: recordingEmployeeId || 'unknown'  // إضافة معرف المدير
                 };
             } catch (error) {
-                // إذا فشل جلب معلومات المكالمة، نرجع البيانات الأساسية فقط
+                // إذا فشل جلب معلومات المكالمة، نحاول من KV
                 console.error('خطأ في جلب معلومات تسجيل:', error);
+                const callData = await getCallEmployeeId(recording.callSid);
                 return {
                     sid: recording.sid,
                     callSid: recording.callSid,
@@ -695,9 +717,9 @@ app.get('/recordings', async (req, res) => {
                     dateCreated: recording.dateCreated,
                     uri: recording.uri,
                     from: 'غير معروف',
-                    to: 'غير معروف',
+                    to: callData?.to || 'غير محدد',
                     direction: 'outbound-api',
-                    employeeId: 'unknown'  // لا يوجد معرف موظف
+                    employeeId: callData?.employeeId || 'unknown'  // لا يوجد معرف مدير
                 };
             }
         }));
@@ -713,7 +735,7 @@ app.get('/recordings', async (req, res) => {
         });
         
         if (employeeId && viewAll !== 'true') {
-            // إذا كان موظف وليس لديه صلاحية رؤية الكل، نعرض تسجيلاته فقط
+            // إذا كان مدير وليس لديه صلاحية رؤية الكل، نعرض تسجيلاته فقط
             filteredRecordings = recordingsData.filter(rec => {
                 // تجاهل التسجيلات بدون employeeId (قديمة)
                 if (!rec.employeeId || rec.employeeId === 'unknown') {
@@ -902,22 +924,22 @@ app.get('/call-history', async (req, res) => {
     }
 });
 
-// ========== إدارة الموظفين ==========
+// ========== إدارة المديرين ==========
 
-// جلب قائمة الموظفين
+// جلب قائمة المديرين
 app.get('/employees', async (req, res) => {
     const data = await getEmployeesData();
     res.json(data);
 });
 
-// إضافة موظف جديد
+// إضافة مدير جديد
 app.post('/employees', async (req, res) => {
     try {
         const { username, password, fullname, phone, department } = req.body;
         
         const data = await getEmployeesData();
         
-        // التحقق من عدم وجود موظف بنفس اسم المستخدم
+        // التحقق من عدم وجود مدير بنفس اسم المستخدم
         const exists = data.employees.find(emp => emp.username === username);
         if (exists) {
             return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل' });
@@ -936,7 +958,7 @@ app.post('/employees', async (req, res) => {
         
         data.employees.push(newEmployee);
         
-        // إضافة الموظف لقسمه
+        // إضافة المدير لقسمه
         if (data.departments[department]) {
             if (!data.departments[department].employees.includes(phone)) {
                 data.departments[department].employees.push(phone);
@@ -948,12 +970,12 @@ app.post('/employees', async (req, res) => {
         
         res.json({ success: true, employee: newEmployee });
     } catch (error) {
-        console.error('خطأ في إضافة موظف:', error);
+        console.error('خطأ في إضافة مدير:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// تسجيل دخول الموظف
+// تسجيل دخول المدير
 // تهيئة KV من الملف (للمطور فقط)
 app.get('/init-kv', async (req, res) => {
     if (!kv || !process.env.VERCEL) {
@@ -962,7 +984,7 @@ app.get('/init-kv', async (req, res) => {
     
     try {
         console.log('🔄 تهيئة Vercel KV بالبيانات الافتراضية...');
-        console.log('📊 عدد الموظفين المراد حفظهم:', employeesData.employees.length);
+        console.log('📊 عدد المديرين المراد حفظهم:', employeesData.employees.length);
         
         // حفظ مباشر في KV
         await kv.set('employees_data', employeesData);
@@ -970,7 +992,7 @@ app.get('/init-kv', async (req, res) => {
         
         // التحقق من الحفظ
         const saved = await kv.get('employees_data');
-        console.log('✅ تم التحقق: عدد الموظفين المحفوظين:', saved?.employees?.length || 0);
+        console.log('✅ تم التحقق: عدد المديرين المحفوظين:', saved?.employees?.length || 0);
         
         return res.json({
             success: true,
@@ -994,9 +1016,9 @@ app.post('/login', async (req, res) => {
         console.log('🔐 محاولة تسجيل دخول:', username);
         
         const data = await getEmployeesData();
-        console.log('📊 عدد الموظفين في القاعدة:', data.employees.length);
+        console.log('📊 عدد المديرين في القاعدة:', data.employees.length);
         
-        // البحث عن الموظف
+        // البحث عن المدير
         const employee = data.employees.find(emp => 
             emp.username === username && emp.password === password
         );
@@ -1031,12 +1053,12 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// إضافة أو تعديل موظف
+// إضافة أو تعديل مدير
 app.post('/employees', async (req, res) => {
     try {
         const { id, name, username, password, department, phone, permissions } = req.body;
         
-        console.log('👤 حفظ موظف:', { name, username, department, permissions });
+        console.log('👤 حفظ مدير:', { name, username, department, permissions });
         
         const data = await getEmployeesData();
         
@@ -1050,11 +1072,11 @@ app.post('/employees', async (req, res) => {
         }
         
         if (id) {
-            // تعديل موظف موجود
+            // تعديل مدير موجود
             const employeeIndex = data.employees.findIndex(emp => emp.id === id);
             
             if (employeeIndex === -1) {
-                return res.status(404).json({ error: 'الموظف غير موجود' });
+                return res.status(404).json({ error: 'المدير غير موجود' });
             }
             
             // تحديث البيانات
@@ -1069,9 +1091,9 @@ app.post('/employees', async (req, res) => {
                 updatedAt: new Date().toISOString()
             };
             
-            console.log('✅ تم تحديث الموظف:', name);
+            console.log('✅ تم تحديث المدير:', name);
         } else {
-            // إضافة موظف جديد
+            // إضافة مدير جديد
             const newId = data.employees.length > 0 
                 ? Math.max(...data.employees.map(e => e.id)) + 1 
                 : 1;
@@ -1104,7 +1126,7 @@ app.post('/employees', async (req, res) => {
                 }
             }
             
-            console.log('✅ تم إضافة موظف جديد:', name, 'بمعرف:', newId);
+            console.log('✅ تم إضافة مدير جديد:', name, 'بمعرف:', newId);
         }
         
         // حفظ البيانات
@@ -1116,19 +1138,19 @@ app.post('/employees', async (req, res) => {
         
         console.log('💾 تم حفظ البيانات بنجاح');
         
-        res.json({ success: true, message: 'تم حفظ الموظف بنجاح' });
+        res.json({ success: true, message: 'تم حفظ المدير بنجاح' });
     } catch (error) {
-        console.error('❌ خطأ في حفظ الموظف:', error);
+        console.error('❌ خطأ في حفظ المدير:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// جلب قائمة الموظفين
+// جلب قائمة المديرين
 app.get('/employees', async (req, res) => {
     try {
         const data = await getEmployeesData();
         
-        // إرسال الموظفين مع أسماء الأقسام
+        // إرسال المديرين مع أسماء الأقسام
         const employeesWithDepts = data.employees.map(emp => ({
             ...emp,
             departmentName: data.departments[emp.department]?.name || ''
@@ -1139,12 +1161,12 @@ app.get('/employees', async (req, res) => {
             departments: data.departments
         });
     } catch (error) {
-        console.error('❌ خطأ في جلب الموظفين:', error);
+        console.error('❌ خطأ في جلب المديرين:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// تحديث الملف الشخصي للموظف
+// تحديث الملف الشخصي للمدير
 app.post('/update-profile', async (req, res) => {
     try {
         const { employeeId, username, currentPassword, newName, newPhone, newPassword } = req.body;
@@ -1153,11 +1175,11 @@ app.post('/update-profile', async (req, res) => {
         
         const data = await getEmployeesData();
         
-        // البحث عن الموظف
+        // البحث عن المدير
         const employee = data.employees.find(emp => emp.id === employeeId);
         
         if (!employee) {
-            return res.status(404).json({ error: 'الموظف غير موجود' });
+            return res.status(404).json({ error: 'المدير غير موجود' });
         }
         
         // التحقق من كلمة المرور الحالية
@@ -1189,7 +1211,7 @@ app.post('/update-profile', async (req, res) => {
     }
 });
 
-// حذف موظف
+// حذف مدير
 app.delete('/employees/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -1198,7 +1220,7 @@ app.delete('/employees/:id', async (req, res) => {
         const employeeIndex = data.employees.findIndex(emp => emp.id === id);
         
         if (employeeIndex === -1) {
-            return res.status(404).json({ error: 'الموظف غير موجود' });
+            return res.status(404).json({ error: 'المدير غير موجود' });
         }
         
         const employee = data.employees[employeeIndex];
@@ -1219,7 +1241,7 @@ app.delete('/employees/:id', async (req, res) => {
         
         res.json({ success: true });
     } catch (error) {
-        console.error('خطأ في حذف موظف:', error);
+        console.error('خطأ في حذف مدير:', error);
         res.status(500).json({ error: error.message });
     }
 });

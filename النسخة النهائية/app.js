@@ -1,4 +1,4 @@
-// معلومات Twilio
+﻿// معلومات Twilio
 const TWILIO_PHONE_NUMBER = '+13204336644';
 let currentCallSid = null;
 let callStartTime;
@@ -233,10 +233,10 @@ async function makeCall() {
         
         const params = {
             To: formattedNumber,
-            employeeId: employeeId  // إرسال معرف الموظف
+            employeeId: employeeId  // إرسال معرف المدير
         };
         
-        console.log('👤 معرف الموظف للمكالمة:', employeeId);
+        console.log('👤 معرف المدير للمكالمة:', employeeId);
         
         currentCall = await device.connect({ params });
         
@@ -510,29 +510,44 @@ async function loadRecordings() {
         const baseUrl = window.location.origin;
         const employeeId = localStorage.getItem('employeeId');
         
-        const response = await fetch(`${baseUrl}/recordings`);
+        console.log('📋 جلب التسجيلات - employeeId:', employeeId, 'userRole:', userRole, 'canViewAll:', canViewAll);
+        
+        // بناء URL مع المعاملات
+        let url = `${baseUrl}/recordings`;
+        const params = new URLSearchParams();
+        
+        // إذا كان مدير وليس لديه صلاحية رؤية الكل
+        if (employeeId && !canViewAll && userRole !== 'admin') {
+            params.append('employeeId', employeeId);
+            console.log('🔒 فلترة التسجيلات للمدير:', employeeId);
+        } else {
+            params.append('viewAll', 'true');
+            console.log('🌐 عرض جميع التسجيلات');
+        }
+        
+        if (params.toString()) {
+            url += '?' + params.toString();
+        }
+        
+        console.log('🌐 URL:', url);
+        
+        const response = await fetch(url);
         const data = await response.json();
         
-        const allRecordings = data.recordings || [];
+        recordings = data.recordings || [];
         
-        // تصفية التسجيلات حسب الصلاحيات
-        if (userRole === 'admin' || canViewAll) {
-            // المطور أو من لديه صلاحية التسجيلات العامة يرى كل شيء
-            recordings = allRecordings;
-            console.log('📊 عرض جميع التسجيلات:', allRecordings.length);
-        } else if (canViewOwn) {
-            // من لديه صلاحية التسجيلات الخاصة يرى تسجيلاته فقط
-            recordings = allRecordings.filter(rec => {
-                const recEmpId = rec.employeeId ? rec.employeeId.toString() : 'unknown';
-                const currentEmpId = employeeId ? employeeId.toString() : 'unknown';
-                console.log(`🔍 مقارنة: ${recEmpId} === ${currentEmpId}`, recEmpId === currentEmpId);
-                return recEmpId === currentEmpId;
+        console.log(`📊 تم جلب ${recordings.length} تسجيل`);
+        
+        // جلب بيانات المديرين لعرض الأسماء
+        const employeesResponse = await fetch(`${baseUrl}/employees`);
+        const employeesData = await employeesResponse.json();
+        window.employeesMap = {};
+        if (employeesData && employeesData.employees) {
+            employeesData.employees.forEach(emp => {
+                window.employeesMap[emp.id] = emp.name;
             });
-            console.log(`📊 عرض التسجيلات الخاصة: ${recordings.length} من ${allRecordings.length}`);
-            console.log(`👤 معرف الموظف الحالي: ${employeeId}`);
-        } else {
-            recordings = [];
         }
+        console.log('👥 تم تحميل بيانات', Object.keys(window.employeesMap).length, 'مدير');
         
         displayRecordings();
         updateRecordingsBadge(recordings.length);
@@ -580,8 +595,17 @@ function displayRecordings() {
             minute: '2-digit'
         });
         
-        // استخراج رقم الهاتف من callSid أو from/to
-        const phoneNumber = recording.to || recording.from || 'غير محدد';
+        // استخراج رقم الهاتف (الرقم المتصل به)
+        let phoneNumber = recording.to || 'غير محدد';
+        // تنظيف رقم الهاتف
+        if (phoneNumber.startsWith('+')) {
+            phoneNumber = phoneNumber.substring(1);
+        }
+        
+        // الحصول على اسم المدير من employeeId
+        const employeeName = window.employeesMap && recording.employeeId 
+            ? (window.employeesMap[recording.employeeId] || window.employeesMap[String(recording.employeeId)] || 'غير معروف')
+            : 'غير معروف';
         
         // حساب المدة بالدقائق والثواني
         const duration = recording.duration || 0;
@@ -603,7 +627,7 @@ function displayRecordings() {
                             ${phoneNumber}
                         </div>
                         <div style="font-size: 12px; color: #666;">
-                            بواسطة: ${currentUser}
+                            بواسطة: ${employeeName}
                         </div>
                     </div>
                 </div>
@@ -872,7 +896,7 @@ if (logoutBtn) {
     });
 }
 
-// ===== إدارة الموظفين =====
+// ===== إدارة المديرين =====
 
 // التحقق من صلاحية الوصول
 function checkAdminAccess() {
@@ -888,41 +912,41 @@ const adminAudioSection = document.getElementById('admin-audio-section');
 const employeeProfileSection = document.getElementById('employee-profile-section');
 
 if (userRole === 'admin') {
-    // المطور يرى إدارة الموظفين والإعدادات
+    // المطور يرى إدارة المديرين والإعدادات
     if (employeesSection) employeesSection.style.display = 'block';
     if (adminAccountSection) adminAccountSection.style.display = 'block';
     if (adminAudioSection) adminAudioSection.style.display = 'block';
     if (employeeProfileSection) employeeProfileSection.style.display = 'none';
 } else {
-    // الموظف يرى فقط تعديل ملفه الشخصي
+    // المدير يرى فقط تعديل ملفه الشخصي
     if (employeesSection) employeesSection.style.display = 'none';
     if (adminAccountSection) adminAccountSection.style.display = 'none';
     if (adminAudioSection) adminAudioSection.style.display = 'none';
     if (employeeProfileSection) {
         employeeProfileSection.style.display = 'block';
-        // تحميل بيانات الموظف
+        // تحميل بيانات المدير
         loadEmployeeProfile();
     }
 }
 
-// جلب الموظفين من localStorage
+// جلب المديرين من localStorage
 function getEmployees() {
     const employees = localStorage.getItem('employees');
     return employees ? JSON.parse(employees) : [];
 }
 
-// حفظ الموظفين في localStorage
+// حفظ المديرين في localStorage
 function saveEmployees(employees) {
     localStorage.setItem('employees', JSON.stringify(employees));
 }
 
-// عرض قائمة الموظفين
+// عرض قائمة المديرين
 async function loadEmployeesList() {
     const userRole = sessionStorage.getItem('userRole');
-    console.log('🔄 تحميل قائمة الموظفين... Role:', userRole);
+    console.log('🔄 تحميل قائمة المديرين... Role:', userRole);
     
     if (userRole !== 'admin') {
-        console.log('⚠️ الموظف لا يمكنه رؤية قائمة الموظفين');
+        console.log('⚠️ المدير لا يمكنه رؤية قائمة المديرين');
         return;
     }
     
@@ -952,10 +976,10 @@ async function loadEmployeesList() {
         
         const employees = data.employees || [];
         
-        console.log('👥 عدد الموظفين:', employees.length);
+        console.log('👥 عدد المديرين:', employees.length);
         
         if (employees.length === 0) {
-            container.innerHTML = '<p class="no-employees">لا يوجد موظفين مضافين. اضغط "إضافة موظف" لإضافة أول موظف.</p>';
+            container.innerHTML = '<p class="no-employees">لا يوجد مديرين مضافين. اضغط "إضافة مدير" لإضافة أول مدير.</p>';
             return;
         }
         
@@ -987,7 +1011,7 @@ async function loadEmployeesList() {
         `;
         }).join('');
     } catch (error) {
-        console.error('❌ خطأ في تحميل الموظفين:', error);
+        console.error('❌ خطأ في تحميل المديرين:', error);
         console.error('تفاصيل الخطأ:', error.message, error.stack);
         container.innerHTML = `<p class="no-employees" style="color: #ff6b6b;">خطأ في تحميل البيانات<br><small>${error.message}</small></p>`;
     }
@@ -1004,7 +1028,7 @@ function getPermissionLabel(permission) {
     return labels[permission] || permission;
 }
 
-// إضافة موظف جديد
+// إضافة مدير جديد
 const addEmployeeBtn = document.getElementById('add-employee-btn');
 if (addEmployeeBtn) {
     addEmployeeBtn.addEventListener('click', async (e) => {
@@ -1029,7 +1053,7 @@ if (addEmployeeBtn) {
             editProfile: document.getElementById('emp-perm-edit-profile')?.checked || false
         };
         
-        console.log('📝 بيانات الموظف:', { username, name, department, permissions });
+        console.log('📝 بيانات المدير:', { username, name, department, permissions });
         
         if (!username || !password || !name || !department) {
             alert('الرجاء ملء جميع الحقول المطلوبة:\n- اسم المستخدم\n- كلمة المرور\n- الاسم الكامل\n- القسم');
@@ -1066,7 +1090,7 @@ if (addEmployeeBtn) {
             console.log('📄 البيانات المستلمة:', data);
             
             if (response.ok && data.success) {
-                console.log('✅ تمت إضافة الموظف بنجاح');
+                console.log('✅ تمت إضافة المدير بنجاح');
                 
                 // تنظيف النموذج
                 document.getElementById('emp-username').value = '';
@@ -1084,13 +1108,13 @@ if (addEmployeeBtn) {
                 // تحديث القائمة
                 await loadEmployeesList();
                 
-                alert('✅ تم إضافة الموظف بنجاح!\n\n' +
+                alert('✅ تم إضافة المدير بنجاح!\n\n' +
                       '👤 اسم المستخدم: ' + username + '\n' +
                       '🔑 كلمة المرور: ' + password + '\n' +
                       '📝 الاسم: ' + name);
             } else {
-                console.error('❌ خطأ في إضافة الموظف:', data);
-                alert('❌ خطأ في إضافة الموظف:\n' + (data.error || 'فشل في الحفظ'));
+                console.error('❌ خطأ في إضافة المدير:', data);
+                alert('❌ خطأ في إضافة المدير:\n' + (data.error || 'فشل في الحفظ'));
             }
         } catch (error) {
             console.error('❌ خطأ شبكة:', error);
@@ -1098,19 +1122,19 @@ if (addEmployeeBtn) {
         } finally {
             // إعادة تفعيل الزر
             addEmployeeBtn.disabled = false;
-            addEmployeeBtn.textContent = '➕ إضافة موظف';
+            addEmployeeBtn.textContent = '➕ إضافة مدير';
         }
     });
 }
 
-// حذف موظف
+// حذف مدير
 async function deleteEmployee(employeeId, fullname) {
     if (!checkAdminAccess()) {
         alert('ليس لديك صلاحية للوصول لهذه الميزة!');
         return;
     }
     
-    if (!confirm(`هل تريد حذف الموظف ${fullname}؟`)) {
+    if (!confirm(`هل تريد حذف المدير ${fullname}؟`)) {
         return;
     }
     
@@ -1122,20 +1146,20 @@ async function deleteEmployee(employeeId, fullname) {
         
         if (response.ok) {
             loadEmployeesList();
-            alert('تم حذف الموظف بنجاح! ✅');
+            alert('تم حذف المدير بنجاح! ✅');
         } else {
-            alert('فشل في حذف الموظف');
+            alert('فشل في حذف المدير');
         }
     } catch (error) {
-        console.error('خطأ في حذف موظف:', error);
-        alert('فشل في حذف الموظف');
+        console.error('خطأ في حذف مدير:', error);
+        alert('فشل في حذف المدير');
     }
 }
 
 // جعل الدالة متاحة عالمياً
 window.deleteEmployee = deleteEmployee;
 
-// تحميل قائمة الموظفين عند فتح الإعدادات
+// تحميل قائمة المديرين عند فتح الإعدادات
 if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
         console.log('⚙️ تم النقر على زر الإعدادات');
@@ -1169,7 +1193,7 @@ function displayUserInfo() {
     }
     
     if (headerRole) {
-        const roleText = role === 'admin' ? '👑 مطور رئيسي' : '👨‍💼 موظف';
+        const roleText = role === 'admin' ? '👑 مطور رئيسي' : '👨‍💼 مدير';
         headerRole.textContent = roleText;
     }
 }
@@ -1177,16 +1201,16 @@ function displayUserInfo() {
 // تحميل معلومات المستخدم عند فتح الصفحة
 displayUserInfo();
 
-// تحميل بيانات الملف الشخصي للموظف
+// تحميل بيانات الملف الشخصي للمدير
 function loadEmployeeProfile() {
     const fullname = sessionStorage.getItem('fullname');
     const username = sessionStorage.getItem('username');
     
-    // الحصول على بيانات الموظف من السيرفر
+    // الحصول على بيانات المدير من السيرفر
     const employeeId = localStorage.getItem('employeeId');
     
     if (employeeId) {
-        // تحميل بيانات الموظف من API
+        // تحميل بيانات المدير من API
         const baseUrl = window.location.origin;
         fetch(`${baseUrl}/employees`)
             .then(res => res.json())
@@ -1198,12 +1222,12 @@ function loadEmployeeProfile() {
                 }
             })
             .catch(error => {
-                console.error('خطأ في تحميل بيانات الموظف:', error);
+                console.error('خطأ في تحميل بيانات المدير:', error);
             });
     }
 }
 
-// تحديث الملف الشخصي للموظف
+// تحديث الملف الشخصي للمدير
 const updateProfileBtn = document.getElementById('update-profile-btn');
 if (updateProfileBtn) {
     updateProfileBtn.addEventListener('click', async () => {

@@ -7,12 +7,13 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    padding: 10px;
 }
 
 body::before {
@@ -67,10 +68,11 @@ body::before {
 .login-box {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    padding: 50px 40px;
+    padding: 40px 30px;
     border-radius: 25px;
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
-    width: 400px;
+    width: 95%;
+    max-width: 400px;
     text-align: center;
 }
 
@@ -79,8 +81,8 @@ body::before {
 }
 
 .login-logo {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
     border-radius: 20px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
@@ -88,7 +90,7 @@ body::before {
 
 h1 {
     color: #667eea;
-    font-size: 32px;
+    font-size: 26px;
     margin-bottom: 10px;
     font-weight: 700;
 }
@@ -235,4 +237,64 @@ h1 {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
+}
+
+/* تحسينات للموبايل */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .login-box {
+        padding: 30px 20px !important;
+        width: 98% !important;
+    }
+    
+    .login-logo {
+        width: 80px !important;
+        height: 80px !important;
+    }
+    
+    h1 {
+        font-size: 22px !important;
+    }
+    
+    .subtitle {
+        font-size: 13px !important;
+        margin-bottom: 30px !important;
+    }
+    
+    .input-group {
+        margin-bottom: 20px !important;
+    }
+    
+    .input-group input {
+        padding: 14px 45px 14px 15px !important;
+        font-size: 16px !important;
+    }
+    
+    .input-group .icon,
+    .toggle-password {
+        left: 15px !important;
+        top: 40px !important;
+    }
+    
+    .login-btn {
+        padding: 14px !important;
+        font-size: 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-box {
+        padding: 25px 15px !important;
+    }
+    
+    h1 {
+        font-size: 20px !important;
+    }
+    
+    .subtitle {
+        font-size: 12px !important;
+    }
 }

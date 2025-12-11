@@ -103,6 +103,19 @@ body::before {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* تحسينات للموبايل من البداية */
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: none;
+        min-height: 100vh;
+        border-radius: 0;
+        flex-direction: column;
+    }
+}
+
 /* الشريط الجانبي */
 .sidebar {
     width: 200px;
@@ -1355,33 +1368,92 @@ input:checked + .slider:before {
 @media (max-width: 768px) {
     body {
         font-size: 14px;
-        padding: 5px;
+        padding: 0;
         align-items: flex-start;
-        padding-top: 20px;
+        min-height: 100vh;
+        overflow-x: hidden;
     }
     
     .container {
         width: 100% !important;
         max-width: 100% !important;
         height: auto !important;
-        min-height: auto !important;
+        min-height: 100vh !important;
+        max-height: none !important;
         flex-direction: column !important;
-        border-radius: 15px !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
     }
     
     .sidebar {
         width: 100% !important;
-        padding: 15px !important;
+        padding: 10px 0 !important;
+        min-height: auto !important;
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    
+    .logo {
+        width: 60px !important;
+        height: 60px !important;
+        margin: 0 !important;
+        border-radius: 12px !important;
+    }
+    
+    .menu-item {
+        width: auto !important;
+        padding: 10px 15px !important;
+        font-size: 12px !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .menu-item span:first-child {
+        font-size: 20px;
     }
     
     .main-content {
         width: 100% !important;
-        padding: 15px !important;
+        padding: 10px !important;
+        overflow-y: auto;
+        min-height: calc(100vh - 120px);
     }
     
     .header {
-        padding: 15px !important;
+        padding: 10px !important;
         flex-wrap: wrap;
+    }
+    
+    .header-top {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch !important;
+    }
+    
+    .header h1 {
+        font-size: 1.3em !important;
+        text-align: center;
+    }
+    
+    .user-info-header {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .user-badge {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .logout-header-btn {
+        width: 100%;
+        justify-content: center;
     }
     
     .user-info {
@@ -1394,45 +1466,93 @@ input:checked + .slider:before {
     }
     
     .nav-item {
-        padding: 12px 15px !important;
-        font-size: 14px !important;
+        padding: 10px 12px !important;
+        font-size: 13px !important;
     }
     
+    /* تحسين الأزرار في لوحة الأرقام */
+    .keypad {
+        gap: 8px !important;
+        padding: 10px !important;
+    }
+    
+    .key {
+        width: 70px !important;
+        height: 70px !important;
+        font-size: 22px !important;
+    }
+    
+    .key .letters {
+        font-size: 10px !important;
+    }
+    
+    .call-btn-round {
+        width: 70px !important;
+        height: 70px !important;
+        font-size: 26px !important;
+    }
+    
+    /* تحسين الـ inputs */
     input, button, select, textarea {
         font-size: 16px !important;
         padding: 12px !important;
     }
     
     .section-content {
-        padding: 15px !important;
+        padding: 10px !important;
+        max-height: calc(100vh - 200px) !important;
+        overflow-y: auto;
     }
     
     .form-group {
-        margin-bottom: 15px !important;
+        margin-bottom: 12px !important;
     }
     
+    /* تحسين عرض التسجيلات */
     .recording-item {
-        padding: 12px !important;
+        padding: 10px !important;
         font-size: 13px;
         flex-direction: column;
         align-items: flex-start !important;
+        gap: 10px;
     }
     
-    .recording-item button {
-        margin-top: 10px;
+    .recording-info {
         width: 100%;
     }
     
+    .recording-controls {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .recording-controls button {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
     h2 {
-        font-size: 1.3em !important;
+        font-size: 1.2em !important;
     }
     
     h3, h4 {
-        font-size: 1.1em !important;
+        font-size: 1.05em !important;
+    }
+    
+    h5 {
+        font-size: 0.95em !important;
+    }
+    
+    .phone-display {
+        min-height: 50px !important;
+        font-size: 20px !important;
+        padding: 10px !important;
     }
     
     .phone-input-container input {
         font-size: 16px !important;
+        padding: 12px !important;
     }
     
     .call-btn {
@@ -1449,23 +1569,84 @@ input:checked + .slider:before {
         margin-bottom: 10px;
         width: 100%;
     }
+    
+    /* تحسين قسم الإعدادات */
+    .settings-section {
+        padding: 10px !important;
+    }
+    
+    .employees-container {
+        flex-direction: column !important;
+    }
+    
+    .add-employee-form,
+    .employees-list {
+        width: 100% !important;
+        margin-bottom: 15px;
+    }
+    
+    .employee-card {
+        padding: 10px !important;
+    }
+    
+    /* تحسين Modal */
+    .modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        margin: 10px !important;
+        padding: 15px !important;
+    }
 }
 
 @media (max-width: 480px) {
     body {
-        padding: 2px;
+        padding: 0;
     }
     
     .container {
-        border-radius: 10px !important;
+        border-radius: 0 !important;
+    }
+    
+    .sidebar {
+        padding: 8px 0 !important;
+    }
+    
+    .logo {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .menu-item {
+        padding: 8px 10px !important;
+        font-size: 11px !important;
+    }
+    
+    .menu-item span:first-child {
+        font-size: 18px;
+    }
+    
+    .main-content {
+        padding: 8px !important;
+    }
+    
+    .key {
+        width: 65px !important;
+        height: 65px !important;
+        font-size: 20px !important;
+    }
+    
+    .call-btn-round {
+        width: 65px !important;
+        height: 65px !important;
+        font-size: 24px !important;
     }
     
     h2 {
-        font-size: 1.2em !important;
+        font-size: 1.1em !important;
     }
     
     .nav-item {
-        font-size: 13px !important;
-        padding: 10px !important;
+        font-size: 12px !important;
+        padding: 8px 10px !important;
     }
 }

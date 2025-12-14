@@ -556,6 +556,17 @@ async function loadRecordings() {
         
         console.log(`📊 تم جلب ${recordings.length} تسجيل`);
         
+        // عرض تفاصيل كل تسجيل للتشخيص
+        recordings.forEach((rec, idx) => {
+            console.log(`📼 تسجيل ${idx + 1}:`, {
+                sid: rec.sid,
+                to: rec.to,
+                employeeId: rec.employeeId,
+                callSid: rec.callSid,
+                duration: rec.duration
+            });
+        });
+        
         // جلب بيانات المديرين لعرض الأسماء
         const employeesResponse = await fetch(`${baseUrl}/employees`);
         const employeesData = await employeesResponse.json();
@@ -615,15 +626,19 @@ function displayRecordings() {
         
         // استخراج رقم الهاتف (الرقم المتصل به)
         let phoneNumber = recording.to || 'غير محدد';
+        console.log(`📞 رقم التسجيل ${index + 1}:`, recording.to, '→', phoneNumber);
+        
         // تنظيف رقم الهاتف
-        if (phoneNumber.startsWith('+')) {
+        if (phoneNumber !== 'غير محدد' && phoneNumber.startsWith('+')) {
             phoneNumber = phoneNumber.substring(1);
         }
         
         // الحصول على اسم المدير من employeeId
+        console.log(`👤 employeeId للتسجيل ${index + 1}:`, recording.employeeId);
         const employeeName = window.employeesMap && recording.employeeId 
             ? (window.employeesMap[recording.employeeId] || window.employeesMap[String(recording.employeeId)] || 'غير معروف')
             : 'غير معروف';
+        console.log(`✅ اسم الموظف للتسجيل ${index + 1}:`, employeeName);
         
         // حساب المدة بالدقائق والثواني
         const duration = recording.duration || 0;

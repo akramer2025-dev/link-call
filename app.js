@@ -1487,57 +1487,109 @@ async function loadCallHistory() {
 }
 
 // تحميل جهات الاتصال
-function loadContacts() {
+// تحميل جهات الاتصال
+async function loadContacts() {
     const container = document.getElementById('contacts-container');
     
-    // مثال توضيحي - يمكن حفظ جهات الاتصال في localStorage
-    const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-    
-    container.innerHTML = '';
-    
-    if (contacts.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">👥</div>
-                <p>لا توجد جهات اتصال</p>
-                <button class="add-contact-btn-empty" onclick="addContact()">إضافة جهة اتصال</button>
-            </div>
-        `;
-        return;
-    }
-    
-    contacts.forEach(contact => {
-        const item = document.createElement('div');
-        item.className = 'contact-item';
-        const initial = contact.name.charAt(0).toUpperCase();
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/contacts`);
+        const data = await response.json();
+        const contacts = data.contacts || [];
         
-        item.innerHTML = `
-            <div class="contact-avatar">${initial}</div>
-            <div class="contact-info">
-                <div class="contact-name">${contact.name}</div>
-                <div class="contact-phone">${contact.phone}</div>
-            </div>
-            <div class="contact-actions">
-                <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="اتصال">📞</button>
-            </div>
-        `;
-        container.appendChild(item);
-    });
+        container.innerHTML = '';
+        
+        if (contacts.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">👥</div>
+                    <p>لا توجد جهات اتصال</p>
+                    <button class="add-contact-btn-empty" onclick="addContact()">إضافة جهة اتصال</button>
+                </div>
+            `;
+            return;
+        }
+        
+        contacts.forEach(contact => {
+            const item = document.createElement('div');
+            item.className = 'contact-item';
+            const initial = contact.name.charAt(0).toUpperCase();
+            
+            item.innerHTML = `
+                <div class="contact-avatar">${initial}</div>
+                <div class="contact-info">
+                    <div class="contact-name">${contact.name}</div>
+                    <div class="contact-phone">${contact.phone}</div>
+                </div>
+                <div class="contact-actions">
+                    <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="اتصال">📞</button>
+                    <button class="contact-delete-btn" onclick="deleteContact(${contact.id}, '${contact.name}')" title="حذف" style="background: linear-gradient(135deg, #fa709a, #fee140); color: white; width: 35px; height: 35px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; transition: all 0.2s;">🗑️</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+        
+        console.log('✅ تم تحميل', contacts.length, 'جهة اتصال');
+    } catch (error) {
+        console.error('خطأ في تحميل جهات الاتصال:', error);
+        container.innerHTML = '<p style="text-align: center; color: #f44336;">خطأ في تحميل جهات الاتصال</p>';
+    }
 }
 
 // إضافة جهة اتصال
-function addContact() {
+async function addContact() {
     const name = prompt('أدخل اسم جهة الاتصال:');
     if (!name) return;
     
     const phone = prompt('أدخل رقم الهاتف:');
     if (!phone) return;
     
-    const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-    contacts.push({ name, phone });
-    localStorage.setItem('contacts', JSON.stringify(contacts));
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/contacts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            console.log('✅ تمت إضافة جهة الاتصال');
+            loadContacts();
+        } else {
+            throw new Error(data.error || 'فشل في إضافة جهة الاتصال');
+        }
+    } catch (error) {
+        console.error('خطأ في إضافة جهة الاتصال:', error);
+        alert('فشل في إضافة جهة الاتصال: ' + error.message);
+    }
+}
+
+// حذف جهة اتصال
+async function deleteContact(contactId, contactName) {
+    if (!confirm(`هل تريد حذف ${contactName}؟`)) {
+        return;
+    }
     
-    loadContacts();
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/contacts?id=${contactId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            console.log('✅ تم حذف جهة الاتصال');
+            loadContacts();
+        } else {
+            throw new Error(data.error || 'فشل في حذف جهة الاتصال');
+        }
+    } catch (error) {
+        console.error('خطأ في حذف جهة الاتصال:', error);
+        alert('فشل في حذف جهة الاتصال: ' + error.message);
+    }
 }
 
 // الاتصال بجهة اتصال

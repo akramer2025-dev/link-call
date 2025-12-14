@@ -211,7 +211,16 @@ async function makeCall() {
         // إظهار شاشة المكالمة
         dialpad.classList.add('hidden');
         callScreen.classList.remove('hidden');
-        callNumber.textContent = formattedNumber;
+        
+        // عرض اسم الموظف
+        const employeeName = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'موظف';
+        const callEmployeeName = document.getElementById('call-employee-name');
+        if (callEmployeeName) {
+            callEmployeeName.textContent = `👤 ${employeeName}`;
+        }
+        
+        // عرض رقم الهاتف
+        callNumber.textContent = `📞 ${formattedNumber}`;
         updateCallStatus('جاري الاتصال...');
         
         // إجراء المكالمة عبر Device
@@ -295,7 +304,16 @@ function handleIncomingCall(call) {
         
         dialpad.classList.add('hidden');
         callScreen.classList.remove('hidden');
-        callNumber.textContent = call.parameters.From;
+        
+        // عرض اسم الموظف
+        const employeeName = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'موظف';
+        const callEmployeeName = document.getElementById('call-employee-name');
+        if (callEmployeeName) {
+            callEmployeeName.textContent = `👤 ${employeeName}`;
+        }
+        
+        // عرض رقم الهاتف
+        callNumber.textContent = `📞 ${call.parameters.From}`;
         updateCallStatus('متصل ✅');
         startCallTimer(); // في المكالمة الواردة نبدأ العداد فوراً لأننا نحن من ردينا
         

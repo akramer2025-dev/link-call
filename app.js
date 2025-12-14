@@ -640,9 +640,14 @@ function displayRecordings() {
             <div class="recording-info">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                     <span style="font-size: 24px;">📞</span>
-                    <div>
-                        <div class="recording-number" style="font-weight: bold; font-size: 16px; color: #333;">
-                            ${phoneNumber}
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="recording-number" style="font-weight: bold; font-size: 16px; color: #333;">
+                                ${phoneNumber}
+                            </div>
+                            <button onclick="copyPhoneNumber('${phoneNumber}')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px; transition: all 0.3s;" title="نسخ الرقم">
+                                📋 نسخ
+                            </button>
                         </div>
                         <div style="font-size: 12px; color: #666;">
                             بواسطة: ${employeeName}
@@ -798,6 +803,64 @@ async function downloadRecording(recordingSid, phoneNumber) {
     } catch (error) {
         console.error('❌ خطأ في تحميل التسجيل:', error);
         alert('فشل تحميل التسجيل: ' + error.message);
+    }
+}
+
+// نسخ رقم الهاتف
+async function copyPhoneNumber(phoneNumber) {
+    try {
+        // إضافة + إذا لم يكن موجود
+        let formattedNumber = phoneNumber;
+        if (!formattedNumber.startsWith('+')) {
+            formattedNumber = '+' + formattedNumber;
+        }
+        
+        await navigator.clipboard.writeText(formattedNumber);
+        
+        // إظهار رسالة نجاح
+        const event = window.event;
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        
+        button.innerHTML = '✅ تم النسخ';
+        button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+        }, 2000);
+        
+        console.log('✅ تم نسخ الرقم:', formattedNumber);
+    } catch (error) {
+        console.error('❌ خطأ في نسخ الرقم:', error);
+        
+        // طريقة بديلة للنسخ
+        try {
+            const textArea = document.createElement('textarea');
+            textArea.value = phoneNumber.startsWith('+') ? phoneNumber : '+' + phoneNumber;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const event = window.event;
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '✅ تم النسخ';
+            button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+            }, 2000);
+            
+            console.log('✅ تم نسخ الرقم (طريقة بديلة)');
+        } catch (err) {
+            alert('فشل نسخ الرقم: ' + error.message);
+        }
     }
 }
 

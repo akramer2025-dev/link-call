@@ -74,6 +74,36 @@
         "editProfile": true
       },
       "createdAt": "2025-12-08T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "name": "نوره",
+      "username": "Noura",
+      "password": "Aa123456",
+      "department": "1",
+      "phone": "",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      },
+      "createdAt": "2025-12-16T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "name": "سمر",
+      "username": "samar",
+      "password": "Aa123456",
+      "department": "1",
+      "phone": "",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      },
+      "createdAt": "2025-12-16T00:00:00.000Z"
     }
   ],
   "departments": {

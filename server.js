@@ -93,8 +93,11 @@ if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
     console.error('TWILIO_PHONE_NUMBER=your_twilio_number');
 }
 
-// تهيئة عميل Twilio
-const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+// تهيئة عميل Twilio (فقط إذا كانت البيانات موجودة)
+let twilioClient;
+if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) {
+    twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+}
 
 // Middleware
 app.use(cors());
@@ -704,6 +707,50 @@ app.get('/call-history', async (req, res) => {
 });
 
 // ========== إدارة المديرين ==========
+
+// تسجيل الدخول
+app.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        console.log('🔐 محاولة تسجيل دخول:', username);
+        
+        const data = await getEmployeesData();
+        console.log('📊 عدد المديرين في القاعدة:', data.employees.length);
+        
+        // البحث عن المدير
+        const employee = data.employees.find(emp => 
+            emp.username === username && emp.password === password
+        );
+        
+        if (!employee) {
+            console.log('❌ فشل تسجيل الدخول: بيانات خاطئة');
+            return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+        }
+        
+        console.log('✅ تم تسجيل الدخول:', employee.name || employee.fullname);
+        
+        res.json({
+            success: true,
+            employee: {
+                id: employee.id,
+                name: employee.name || employee.fullname,
+                username: employee.username,
+                department: employee.department,
+                departmentName: data.departments[employee.department]?.name || '',
+                permissions: employee.permissions || {
+                    viewOwnRecordings: false,
+                    viewAllRecordings: false,
+                    deleteRecordings: false,
+                    editProfile: false
+                },
+                phone: employee.phone
+            }
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تسجيل الدخول:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // جلب قائمة المديرين
 app.get('/employees', async (req, res) => {

@@ -9,6 +9,40 @@
       "department": "admin",
       "departmentArabic": "الإدارة",
       "role": "admin"
+    },
+    {
+      "id": 2,
+      "username": "Noura",
+      "password": "Aa123456",
+      "fullname": "نوره",
+      "name": "نوره",
+      "phone": "",
+      "department": "1",
+      "departmentArabic": "حجز وحدات الضيافة والفنادق",
+      "role": "employee",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      }
+    },
+    {
+      "id": 3,
+      "username": "samar",
+      "password": "Aa123456",
+      "fullname": "سمر",
+      "name": "سمر",
+      "phone": "",
+      "department": "1",
+      "departmentArabic": "حجز وحدات الضيافة والفنادق",
+      "role": "employee",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      }
     }
   ],
   "departments": {

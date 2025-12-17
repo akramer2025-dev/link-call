@@ -4,3 +4,11 @@ node_modules/
 .DS_Store
 .vscode/
 package-lock.json
+
+# ملفات البيانات المهمة - للحفاظ عليها من الحذف أو الكتابة
+contacts.json
+employees.json
+call-metadata.json
+
+# مجلد النسخ الاحتياطية
+backups/

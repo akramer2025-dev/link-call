@@ -50,6 +50,11 @@
                 <div class="label">الإعدادات</div>
             </div>
             
+            <div class="menu-item admin-only" id="work-reports-btn">
+                <div class="icon">📊</div>
+                <div class="label">تقارير العمل</div>
+            </div>
+            
             <div class="bottom-logo-container">
                 <img src="logo.jpg" alt="Link Call" class="bottom-logo-img">
                 <div class="online-indicator"></div>
@@ -240,6 +245,23 @@
                             <span class="setting-value status-online">متصل</span>
                         </div>
                     </div>
+
+            <!-- تقارير العمل (للمطور فقط) -->
+            <div class="work-reports-panel hidden" id="work-reports-panel">
+                <h2>📊 تقارير ساعات العمل</h2>
+                <div class="reports-controls">
+                    <div class="date-range-picker">
+                        <label>من تاريخ:</label>
+                        <input type="date" id="report-start-date">
+                        <label>إلى تاريخ:</label>
+                        <input type="date" id="report-end-date">
+                        <button class="btn-primary" id="generate-report-btn">عرض التقرير</button>
+                    </div>
+                </div>
+                <div id="reports-container" class="reports-container">
+                    <div class="no-data">اختر فترة زمنية لعرض التقرير</div>
+                </div>
+            </div>
 
                     <!-- قسم إعدادات الصوت (للمطور فقط) -->
                     <div class="settings-section" id="admin-audio-section" style="display: none;">

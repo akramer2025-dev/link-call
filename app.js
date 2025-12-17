@@ -32,6 +32,7 @@ const callHistoryBtn = document.getElementById('call-history-btn');
 const contactsBtn = document.getElementById('contacts-btn');
 const recordingsBtn = document.getElementById('recordings-btn');
 const settingsBtn = document.getElementById('settings-btn');
+const workReportsBtn = document.getElementById('work-reports-btn');
 
 // تحقق من وجود الأزرار
 console.log('Buttons loaded:', {
@@ -39,7 +40,8 @@ console.log('Buttons loaded:', {
     callHistoryBtn: !!callHistoryBtn,
     contactsBtn: !!contactsBtn,
     recordingsBtn: !!recordingsBtn,
-    settingsBtn: !!settingsBtn
+    settingsBtn: !!settingsBtn,
+    workReportsBtn: !!workReportsBtn
 });
 
 // المتغيرات
@@ -378,13 +380,48 @@ async function endCall() {
     
     // حفظ المكالمة في السجل
     if (phoneNumber) {
+        const callDurationText = callDuration.textContent;
+        const [minutes, seconds] = callDurationText.split(':').map(Number);
+        const totalSeconds = (minutes * 60) + seconds;
+        
         saveCallToHistory({
             to: phoneNumber,
             direction: 'outbound',
             status: 'completed',
             startTime: new Date().toISOString(),
-            duration: callDuration.textContent
+            duration: callDurationText
         });
+        
+        // تسجيل المكالمة في سجل العمل
+        try {
+            const employeeId = localStorage.getItem('employeeId');
+            const employeeName = localStorage.getItem('employeeName');
+            const baseUrl = window.location.origin;
+            
+            fetch(`${baseUrl}/work-tracking`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'activity',
+                    employeeId: employeeId,
+                    employeeName: employeeName,
+                    data: {
+                        type: 'call',
+                        details: {
+                            phoneNumber: phoneNumber,
+                            duration: totalSeconds,
+                            durationText: callDurationText,
+                            status: 'completed',
+                            timestamp: new Date().toISOString()
+                        }
+                    }
+                })
+            }).catch(err => console.error('خطأ في تسجيل المكالمة:', err));
+        } catch (error) {
+            console.error('خطأ في تسجيل المكالمة:', error);
+        }
     }
     
     currentCallSid = null;
@@ -902,6 +939,8 @@ function hideAllSections() {
     contactsList.classList.add('hidden');
     recordingsList.classList.add('hidden');
     settingsPanel.classList.add('hidden');
+    const workReportsPanel = document.getElementById('work-reports-panel');
+    if (workReportsPanel) workReportsPanel.classList.add('hidden');
 }
 
 // دالة لإزالة التفعيل من جميع أزرار القائمة
@@ -911,6 +950,7 @@ function removeAllActiveStates() {
     contactsBtn.classList.remove('active');
     recordingsBtn.classList.remove('active');
     settingsBtn.classList.remove('active');
+    if (workReportsBtn) workReportsBtn.classList.remove('active');
 }
 
 // عرض الإعدادات
@@ -980,11 +1020,50 @@ if (settingsBtn) {
     });
 }
 
+if (workReportsBtn) {
+    workReportsBtn.addEventListener('click', () => {
+        console.log('Work Reports clicked');
+        hideAllSections();
+        removeAllActiveStates();
+        document.getElementById('work-reports-panel').classList.remove('hidden');
+        workReportsBtn.classList.add('active');
+        
+        // تعيين التواريخ الافتراضية (آخر 7 أيام)
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+        
+        document.getElementById('report-end-date').valueAsDate = endDate;
+        document.getElementById('report-start-date').valueAsDate = startDate;
+    });
+}
+
 // زر تسجيل الخروج
 const logoutBtn = document.getElementById('logout-btn');
 if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
+    logoutBtn.addEventListener('click', async () => {
         if (confirm('هل تريد تسجيل الخروج؟')) {
+            // تسجيل وقت الخروج
+            try {
+                const employeeId = localStorage.getItem('employeeId');
+                const employeeName = localStorage.getItem('employeeName');
+                const baseUrl = window.location.origin;
+                
+                await fetch(`${baseUrl}/work-tracking`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'logout',
+                        employeeId: employeeId,
+                        employeeName: employeeName
+                    })
+                });
+            } catch (error) {
+                console.error('خطأ في تسجيل وقت الخروج:', error);
+            }
+            
             sessionStorage.removeItem('isLoggedIn');
             sessionStorage.removeItem('username');
             window.location.href = 'login.html';
@@ -1393,8 +1472,29 @@ if (updateProfileBtn) {
 // زر تسجيل الخروج في الهيدر
 const logoutHeaderBtn = document.getElementById('logout-header-btn');
 if (logoutHeaderBtn) {
-    logoutHeaderBtn.addEventListener('click', () => {
+    logoutHeaderBtn.addEventListener('click', async () => {
         if (confirm('هل تريد تسجيل الخروج؟')) {
+            // تسجيل وقت الخروج
+            try {
+                const employeeId = localStorage.getItem('employeeId');
+                const employeeName = localStorage.getItem('employeeName');
+                const baseUrl = window.location.origin;
+                
+                await fetch(`${baseUrl}/work-tracking`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'logout',
+                        employeeId: employeeId,
+                        employeeName: employeeName
+                    })
+                });
+            } catch (error) {
+                console.error('خطأ في تسجيل وقت الخروج:', error);
+            }
+            
             sessionStorage.removeItem('isLoggedIn');
             sessionStorage.removeItem('username');
             sessionStorage.removeItem('userRole');
@@ -1704,5 +1804,382 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// تسجيل وقت الخروج عند إغلاق الصفحة
+window.addEventListener('beforeunload', async (e) => {
+    try {
+        const employeeId = localStorage.getItem('employeeId');
+        const employeeName = localStorage.getItem('employeeName');
+        const baseUrl = window.location.origin;
+        
+        if (employeeId && employeeName) {
+            // استخدام sendBeacon لإرسال البيانات حتى عند إغلاق الصفحة
+            const data = JSON.stringify({
+                action: 'logout',
+                employeeId: employeeId,
+                employeeName: employeeName
+            });
+            
+            navigator.sendBeacon(`${baseUrl}/work-tracking`, data);
+        }
+    } catch (error) {
+        console.error('خطأ في تسجيل وقت الخروج:', error);
+    }
+});
+
+// تسجيل وقت الخروج عند إخفاء الصفحة
+document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'hidden') {
+        try {
+            const employeeId = localStorage.getItem('employeeId');
+            const employeeName = localStorage.getItem('employeeName');
+            const baseUrl = window.location.origin;
+            
+            if (employeeId && employeeName) {
+                const data = JSON.stringify({
+                    action: 'activity',
+                    employeeId: employeeId,
+                    employeeName: employeeName,
+                    data: {
+                        type: 'tab_hidden',
+                        details: { timestamp: new Date().toISOString() }
+                    }
+                });
+                
+                navigator.sendBeacon(`${baseUrl}/work-tracking`, data);
+            }
+        } catch (error) {
+            console.error('خطأ في تسجيل إخفاء التطبيق:', error);
+        }
+    }
+});
+
 // تهيئة التطبيق عند التحميل
 initializeApp();
+
+// ===== وظائف تقارير ساعات العمل =====
+
+// تحميل تقرير ساعات العمل
+async function loadWorkReports(startDate, endDate) {
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/work-tracking`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'get-all-reports',
+                data: {
+                    reportStartDate: startDate,
+                    reportEndDate: endDate
+                }
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.reports) {
+            displayWorkReports(data.reports);
+        } else {
+            document.getElementById('reports-container').innerHTML = 
+                '<div class="no-data">لا توجد بيانات في هذه الفترة</div>';
+        }
+    } catch (error) {
+        console.error('خطأ في تحميل التقارير:', error);
+        document.getElementById('reports-container').innerHTML = 
+            '<div class="error-message">خطأ في تحميل التقارير</div>';
+    }
+}
+
+// عرض تقارير العمل
+function displayWorkReports(reports) {
+    const container = document.getElementById('reports-container');
+    
+    if (!reports || reports.length === 0) {
+        container.innerHTML = '<div class="no-data">لا توجد بيانات في هذه الفترة</div>';
+        return;
+    }
+    
+    // ترتيب حسب عدد الساعات (الأكثر أولاً)
+    reports.sort((a, b) => b.totalMinutes - a.totalMinutes);
+    
+    let html = '<div class="reports-summary">';
+    html += `<div class="summary-card"><strong>إجمالي الموظفين:</strong> ${reports.length}</div>`;
+    
+    const totalHours = reports.reduce((sum, r) => sum + parseFloat(r.totalHours), 0);
+    html += `<div class="summary-card"><strong>إجمالي ساعات العمل:</strong> ${totalHours.toFixed(2)} ساعة</div>`;
+    
+    const totalCalls = reports.reduce((sum, r) => sum + r.totalCalls, 0);
+    html += `<div class="summary-card"><strong>إجمالي المكالمات:</strong> ${totalCalls} مكالمة</div>`;
+    html += '</div>';
+    
+    html += '<table class="reports-table">';
+    html += '<thead><tr>';
+    html += '<th>#</th>';
+    html += '<th>اسم الموظف</th>';
+    html += '<th>عدد الأيام</th>';
+    html += '<th>إجمالي الساعات</th>';
+    html += '<th>عدد المكالمات</th>';
+    html += '<th>متوسط ساعات/يوم</th>';
+    html += '<th>الإجراءات</th>';
+    html += '</tr></thead><tbody>';
+    
+    reports.forEach((report, index) => {
+        const avgHours = (report.totalHours / report.days.length).toFixed(2);
+        html += '<tr>';
+        html += `<td>${index + 1}</td>`;
+        html += `<td><strong>${report.employeeName}</strong></td>`;
+        html += `<td>${report.days.length} يوم</td>`;
+        html += `<td><span class="hours-badge">${report.totalHours} ساعة</span></td>`;
+        html += `<td>${report.totalCalls} مكالمة</td>`;
+        html += `<td>${avgHours} ساعة</td>`;
+        html += `<td><button class="btn-details" onclick="showEmployeeDetails('${report.employeeId}', '${report.employeeName}')">التفاصيل</button></td>`;
+        html += '</tr>';
+    });
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+// عرض تفاصيل موظف محدد
+async function showEmployeeDetails(employeeId, employeeName) {
+    const startDate = document.getElementById('report-start-date').value;
+    const endDate = document.getElementById('report-end-date').value;
+    
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/work-tracking`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'get-report',
+                employeeId: employeeId,
+                employeeName: employeeName,
+                data: {
+                    startDate: startDate,
+                    endDate: endDate
+                }
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayEmployeeDetailsModal(data);
+        }
+    } catch (error) {
+        console.error('خطأ في تحميل تفاصيل الموظف:', error);
+        alert('خطأ في تحميل التفاصيل');
+    }
+}
+
+// عرض نافذة منبثقة بتفاصيل الموظف
+function displayEmployeeDetailsModal(data) {
+    let html = `
+        <div class="modal-overlay" onclick="this.remove()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>تفاصيل عمل ${data.employeeName}</h3>
+                    <button class="close-btn" onclick="this.closest('.modal-overlay').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="employee-summary">
+                        <div class="summary-item">
+                            <span class="label">إجمالي الساعات:</span>
+                            <span class="value">${data.totalHours} ساعة</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">عدد الأيام:</span>
+                            <span class="value">${data.totalDays} يوم</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">عدد المكالمات:</span>
+                            <span class="value">${data.totalCalls} مكالمة</span>
+                        </div>
+                    </div>
+                    <h4>تفاصيل يومية:</h4>
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>وقت الدخول</th>
+                                <th>وقت الخروج</th>
+                                <th>الساعات</th>
+                                <th>المكالمات</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+    
+    data.dailyReport.forEach(day => {
+        const loginTime = new Date(day.loginTime).toLocaleTimeString('ar-EG', {hour: '2-digit', minute: '2-digit'});
+        const logoutTime = day.logoutTime ? new Date(day.logoutTime).toLocaleTimeString('ar-EG', {hour: '2-digit', minute: '2-digit'}) : 'لم يسجل خروج';
+        const hours = (day.totalMinutes / 60).toFixed(2);
+        
+        html += `
+            <tr>
+                <td>${day.date}</td>
+                <td>${loginTime}</td>
+                <td>${logoutTime}</td>
+                <td>${hours} ساعة</td>
+                <td>${day.calls?.length || 0} مكالمة</td>
+            </tr>`;
+    });
+    
+    html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>`;
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+// زر إنشاء التقرير
+const generateReportBtn = document.getElementById('generate-report-btn');
+if (generateReportBtn) {
+    generateReportBtn.addEventListener('click', () => {
+        const startDate = document.getElementById('report-start-date').value;
+        const endDate = document.getElementById('report-end-date').value;
+        
+        if (!startDate || !endDate) {
+            alert('يرجى تحديد الفترة الزمنية');
+            return;
+        }
+        
+        if (new Date(startDate) > new Date(endDate)) {
+            alert('تاريخ البداية يجب أن يكون قبل تاريخ النهاية');
+            return;
+        }
+        
+        loadWorkReports(startDate, endDate);
+    });
+}
+
+// إخفاء زر تقارير العمل عن غير المطورين
+if (userRole !== 'admin' && workReportsBtn) {
+    workReportsBtn.style.display = 'none';
+}
+
+// ===== نظام إيقاف التطبيق بعد 5 دقائق من عدم النشاط =====
+
+let inactivityTimer = null;
+let inactivityWarningTimer = null;
+const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 دقائق
+const WARNING_TIMEOUT = 4 * 60 * 1000; // تحذير بعد 4 دقائق
+
+// دالة تسجيل الخروج التلقائي
+async function autoLogout() {
+    console.log('⏰ انتهت مهلة النشاط - تسجيل خروج تلقائي');
+    
+    try {
+        const employeeId = localStorage.getItem('employeeId');
+        const employeeName = localStorage.getItem('employeeName');
+        const baseUrl = window.location.origin;
+        
+        if (employeeId && employeeName) {
+            await fetch(`${baseUrl}/work-tracking`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'logout',
+                    employeeId: employeeId,
+                    employeeName: employeeName
+                })
+            });
+        }
+    } catch (error) {
+        console.error('خطأ في تسجيل الخروج التلقائي:', error);
+    }
+    
+    // مسح بيانات الجلسة
+    sessionStorage.clear();
+    
+    // إعادة التوجيه لصفحة تسجيل الدخول
+    alert('⏰ تم تسجيل الخروج تلقائياً بسبب عدم النشاط لمدة 5 دقائق');
+    window.location.href = 'login.html';
+}
+
+// إعادة تعيين عداد عدم النشاط
+function resetInactivityTimer() {
+    // إلغاء التايمر السابق
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+    }
+    if (inactivityWarningTimer) {
+        clearTimeout(inactivityWarningTimer);
+    }
+    
+    // إزالة تحذير عدم النشاط إذا كان موجوداً
+    const warningElement = document.getElementById('inactivity-warning');
+    if (warningElement) {
+        warningElement.remove();
+    }
+    
+    // تعيين تايمر جديد للتحذير (4 دقائق)
+    inactivityWarningTimer = setTimeout(() => {
+        showInactivityWarning();
+    }, WARNING_TIMEOUT);
+    
+    // تعيين تايمر جديد للخروج التلقائي (5 دقائق)
+    inactivityTimer = setTimeout(() => {
+        autoLogout();
+    }, INACTIVITY_TIMEOUT);
+}
+
+// عرض تحذير عدم النشاط
+function showInactivityWarning() {
+    // إزالة التحذير القديم إذا كان موجوداً
+    const oldWarning = document.getElementById('inactivity-warning');
+    if (oldWarning) {
+        oldWarning.remove();
+    }
+    
+    const warningHtml = `
+        <div id="inactivity-warning" class="inactivity-warning">
+            <div class="warning-content">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-text">
+                    <strong>تحذير عدم النشاط</strong>
+                    <p>سيتم تسجيل خروجك تلقائياً بعد دقيقة واحدة</p>
+                </div>
+                <button class="warning-btn" onclick="dismissInactivityWarning()">أنا هنا</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', warningHtml);
+}
+
+// إغلاق تحذير عدم النشاط
+function dismissInactivityWarning() {
+    const warningElement = document.getElementById('inactivity-warning');
+    if (warningElement) {
+        warningElement.remove();
+    }
+    resetInactivityTimer();
+}
+
+// قائمة الأحداث التي تعتبر نشاطاً
+const activityEvents = [
+    'mousedown',
+    'mousemove',
+    'keypress',
+    'scroll',
+    'touchstart',
+    'click'
+];
+
+// إضافة مستمعين لجميع أحداث النشاط
+activityEvents.forEach(event => {
+    document.addEventListener(event, resetInactivityTimer, true);
+});
+
+// بدء عداد عدم النشاط عند تحميل الصفحة
+resetInactivityTimer();
+
+console.log('✅ نظام مراقبة النشاط مفعّل - سيتم تسجيل الخروج بعد 5 دقائق من عدم النشاط');

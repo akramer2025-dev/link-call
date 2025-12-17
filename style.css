@@ -1662,3 +1662,346 @@ input:checked + .slider:before {
         padding: 8px 10px !important;
     }
 }
+
+/* ===== تقارير ساعات العمل ===== */
+.work-reports-panel {
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.work-reports-panel h2 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-size: 24px;
+}
+
+.reports-controls {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.date-range-picker {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.date-range-picker label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.date-range-picker input[type="date"] {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.date-range-picker input[type="date"]:focus {
+    outline: none;
+    border-color: #6c5ce7;
+}
+
+.btn-primary {
+    padding: 10px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.reports-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.reports-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.reports-table th,
+.reports-table td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.reports-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.hours-badge {
+    display: inline-block;
+    padding: 5px 15px;
+    background: #27ae60;
+    color: white;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.btn-details {
+    padding: 8px 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-details:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+}
+
+.no-data {
+    text-align: center;
+    padding: 50px;
+    color: #7f8c8d;
+    font-size: 18px;
+}
+
+.admin-only {
+    display: flex;
+}
+
+/* Modal للتفاصيل */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 15px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.close-btn:hover {
+    transform: scale(1.2);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.employee-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.summary-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-item .label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.summary-item .value {
+    font-size: 18px;
+    color: #667eea;
+    font-weight: bold;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.details-table th,
+.details-table td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.details-table thead {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.details-table tbody tr:hover {
+    background: #f0f0f0;
+}
+
+/* ===== تحذير عدم النشاط ===== */
+.inactivity-warning {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10001;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translate(-50%, -100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+.warning-content {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(255, 107, 107, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 400px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 10px 40px rgba(255, 107, 107, 0.5);
+    }
+    50% {
+        box-shadow: 0 10px 60px rgba(255, 107, 107, 0.8);
+    }
+}
+
+.warning-icon {
+    font-size: 40px;
+    animation: shake 0.5s infinite;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.warning-text strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.warning-text p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.warning-btn {
+    padding: 10px 25px;
+    background: white;
+    color: #ff6b6b;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.warning-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+    .warning-content {
+        min-width: auto;
+        max-width: 90vw;
+        padding: 15px 20px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .warning-icon {
+        font-size: 30px;
+    }
+}

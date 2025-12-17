@@ -142,6 +142,24 @@
                 localStorage.setItem('employeeId', 'admin');
                 localStorage.setItem('employeeName', 'المطور الرئيسي');
                 
+                // تسجيل وقت دخول المطور
+                try {
+                    const baseUrl = window.location.origin;
+                    await fetch(`${baseUrl}/work-tracking`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'login',
+                            employeeId: 'admin',
+                            employeeName: 'المطور الرئيسي'
+                        })
+                    });
+                } catch (error) {
+                    console.error('خطأ في تسجيل وقت الدخول:', error);
+                }
+                
                 loginForm.classList.add('success');
                 setTimeout(() => {
                     window.location.href = 'index.html';
@@ -183,6 +201,19 @@
                     
                     console.log('✅ تم تسجيل الدخول:', data.employee.name);
                     console.log('🔐 الصلاحيات:', permissions);
+                    
+                    // تسجيل وقت الدخول
+                    await fetch(`${baseUrl}/work-tracking`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'login',
+                            employeeId: data.employee.id.toString(),
+                            employeeName: data.employee.name
+                        })
+                    });
                     
                     loginForm.classList.add('success');
                     setTimeout(() => {

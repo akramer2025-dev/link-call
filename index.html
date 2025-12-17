@@ -411,8 +411,11 @@
     </div>
 
     <script>
-        // التحقق من تسجيل الدخول
-        if (!sessionStorage.getItem('isLoggedIn')) {
+        // التحقق من تسجيل الدخول (إلا إذا جاء من CRM)
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoLogin = urlParams.get('autoLogin');
+        
+        if (!sessionStorage.getItem('isLoggedIn') && autoLogin !== 'true') {
             window.location.href = 'login.html';
         }
     </script>

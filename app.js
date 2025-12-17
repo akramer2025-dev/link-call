@@ -1861,6 +1861,37 @@ window.addEventListener('DOMContentLoaded', () => {
     // قراءة الرقم من URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const phoneFromUrl = urlParams.get('phone');
+    const autoLogin = urlParams.get('autoLogin');
+    const employeeId = urlParams.get('employeeId');
+    const employeeName = urlParams.get('employeeName');
+    
+    // تسجيل دخول تلقائي إذا جاء من CRM
+    if (autoLogin === 'true' && employeeId && employeeName) {
+        console.log('🔐 تسجيل دخول تلقائي من CRM:', employeeName);
+        
+        // حفظ بيانات الجلسة
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('username', employeeId);
+        sessionStorage.setItem('userRole', 'employee');
+        sessionStorage.setItem('fullname', decodeURIComponent(employeeName));
+        sessionStorage.setItem('employeeId', employeeId);
+        localStorage.setItem('employeeId', employeeId);
+        localStorage.setItem('employeeName', decodeURIComponent(employeeName));
+        
+        // تسجيل وقت الدخول
+        const baseUrl = window.location.origin;
+        fetch(`${baseUrl}/work-tracking`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'login',
+                employeeId: employeeId,
+                employeeName: decodeURIComponent(employeeName)
+            })
+        }).catch(err => console.log('تسجيل الوقت سيتم لاحقاً'));
+    }
     
     if (phoneFromUrl) {
         console.log('📞 تم استقبال رقم من CRM:', phoneFromUrl);

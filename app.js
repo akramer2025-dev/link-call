@@ -50,7 +50,6 @@ console.log('Buttons loaded:', {
 });
 
 // المتغيرات
-let phoneNumber = '';
 let isMuted = false;
 let isOnHold = false;
 let recordings = [];

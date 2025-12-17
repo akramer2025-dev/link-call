@@ -52,12 +52,43 @@ let recordings = [];
 let device = null;
 let currentCall = null;
 
+// قراءة بيانات من URL قبل أي شيء
+const urlParams = new URLSearchParams(window.location.search);
+const phoneFromUrl = urlParams.get('phone');
+const autoLogin = urlParams.get('autoLogin');
+const employeeId = urlParams.get('employeeId');
+const employeeName = urlParams.get('employeeName');
+
+// تسجيل دخول تلقائي إذا جاء من CRM
+if (autoLogin === 'true' && employeeId && employeeName) {
+    console.log('🔐 تسجيل دخول تلقائي من CRM:', employeeName);
+    
+    sessionStorage.setItem('isLoggedIn', 'true');
+    sessionStorage.setItem('username', employeeId);
+    sessionStorage.setItem('userRole', 'employee');
+    sessionStorage.setItem('fullname', decodeURIComponent(employeeName));
+    sessionStorage.setItem('employeeId', employeeId);
+    localStorage.setItem('employeeId', employeeId);
+    localStorage.setItem('employeeName', decodeURIComponent(employeeName));
+}
+
+// إذا كان هناك رقم، نخزنه
+if (phoneFromUrl) {
+    phoneNumber = phoneFromUrl;
+    console.log('📞 تم استقبال رقم من CRM:', phoneFromUrl);
+}
+
 // تهيئة التطبيق مع Twilio Voice SDK v2
 async function initializeApp() {
     try {
         console.log('🔄 جاري تهيئة Twilio Device...');
         updateConnectionStatus('connecting', 'جاري الاتصال...');
         
+        // عرض الرقم إذا كان موجود
+        if (phoneNumber) {
+            displayNumber.textContent = phoneNumber;
+            updateDeleteButton();
+        }
         // طلب إذن الميكروفون أولاً
         try {
             console.log('🎤 طلب إذن الميكروفون...');
@@ -106,6 +137,14 @@ async function initializeApp() {
         device.on('registered', () => {
             console.log('✅ Device مسجل ومستعد');
             updateConnectionStatus('connected', 'جاهز للمكالمات 📞');
+            
+            // إذا جاء من CRM، ابدأ المكالمة تلقائياً
+            if (phoneFromUrl && phoneNumber) {
+                console.log('🔄 بدء المكالمة تلقائياً مع:', phoneNumber);
+                setTimeout(() => {
+                    makeCall();
+                }, 1500); // تأخير 1.5 ثانية
+            }
         });
         
         device.on('error', (error) => {
@@ -1856,76 +1895,21 @@ document.addEventListener('visibilitychange', async () => {
 // تهيئة التطبيق عند التحميل
 initializeApp();
 
-// ===== استقبال رقم من CRM وبدء المكالمة تلقائياً =====
-window.addEventListener('DOMContentLoaded', () => {
-    // قراءة الرقم من URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const phoneFromUrl = urlParams.get('phone');
-    const autoLogin = urlParams.get('autoLogin');
-    const employeeId = urlParams.get('employeeId');
-    const employeeName = urlParams.get('employeeName');
-    
-    // تسجيل دخول تلقائي إذا جاء من CRM
-    if (autoLogin === 'true' && employeeId && employeeName) {
-        console.log('🔐 تسجيل دخول تلقائي من CRM:', employeeName);
-        
-        // حفظ بيانات الجلسة
-        sessionStorage.setItem('isLoggedIn', 'true');
-        sessionStorage.setItem('username', employeeId);
-        sessionStorage.setItem('userRole', 'employee');
-        sessionStorage.setItem('fullname', decodeURIComponent(employeeName));
-        sessionStorage.setItem('employeeId', employeeId);
-        localStorage.setItem('employeeId', employeeId);
-        localStorage.setItem('employeeName', decodeURIComponent(employeeName));
-        
-        // تسجيل وقت الدخول
-        const baseUrl = window.location.origin;
-        fetch(`${baseUrl}/work-tracking`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                action: 'login',
-                employeeId: employeeId,
-                employeeName: decodeURIComponent(employeeName)
-            })
-        }).catch(err => console.log('تسجيل الوقت سيتم لاحقاً'));
-    }
-    
-    if (phoneFromUrl) {
-        console.log('📞 تم استقبال رقم من CRM:', phoneFromUrl);
-        
-        // تأخير بسيط للتأكد من تحميل كل شيء
-        setTimeout(() => {
-            // إدخال الرقم في الشاشة
-            phoneNumber = phoneFromUrl;
-            displayNumber.textContent = phoneFromUrl;
-            updateDeleteButton();
-            
-            // بدء المكالمة تلقائياً بعد ثانية
-            setTimeout(() => {
-                if (device && device.state === 'registered') {
-                    console.log('✅ بدء المكالمة تلقائياً...');
-                    makeCall();
-                } else {
-                    console.log('⏳ انتظار اتصال Twilio...');
-                    // انتظار حتى يكون الجهاز جاهز
-                    const checkDeviceInterval = setInterval(() => {
-                        if (device && device.state === 'registered') {
-                            clearInterval(checkDeviceInterval);
-                            console.log('✅ بدء المكالمة تلقائياً...');
-                            makeCall();
-                        }
-                    }, 500);
-                    
-                    // إلغاء الفحص بعد 10 ثواني
-                    setTimeout(() => clearInterval(checkDeviceInterval), 10000);
-                }
-            }, 1000);
-        }, 2000);
-    }
-});
+// تسجيل وقت الدخول للموظفين من CRM
+if (autoLogin === 'true' && employeeId && employeeName) {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/work-tracking`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'login',
+            employeeId: employeeId,
+            employeeName: decodeURIComponent(employeeName)
+        })
+    }).catch(err => console.log('⏰ تسجيل الوقت سيتم لاحقاً'));
+}
 
 // ===== وظائف تقارير ساعات العمل =====
 

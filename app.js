@@ -1856,6 +1856,46 @@ document.addEventListener('visibilitychange', async () => {
 // تهيئة التطبيق عند التحميل
 initializeApp();
 
+// ===== استقبال رقم من CRM وبدء المكالمة تلقائياً =====
+window.addEventListener('DOMContentLoaded', () => {
+    // قراءة الرقم من URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const phoneFromUrl = urlParams.get('phone');
+    
+    if (phoneFromUrl) {
+        console.log('📞 تم استقبال رقم من CRM:', phoneFromUrl);
+        
+        // تأخير بسيط للتأكد من تحميل كل شيء
+        setTimeout(() => {
+            // إدخال الرقم في الشاشة
+            phoneNumber = phoneFromUrl;
+            displayNumber.textContent = phoneFromUrl;
+            updateDeleteButton();
+            
+            // بدء المكالمة تلقائياً بعد ثانية
+            setTimeout(() => {
+                if (device && device.state === 'registered') {
+                    console.log('✅ بدء المكالمة تلقائياً...');
+                    makeCall();
+                } else {
+                    console.log('⏳ انتظار اتصال Twilio...');
+                    // انتظار حتى يكون الجهاز جاهز
+                    const checkDeviceInterval = setInterval(() => {
+                        if (device && device.state === 'registered') {
+                            clearInterval(checkDeviceInterval);
+                            console.log('✅ بدء المكالمة تلقائياً...');
+                            makeCall();
+                        }
+                    }, 500);
+                    
+                    // إلغاء الفحص بعد 10 ثواني
+                    setTimeout(() => clearInterval(checkDeviceInterval), 10000);
+                }
+            }, 1000);
+        }, 2000);
+    }
+});
+
 // ===== وظائف تقارير ساعات العمل =====
 
 // تحميل تقرير ساعات العمل

@@ -5,6 +5,7 @@ let callStartTime;
 let callTimer;
 let isRecording = false;
 let callCheckInterval = null;
+let phoneNumber = ''; // متغير لتخزين رقم الهاتف
 
 // عناصر الواجهة
 const displayNumber = document.getElementById('display-number');
@@ -59,6 +60,13 @@ const autoLogin = urlParams.get('autoLogin');
 const employeeId = urlParams.get('employeeId');
 const employeeName = urlParams.get('employeeName');
 
+console.log('🔍 قراءة URL Parameters:');
+console.log('  - URL الكامل:', window.location.href);
+console.log('  - phone:', phoneFromUrl);
+console.log('  - autoLogin:', autoLogin);
+console.log('  - employeeId:', employeeId);
+console.log('  - employeeName:', employeeName);
+
 // تسجيل دخول تلقائي إذا جاء من CRM
 if (autoLogin === 'true' && employeeId && employeeName) {
     console.log('🔐 تسجيل دخول تلقائي من CRM:', employeeName);
@@ -75,7 +83,10 @@ if (autoLogin === 'true' && employeeId && employeeName) {
 // إذا كان هناك رقم، نخزنه
 if (phoneFromUrl) {
     phoneNumber = phoneFromUrl;
-    console.log('📞 تم استقبال رقم من CRM:', phoneFromUrl);
+    console.log('📞 تم استقبال رقم من URL:', phoneFromUrl);
+    console.log('📞 تم حفظ الرقم في phoneNumber:', phoneNumber);
+} else {
+    console.log('⚠️ لا يوجد رقم في URL');
 }
 
 // تهيئة التطبيق مع Twilio Voice SDK v2
@@ -86,8 +97,11 @@ async function initializeApp() {
         
         // عرض الرقم إذا كان موجود
         if (phoneNumber) {
+            console.log('📱 عرض الرقم في الشاشة:', phoneNumber);
             displayNumber.textContent = phoneNumber;
             updateDeleteButton();
+        } else {
+            console.log('⚠️ phoneNumber فارغ في initializeApp');
         }
         // طلب إذن الميكروفون أولاً
         try {
@@ -138,9 +152,19 @@ async function initializeApp() {
             console.log('✅ Device مسجل ومستعد');
             updateConnectionStatus('connected', 'جاهز للمكالمات 📞');
             
+            // تأكد من تفعيل AudioContext
+            if (device.audio) {
+                try {
+                    device.audio._audioContext?.resume();
+                } catch (e) {
+                    console.warn('⚠️ تعذر استئناف AudioContext:', e);
+                }
+            }
+            
             // إذا جاء من CRM، ابدأ المكالمة تلقائياً
             if (phoneFromUrl && phoneNumber) {
                 console.log('🔄 بدء المكالمة تلقائياً مع:', phoneNumber);
+                console.log('📞 الرقم المستخدم:', phoneNumber);
                 setTimeout(() => {
                     makeCall();
                 }, 1500); // تأخير 1.5 ثانية

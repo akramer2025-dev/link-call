@@ -93,6 +93,21 @@ let employeesData = {
                 editProfile: true
             },
             createdAt: "2025-12-16T00:00:00.000Z"
+        },
+        {
+            id: 8,
+            name: "محمد",
+            username: "mohamed",
+            password: "Aa123456",
+            department: "1",
+            phone: "",
+            permissions: {
+                viewOwnRecordings: true,
+                viewAllRecordings: false,
+                deleteRecordings: false,
+                editProfile: true
+            },
+            createdAt: "2026-02-03T00:00:00.000Z"
         }
     ],
     departments: {

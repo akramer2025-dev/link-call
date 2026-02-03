@@ -77,10 +77,10 @@ async function saveEmployeesData(data) {
 }
 
 // إعدادات Twilio - يجب تعيينها في .env أو Vercel Environment Variables
-const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || 'demo_account_sid';
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || 'demo_auth_token';
 const TWILIO_TWIML_APP_SID = process.env.TWILIO_TWIML_APP_SID;
-const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
+const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER || '+966555254915';
 const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
 const TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
 
@@ -972,3 +972,6 @@ app.listen(PORT, () => {
     console.log(`   - TWILIO_AUTH_TOKEN`);
     console.log(`   - TWILIO_TWIML_APP_SID\n`);
 });
+
+
+

@@ -43,6 +43,23 @@
         "deleteRecordings": false,
         "editProfile": true
       }
+    },
+    {
+      "id": 4,
+      "username": "mohamed",
+      "password": "Aa123456",
+      "fullname": "محمد",
+      "name": "محمد",
+      "phone": "",
+      "department": "1",
+      "departmentArabic": "حجز وحدات الضيافة والفنادق",
+      "role": "employee",
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": true
+      }
     }
   ],
   "departments": {

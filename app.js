@@ -22,6 +22,7 @@ const settingsPanel = document.getElementById('settings-panel');
 const callBtn = document.getElementById('call-btn');
 const endCallBtn = document.getElementById('end-call-btn');
 const muteBtn = document.getElementById('mute-btn');
+const speakerBtn = document.getElementById('speaker-btn');
 const holdBtn = document.getElementById('hold-btn');
 const connectionStatus = document.getElementById('connection-status');
 const statusText = document.getElementById('status-text');
@@ -52,6 +53,8 @@ console.log('Buttons loaded:', {
 // المتغيرات
 let isMuted = false;
 let isOnHold = false;
+let isSpeakerOn = false;
+let availableAudioDevices = [];
 let recordings = [];
 let device = null;
 let currentCall = null;
@@ -504,6 +507,8 @@ async function endCall() {
     
     isMuted = false;
     isOnHold = false;
+    isSpeakerOn = false;
+    updateSpeakerButton();
     
     updateConnectionStatus('connected', 'جاهز للمكالمات');
 }
@@ -555,6 +560,71 @@ function toggleHold() {
     
     holdBtn.style.background = isOnHold ? '#ff9800' : '#f5f5f5';
     holdBtn.style.color = isOnHold ? 'white' : 'black';
+}
+
+// تبديل السبيكر
+async function toggleSpeaker() {
+    if (!device) return;
+    
+    try {
+        // الحصول على قائمة أجهزة الصوت المتاحة
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
+        
+        console.log('🔊 أجهزة الصوت المتاحة:', audioOutputs);
+        
+        if (audioOutputs.length > 1) {
+            // التبديل بين الأجهزة
+            isSpeakerOn = !isSpeakerOn;
+            
+            // اختيار الجهاز المناسب
+            // عادةً الجهاز الأول هو السماعة الافتراضية (earpiece) والثاني هو السبيكر
+            const targetDevice = isSpeakerOn ? audioOutputs[1] : audioOutputs[0];
+            
+            // استخدام Twilio Device لتغيير جهاز الإخراج
+            if (device.audio && device.audio.speakerDevices) {
+                await device.audio.speakerDevices.set(targetDevice.deviceId);
+                console.log(isSpeakerOn ? '🔊 تم تشغيل السبيكر' : '🔈 تم التبديل للسماعة');
+            }
+            
+            // تحديث واجهة المستخدم
+            updateSpeakerButton();
+        } else {
+            // إذا كان جهاز واحد فقط، نحاول استخدام setSinkId مباشرة على عنصر الصوت
+            isSpeakerOn = !isSpeakerOn;
+            
+            // البحث عن عنصر الصوت في الصفحة
+            const audioElements = document.querySelectorAll('audio');
+            for (const audio of audioElements) {
+                if (audio.setSinkId && audioOutputs.length > 0) {
+                    const targetIndex = isSpeakerOn ? Math.min(1, audioOutputs.length - 1) : 0;
+                    await audio.setSinkId(audioOutputs[targetIndex].deviceId);
+                }
+            }
+            
+            updateSpeakerButton();
+            console.log(isSpeakerOn ? '🔊 تم تشغيل السبيكر' : '🔈 تم التبديل للسماعة');
+        }
+    } catch (error) {
+        console.error('❌ خطأ في تبديل السبيكر:', error);
+        
+        // في حالة الخطأ، نغير الحالة بصرياً فقط
+        isSpeakerOn = !isSpeakerOn;
+        updateSpeakerButton();
+        
+        // إظهار رسالة للمستخدم
+        alert('ملاحظة: تبديل السبيكر قد لا يعمل على جميع المتصفحات والأجهزة');
+    }
+}
+
+// تحديث زر السبيكر
+function updateSpeakerButton() {
+    if (speakerBtn) {
+        speakerBtn.style.background = isSpeakerOn ? '#4CAF50' : '#f5f5f5';
+        speakerBtn.style.color = isSpeakerOn ? 'white' : 'black';
+        speakerBtn.querySelector('.icon').textContent = isSpeakerOn ? '🔊' : '🔈';
+        speakerBtn.querySelector('.label').textContent = isSpeakerOn ? 'السبيكر ✓' : 'السبيكر';
+    }
 }
 
 // بدء التسجيل
@@ -993,6 +1063,7 @@ document.querySelectorAll('.num-btn').forEach(btn => {
 callBtn.addEventListener('click', makeCall);
 endCallBtn.addEventListener('click', endCall);
 muteBtn.addEventListener('click', toggleMute);
+if (speakerBtn) speakerBtn.addEventListener('click', toggleSpeaker);
 holdBtn.addEventListener('click', toggleHold);
 
 // دالة لإخفاء جميع الأقسام

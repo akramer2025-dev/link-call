@@ -1,6 +1,4 @@
 const twilio = require('twilio');
-const fs = require('fs');
-const path = require('path');
 
 // 🔥 دالة لتنسيق الأرقام المصرية والسعودية تلقائياً
 function formatPhoneNumber(phoneNumber) {
@@ -107,25 +105,6 @@ module.exports = async (req, res) => {
         const formattedCallTo = formatPhoneNumber(callTo);
         
         console.log('📞 مكالمة جديدة:', { callSid, to: callTo, formattedTo: formattedCallTo, employeeId });
-        
-        // حفظ معلومات المكالمة
-        const metadataPath = path.join(process.cwd(), 'call-metadata.json');
-        let metadata = { calls: {} };
-        
-        if (fs.existsSync(metadataPath)) {
-            const data = fs.readFileSync(metadataPath, 'utf8');
-            metadata = JSON.parse(data);
-        }
-        
-        metadata.calls[callSid] = {
-            to: formattedCallTo,
-            originalTo: callTo,
-            employeeId: employeeId,
-            timestamp: new Date().toISOString()
-        };
-        
-        fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
-        console.log('✅ تم حفظ معلومات المكالمة');
         
         const twiml = new twilio.twiml.VoiceResponse();
         

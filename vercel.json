@@ -2,6 +2,38 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/voice",
+      "destination": "/api/voice"
+    },
+    {
+      "source": "/api/token",
+      "destination": "/api/token"
+    },
+    {
+      "source": "/api/recordings",
+      "destination": "/api/recordings"
+    },
+    {
+      "source": "/api/recording-status",
+      "destination": "/api/recording-status"
+    },
+    {
+      "source": "/api/call-history",
+      "destination": "/api/call-history"
+    },
+    {
+      "source": "/api/contacts",
+      "destination": "/api/contacts"
+    },
+    {
+      "source": "/api/work-tracking",
+      "destination": "/api/work-tracking"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/index"
     }

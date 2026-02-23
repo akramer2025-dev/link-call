@@ -845,6 +845,64 @@ app.delete('/employees/:id', async (req, res) => {
     }
 });
 
+// تحديث بيانات مدير (تغيير كلمة المرور والبيانات)
+app.put('/employees/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const { password, fullname, phone, department, permissions } = req.body;
+        
+        const data = await getEmployeesData();
+        
+        const employeeIndex = data.employees.findIndex(emp => emp.id === id);
+        
+        if (employeeIndex === -1) {
+            return res.status(404).json({ error: 'المدير غير موجود' });
+        }
+        
+        const employee = data.employees[employeeIndex];
+        
+        // تحديث البيانات
+        if (password && password.trim() !== '') {
+            employee.password = password;
+            console.log('🔐 تم تغيير كلمة المرور للمدير:', employee.username);
+        }
+        if (fullname) {
+            employee.fullname = fullname;
+            employee.name = fullname;
+        }
+        if (phone) {
+            employee.phone = phone;
+        }
+        if (department) {
+            // إزالة من القسم القديم
+            if (data.departments[employee.department]) {
+                const phoneIndex = data.departments[employee.department].employees.indexOf(employee.phone);
+                if (phoneIndex > -1) {
+                    data.departments[employee.department].employees.splice(phoneIndex, 1);
+                }
+            }
+            employee.department = department;
+            employee.departmentArabic = data.departments[department]?.name || 'غير محدد';
+            // إضافة للقسم الجديد
+            if (data.departments[department] && !data.departments[department].employees.includes(employee.phone)) {
+                data.departments[department].employees.push(employee.phone);
+            }
+        }
+        if (permissions) {
+            employee.permissions = permissions;
+        }
+        
+        // حفظ البيانات
+        await saveEmployeesData(data);
+        
+        console.log('✅ تم تحديث بيانات المدير:', employee.username);
+        res.json({ success: true, employee: employee });
+    } catch (error) {
+        console.error('خطأ في تحديث مدير:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ========== إدارة جهات الاتصال ==========
 
 // دوال مساعدة لقراءة وحفظ جهات الاتصال

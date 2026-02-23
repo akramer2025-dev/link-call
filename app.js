@@ -1401,21 +1401,29 @@ async function loadEmployeesList() {
             if (perms.deleteRecordings) permsList.push('🗑️ مسح');
             if (perms.editProfile) permsList.push('✏️ تعديل');
             
+            // التحقق إذا كان حساب تجريبي
+            const trialBadge = emp.isTrial || emp.role === 'trial' 
+                ? '<span style="background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-right: 5px;">🎁 تجريبي</span>' 
+                : '';
+            
             return `
             <div class="employee-card">
                 <div class="employee-header">
                     <div class="employee-info">
-                        <h6>${emp.name}</h6>
+                        <h6>${emp.name || emp.fullname} ${trialBadge}</h6>
                         <span class="employee-username">@${emp.username}</span>
                         <span class="employee-phone">📱 ${emp.phone || 'غير محدد'}</span>
-                        <span class="employee-dept">📂 ${emp.departmentName}</span>
+                        <span class="employee-dept">📂 ${emp.departmentName || emp.departmentArabic || 'غير محدد'}</span>
                         <div class="employee-perms" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;">
                             ${permsList.length > 0 
                                 ? permsList.map(p => `<span style="background: #e3f2fd; padding: 3px 8px; border-radius: 12px; font-size: 11px;">${p}</span>`).join('') 
                                 : '<span style="color: #999; font-size: 11px;">لا توجد صلاحيات</span>'}
                         </div>
                     </div>
-                    <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${emp.name.replace(/'/g, "\\'")}')" title="حذف">🗑️</button>
+                    <div class="employee-actions" style="display: flex; gap: 8px;">
+                        <button class="edit-employee-btn" onclick="openEditEmployeeModal(${emp.id}, '${(emp.name || emp.fullname).replace(/'/g, "\\'")}', '${emp.username}', '${emp.phone || ''}', '${emp.department || ''}')" title="تعديل" style="background: #4CAF50; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">✏️</button>
+                        <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${(emp.name || emp.fullname).replace(/'/g, "\\'")}')" title="حذف" style="background: #f44336; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">🗑️</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1568,6 +1576,181 @@ async function deleteEmployee(employeeId, fullname) {
 
 // جعل الدالة متاحة عالمياً
 window.deleteEmployee = deleteEmployee;
+
+// فتح نافذة تعديل المدير
+function openEditEmployeeModal(employeeId, fullname, username, phone, department) {
+    if (!checkAdminAccess()) {
+        alert('ليس لديك صلاحية للوصول لهذه الميزة!');
+        return;
+    }
+    
+    // إنشاء الـ Modal
+    const modalHTML = `
+        <div id="edit-employee-modal" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        ">
+            <div style="
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 450px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            ">
+                <h2 style="color: #fff; margin-bottom: 20px; text-align: center;">✏️ تعديل المدير</h2>
+                <p style="color: #a0aec0; text-align: center; margin-bottom: 20px;">@${username}</p>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">الاسم الكامل:</label>
+                    <input type="text" id="edit-emp-fullname" value="${fullname}" style="
+                        width: 100%;
+                        padding: 12px;
+                        border-radius: 10px;
+                        border: 1px solid rgba(255,255,255,0.2);
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        font-size: 14px;
+                        box-sizing: border-box;
+                    ">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">📱 رقم الهاتف:</label>
+                    <input type="tel" id="edit-emp-phone" value="${phone}" placeholder="+966..." style="
+                        width: 100%;
+                        padding: 12px;
+                        border-radius: 10px;
+                        border: 1px solid rgba(255,255,255,0.2);
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        font-size: 14px;
+                        box-sizing: border-box;
+                    ">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">🔐 كلمة المرور الجديدة:</label>
+                    <input type="password" id="edit-emp-password" placeholder="اتركها فارغة إن لم ترد التغيير" style="
+                        width: 100%;
+                        padding: 12px;
+                        border-radius: 10px;
+                        border: 1px solid rgba(255,255,255,0.2);
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        font-size: 14px;
+                        box-sizing: border-box;
+                    ">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">📂 القسم:</label>
+                    <select id="edit-emp-department" style="
+                        width: 100%;
+                        padding: 12px;
+                        border-radius: 10px;
+                        border: 1px solid rgba(255,255,255,0.2);
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        font-size: 14px;
+                        box-sizing: border-box;
+                    ">
+                        <option value="1" ${department === '1' ? 'selected' : ''}>الحجوزات</option>
+                        <option value="2" ${department === '2' ? 'selected' : ''}>المبيعات</option>
+                        <option value="3" ${department === '3' ? 'selected' : ''}>خدمة العملاء</option>
+                        <option value="4" ${department === '4' ? 'selected' : ''}>الحسابات</option>
+                        <option value="5" ${department === '5' ? 'selected' : ''}>الدعم الفنى</option>
+                        <option value="6" ${department === '6' ? 'selected' : ''}>الشكاوى والاقتراحات</option>
+                        <option value="trial" ${department === 'trial' ? 'selected' : ''}>حساب تجريبي</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="updateEmployee(${employeeId})" style="
+                        background: linear-gradient(135deg, #4CAF50, #45a049);
+                        color: white;
+                        border: none;
+                        padding: 12px 30px;
+                        border-radius: 25px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    ">💾 حفظ التعديلات</button>
+                    <button onclick="document.getElementById('edit-employee-modal').remove()" style="
+                        background: linear-gradient(135deg, #6c757d, #5a6268);
+                        color: white;
+                        border: none;
+                        padding: 12px 30px;
+                        border-radius: 25px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    ">❌ إلغاء</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // إزالة أي modal قديم
+    const oldModal = document.getElementById('edit-employee-modal');
+    if (oldModal) oldModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// تحديث بيانات المدير
+async function updateEmployee(employeeId) {
+    const fullname = document.getElementById('edit-emp-fullname').value.trim();
+    const phone = document.getElementById('edit-emp-phone').value.trim();
+    const password = document.getElementById('edit-emp-password').value.trim();
+    const department = document.getElementById('edit-emp-department').value;
+    
+    if (!fullname) {
+        alert('الرجاء إدخال الاسم الكامل');
+        return;
+    }
+    
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/employees/${employeeId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                fullname,
+                phone,
+                password: password || undefined, // إرسال كلمة المرور فقط إذا تم إدخالها
+                department
+            })
+        });
+        
+        if (response.ok) {
+            document.getElementById('edit-employee-modal').remove();
+            loadEmployeesList();
+            alert('تم تحديث بيانات المدير بنجاح! ✅');
+        } else {
+            const data = await response.json();
+            alert('فشل في تحديث البيانات: ' + (data.error || 'خطأ غير معروف'));
+        }
+    } catch (error) {
+        console.error('خطأ في تحديث المدير:', error);
+        alert('فشل في تحديث البيانات');
+    }
+}
+
+// جعل الدوال متاحة عالمياً
+window.openEditEmployeeModal = openEditEmployeeModal;
+window.updateEmployee = updateEmployee;
 
 // تحميل قائمة المديرين عند فتح الإعدادات
 if (settingsBtn) {

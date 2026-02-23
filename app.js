@@ -1966,10 +1966,36 @@ function saveCallToHistory(call) {
         
         localStorage.setItem('callHistory', JSON.stringify(calls));
         console.log('✅ تم حفظ المكالمة في السجل');
+        
+        // تحديث الـ badge
+        updateCallHistoryBadge();
     } catch (error) {
         console.error('خطأ في حفظ المكالمة:', error);
     }
 }
+
+// تحديث عدد المكالمات على الـ badge
+function updateCallHistoryBadge() {
+    const badge = document.getElementById('call-history-badge');
+    if (!badge) return;
+    
+    try {
+        const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
+        const count = calls.length;
+        
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    } catch (error) {
+        console.error('خطأ في تحديث badge سجل المكالمات:', error);
+    }
+}
+
+// استدعاء تحديث الـ badge عند تحميل الصفحة
+setTimeout(updateCallHistoryBadge, 500);
 
 // تحميل سجل المكالمات
 async function loadCallHistory() {

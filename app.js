@@ -59,6 +59,93 @@ let recordings = [];
 let device = null;
 let currentCall = null;
 
+// ========== نظام الحساب التجريبي ==========
+// التحقق إذا كان الحساب تجريبي
+function isTrialAccount() {
+    const userRole = sessionStorage.getItem('userRole');
+    const username = sessionStorage.getItem('username');
+    return userRole === 'trial' || username === 'trial';
+}
+
+// الحصول على عدد المكالمات المتبقية للحساب التجريبي
+function getTrialCallsRemaining() {
+    if (!isTrialAccount()) return -1; // -1 يعني غير محدود
+    const maxCalls = 2;
+    const usedCalls = parseInt(localStorage.getItem('trial_calls_used') || '0');
+    return maxCalls - usedCalls;
+}
+
+// تسجيل مكالمة للحساب التجريبي
+function recordTrialCall() {
+    if (!isTrialAccount()) return;
+    const usedCalls = parseInt(localStorage.getItem('trial_calls_used') || '0');
+    localStorage.setItem('trial_calls_used', (usedCalls + 1).toString());
+    console.log('📊 مكالمات الحساب التجريبي:', usedCalls + 1, '/ 2');
+}
+
+// التحقق من إمكانية إجراء مكالمة للحساب التجريبي
+function canTrialMakeCall() {
+    if (!isTrialAccount()) return true;
+    const remaining = getTrialCallsRemaining();
+    console.log('📊 المكالمات المتبقية للحساب التجريبي:', remaining);
+    return remaining > 0;
+}
+
+// إظهار رسالة رصيد غير كافي
+function showInsufficientBalanceAlert() {
+    const alertHTML = `
+        <div id="trial-alert-overlay" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        ">
+            <div style="
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                border-radius: 20px;
+                padding: 30px;
+                text-align: center;
+                max-width: 400px;
+                margin: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            ">
+                <div style="font-size: 60px; margin-bottom: 20px;">💳</div>
+                <h2 style="color: #ff6b6b; margin-bottom: 15px; font-size: 24px;">رصيدك غير كافي!</h2>
+                <p style="color: #a0aec0; margin-bottom: 10px; font-size: 16px;">
+                    لقد استنفدت المكالمتين المجانيتين في الحساب التجريبي.
+                </p>
+                <p style="color: #cbd5e0; margin-bottom: 25px; font-size: 14px;">
+                    للاستمرار في إجراء المكالمات، يرجى الترقية إلى حساب مدفوع.
+                </p>
+                <button onclick="document.getElementById('trial-alert-overlay').remove()" style="
+                    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+                    color: white;
+                    border: none;
+                    padding: 12px 40px;
+                    border-radius: 25px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                ">
+                    حسناً
+                </button>
+                <p style="color: #718096; margin-top: 20px; font-size: 12px;">
+                    📞 للترقية تواصل معنا
+                </p>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', alertHTML);
+}
+// ========== نهاية نظام الحساب التجريبي ==========
+
 // قراءة بيانات من URL قبل أي شيء (urlParams و autoLogin معرّفين في index.html)
 const phoneFromUrl = urlParams.get('phone') || urlParams.get('number');
 const empId = urlParams.get('employeeId');
@@ -247,6 +334,13 @@ async function makeCall() {
         return;
     }
 
+    // 🔒 التحقق من الحساب التجريبي
+    if (isTrialAccount() && !canTrialMakeCall()) {
+        showInsufficientBalanceAlert();
+        console.log('❌ الحساب التجريبي استنفد المكالمات المجانية');
+        return;
+    }
+
     // تنظيف الرقم من المسافات والأحرف الخاصة فقط - بدون تحويل
     // إزالة جميع المسافات والأحرف الخاصة غير المرئية والشرطات
     let formattedNumber = phoneNumber
@@ -319,6 +413,13 @@ async function makeCall() {
             console.log('✅ العميل رد على المكالمة - بدء العداد');
             updateCallStatus('متصل ✅');
             startCallTimer(); // بدء العداد فقط عند رد العميل
+            
+            // 🔒 تسجيل المكالمة للحساب التجريبي
+            recordTrialCall();
+            if (isTrialAccount()) {
+                const remaining = getTrialCallsRemaining();
+                console.log('📊 المكالمات المتبقية للحساب التجريبي:', remaining);
+            }
         });
         
         currentCall.on('disconnect', () => {

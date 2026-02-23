@@ -729,6 +729,12 @@ app.post('/login', async (req, res) => {
         
         console.log('✅ تم تسجيل الدخول:', employee.name || employee.fullname);
         
+        // التحقق من الحساب التجريبي
+        const isTrial = employee.isTrial || employee.role === 'trial';
+        if (isTrial) {
+            console.log('📊 حساب تجريبي - الحد الأقصى للمكالمات:', employee.maxCalls || 2);
+        }
+        
         res.json({
             success: true,
             employee: {
@@ -736,7 +742,10 @@ app.post('/login', async (req, res) => {
                 name: employee.name || employee.fullname,
                 username: employee.username,
                 department: employee.department,
-                departmentName: data.departments[employee.department]?.name || '',
+                departmentName: data.departments[employee.department]?.name || employee.departmentArabic || '',
+                role: employee.role || 'employee',
+                isTrial: isTrial,
+                maxCalls: employee.maxCalls || 2,
                 permissions: employee.permissions || {
                     viewOwnRecordings: false,
                     viewAllRecordings: false,

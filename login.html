@@ -184,7 +184,18 @@
                     // حفظ بيانات المدير
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('username', data.employee.username);
-                    sessionStorage.setItem('userRole', 'employee');
+                    
+                    // التحقق من الحساب التجريبي
+                    const userRole = data.employee.isTrial ? 'trial' : (data.employee.role || 'employee');
+                    sessionStorage.setItem('userRole', userRole);
+                    
+                    // حفظ معلومات الحساب التجريبي
+                    if (data.employee.isTrial) {
+                        sessionStorage.setItem('isTrial', 'true');
+                        sessionStorage.setItem('maxCalls', data.employee.maxCalls || '2');
+                        console.log('📊 حساب تجريبي - المكالمات المتاحة:', data.employee.maxCalls || 2);
+                    }
+                    
                     sessionStorage.setItem('fullname', data.employee.name);
                     sessionStorage.setItem('departmentName', data.employee.departmentName);
                     sessionStorage.setItem('employeeId', data.employee.id.toString());

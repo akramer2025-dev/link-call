@@ -1,6 +1,25 @@
 {
   "employees": [
     {
+      "id": 0,
+      "username": "trial",
+      "password": "trial123",
+      "fullname": "حساب تجريبي",
+      "name": "حساب تجريبي",
+      "phone": "",
+      "department": "trial",
+      "departmentArabic": "حساب تجريبي",
+      "role": "trial",
+      "isTrial": true,
+      "maxCalls": 2,
+      "permissions": {
+        "viewOwnRecordings": true,
+        "viewAllRecordings": false,
+        "deleteRecordings": false,
+        "editProfile": false
+      }
+    },
+    {
       "id": 1,
       "username": "akram",
       "password": "Aazxc",

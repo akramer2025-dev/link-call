@@ -1406,12 +1406,16 @@ async function loadEmployeesList() {
                 ? '<span style="background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-right: 5px;">🎁 تجريبي</span>' 
                 : '';
             
+            // الحصول على اسم الموظف بشكل آمن
+            const empName = emp.name || emp.fullname || emp.username || 'غير معروف';
+            const safeEmpName = empName.replace(/'/g, "\\'");
+            
             return `
             <div class="employee-card">
                 <div class="employee-header">
                     <div class="employee-info">
-                        <h6>${emp.name || emp.fullname} ${trialBadge}</h6>
-                        <span class="employee-username">@${emp.username}</span>
+                        <h6>${empName} ${trialBadge}</h6>
+                        <span class="employee-username">@${emp.username || 'غير محدد'}</span>
                         <span class="employee-phone">📱 ${emp.phone || 'غير محدد'}</span>
                         <span class="employee-dept">📂 ${emp.departmentName || emp.departmentArabic || 'غير محدد'}</span>
                         <div class="employee-perms" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;">
@@ -1421,8 +1425,8 @@ async function loadEmployeesList() {
                         </div>
                     </div>
                     <div class="employee-actions" style="display: flex; gap: 8px;">
-                        <button class="edit-employee-btn" onclick="openEditEmployeeModal(${emp.id}, '${(emp.name || emp.fullname).replace(/'/g, "\\'")}', '${emp.username}', '${emp.phone || ''}', '${emp.department || ''}')" title="تعديل" style="background: #4CAF50; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">✏️</button>
-                        <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${(emp.name || emp.fullname).replace(/'/g, "\\'")}')" title="حذف" style="background: #f44336; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">🗑️</button>
+                        <button class="edit-employee-btn" onclick="openEditEmployeeModal(${emp.id}, '${safeEmpName}', '${emp.username || ''}', '${emp.phone || ''}', '${emp.department || ''}')" title="تعديل" style="background: #4CAF50; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">✏️</button>
+                        <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${safeEmpName}')" title="حذف" style="background: #f44336; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">🗑️</button>
                     </div>
                 </div>
             </div>
@@ -1933,17 +1937,17 @@ if (deleteBtn) {
 document.addEventListener('keydown', (e) => {
     if (e.key >= '0' && e.key <= '9' || e.key === '*' || e.key === '#') {
         addDigit(e.key);
-        if (currentConnection) {
-            currentConnection.sendDigits(e.key);
+        if (currentCall) {
+            currentCall.sendDigits(e.key);
         }
     } else if (e.key === 'Backspace') {
         deleteDigit();
     } else if (e.key === 'Enter') {
-        if (!currentConnection) {
+        if (!currentCall) {
             makeCall();
         }
     } else if (e.key === 'Escape') {
-        if (currentConnection) {
+        if (currentCall) {
             endCall();
         }
     }

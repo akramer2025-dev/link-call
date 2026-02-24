@@ -197,18 +197,24 @@ async function saveEmployeesData(data) {
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const TWILIO_TWIML_APP_SID = process.env.TWILIO_TWIML_APP_SID;
-const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
-const TWILIO_PHONE_NUMBER_EGYPT = process.env.TWILIO_PHONE_NUMBER_EGYPT || '+201555512778'; // الرقم المصري
+const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER; // الرقم الأمريكي المشترى (Twilio Phone Number)
+const TWILIO_PHONE_NUMBER_EGYPT = process.env.TWILIO_PHONE_NUMBER_EGYPT || '+201555512778'; // الرقم المصري (Verified)
+const TWILIO_PHONE_NUMBER_SAUDI = process.env.TWILIO_PHONE_NUMBER_SAUDI || '+966555254915'; // الرقم السعودي (Verified)
 const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
 const TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
 
 // دالة للحصول على رقم المتصل المناسب
 function getCallerIdNumber(callerId) {
     if (callerId === 'egypt') {
-        console.log('📱 استخدام الرقم المصري:', TWILIO_PHONE_NUMBER_EGYPT);
+        console.log('📱 استخدام الرقم المصري (Verified):', TWILIO_PHONE_NUMBER_EGYPT);
         return TWILIO_PHONE_NUMBER_EGYPT;
     }
-    console.log('📱 استخدام الرقم السعودي:', TWILIO_PHONE_NUMBER);
+    if (callerId === 'saudi') {
+        console.log('📱 استخدام الرقم السعودي (Verified):', TWILIO_PHONE_NUMBER_SAUDI);
+        return TWILIO_PHONE_NUMBER_SAUDI;
+    }
+    // الافتراضي: الرقم الأمريكي المشترى من Twilio
+    console.log('📱 استخدام الرقم الأمريكي (Twilio Number):', TWILIO_PHONE_NUMBER);
     return TWILIO_PHONE_NUMBER;
 }
 

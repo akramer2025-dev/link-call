@@ -575,6 +575,7 @@ body::after {
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
     margin-bottom: 20px;
+    direction: rtl;
 }
 
 .num-btn {
@@ -1695,6 +1696,54 @@ input:checked + .slider:before {
         overflow-x: hidden;
     }
     
+    /* زر الهامبرجر في الموبايل */
+    .hamburger-menu {
+        top: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .hamburger-line {
+        width: 22px;
+        height: 2.5px;
+    }
+    
+    /* القائمة الجانبية في الموبايل */
+    .sidebar {
+        width: 85% !important;
+        max-width: 300px !important;
+        right: -100% !important;
+        padding-top: 70px !important;
+    }
+    
+    .sidebar.active {
+        right: 0 !important;
+    }
+    
+    .menu-item {
+        padding: 16px 18px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .menu-item .icon {
+        font-size: 26px !important;
+    }
+    
+    .menu-item .label {
+        font-size: 14px !important;
+    }
+    
+    .bottom-logo-container {
+        width: 70px !important;
+        height: 70px !important;
+    }
+    
+    .bottom-logo-img {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    
     .container {
         width: 100% !important;
         max-width: 100% !important;
@@ -1704,45 +1753,18 @@ input:checked + .slider:before {
         flex-direction: column !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-    }
-    
-    .sidebar {
-        width: 100% !important;
-        padding: 10px 0 !important;
-        min-height: auto !important;
-        flex-direction: row !important;
-        justify-content: space-around !important;
-        position: sticky;
-        top: 0;
-        z-index: 100;
+        padding-top: 70px !important;
     }
     
     .logo {
-        width: 60px !important;
-        height: 60px !important;
-        margin: 0 !important;
-        border-radius: 12px !important;
-    }
-    
-    .menu-item {
-        width: auto !important;
-        padding: 10px 15px !important;
-        font-size: 12px !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .menu-item span:first-child {
-        font-size: 20px;
+        display: none !important;
     }
     
     .main-content {
         width: 100% !important;
-        padding: 10px !important;
+        padding: 15px !important;
         overflow-y: auto;
-        min-height: calc(100vh - 120px);
+        min-height: calc(100vh - 70px);
     }
     
     .header {
@@ -1752,29 +1774,40 @@ input:checked + .slider:before {
     
     .header-top {
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
         align-items: stretch !important;
     }
     
     .header h1 {
-        font-size: 1.3em !important;
+        font-size: 1.4em !important;
         text-align: center;
+        margin-bottom: 10px;
     }
     
     .user-info-header {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
         gap: 10px;
         width: 100%;
+        justify-content: center;
     }
     
     .user-badge {
-        width: 100%;
+        flex: 1;
+        min-width: 140px;
         justify-content: center;
     }
     
+    .balance-header {
+        order: -1;
+    }
+    
     .logout-header-btn {
-        width: 100%;
-        justify-content: center;
+        flex: 0 0 auto;
+    }
+    
+    .admin-link-btn {
+        flex: 0 0 auto;
     }
     
     .user-info {
@@ -1865,10 +1898,27 @@ input:checked + .slider:before {
         font-size: 0.95em !important;
     }
     
+    /* شاشة عرض الرقم في الموبايل */
     .phone-display {
-        min-height: 0 !important;
+        min-height: 70px !important;
+        padding: 20px 15px !important;
+        margin-bottom: 15px !important;
+        border-radius: 20px !important;
+    }
+    
+    .phone-number {
+        font-size: 26px !important;
+        letter-spacing: 3px !important;
+    }
+    
+    .phone-number:empty::before {
+        font-size: 22px !important;
+        letter-spacing: 2px !important;
+    }
+    
+    .delete-btn {
         font-size: 20px !important;
-        padding: 5px !important;
+        padding: 10px 15px !important;
     }
     
     .phone-input-container input {
@@ -1924,42 +1974,77 @@ input:checked + .slider:before {
         padding: 0;
     }
     
-    .container {
-        border-radius: 0 !important;
+    .hamburger-menu {
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .hamburger-line {
+        width: 20px;
+        height: 2px;
     }
     
     .sidebar {
-        padding: 8px 0 !important;
+        width: 90% !important;
+        max-width: none !important;
     }
     
-    .logo {
-        width: 50px !important;
-        height: 50px !important;
-    }
-    
-    .menu-item {
-        padding: 8px 10px !important;
-        font-size: 11px !important;
-    }
-    
-    .menu-item span:first-child {
-        font-size: 18px;
+    .container {
+        border-radius: 0 !important;
+        padding-top: 60px !important;
     }
     
     .main-content {
         padding: 8px !important;
     }
     
+    .header h1 {
+        font-size: 1.2em !important;
+    }
+    
+    /* شاشة عرض الرقم في الموبايل الصغير */
+    .phone-display {
+        padding: 18px 15px !important;
+        min-height: 70px !important;
+        margin-bottom: 15px !important;
+        border-radius: 20px !important;
+    }
+    
+    .phone-number {
+        font-size: 24px !important;
+        letter-spacing: 2px !important;
+    }
+    
+    .phone-number:empty::before {
+        font-size: 20px !important;
+        letter-spacing: 2px !important;
+    }
+    
+    .delete-btn {
+        font-size: 18px !important;
+        padding: 10px 14px !important;
+    }
+    
     .key {
-        width: 65px !important;
-        height: 65px !important;
+        width: 60px !important;
+        height: 60px !important;
         font-size: 20px !important;
     }
     
+    .num-btn {
+        min-height: 55px !important;
+    }
+    
+    .num-btn .number {
+        font-size: 22px !important;
+    }
+    
     .call-btn-round {
-        width: 65px !important;
-        height: 65px !important;
-        font-size: 24px !important;
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 22px !important;
     }
     
     h2 {
@@ -1969,6 +2054,10 @@ input:checked + .slider:before {
     .nav-item {
         font-size: 12px !important;
         padding: 8px 10px !important;
+    }
+    
+    .user-badge {
+        min-width: 100% !important;
     }
 }
 
@@ -2683,6 +2772,7 @@ input:checked + .slider:before {
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-bottom: 20px;
+    direction: rtl;
 }
 
 .num-btn {
@@ -2753,42 +2843,129 @@ input:checked + .slider:before {
     transform: translateY(0);
 }
 
-/* تحسين عرض الرقم */
+/* تحسين عرض الرقم - Professional Phone Display */
 .phone-display {
-    background: transparent;
-    border-radius: 20px;
-    padding: 10px 15px;
-    margin-bottom: 10px;
+    background: linear-gradient(145deg, rgba(30, 58, 95, 0.9), rgba(10, 22, 40, 0.95));
+    border-radius: 25px;
+    padding: 25px 20px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 40px;
+    min-height: 80px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(94, 196, 212, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* إطار متوهج متحرك */
+.phone-display::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(90deg, 
+        #5ec4d4, 
+        #1e3a5f, 
+        #5ec4d4, 
+        #1e3a5f, 
+        #5ec4d4);
+    background-size: 300% 100%;
+    border-radius: 27px;
+    z-index: -1;
+    animation: borderGlow 3s linear infinite;
+}
+
+@keyframes borderGlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+}
+
+/* خطوط ضوئية داخلية */
+.phone-display::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        transparent 30%,
+        transparent 70%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    pointer-events: none;
+    border-radius: 23px;
 }
 
 .phone-number {
-    font-size: 28px;
-    font-weight: 600;
-    color: white;
+    font-size: 32px;
+    font-weight: 700;
+    color: transparent;
+    background: linear-gradient(135deg, #ffffff 0%, #5ec4d4 50%, #ffffff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    background-size: 200% auto;
+    animation: textShine 3s ease-in-out infinite;
     direction: ltr;
-    text-align: left;
+    text-align: center;
     flex: 1;
-    font-family: 'Segoe UI', monospace;
-    letter-spacing: 2px;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(94, 196, 212, 0.5);
+    position: relative;
+    z-index: 1;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes textShine {
+    0% { background-position: 0% center; }
+    50% { background-position: 200% center; }
+    100% { background-position: 0% center; }
+}
+
+.phone-number:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 28px;
+    letter-spacing: 3px;
+    animation: none;
 }
 
 .delete-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    font-size: 24px;
-    padding: 10px 15px;
-    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 107, 107, 0.1));
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+    font-size: 22px;
+    padding: 12px 18px;
+    border-radius: 15px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
 }
 
 .delete-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.4), rgba(255, 107, 107, 0.2));
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(255, 107, 107, 0.4);
+}
+
+.delete-btn:active {
+    transform: scale(0.95);
 }
 
 /* تحسين الرصيد في الهيدر */
@@ -2885,6 +3062,13 @@ input:checked + .slider:before {
         font-size: 12px;
     }
     
+    .hamburger-menu {
+        top: 8px;
+        right: 8px;
+        width: 38px;
+        height: 38px;
+    }
+    
     .header {
         padding: 5px 8px !important;
     }
@@ -2893,78 +3077,87 @@ input:checked + .slider:before {
         font-size: 0.95em !important;
     }
     
-    /* تصغير الشريط الجانبي (القائمة العلوية) */
+    /* الشريط الجانبي يبقى مخفي مع الهامبرجر */
     .sidebar {
-        padding: 4px 0 !important;
-        gap: 2px !important;
-    }
-    
-    .logo {
-        width: 32px !important;
-        height: 32px !important;
-        display: none !important;
+        padding-top: 60px !important;
     }
     
     .menu-item {
-        padding: 4px 6px !important;
-        font-size: 8px !important;
-        min-width: 45px !important;
+        padding: 12px 15px !important;
+        margin-bottom: 8px !important;
     }
     
     .menu-item .icon {
-        font-size: 14px !important;
+        font-size: 22px !important;
     }
     
     .menu-item .label {
-        font-size: 7px !important;
-        display: none !important;
+        font-size: 12px !important;
     }
     
-    .menu-item span:first-child {
-        font-size: 14px !important;
+    .bottom-logo-container {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    
+    .bottom-logo-img {
+        width: 50px !important;
+        height: 50px !important;
     }
     
     /* تصغير لوحة الاتصال */
     .dialpad {
-        padding: 8px !important;
-        border-radius: 12px !important;
+        padding: 12px !important;
+        border-radius: 18px !important;
     }
     
+    /* شاشة عرض الرقم */
     .phone-display {
-        padding: 5px !important;
-        min-height: 0 !important;
-        margin-bottom: 5px !important;
-        border-radius: 10px !important;
+        padding: 15px 12px !important;
+        min-height: 60px !important;
+        margin-bottom: 12px !important;
+        border-radius: 15px !important;
     }
     
-    .phone-display input {
+    .phone-number {
+        font-size: 22px !important;
+        letter-spacing: 2px !important;
+    }
+    
+    .phone-number:empty::before {
         font-size: 18px !important;
+        letter-spacing: 1px !important;
+    }
+    
+    .delete-btn {
+        font-size: 16px !important;
+        padding: 8px 12px !important;
+        border-radius: 12px !important;
     }
     
     .number-pad {
-        gap: 6px !important;
-        margin-bottom: 8px !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
     }
     
     .num-btn {
-        min-height: 42px !important;
-        padding: 8px 4px !important;
-        border-radius: 10px !important;
+        min-height: 50px !important;
+        padding: 10px 6px !important;
+        border-radius: 12px !important;
     }
     
     .num-btn .number {
-        font-size: 18px !important;
+        font-size: 20px !important;
     }
     
     .num-btn .letters {
-        font-size: 7px !important;
-        display: none !important;
+        font-size: 8px !important;
     }
     
     .call-btn {
-        padding: 10px !important;
-        font-size: 20px !important;
-        border-radius: 12px !important;
+        padding: 12px !important;
+        font-size: 24px !important;
+        border-radius: 15px !important;
     }
     
     /* تصغير اختيار رقم الاتصال */

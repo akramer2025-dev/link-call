@@ -1474,13 +1474,63 @@ async function copyPhoneNumber(phoneNumber) {
     }
 }
 
+// أصوات DTMF للأرقام
+const dtmfSounds = {
+    '1': 697, '2': 697, '3': 697,
+    '4': 770, '5': 770, '6': 770,
+    '7': 852, '8': 852, '9': 852,
+    '*': 941, '0': 941, '#': 941
+};
+const dtmfHighFreq = {
+    '1': 1209, '2': 1336, '3': 1477,
+    '4': 1209, '5': 1336, '6': 1477,
+    '7': 1209, '8': 1336, '9': 1477,
+    '*': 1209, '0': 1336, '#': 1477
+};
+
+// تشغيل صوت DTMF
+function playDTMF(digit) {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const duration = 0.15; // 150ms
+        
+        // التردد المنخفض
+        const osc1 = audioContext.createOscillator();
+        osc1.frequency.value = dtmfSounds[digit];
+        osc1.type = 'sine';
+        
+        // التردد العالي
+        const osc2 = audioContext.createOscillator();
+        osc2.frequency.value = dtmfHighFreq[digit];
+        osc2.type = 'sine';
+        
+        // التحكم في الصوت
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.3;
+        
+        osc1.connect(gainNode);
+        osc2.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        osc1.start();
+        osc2.start();
+        
+        setTimeout(() => {
+            osc1.stop();
+            osc2.stop();
+            audioContext.close();
+        }, duration * 1000);
+    } catch (e) {
+        console.log('DTMF not supported');
+    }
+}
+
 // معالجة أزرار لوحة الأرقام
 document.querySelectorAll('.num-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const digit = btn.dataset.num;
+        playDTMF(digit); // تشغيل صوت DTMF
         addDigit(digit);
-        
-        // DTMF غير متاح في REST API
     });
 });
 
@@ -2131,7 +2181,8 @@ function displayUserInfo() {
     }
     
     if (headerRole) {
-        const roleText = role === 'admin' ? '👑 مطور رئيسي' : '👨‍💼 مدير';
+        // عرض الدور بدون تكرار الاسم
+        const roleText = role === 'admin' ? '👑 مطور' : '👨‍💼 مدير';
         headerRole.textContent = roleText;
     }
     

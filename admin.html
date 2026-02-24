@@ -24,6 +24,10 @@
                     <span class="icon">📊</span>
                     <span class="text">الرئيسية</span>
                 </a>
+                <a href="#" class="nav-item" data-section="companies">
+                    <span class="icon">🏢</span>
+                    <span class="text">الشركات</span>
+                </a>
                 <a href="#" class="nav-item" data-section="calls">
                     <span class="icon">📞</span>
                     <span class="text">المكالمات</span>
@@ -181,6 +185,69 @@
                         <div class="recent-list" id="employee-activity-list">
                             <!-- سيتم ملؤها بـ JavaScript -->
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم الشركات -->
+            <section class="section" id="companies-section">
+                <div class="section-header">
+                    <h2>🏢 إدارة الشركات</h2>
+                    <button class="btn-primary" id="add-company-btn">➕ إضافة شركة جديدة</button>
+                </div>
+                
+                <div class="companies-stats">
+                    <div class="stat-mini">
+                        <span class="stat-number" id="total-companies">0</span>
+                        <span class="stat-label">إجمالي الشركات</span>
+                    </div>
+                    <div class="stat-mini active">
+                        <span class="stat-number" id="active-companies">0</span>
+                        <span class="stat-label">شركات نشطة</span>
+                    </div>
+                </div>
+                
+                <div class="companies-grid" id="companies-list">
+                    <!-- سيتم ملؤها بـ JavaScript -->
+                </div>
+                
+                <!-- Modal إضافة شركة -->
+                <div class="modal" id="add-company-modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>➕ إضافة شركة جديدة</h3>
+                            <button class="close-modal">&times;</button>
+                        </div>
+                        <form id="add-company-form">
+                            <div class="form-group">
+                                <label>اسم الشركة *</label>
+                                <input type="text" id="company-name" required placeholder="مثال: المسار الساخن">
+                            </div>
+                            <div class="form-group">
+                                <label>اسم المستخدم للمدير *</label>
+                                <input type="text" id="company-admin-username" required placeholder="مثال: eslam">
+                            </div>
+                            <div class="form-group">
+                                <label>اسم المدير</label>
+                                <input type="text" id="company-admin-name" placeholder="مثال: إسلام محمد">
+                            </div>
+                            <div class="form-group">
+                                <label>كلمة المرور *</label>
+                                <input type="password" id="company-admin-password" required placeholder="كلمة مرور قوية">
+                            </div>
+                            <div class="form-group">
+                                <label>نوع الاشتراك</label>
+                                <select id="company-subscription">
+                                    <option value="basic">أساسي (5 موظفين - 500 دقيقة)</option>
+                                    <option value="pro">احترافي (20 موظف - 2000 دقيقة)</option>
+                                    <option value="unlimited">غير محدود</option>
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary close-modal">إلغاء</button>
+                                <button type="submit" class="btn-primary">إنشاء الشركة</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </section>

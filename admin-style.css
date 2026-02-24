@@ -1619,3 +1619,203 @@ input:checked + .slider:before {
     }
 }
 
+/* ========== قسم الشركات ========== */
+.companies-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.stat-mini {
+    background: var(--bg-card);
+    padding: 20px 30px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.stat-mini.active {
+    background: linear-gradient(135deg, var(--success-color) 0%, #00cec9 100%);
+}
+
+.stat-mini .stat-number {
+    display: block;
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.stat-mini .stat-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.stat-mini.active .stat-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.companies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.company-card {
+    background: var(--bg-card);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.company-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.company-card.inactive {
+    opacity: 0.6;
+    border-color: var(--danger-color);
+}
+
+.company-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.company-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.company-info h4 {
+    font-size: 18px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.company-info .admin-name {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.company-badge {
+    margin-right: auto;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.company-badge.active {
+    background: rgba(0, 184, 148, 0.2);
+    color: var(--success-color);
+}
+
+.company-badge.inactive {
+    background: rgba(231, 76, 60, 0.2);
+    color: var(--danger-color);
+}
+
+.company-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--bg-card-hover);
+    border-radius: 10px;
+}
+
+.company-stat {
+    text-align: center;
+}
+
+.company-stat-value {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.company-stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.company-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.company-actions button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.company-actions .btn-view {
+    background: var(--primary-color);
+    color: white;
+}
+
+.company-actions .btn-edit {
+    background: var(--warning-color);
+    color: #333;
+}
+
+.company-actions .btn-delete {
+    background: var(--danger-color);
+    color: white;
+}
+
+.company-actions button:hover {
+    transform: scale(1.05);
+}
+
+.subscription-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.subscription-badge.basic {
+    background: rgba(116, 185, 255, 0.2);
+    color: var(--info-color);
+}
+
+.subscription-badge.pro {
+    background: rgba(162, 155, 254, 0.2);
+    color: var(--purple-color);
+}
+
+.subscription-badge.unlimited {
+    background: rgba(253, 203, 110, 0.2);
+    color: var(--warning-color);
+}
+
+/* Responsive للشركات */
+@media (max-width: 768px) {
+    .companies-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .companies-stats {
+        flex-direction: column;
+    }
+}
+

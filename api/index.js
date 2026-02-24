@@ -2375,5 +2375,341 @@ app.get('/online-users', (req, res) => {
     });
 });
 
+// ===== نظام الشركات المتعددة (Multi-Tenant) =====
+console.log('🏢 تهيئة نظام الشركات المتعددة...');
+
+// بنية بيانات الشركات
+let companiesData = {
+    companies: [
+        {
+            id: 'default',
+            name: 'Link Call',
+            adminUsername: 'akram',
+            createdAt: '2025-01-01T00:00:00.000Z',
+            subscription: 'unlimited',
+            isActive: true,
+            settings: {
+                maxEmployees: 100,
+                maxCallMinutes: -1, // غير محدود
+                canRecordCalls: true,
+                twilioAccountSid: '', // إذا كان للشركة حساب Twilio خاص
+                twilioAuthToken: ''
+            }
+        }
+    ]
+};
+
+// دوال مساعدة للشركات
+async function getCompaniesData() {
+    if (process.env.VERCEL && redis) {
+        try {
+            const data = await redis.get('companies_data');
+            if (data && data.companies) {
+                return data;
+            }
+        } catch (error) {
+            console.error('❌ خطأ في قراءة بيانات الشركات:', error);
+        }
+    }
+    return companiesData;
+}
+
+async function saveCompaniesData(data) {
+    if (redis && process.env.VERCEL) {
+        try {
+            await redis.set('companies_data', data);
+            console.log('✅ تم حفظ بيانات الشركات');
+            return true;
+        } catch (error) {
+            console.error('❌ خطأ في حفظ بيانات الشركات:', error);
+            return false;
+        }
+    }
+    companiesData = data;
+    return true;
+}
+
+// الحصول على قائمة الشركات (للمطور الرئيسي فقط)
+app.get('/companies', async (req, res) => {
+    try {
+        const data = await getCompaniesData();
+        res.json({
+            success: true,
+            count: data.companies.length,
+            companies: data.companies.map(c => ({
+                id: c.id,
+                name: c.name,
+                adminUsername: c.adminUsername,
+                isActive: c.isActive,
+                subscription: c.subscription,
+                createdAt: c.createdAt,
+                employeesCount: 0 // سيتم حسابه لاحقاً
+            }))
+        });
+    } catch (error) {
+        console.error('خطأ في جلب الشركات:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// إنشاء شركة جديدة
+app.post('/companies', async (req, res) => {
+    try {
+        const { name, adminUsername, adminPassword, adminName, subscription = 'basic' } = req.body;
+        
+        if (!name || !adminUsername || !adminPassword) {
+            return res.status(400).json({ error: 'اسم الشركة واسم المستخدم وكلمة المرور مطلوبين' });
+        }
+        
+        const companiesDataObj = await getCompaniesData();
+        const employeesDataObj = await getEmployeesData();
+        
+        // التحقق من عدم وجود شركة بنفس الاسم
+        if (companiesDataObj.companies.find(c => c.name === name)) {
+            return res.status(400).json({ error: 'اسم الشركة موجود بالفعل' });
+        }
+        
+        // التحقق من عدم وجود مستخدم بنفس الاسم
+        const existingUser = employeesDataObj.employees.find(e => e.username === adminUsername);
+        if (existingUser || adminUsername === 'akram') {
+            return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل' });
+        }
+        
+        // إنشاء ID فريد للشركة
+        const companyId = 'company_' + Date.now();
+        
+        // إنشاء الشركة
+        const newCompany = {
+            id: companyId,
+            name,
+            adminUsername,
+            createdAt: new Date().toISOString(),
+            subscription,
+            isActive: true,
+            settings: {
+                maxEmployees: subscription === 'basic' ? 5 : subscription === 'pro' ? 20 : 100,
+                maxCallMinutes: subscription === 'basic' ? 500 : subscription === 'pro' ? 2000 : -1,
+                canRecordCalls: subscription !== 'basic'
+            }
+        };
+        
+        // إنشاء مدير الشركة
+        const maxId = employeesDataObj.employees.reduce((max, emp) => Math.max(max, emp.id || 0), 0);
+        const newAdmin = {
+            id: maxId + 1,
+            username: adminUsername,
+            password: adminPassword,
+            name: adminName || name + ' - مدير',
+            fullname: adminName || name + ' - مدير',
+            companyId: companyId,
+            role: 'company_admin',
+            department: '1',
+            phone: '',
+            permissions: {
+                viewOwnRecordings: true,
+                viewAllRecordings: true,
+                deleteRecordings: true,
+                editProfile: true,
+                manageEmployees: true,
+                viewReports: true,
+                callFromUSA: true,
+                callFromEgypt: false,
+                callFromSaudi: false
+            },
+            createdAt: new Date().toISOString()
+        };
+        
+        companiesDataObj.companies.push(newCompany);
+        employeesDataObj.employees.push(newAdmin);
+        
+        await saveCompaniesData(companiesDataObj);
+        await saveEmployeesData(employeesDataObj);
+        
+        console.log('✅ تم إنشاء شركة جديدة:', name);
+        res.json({
+            success: true,
+            company: newCompany,
+            admin: {
+                id: newAdmin.id,
+                username: newAdmin.username,
+                name: newAdmin.name
+            }
+        });
+    } catch (error) {
+        console.error('خطأ في إنشاء شركة:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// تعديل شركة
+app.put('/companies/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, isActive, subscription, settings } = req.body;
+        
+        const data = await getCompaniesData();
+        const companyIndex = data.companies.findIndex(c => c.id === id);
+        
+        if (companyIndex === -1) {
+            return res.status(404).json({ error: 'الشركة غير موجودة' });
+        }
+        
+        // تحديث البيانات
+        if (name) data.companies[companyIndex].name = name;
+        if (isActive !== undefined) data.companies[companyIndex].isActive = isActive;
+        if (subscription) data.companies[companyIndex].subscription = subscription;
+        if (settings) {
+            data.companies[companyIndex].settings = {
+                ...data.companies[companyIndex].settings,
+                ...settings
+            };
+        }
+        
+        await saveCompaniesData(data);
+        
+        res.json({ success: true, company: data.companies[companyIndex] });
+    } catch (error) {
+        console.error('خطأ في تعديل شركة:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// حذف شركة (إيقاف فقط)
+app.delete('/companies/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (id === 'default') {
+            return res.status(400).json({ error: 'لا يمكن حذف الشركة الافتراضية' });
+        }
+        
+        const data = await getCompaniesData();
+        const companyIndex = data.companies.findIndex(c => c.id === id);
+        
+        if (companyIndex === -1) {
+            return res.status(404).json({ error: 'الشركة غير موجودة' });
+        }
+        
+        // إيقاف الشركة بدلاً من حذفها
+        data.companies[companyIndex].isActive = false;
+        await saveCompaniesData(data);
+        
+        console.log('❌ تم إيقاف شركة:', data.companies[companyIndex].name);
+        res.json({ success: true, message: 'تم إيقاف الشركة' });
+    } catch (error) {
+        console.error('خطأ في حذف شركة:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// الحصول على موظفي شركة معينة
+app.get('/companies/:id/employees', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = await getEmployeesData();
+        
+        // إذا كانت الشركة الافتراضية، نرجع الموظفين بدون companyId أو companyId = default
+        const employees = data.employees.filter(e => 
+            id === 'default' 
+                ? (!e.companyId || e.companyId === 'default')
+                : e.companyId === id
+        );
+        
+        res.json({
+            success: true,
+            count: employees.length,
+            employees: employees.map(e => ({
+                id: e.id,
+                name: e.name,
+                username: e.username,
+                department: e.department,
+                role: e.role,
+                createdAt: e.createdAt
+            }))
+        });
+    } catch (error) {
+        console.error('خطأ في جلب موظفي الشركة:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// إحصائيات شركة
+app.get('/companies/:id/stats', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const employeesDataObj = await getEmployeesData();
+        
+        // عد الموظفين
+        const employees = employeesDataObj.employees.filter(e => 
+            id === 'default' 
+                ? (!e.companyId || e.companyId === 'default')
+                : e.companyId === id
+        );
+        
+        // يمكن إضافة إحصائيات المكالمات لاحقاً
+        res.json({
+            success: true,
+            stats: {
+                employeesCount: employees.length,
+                onlineNow: 0, // سيتم حسابه
+                totalCalls: 0,
+                totalDuration: 0
+            }
+        });
+    } catch (error) {
+        console.error('خطأ في جلب إحصائيات الشركة:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// الحصول على بيانات شركة المستخدم الحالي
+app.get('/my-company', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        
+        if (!userId) {
+            return res.status(400).json({ error: 'userId مطلوب' });
+        }
+        
+        const employeesDataObj = await getEmployeesData();
+        const user = employeesDataObj.employees.find(e => e.id.toString() === userId);
+        
+        if (!user) {
+            return res.status(404).json({ error: 'المستخدم غير موجود' });
+        }
+        
+        const companiesDataObj = await getCompaniesData();
+        const company = companiesDataObj.companies.find(c => c.id === (user.companyId || 'default'));
+        
+        if (!company) {
+            return res.json({
+                success: true,
+                company: {
+                    id: 'default',
+                    name: 'Link Call',
+                    isDefault: true
+                }
+            });
+        }
+        
+        res.json({
+            success: true,
+            company: {
+                id: company.id,
+                name: company.name,
+                subscription: company.subscription,
+                isActive: company.isActive,
+                settings: company.settings
+            },
+            userRole: user.role
+        });
+    } catch (error) {
+        console.error('خطأ في جلب بيانات الشركة:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+console.log('✅ نظام الشركات المتعددة جاهز');
+
 // Export for Vercel serverless
 module.exports = app;

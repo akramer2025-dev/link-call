@@ -58,6 +58,7 @@ function initNavigation() {
             // تحديث العنوان
             const titles = {
                 'dashboard': 'لوحة التحكم',
+                'companies': 'إدارة الشركات',
                 'calls': 'جميع المكالمات',
                 'employees': 'إدارة الموظفين',
                 'analytics': 'التحليلات',
@@ -66,6 +67,11 @@ function initNavigation() {
                 'settings': 'إعدادات النظام'
             };
             document.getElementById('page-title').textContent = titles[targetSection] || 'لوحة التحكم';
+            
+            // تحميل بيانات القسم
+            if (targetSection === 'companies') {
+                loadCompanies();
+            }
             
             // إغلاق القائمة الجانبية في الهاتف عند اختيار قسم
             closeMobileSidebar();
@@ -944,6 +950,191 @@ document.getElementById('global-search')?.addEventListener('input', (e) => {
     allCalls = filtered;
     renderCallsTable(1);
     allCalls = originalCalls;
+});
+
+// ========== إدارة الشركات ==========
+let allCompanies = [];
+
+// تحميل قائمة الشركات
+async function loadCompanies() {
+    try {
+        const response = await fetch(`${baseUrl}/companies`);
+        if (response.ok) {
+            const data = await response.json();
+            allCompanies = data.companies || [];
+            renderCompanies();
+            updateCompaniesStats();
+        }
+    } catch (error) {
+        console.error('خطأ في تحميل الشركات:', error);
+    }
+}
+
+// عرض الشركات
+function renderCompanies() {
+    const container = document.getElementById('companies-list');
+    if (!container) return;
+    
+    if (allCompanies.length === 0) {
+        container.innerHTML = `
+            <div class="no-data" style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                <p style="font-size: 48px; margin-bottom: 15px;">🏢</p>
+                <p>لا توجد شركات مسجلة</p>
+                <p style="color: var(--text-muted); font-size: 14px;">اضغط على "إضافة شركة جديدة" للبدء</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = allCompanies.map(company => `
+        <div class="company-card ${company.isActive ? '' : 'inactive'}">
+            <div class="company-header">
+                <div class="company-icon">🏢</div>
+                <div class="company-info">
+                    <h4>${company.name}</h4>
+                    <span class="admin-name">المدير: ${company.adminUsername}</span>
+                    <span class="subscription-badge ${company.subscription}">${getSubscriptionName(company.subscription)}</span>
+                </div>
+                <span class="company-badge ${company.isActive ? 'active' : 'inactive'}">
+                    ${company.isActive ? '🟢 نشط' : '🔴 متوقف'}
+                </span>
+            </div>
+            <div class="company-stats">
+                <div class="company-stat">
+                    <span class="company-stat-value">${company.employeesCount || 0}</span>
+                    <span class="company-stat-label">موظف</span>
+                </div>
+                <div class="company-stat">
+                    <span class="company-stat-value">0</span>
+                    <span class="company-stat-label">مكالمة</span>
+                </div>
+                <div class="company-stat">
+                    <span class="company-stat-value">${formatDate(company.createdAt)}</span>
+                    <span class="company-stat-label">تاريخ التسجيل</span>
+                </div>
+            </div>
+            <div class="company-actions">
+                <button class="btn-view" onclick="viewCompany('${company.id}')">👁️ عرض</button>
+                <button class="btn-edit" onclick="editCompany('${company.id}')">✏️ تعديل</button>
+                ${company.id !== 'default' ? `<button class="btn-delete" onclick="deleteCompany('${company.id}')">🗑️ حذف</button>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+// تحديث إحصائيات الشركات
+function updateCompaniesStats() {
+    const totalEl = document.getElementById('total-companies');
+    const activeEl = document.getElementById('active-companies');
+    
+    if (totalEl) totalEl.textContent = allCompanies.length;
+    if (activeEl) activeEl.textContent = allCompanies.filter(c => c.isActive).length;
+}
+
+// الحصول على اسم الاشتراك
+function getSubscriptionName(type) {
+    const names = {
+        'basic': 'أساسي',
+        'pro': 'احترافي',
+        'unlimited': 'غير محدود'
+    };
+    return names[type] || type;
+}
+
+// عرض تفاصيل شركة
+function viewCompany(companyId) {
+    const company = allCompanies.find(c => c.id === companyId);
+    if (!company) return;
+    
+    alert(`🏢 ${company.name}\n\nالمدير: ${company.adminUsername}\nالاشتراك: ${getSubscriptionName(company.subscription)}\nالحالة: ${company.isActive ? 'نشط' : 'متوقف'}`);
+}
+
+// تعديل شركة
+async function editCompany(companyId) {
+    const company = allCompanies.find(c => c.id === companyId);
+    if (!company) return;
+    
+    const newName = prompt('اسم الشركة:', company.name);
+    if (!newName) return;
+    
+    try {
+        const response = await fetch(`${baseUrl}/companies/${companyId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: newName })
+        });
+        
+        if (response.ok) {
+            alert('✅ تم تحديث الشركة');
+            loadCompanies();
+        } else {
+            const data = await response.json();
+            alert('❌ ' + (data.error || 'خطأ في التحديث'));
+        }
+    } catch (error) {
+        alert('❌ خطأ في الاتصال');
+    }
+}
+
+// حذف/إيقاف شركة
+async function deleteCompany(companyId) {
+    if (!confirm('⚠️ هل تريد إيقاف هذه الشركة؟\n\nسيتم إيقاف جميع حسابات الموظفين التابعين لها.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${baseUrl}/companies/${companyId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            alert('✅ تم إيقاف الشركة');
+            loadCompanies();
+        } else {
+            const data = await response.json();
+            alert('❌ ' + (data.error || 'خطأ في الحذف'));
+        }
+    } catch (error) {
+        alert('❌ خطأ في الاتصال');
+    }
+}
+
+// إضافة شركة جديدة
+document.getElementById('add-company-btn')?.addEventListener('click', () => {
+    document.getElementById('add-company-modal').classList.add('active');
+});
+
+document.getElementById('add-company-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const data = {
+        name: document.getElementById('company-name').value,
+        adminUsername: document.getElementById('company-admin-username').value,
+        adminName: document.getElementById('company-admin-name').value,
+        adminPassword: document.getElementById('company-admin-password').value,
+        subscription: document.getElementById('company-subscription').value
+    };
+    
+    try {
+        const response = await fetch(`${baseUrl}/companies`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            alert(`✅ تم إنشاء الشركة بنجاح!\n\nاسم المستخدم: ${result.admin.username}\nيمكن للمدير الدخول الآن.`);
+            document.getElementById('add-company-modal').classList.remove('active');
+            document.getElementById('add-company-form').reset();
+            loadCompanies();
+        } else {
+            alert('❌ ' + (result.error || 'خطأ في إنشاء الشركة'));
+        }
+    } catch (error) {
+        alert('❌ خطأ في الاتصال بالخادم');
+    }
 });
 
 console.log('✅ Admin Dashboard Ready');

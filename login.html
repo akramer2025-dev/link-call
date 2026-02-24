@@ -8,7 +8,7 @@
     
     <!-- PWA Configuration -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6c5ce7">
+    <meta name="theme-color" content="#1a365d">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,157 +18,94 @@
     <link rel="stylesheet" href="login-style.css">
 </head>
 <body>
-    <!-- خلفية الذكاء الاصطناعي -->
-    <div class="ai-background" id="ai-background">
-        <div class="ai-grid"></div>
-    </div>
-    <div class="stars" id="stars"></div>
+    <!-- خلفية الكول سنتر -->
+    <div class="background-image"></div>
+    <div class="background-overlay"></div>
     
-    <div class="login-container">
-        <div class="login-box">
-            <div class="logo-container">
-                <div class="logo-wrapper">
-                    <div class="logo-ring"></div>
-                    <div class="logo-ring"></div>
-                    <div class="logo-ring"></div>
-                    <img src="icon-512.png?v=2" alt="Link Call" class="login-logo">
+    <!-- الحاوية الرئيسية -->
+    <div class="login-wrapper">
+        <!-- القسم الأيسر - معلومات -->
+        <div class="info-section">
+            <div class="info-content">
+                <img src="icon-512.png?v=2" alt="Link Call" class="brand-logo">
+                <h1 class="brand-title">Link Call</h1>
+                <p class="brand-subtitle">نظام المكالمات السحابي المتكامل</p>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">📞</span>
+                        <span class="feature-text">مكالمات عالية الجودة</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🌍</span>
+                        <span class="feature-text">اتصل من أي مكان في العالم</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔒</span>
+                        <span class="feature-text">تشفير وحماية كاملة</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📊</span>
+                        <span class="feature-text">تقارير وإحصائيات مفصلة</span>
+                    </div>
                 </div>
             </div>
-            
-            <h1>تسجيل الدخول</h1>
-            <p class="subtitle">Link Call - نظام المكالمات السحابي</p>
-            
-            <form id="login-form">
-                <div class="input-group">
-                    <label for="username">اسم المستخدم</label>
-                    <input type="text" id="username" name="username" required autocomplete="username">
-                    <span class="icon">👤</span>
+        </div>
+        
+        <!-- القسم الأيمن - نموذج الدخول -->
+        <div class="login-section">
+            <div class="login-card">
+                <div class="login-header">
+                    <h2>مرحباً بك</h2>
+                    <p>سجل دخولك للمتابعة</p>
                 </div>
                 
-                <div class="input-group">
-                    <label for="password">كلمة المرور</label>
-                    <input type="password" id="password" name="password" required autocomplete="current-password">
-                    <span class="icon">🔒</span>
-                    <button type="button" class="toggle-password" id="toggle-password">👁️</button>
-                </div>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">اسم المستخدم</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="username" name="username" placeholder="أدخل اسم المستخدم" required autocomplete="username">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">كلمة المرور</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور" required autocomplete="current-password">
+                            <button type="button" class="toggle-password" id="toggle-password">👁️</button>
+                        </div>
+                    </div>
+                    
+                    <div class="error-message hidden" id="error-message">
+                        ⚠️ اسم المستخدم أو كلمة المرور غير صحيحة
+                    </div>
+                    
+                    <button type="submit" class="login-btn" id="login-btn">
+                        <span class="btn-text">تسجيل الدخول</span>
+                        <span class="btn-loader hidden"></span>
+                    </button>
+                </form>
                 
-                <div class="error-message hidden" id="error-message">
-                    ⚠️ اسم المستخدم أو كلمة المرور غير صحيحة
+                <div class="login-footer">
+                    <p>© 2025 ENG/AKRAM ELMASRY</p>
                 </div>
-                
-                <button type="submit" class="login-btn">
-                    <span>دخول</span>
-                    <span class="arrow">→</span>
-                </button>
-            </form>
-            
-            <div class="footer-text">
-                <p>© 2025 ENG/AKRAM ELMASRY</p>
             </div>
         </div>
     </div>
-    
+
     <script>
-        // إنشاء النجوم
-        function createStars() {
-            const starsContainer = document.getElementById('stars');
-            const numberOfStars = 80;
-            
-            for (let i = 0; i < numberOfStars; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 4 + 's';
-                star.style.animationDuration = (Math.random() * 3 + 3) + 's';
-                starsContainer.appendChild(star);
-            }
-        }
-        
-        // إنشاء جزيئات الذكاء الاصطناعي
-        function createAIParticles() {
-            const aiBackground = document.getElementById('ai-background');
-            const numberOfParticles = 30;
-            
-            for (let i = 0; i < numberOfParticles; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'ai-particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 8 + 's';
-                particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
-                particle.style.width = (Math.random() * 6 + 3) + 'px';
-                particle.style.height = particle.style.width;
-                aiBackground.appendChild(particle);
-            }
-            
-            // إنشاء دوائر التقنية
-            for (let i = 0; i < 5; i++) {
-                const techCircle = document.createElement('div');
-                techCircle.className = 'tech-circle';
-                techCircle.style.left = Math.random() * 80 + 10 + '%';
-                techCircle.style.top = Math.random() * 80 + 10 + '%';
-                techCircle.style.width = (Math.random() * 100 + 50) + 'px';
-                techCircle.style.height = techCircle.style.width;
-                techCircle.style.animationDelay = Math.random() * 6 + 's';
-                techCircle.style.animationDuration = (Math.random() * 4 + 4) + 's';
-                aiBackground.appendChild(techCircle);
-            }
-            
-            // إنشاء خطوط الاتصال العصبي
-            for (let i = 0; i < 10; i++) {
-                const line = document.createElement('div');
-                line.className = 'neural-line';
-                line.style.left = Math.random() * 100 + '%';
-                line.style.top = Math.random() * 100 + '%';
-                line.style.width = (Math.random() * 200 + 100) + 'px';
-                line.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
-                line.style.animationDelay = Math.random() * 3 + 's';
-                aiBackground.appendChild(line);
-            }
-        }
-        
-        createStars();
-        createAIParticles();
-        
         // معالجة تسجيل الدخول
         const loginForm = document.getElementById('login-form');
         const errorMessage = document.getElementById('error-message');
         const togglePassword = document.getElementById('toggle-password');
         const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
         
         // بيانات المطور الأساسية
         const adminUsername = 'akram';
         const adminPassword = 'Aazxc';
-        
-        // الحصول على قائمة المديرين
-        function getEmployees() {
-            const employees = localStorage.getItem('employees');
-            return employees ? JSON.parse(employees) : [];
-        }
-        
-        // التحقق من بيانات الدخول
-        function validateLogin(username, password) {
-            // التحقق من المطور
-            if (username === adminUsername && password === adminPassword) {
-                return { valid: true, role: 'admin', fullname: 'المطور الرئيسي', permissions: ['all'] };
-            }
-            
-            // التحقق من المديرين
-            const employees = getEmployees();
-            const employee = employees.find(emp => emp.username === username && emp.password === password);
-            
-            if (employee) {
-                return { 
-                    valid: true, 
-                    role: 'employee', 
-                    fullname: employee.fullname,
-                    permissions: employee.permissions 
-                };
-            }
-            
-            return { valid: false };
-        }
         
         // إظهار/إخفاء كلمة المرور
         togglePassword.addEventListener('click', () => {
@@ -177,9 +114,23 @@
             togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
         });
         
+        // إظهار حالة التحميل
+        function showLoading() {
+            loginBtn.classList.add('loading');
+            loginBtn.querySelector('.btn-text').textContent = 'جاري التحقق...';
+        }
+        
+        // إخفاء حالة التحميل
+        function hideLoading() {
+            loginBtn.classList.remove('loading');
+            loginBtn.querySelector('.btn-text').textContent = 'تسجيل الدخول';
+        }
+        
         // معالجة النموذج
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            errorMessage.classList.add('hidden');
+            showLoading();
             
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
@@ -200,9 +151,7 @@
                     const baseUrl = window.location.origin;
                     await fetch(`${baseUrl}/work-tracking`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             action: 'login',
                             employeeId: 'admin',
@@ -213,7 +162,7 @@
                     console.error('خطأ في تسجيل وقت الدخول:', error);
                 }
                 
-                loginForm.classList.add('success');
+                loginBtn.classList.add('success');
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 500);
@@ -225,9 +174,7 @@
                 const baseUrl = window.location.origin;
                 const response = await fetch(`${baseUrl}/login`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 
@@ -238,15 +185,12 @@
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('username', data.employee.username);
                     
-                    // التحقق من الحساب التجريبي
                     const userRole = data.employee.isTrial ? 'trial' : (data.employee.role || 'employee');
                     sessionStorage.setItem('userRole', userRole);
                     
-                    // حفظ معلومات الحساب التجريبي
                     if (data.employee.isTrial) {
                         sessionStorage.setItem('isTrial', 'true');
                         sessionStorage.setItem('maxCalls', data.employee.maxCalls || '2');
-                        console.log('📊 حساب تجريبي - المكالمات المتاحة:', data.employee.maxCalls || 2);
                     }
                     
                     sessionStorage.setItem('fullname', data.employee.name);
@@ -255,27 +199,20 @@
                     localStorage.setItem('employeeId', data.employee.id.toString());
                     localStorage.setItem('employeeName', data.employee.name);
                     
-                    // حفظ الصلاحيات
                     const permissions = data.employee.permissions || {};
                     sessionStorage.setItem('permissions', JSON.stringify(permissions));
                     sessionStorage.setItem('canViewOwnRecordings', permissions.viewOwnRecordings ? 'true' : 'false');
                     sessionStorage.setItem('canViewAllRecordings', permissions.viewAllRecordings ? 'true' : 'false');
                     sessionStorage.setItem('canDeleteRecordings', permissions.deleteRecordings ? 'true' : 'false');
                     sessionStorage.setItem('canEditProfile', permissions.editProfile ? 'true' : 'false');
-                    // صلاحيات الاتصال
                     sessionStorage.setItem('canCallFromUSA', permissions.callFromUSA !== false ? 'true' : 'false');
                     sessionStorage.setItem('canCallFromEgypt', permissions.callFromEgypt ? 'true' : 'false');
                     sessionStorage.setItem('canCallFromSaudi', permissions.callFromSaudi ? 'true' : 'false');
                     
-                    console.log('✅ تم تسجيل الدخول:', data.employee.name);
-                    console.log('🔐 الصلاحيات:', permissions);
-                    
                     // تسجيل وقت الدخول
                     await fetch(`${baseUrl}/work-tracking`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             action: 'login',
                             employeeId: data.employee.id.toString(),
@@ -283,29 +220,24 @@
                         })
                     });
                     
-                    loginForm.classList.add('success');
+                    loginBtn.classList.add('success');
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 500);
                 } else {
-                    // إظهار رسالة خطأ
+                    hideLoading();
                     errorMessage.textContent = '⚠️ ' + (data.error || 'اسم المستخدم أو كلمة المرور غير صحيحة');
                     errorMessage.classList.remove('hidden');
                     loginForm.classList.add('shake');
-                    
-                    setTimeout(() => {
-                        loginForm.classList.remove('shake');
-                    }, 500);
+                    setTimeout(() => loginForm.classList.remove('shake'), 500);
                 }
             } catch (error) {
+                hideLoading();
                 console.error('❌ خطأ في تسجيل الدخول:', error);
                 errorMessage.textContent = '⚠️ خطأ في الاتصال بالخادم';
                 errorMessage.classList.remove('hidden');
                 loginForm.classList.add('shake');
-                
-                setTimeout(() => {
-                    loginForm.classList.remove('shake');
-                }, 500);
+                setTimeout(() => loginForm.classList.remove('shake'), 500);
             }
         });
     </script>

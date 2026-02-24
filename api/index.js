@@ -322,6 +322,101 @@ app.get('/service-worker.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'service-worker.js'));
 });
 
+// معالج تتبع العمل
+app.all('/work-tracking', async (req, res) => {
+    try {
+        console.log('📊 Work tracking request:', req.method, req.body);
+        
+        if (req.method === 'OPTIONS') {
+            return res.status(200).end();
+        }
+        
+        const { action, employeeId, employeeName, data } = req.body || {};
+
+        if (!action || !employeeId) {
+            console.log('❌ Missing action or employeeId');
+            return res.status(400).json({ 
+                error: 'يجب تحديد action و employeeId' 
+            });
+        }
+        
+        console.log(`✅ Processing action: ${action} for employee: ${employeeId}`);
+
+        const timestamp = new Date().toISOString();
+        const date = new Date().toISOString().split('T')[0];
+
+        switch (action) {
+            case 'login':
+                const loginKey = `work:${employeeId}:${date}`;
+                let workSession = await kv.get(loginKey) || {
+                    employeeId,
+                    employeeName,
+                    date,
+                    loginTime: timestamp,
+                    logoutTime: null,
+                    totalMinutes: 0,
+                    calls: [],
+                    activities: []
+                };
+
+                if (!workSession.logoutTime && workSession.loginTime !== timestamp) {
+                    workSession.activities.push({ type: 'login', time: timestamp });
+                } else {
+                    workSession.loginTime = timestamp;
+                }
+
+                await kv.set(loginKey, workSession);
+                return res.status(200).json({ success: true, message: 'تم تسجيل الدخول', session: workSession });
+
+            case 'logout':
+                const logoutKey = `work:${employeeId}:${date}`;
+                let session = await kv.get(logoutKey);
+                if (!session) return res.status(404).json({ error: 'لم يتم العثور على جلسة' });
+
+                session.logoutTime = timestamp;
+                const minutes = Math.floor((new Date(timestamp) - new Date(session.loginTime)) / 1000 / 60);
+                session.totalMinutes = minutes;
+                session.activities.push({ type: 'logout', time: timestamp });
+
+                await kv.set(logoutKey, session);
+                return res.status(200).json({ success: true, session });
+
+            case 'activity':
+                const activityKey = `work:${employeeId}:${date}`;
+                let activitySession = await kv.get(activityKey);
+                if (!activitySession) return res.status(404).json({ error: 'لم يتم العثور على جلسة' });
+
+                const activity = { type: data?.type, time: timestamp, details: data?.details || {} };
+                activitySession.activities.push(activity);
+
+                if (data?.type === 'call') {
+                    activitySession.calls.push({
+                        time: timestamp,
+                        phoneNumber: data.details?.phoneNumber,
+                        duration: data.details?.duration,
+                        status: data.details?.status
+                    });
+                }
+
+                await kv.set(activityKey, activitySession);
+                return res.status(200).json({ success: true, activity });
+
+            case 'heartbeat':
+                // نبض القلب للمستخدم المتصل
+                const heartbeatKey = `online:${employeeId}`;
+                await kv.set(heartbeatKey, { employeeId, employeeName, lastSeen: timestamp }, { ex: 60 });
+                return res.status(200).json({ success: true });
+
+            default:
+                return res.status(400).json({ error: 'Action غير صحيح' });
+        }
+
+    } catch (error) {
+        console.error('❌ خطأ في تتبع العمل:', error);
+        return res.status(500).json({ error: 'فشل في تتبع العمل', details: error.message });
+    }
+});
+
 // توليد Token للعميل (للمكالمات من المتصفح مباشرة)
 app.get('/token', async (req, res) => {
     try {

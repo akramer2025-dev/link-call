@@ -1,35 +1,35 @@
-// ãÚáæãÇÊ Twilio
+ï»¿// Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Twilio
 const TWILIO_PHONE_NUMBER = '+13204336644';
 let currentCallSid = null;
 let callStartTime;
 let callTimer;
 let isRecording = false;
 let callCheckInterval = null;
-let phoneNumber = ''; // ãÊÛíÑ áÊÎÒíä ÑŞã ÇáåÇÊİ
+let phoneNumber = ''; // Ù…ØªØºÙŠØ± Ù„ØªØ®Ø²ÙŠÙ† Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ
 
-// ===== PWA ÊËÈíÊ ÇáÊØÈíŞ =====
+// ===== PWA ØªØ«Ø¨ÙŠØª Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ =====
 let deferredPrompt;
 const installBtn = document.getElementById('install-app-btn');
 
-// ÇáÊŞÇØ ÍÏË ÇáÊËÈíÊ
+// Ø§Ù„ØªÙ‚Ø§Ø· Ø­Ø¯Ø« Ø§Ù„ØªØ«Ø¨ÙŠØª
 window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('?? PWA: íãßä ÊËÈíÊ ÇáÊØÈíŞ');
+    console.log('ğŸ“² PWA: ÙŠÙ…ÙƒÙ† ØªØ«Ø¨ÙŠØª Ø§Ù„ØªØ·Ø¨ÙŠÙ‚');
     e.preventDefault();
     deferredPrompt = e;
     
-    // ÅÙåÇÑ ÒÑ ÇáÊËÈíÊ
+    // Ø¥Ø¸Ù‡Ø§Ø± Ø²Ø± Ø§Ù„ØªØ«Ø¨ÙŠØª
     if (installBtn) {
         installBtn.style.display = 'block';
         installBtn.classList.add('install-available');
     }
 });
 
-// ÚäÏ ÇáäŞÑ Úáì ÒÑ ÇáÊËÈíÊ
+// Ø¹Ù†Ø¯ Ø§Ù„Ù†Ù‚Ø± Ø¹Ù„Ù‰ Ø²Ø± Ø§Ù„ØªØ«Ø¨ÙŠØª
 if (installBtn) {
     installBtn.addEventListener('click', async () => {
         if (!deferredPrompt) {
-            // ÅĞÇ ßÇä ÇáÊØÈíŞ ãËÈÊ Ãæ áÇ íÏÚã PWA
-            alert('ÇáÊØÈíŞ ãËÈÊ ÈÇáİÚá Ãæ ÇáãÊÕİÍ áÇ íÏÚã ÇáÊËÈíÊ\n\náÊËÈíÊ ÇáÊØÈíŞ:\n1. ÇİÊÍ ŞÇÆãÉ ÇáãÊÕİÍ (?)\n2. ÇÎÊÑ "ÅÖÇİÉ Åáì ÇáÔÇÔÉ ÇáÑÆíÓíÉ"');
+            // Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ù…Ø«Ø¨Øª Ø£Ùˆ Ù„Ø§ ÙŠØ¯Ø¹Ù… PWA
+            alert('Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ù…Ø«Ø¨Øª Ø¨Ø§Ù„ÙØ¹Ù„ Ø£Ùˆ Ø§Ù„Ù…ØªØµÙØ­ Ù„Ø§ ÙŠØ¯Ø¹Ù… Ø§Ù„ØªØ«Ø¨ÙŠØª\n\nÙ„ØªØ«Ø¨ÙŠØª Ø§Ù„ØªØ·Ø¨ÙŠÙ‚:\n1. Ø§ÙØªØ­ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…ØªØµÙØ­ (â‹®)\n2. Ø§Ø®ØªØ± "Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ø´Ø§Ø´Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©"');
             return;
         }
         
@@ -37,37 +37,37 @@ if (installBtn) {
         const { outcome } = await deferredPrompt.userChoice;
         
         if (outcome === 'accepted') {
-            console.log('? PWA: Êã ŞÈæá ÇáÊËÈíÊ');
+            console.log('âœ… PWA: ØªÙ… Ù‚Ø¨ÙˆÙ„ Ø§Ù„ØªØ«Ø¨ÙŠØª');
             installBtn.style.display = 'none';
         } else {
-            console.log('? PWA: Êã ÑİÖ ÇáÊËÈíÊ');
+            console.log('âŒ PWA: ØªÙ… Ø±ÙØ¶ Ø§Ù„ØªØ«Ø¨ÙŠØª');
         }
         
         deferredPrompt = null;
     });
 }
 
-// ÚäÏ ÇßÊãÇá ÇáÊËÈíÊ
+// Ø¹Ù†Ø¯ Ø§ÙƒØªÙ…Ø§Ù„ Ø§Ù„ØªØ«Ø¨ÙŠØª
 window.addEventListener('appinstalled', () => {
-    console.log('? PWA: Êã ÊËÈíÊ ÇáÊØÈíŞ ÈäÌÇÍ!');
+    console.log('âœ… PWA: ØªÙ… ØªØ«Ø¨ÙŠØª Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ø¨Ù†Ø¬Ø§Ø­!');
     if (installBtn) {
         installBtn.style.display = 'none';
     }
     deferredPrompt = null;
 });
 
-// ÇáÊÍŞŞ ÅĞÇ ßÇä ÇáÊØÈíŞ íÚãá ßÜ PWA ãËÈÊ
+// Ø§Ù„ØªØ­Ù‚Ù‚ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ ÙŠØ¹Ù…Ù„ ÙƒÙ€ PWA Ù…Ø«Ø¨Øª
 if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-    console.log('?? ÇáÊØÈíŞ íÚãá ßÜ PWA ãËÈÊ');
+    console.log('ğŸ“± Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ ÙŠØ¹Ù…Ù„ ÙƒÙ€ PWA Ù…Ø«Ø¨Øª');
 }
 
-// ===== ÊÊÈÚ ÇáãÓÊÎÏãíä ÇáÃæäáÇíä =====
+// ===== ØªØªØ¨Ø¹ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ø§Ù„Ø£ÙˆÙ†Ù„Ø§ÙŠÙ† =====
 let heartbeatInterval = null;
 
-// ÅÑÓÇá äÈÖÉ ááÎÇÏã
+// Ø¥Ø±Ø³Ø§Ù„ Ù†Ø¨Ø¶Ø© Ù„Ù„Ø®Ø§Ø¯Ù…
 async function sendHeartbeat() {
     const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
-    const userName = sessionStorage.getItem('fullname') || localStorage.getItem('employeeName') || 'ãÓÊÎÏã';
+    const userName = sessionStorage.getItem('fullname') || localStorage.getItem('employeeName') || 'Ù…Ø³ØªØ®Ø¯Ù…';
     
     if (!userId) return;
     
@@ -78,32 +78,32 @@ async function sendHeartbeat() {
             body: JSON.stringify({ userId, userName })
         });
     } catch (error) {
-        console.error('ÎØÃ İí ÅÑÓÇá Heartbeat:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ Ø¥Ø±Ø³Ø§Ù„ Heartbeat:', error);
     }
 }
 
-// ÈÏÁ ÊÊÈÚ ÇáãÓÊÎÏã ÇáÃæäáÇíä
+// Ø¨Ø¯Ø¡ ØªØªØ¨Ø¹ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø£ÙˆÙ†Ù„Ø§ÙŠÙ†
 function startOnlineTracking() {
     const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
     const userName = sessionStorage.getItem('fullname') || localStorage.getItem('employeeName');
     
     if (!userId) return;
     
-    // ÊÓÌíá ÇáÏÎæá
+    // ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„
     fetch(`${window.location.origin}/track-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, userName })
-    }).catch(err => console.error('ÎØÃ İí ÊÓÌíá ÇáÏÎæá:', err));
+    }).catch(err => console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„:', err));
     
-    // ÅÑÓÇá Heartbeat ßá 15 ËÇäíÉ
+    // Ø¥Ø±Ø³Ø§Ù„ Heartbeat ÙƒÙ„ 15 Ø«Ø§Ù†ÙŠØ©
     sendHeartbeat();
     heartbeatInterval = setInterval(sendHeartbeat, 15000);
     
-    console.log('?? ÈÏÃ ÊÊÈÚ ÇáÃæäáÇíä ááãÓÊÎÏã:', userName);
+    console.log('ğŸŸ¢ Ø¨Ø¯Ø£ ØªØªØ¨Ø¹ Ø§Ù„Ø£ÙˆÙ†Ù„Ø§ÙŠÙ† Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù…:', userName);
 }
 
-// ÅíŞÇİ ÊÊÈÚ ÇáãÓÊÎÏã ÚäÏ ÇáÎÑæÌ
+// Ø¥ÙŠÙ‚Ø§Ù ØªØªØ¨Ø¹ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¹Ù†Ø¯ Ø§Ù„Ø®Ø±ÙˆØ¬
 function stopOnlineTracking() {
     const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
     
@@ -113,26 +113,26 @@ function stopOnlineTracking() {
     }
     
     if (userId) {
-        // ÅÑÓÇá ØáÈ ÊÓÌíá ÇáÎÑæÌ
+        // Ø¥Ø±Ø³Ø§Ù„ Ø·Ù„Ø¨ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø®Ø±ÙˆØ¬
         navigator.sendBeacon(`${window.location.origin}/track-logout`, JSON.stringify({ userId }));
     }
 }
 
-// ÈÏÁ ÇáÊÊÈÚ ÚäÏ ÊÍãíá ÇáÕİÍÉ
+// Ø¨Ø¯Ø¡ Ø§Ù„ØªØªØ¨Ø¹ Ø¹Ù†Ø¯ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØµÙØ­Ø©
 window.addEventListener('load', () => {
     startOnlineTracking();
 });
 
-// ÅíŞÇİ ÇáÊÊÈÚ ÚäÏ ÅÛáÇŞ ÇáÕİÍÉ
+// Ø¥ÙŠÙ‚Ø§Ù Ø§Ù„ØªØªØ¨Ø¹ Ø¹Ù†Ø¯ Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„ØµÙØ­Ø©
 window.addEventListener('beforeunload', () => {
     stopOnlineTracking();
 });
 
-// ?? DEBUG: ØÈÇÚÉ ãÚáæãÇÊ İí ÈÏÇíÉ ÇáÊÍãíá
-console.log('?? app.js loaded - Version: 2.0.20251218');
-console.log('?? Current URL:', window.location.href);
+// ğŸ”¥ DEBUG: Ø·Ø¨Ø§Ø¹Ø© Ù…Ø¹Ù„ÙˆÙ…Ø§Øª ÙÙŠ Ø¨Ø¯Ø§ÙŠØ© Ø§Ù„ØªØ­Ù…ÙŠÙ„
+console.log('ğŸ”¥ app.js loaded - Version: 2.0.20251218');
+console.log('ğŸ”¥ Current URL:', window.location.href);
 
-// ÚäÇÕÑ ÇáæÇÌåÉ
+// Ø¹Ù†Ø§ØµØ± Ø§Ù„ÙˆØ§Ø¬Ù‡Ø©
 const displayNumber = document.getElementById('display-number');
 const dialpad = document.getElementById('dialpad');
 const callScreen = document.getElementById('call-screen');
@@ -153,7 +153,7 @@ const callDuration = document.getElementById('call-duration');
 const recordingStatus = document.getElementById('recording-status');
 const recordingsContainer = document.getElementById('recordings-container');
 
-// ÃÒÑÇÑ ÇáŞÇÆãÉ ÇáÌÇäÈíÉ
+// Ø£Ø²Ø±Ø§Ø± Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¬Ø§Ù†Ø¨ÙŠØ©
 const dialpadBtn = document.getElementById('dialpad-btn');
 const callHistoryBtn = document.getElementById('call-history-btn');
 const contactsBtn = document.getElementById('contacts-btn');
@@ -161,7 +161,7 @@ const recordingsBtn = document.getElementById('recordings-btn');
 const settingsBtn = document.getElementById('settings-btn');
 const workReportsBtn = document.getElementById('work-reports-btn');
 
-// ÊÍŞŞ ãä æÌæÏ ÇáÃÒÑÇÑ
+// ØªØ­Ù‚Ù‚ Ù…Ù† ÙˆØ¬ÙˆØ¯ Ø§Ù„Ø£Ø²Ø±Ø§Ø±
 console.log('Buttons loaded:', {
     dialpadBtn: !!dialpadBtn,
     callHistoryBtn: !!callHistoryBtn,
@@ -171,7 +171,7 @@ console.log('Buttons loaded:', {
     workReportsBtn: !!workReportsBtn
 });
 
-// ÇáãÊÛíÑÇÊ
+// Ø§Ù„Ù…ØªØºÙŠØ±Ø§Øª
 let isMuted = false;
 let isOnHold = false;
 let isSpeakerOn = false;
@@ -180,39 +180,39 @@ let recordings = [];
 let device = null;
 let currentCall = null;
 
-// ========== äÙÇã ÇáÍÓÇÈ ÇáÊÌÑíÈí ==========
-// ÇáÊÍŞŞ ÅĞÇ ßÇä ÇáÍÓÇÈ ÊÌÑíÈí
+// ========== Ù†Ø¸Ø§Ù… Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ ==========
+// Ø§Ù„ØªØ­Ù‚Ù‚ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ø­Ø³Ø§Ø¨ ØªØ¬Ø±ÙŠØ¨ÙŠ
 function isTrialAccount() {
     const userRole = sessionStorage.getItem('userRole');
     const username = sessionStorage.getItem('username');
     return userRole === 'trial' || username === 'trial';
 }
 
-// ÇáÍÕæá Úáì ÚÏÏ ÇáãßÇáãÇÊ ÇáãÊÈŞíÉ ááÍÓÇÈ ÇáÊÌÑíÈí
+// Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¹Ø¯Ø¯ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª Ø§Ù„Ù…ØªØ¨Ù‚ÙŠØ© Ù„Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ
 function getTrialCallsRemaining() {
-    if (!isTrialAccount()) return -1; // -1 íÚäí ÛíÑ ãÍÏæÏ
+    if (!isTrialAccount()) return -1; // -1 ÙŠØ¹Ù†ÙŠ ØºÙŠØ± Ù…Ø­Ø¯ÙˆØ¯
     const maxCalls = 2;
     const usedCalls = parseInt(localStorage.getItem('trial_calls_used') || '0');
     return maxCalls - usedCalls;
 }
 
-// ÊÓÌíá ãßÇáãÉ ááÍÓÇÈ ÇáÊÌÑíÈí
+// ØªØ³Ø¬ÙŠÙ„ Ù…ÙƒØ§Ù„Ù…Ø© Ù„Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ
 function recordTrialCall() {
     if (!isTrialAccount()) return;
     const usedCalls = parseInt(localStorage.getItem('trial_calls_used') || '0');
     localStorage.setItem('trial_calls_used', (usedCalls + 1).toString());
-    console.log('?? ãßÇáãÇÊ ÇáÍÓÇÈ ÇáÊÌÑíÈí:', usedCalls + 1, '/ 2');
+    console.log('ğŸ“Š Ù…ÙƒØ§Ù„Ù…Ø§Øª Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ:', usedCalls + 1, '/ 2');
 }
 
-// ÇáÊÍŞŞ ãä ÅãßÇäíÉ ÅÌÑÇÁ ãßÇáãÉ ááÍÓÇÈ ÇáÊÌÑíÈí
+// Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø¥Ù…ÙƒØ§Ù†ÙŠØ© Ø¥Ø¬Ø±Ø§Ø¡ Ù…ÙƒØ§Ù„Ù…Ø© Ù„Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ
 function canTrialMakeCall() {
     if (!isTrialAccount()) return true;
     const remaining = getTrialCallsRemaining();
-    console.log('?? ÇáãßÇáãÇÊ ÇáãÊÈŞíÉ ááÍÓÇÈ ÇáÊÌÑíÈí:', remaining);
+    console.log('ğŸ“Š Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª Ø§Ù„Ù…ØªØ¨Ù‚ÙŠØ© Ù„Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ:', remaining);
     return remaining > 0;
 }
 
-// ÅÙåÇÑ ÑÓÇáÉ ÑÕíÏ ÛíÑ ßÇİí
+// Ø¥Ø¸Ù‡Ø§Ø± Ø±Ø³Ø§Ù„Ø© Ø±ØµÙŠØ¯ ØºÙŠØ± ÙƒØ§ÙÙŠ
 function showInsufficientBalanceAlert() {
     const alertHTML = `
         <div id="trial-alert-overlay" style="
@@ -237,13 +237,13 @@ function showInsufficientBalanceAlert() {
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
                 border: 1px solid rgba(255, 255, 255, 0.1);
             ">
-                <div style="font-size: 60px; margin-bottom: 20px;">??</div>
-                <h2 style="color: #ff6b6b; margin-bottom: 15px; font-size: 24px;">ÑÕíÏß ÛíÑ ßÇİí!</h2>
+                <div style="font-size: 60px; margin-bottom: 20px;">ğŸ’³</div>
+                <h2 style="color: #ff6b6b; margin-bottom: 15px; font-size: 24px;">Ø±ØµÙŠØ¯Ùƒ ØºÙŠØ± ÙƒØ§ÙÙŠ!</h2>
                 <p style="color: #a0aec0; margin-bottom: 10px; font-size: 16px;">
-                    áŞÏ ÇÓÊäİÏÊ ÇáãßÇáãÊíä ÇáãÌÇäíÊíä İí ÇáÍÓÇÈ ÇáÊÌÑíÈí.
+                    Ù„Ù‚Ø¯ Ø§Ø³ØªÙ†ÙØ¯Øª Ø§Ù„Ù…ÙƒØ§Ù„Ù…ØªÙŠÙ† Ø§Ù„Ù…Ø¬Ø§Ù†ÙŠØªÙŠÙ† ÙÙŠ Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ.
                 </p>
                 <p style="color: #cbd5e0; margin-bottom: 25px; font-size: 14px;">
-                    ááÇÓÊãÑÇÑ İí ÅÌÑÇÁ ÇáãßÇáãÇÊ¡ íÑÌì ÇáÊÑŞíÉ Åáì ÍÓÇÈ ãÏİæÚ.
+                    Ù„Ù„Ø§Ø³ØªÙ…Ø±Ø§Ø± ÙÙŠ Ø¥Ø¬Ø±Ø§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§ØªØŒ ÙŠØ±Ø¬Ù‰ Ø§Ù„ØªØ±Ù‚ÙŠØ© Ø¥Ù„Ù‰ Ø­Ø³Ø§Ø¨ Ù…Ø¯ÙÙˆØ¹.
                 </p>
                 <button onclick="document.getElementById('trial-alert-overlay').remove()" style="
                     background: linear-gradient(135deg, #6c5ce7, #a29bfe);
@@ -255,33 +255,33 @@ function showInsufficientBalanceAlert() {
                     cursor: pointer;
                     transition: transform 0.2s, box-shadow 0.2s;
                 ">
-                    ÍÓäÇğ
+                    Ø­Ø³Ù†Ø§Ù‹
                 </button>
                 <p style="color: #718096; margin-top: 20px; font-size: 12px;">
-                    ?? ááÊÑŞíÉ ÊæÇÕá ãÚäÇ
+                    ğŸ“ Ù„Ù„ØªØ±Ù‚ÙŠØ© ØªÙˆØ§ØµÙ„ Ù…Ø¹Ù†Ø§
                 </p>
             </div>
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', alertHTML);
 }
-// ========== äåÇíÉ äÙÇã ÇáÍÓÇÈ ÇáÊÌÑíÈí ==========
+// ========== Ù†Ù‡Ø§ÙŠØ© Ù†Ø¸Ø§Ù… Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ ==========
 
-// ŞÑÇÁÉ ÈíÇäÇÊ ãä URL ŞÈá Ãí ÔíÁ (urlParams æ autoLogin ãÚÑøİíä İí index.html)
+// Ù‚Ø±Ø§Ø¡Ø© Ø¨ÙŠØ§Ù†Ø§Øª Ù…Ù† URL Ù‚Ø¨Ù„ Ø£ÙŠ Ø´ÙŠØ¡ (urlParams Ùˆ autoLogin Ù…Ø¹Ø±Ù‘ÙÙŠÙ† ÙÙŠ index.html)
 const phoneFromUrl = urlParams.get('phone') || urlParams.get('number');
 const empId = urlParams.get('employeeId');
 const empName = urlParams.get('employeeName');
 
-console.log('?? ŞÑÇÁÉ URL Parameters:');
-console.log('  - URL ÇáßÇãá:', window.location.href);
+console.log('ğŸ” Ù‚Ø±Ø§Ø¡Ø© URL Parameters:');
+console.log('  - URL Ø§Ù„ÙƒØ§Ù…Ù„:', window.location.href);
 console.log('  - phone:', phoneFromUrl);
 console.log('  - autoLogin:', autoLogin);
 console.log('  - employeeId:', empId);
 console.log('  - employeeName:', empName);
 
-// ÊÓÌíá ÏÎæá ÊáŞÇÆí ÅĞÇ ÌÇÁ ãä CRM
+// ØªØ³Ø¬ÙŠÙ„ Ø¯Ø®ÙˆÙ„ ØªÙ„Ù‚Ø§Ø¦ÙŠ Ø¥Ø°Ø§ Ø¬Ø§Ø¡ Ù…Ù† CRM
 if (autoLogin === 'true' && empId && empName) {
-    console.log('?? ÊÓÌíá ÏÎæá ÊáŞÇÆí ãä CRM:', empName);
+    console.log('ğŸ” ØªØ³Ø¬ÙŠÙ„ Ø¯Ø®ÙˆÙ„ ØªÙ„Ù‚Ø§Ø¦ÙŠ Ù…Ù† CRM:', empName);
     
     sessionStorage.setItem('isLoggedIn', 'true');
     sessionStorage.setItem('username', empId);
@@ -292,48 +292,48 @@ if (autoLogin === 'true' && empId && empName) {
     localStorage.setItem('employeeName', decodeURIComponent(empName));
 }
 
-// ÅĞÇ ßÇä åäÇß ÑŞã¡ äÎÒäå ÈÚÏ ÊäÙíİå
+// Ø¥Ø°Ø§ ÙƒØ§Ù† Ù‡Ù†Ø§Ùƒ Ø±Ù‚Ù…ØŒ Ù†Ø®Ø²Ù†Ù‡ Ø¨Ø¹Ø¯ ØªÙ†Ø¸ÙŠÙÙ‡
 if (phoneFromUrl) {
-    // ÊäÙíİ ÇáÑŞã ãä ÇáÃÍÑİ ÇáÎÇÕÉ æÇáãÓÇİÇÊ
+    // ØªÙ†Ø¸ÙŠÙ Ø§Ù„Ø±Ù‚Ù… Ù…Ù† Ø§Ù„Ø£Ø­Ø±Ù Ø§Ù„Ø®Ø§ØµØ© ÙˆØ§Ù„Ù…Ø³Ø§ÙØ§Øª
     phoneNumber = phoneFromUrl
-        .replace(/[\u200E\u200F\u202A\u202B\u202C\u202D\u202E\uFEFF]/g, '') // ÍĞİ Right-to-Left æ Left-to-Right marks
-        .replace(/[\s\-\(\)]/g, ''); // ÍĞİ ÇáãÓÇİÇÊ æÇáÔÑØÇÊ æÇáÃŞæÇÓ
+        .replace(/[\u200E\u200F\u202A\u202B\u202C\u202D\u202E\uFEFF]/g, '') // Ø­Ø°Ù Right-to-Left Ùˆ Left-to-Right marks
+        .replace(/[\s\-\(\)]/g, ''); // Ø­Ø°Ù Ø§Ù„Ù…Ø³Ø§ÙØ§Øª ÙˆØ§Ù„Ø´Ø±Ø·Ø§Øª ÙˆØ§Ù„Ø£Ù‚ÙˆØ§Ø³
     
-    console.log('?? Êã ÇÓÊŞÈÇá ÑŞã ãä URL:', phoneFromUrl);
-    console.log('?? ÇáÑŞã ÈÚÏ ÇáÊäÙíİ:', phoneNumber);
-    console.log('?? Êã ÍİÙ ÇáÑŞã İí phoneNumber:', phoneNumber);
+    console.log('ğŸ“ ØªÙ… Ø§Ø³ØªÙ‚Ø¨Ø§Ù„ Ø±Ù‚Ù… Ù…Ù† URL:', phoneFromUrl);
+    console.log('ğŸ“ Ø§Ù„Ø±Ù‚Ù… Ø¨Ø¹Ø¯ Ø§Ù„ØªÙ†Ø¸ÙŠÙ:', phoneNumber);
+    console.log('ğŸ“ ØªÙ… Ø­ÙØ¸ Ø§Ù„Ø±Ù‚Ù… ÙÙŠ phoneNumber:', phoneNumber);
 } else {
-    console.log('?? áÇ íæÌÏ ÑŞã İí URL');
+    console.log('âš ï¸ Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø±Ù‚Ù… ÙÙŠ URL');
 }
 
-// ÊåíÆÉ ÇáÊØÈíŞ ãÚ Twilio Voice SDK v2
+// ØªÙ‡ÙŠØ¦Ø© Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ù…Ø¹ Twilio Voice SDK v2
 async function initializeApp() {
     try {
-        console.log('?? ÌÇÑí ÊåíÆÉ Twilio Device...');
-        updateConnectionStatus('connecting', 'ÌÇÑí ÇáÇÊÕÇá...');
+        console.log('ğŸ”„ Ø¬Ø§Ø±ÙŠ ØªÙ‡ÙŠØ¦Ø© Twilio Device...');
+        updateConnectionStatus('connecting', 'Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø§ØªØµØ§Ù„...');
         
-        // ÚÑÖ ÇáÑŞã ÅĞÇ ßÇä ãæÌæÏ
+        // Ø¹Ø±Ø¶ Ø§Ù„Ø±Ù‚Ù… Ø¥Ø°Ø§ ÙƒØ§Ù† Ù…ÙˆØ¬ÙˆØ¯
         if (phoneNumber) {
-            console.log('?? ÚÑÖ ÇáÑŞã İí ÇáÔÇÔÉ:', phoneNumber);
+            console.log('ğŸ“± Ø¹Ø±Ø¶ Ø§Ù„Ø±Ù‚Ù… ÙÙŠ Ø§Ù„Ø´Ø§Ø´Ø©:', phoneNumber);
             displayNumber.textContent = phoneNumber;
             updateDeleteButton();
         } else {
-            console.log('?? phoneNumber İÇÑÛ İí initializeApp');
+            console.log('âš ï¸ phoneNumber ÙØ§Ø±Øº ÙÙŠ initializeApp');
         }
-        // ØáÈ ÅĞä ÇáãíßÑæİæä ÃæáÇğ
+        // Ø·Ù„Ø¨ Ø¥Ø°Ù† Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ† Ø£ÙˆÙ„Ø§Ù‹
         try {
-            console.log('?? ØáÈ ÅĞä ÇáãíßÑæİæä...');
+            console.log('ğŸ¤ Ø·Ù„Ø¨ Ø¥Ø°Ù† Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ†...');
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            console.log('? Êã ÇáÍÕæá Úáì ÅĞä ÇáãíßÑæİæä');
-            // ÅíŞÇİ ÇáÜ stream ÈÚÏ ÇáÍÕæá Úáì ÇáÅĞä
+            console.log('âœ… ØªÙ… Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¥Ø°Ù† Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ†');
+            // Ø¥ÙŠÙ‚Ø§Ù Ø§Ù„Ù€ stream Ø¨Ø¹Ø¯ Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¥Ø°Ù†
             stream.getTracks().forEach(track => track.stop());
         } catch (micError) {
-            console.error('? İÔá ÇáÍÕæá Úáì ÅĞä ÇáãíßÑæİæä:', micError);
-            alert('íÑÌì ÇáÓãÇÍ ÈÇÓÊÎÏÇã ÇáãíßÑæİæä áÅÌÑÇÁ ÇáãßÇáãÇÊ');
-            throw new Error('áã íÊã ãäÍ ÅĞä ÇáãíßÑæİæä');
+            console.error('âŒ ÙØ´Ù„ Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¥Ø°Ù† Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ†:', micError);
+            alert('ÙŠØ±Ø¬Ù‰ Ø§Ù„Ø³Ù…Ø§Ø­ Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ† Ù„Ø¥Ø¬Ø±Ø§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª');
+            throw new Error('Ù„Ù… ÙŠØªÙ… Ù…Ù†Ø­ Ø¥Ø°Ù† Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ†');
         }
         
-        // ÇäÊÙÇÑ ÊÍãíá Twilio SDK
+        // Ø§Ù†ØªØ¸Ø§Ø± ØªØ­Ù…ÙŠÙ„ Twilio SDK
         let attempts = 0;
         while (typeof Twilio === 'undefined' && attempts < 30) {
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -341,25 +341,25 @@ async function initializeApp() {
         }
         
         if (typeof Twilio === 'undefined' || !Twilio.Device) {
-            throw new Error('Twilio SDK ÛíÑ ãÍãá. ÊÃßÏ ãä ÇáÇÊÕÇá ÈÇáÅäÊÑäÊ.');
+            throw new Error('Twilio SDK ØºÙŠØ± Ù…Ø­Ù…Ù„. ØªØ£ÙƒØ¯ Ù…Ù† Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ø§Ù„Ø¥Ù†ØªØ±Ù†Øª.');
         }
         
-        console.log('? Twilio SDK ãÍãá ÈäÌÇÍ');
+        console.log('âœ… Twilio SDK Ù…Ø­Ù…Ù„ Ø¨Ù†Ø¬Ø§Ø­');
         
-        // ÇáÍÕæá Úáì Access Token
-        // ÇÓÊÎÏÇã identity ËÇÈÊ ãÈäí Úáì employeeId áÇÓÊŞÈÇá ÇáãßÇáãÇÊ
+        // Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Access Token
+        // Ø§Ø³ØªØ®Ø¯Ø§Ù… identity Ø«Ø§Ø¨Øª Ù…Ø¨Ù†ÙŠ Ø¹Ù„Ù‰ employeeId Ù„Ø§Ø³ØªÙ‚Ø¨Ø§Ù„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª
         const baseUrl = window.location.origin;
         const empId = localStorage.getItem('employeeId') || sessionStorage.getItem('employeeId') || 'admin';
         const clientIdentity = `client_${empId}`;
-        console.log('?? Client Identity:', clientIdentity);
+        console.log('ğŸ†” Client Identity:', clientIdentity);
         const response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`);
         const data = await response.json();
         
         if (!data.token) {
-            throw new Error('İÔá ÇáÍÕæá Úáì Token');
+            throw new Error('ÙØ´Ù„ Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Token');
         }
         
-        console.log('? Êã ÇáÍÕæá Úáì Token');
+        console.log('âœ… ØªÙ… Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Token');
         
         device = new Twilio.Device(data.token, {
             codecPreferences: ['opus', 'pcmu'],
@@ -368,79 +368,79 @@ async function initializeApp() {
             logLevel: 1
         });
         
-        // ãÚÇáÌÉ ÇáÃÍÏÇË
+        // Ù…Ø¹Ø§Ù„Ø¬Ø© Ø§Ù„Ø£Ø­Ø¯Ø§Ø«
         device.on('registered', () => {
-            console.log('? Device ãÓÌá æãÓÊÚÏ');
-            updateConnectionStatus('connected', 'ÌÇåÒ ááãßÇáãÇÊ ??');
+            console.log('âœ… Device Ù…Ø³Ø¬Ù„ ÙˆÙ…Ø³ØªØ¹Ø¯');
+            updateConnectionStatus('connected', 'Ø¬Ø§Ù‡Ø² Ù„Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª ğŸ“');
             
-            // ÊÃßÏ ãä ÊİÚíá AudioContext
+            // ØªØ£ÙƒØ¯ Ù…Ù† ØªÙØ¹ÙŠÙ„ AudioContext
             if (device.audio) {
                 try {
                     device.audio._audioContext?.resume();
                 } catch (e) {
-                    console.warn('?? ÊÚĞÑ ÇÓÊÆäÇİ AudioContext:', e);
+                    console.warn('âš ï¸ ØªØ¹Ø°Ø± Ø§Ø³ØªØ¦Ù†Ø§Ù AudioContext:', e);
                 }
             }
             
-            // ÅĞÇ ÌÇÁ ãä CRM¡ ÇÈÏÃ ÇáãßÇáãÉ ÊáŞÇÆíÇğ
+            // Ø¥Ø°Ø§ Ø¬Ø§Ø¡ Ù…Ù† CRMØŒ Ø§Ø¨Ø¯Ø£ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹
             if (phoneFromUrl && phoneNumber) {
-                console.log('?? ÈÏÁ ÇáãßÇáãÉ ÊáŞÇÆíÇğ ãÚ:', phoneNumber);
-                console.log('?? ÇáÑŞã ÇáãÓÊÎÏã:', phoneNumber);
+                console.log('ğŸ”„ Ø¨Ø¯Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ Ù…Ø¹:', phoneNumber);
+                console.log('ğŸ“ Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…:', phoneNumber);
                 setTimeout(() => {
                     makeCall();
-                }, 1500); // ÊÃÎíÑ 1.5 ËÇäíÉ
+                }, 1500); // ØªØ£Ø®ÙŠØ± 1.5 Ø«Ø§Ù†ÙŠØ©
             }
         });
         
         device.on('error', (error) => {
-            console.error('? ÎØÃ İí Device:', error);
-            updateConnectionStatus('error', 'ÎØÃ: ' + error.message);
+            console.error('âŒ Ø®Ø·Ø£ ÙÙŠ Device:', error);
+            updateConnectionStatus('error', 'Ø®Ø·Ø£: ' + error.message);
         });
         
         device.on('incoming', (call) => {
-            console.log('?? ãßÇáãÉ æÇÑÏÉ ãä:', call.parameters.From);
+            console.log('ğŸ“± Ù…ÙƒØ§Ù„Ù…Ø© ÙˆØ§Ø±Ø¯Ø© Ù…Ù†:', call.parameters.From);
             handleIncomingCall(call);
         });
         
-        // ÊÓÌíá ÇáÜ Device
+        // ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ù€ Device
         await device.register();
         
-        // ÊÍãíá ÇáÊÓÌíáÇÊ
+        // ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª
         loadRecordings();
         
     } catch (error) {
-        console.error('? ÎØÃ İí ÇáÊåíÆÉ:', error);
-        updateConnectionStatus('error', 'ÎØÃ: ' + error.message);
-        alert('İÔá ÇáÇÊÕÇá ÈÇáÎÇÏã. ÊÃßÏ ãä Ãä ÇáÎÇÏã íÚãá.');
+        console.error('âŒ Ø®Ø·Ø£ ÙÙŠ Ø§Ù„ØªÙ‡ÙŠØ¦Ø©:', error);
+        updateConnectionStatus('error', 'Ø®Ø·Ø£: ' + error.message);
+        alert('ÙØ´Ù„ Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ø§Ù„Ø®Ø§Ø¯Ù…. ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù† Ø§Ù„Ø®Ø§Ø¯Ù… ÙŠØ¹Ù…Ù„.');
     }
 }
 
-// ÊÍÏíË ÍÇáÉ ÇáÇÊÕÇá
+// ØªØ­Ø¯ÙŠØ« Ø­Ø§Ù„Ø© Ø§Ù„Ø§ØªØµØ§Ù„
 function updateConnectionStatus(status, message) {
     connectionStatus.className = `connection-status ${status}`;
     statusText.textContent = message;
 }
 
-// ÊÍÏíË ÍÇáÉ ÇáãßÇáãÉ
+// ØªØ­Ø¯ÙŠØ« Ø­Ø§Ù„Ø© Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©
 function updateCallStatus(status) {
     callStatus.textContent = status;
 }
 
-// ÅÖÇİÉ ÑŞã Åáì ÇáÔÇÔÉ
+// Ø¥Ø¶Ø§ÙØ© Ø±Ù‚Ù… Ø¥Ù„Ù‰ Ø§Ù„Ø´Ø§Ø´Ø©
 function addDigit(digit) {
     phoneNumber += digit;
     displayNumber.textContent = phoneNumber;
     updateDeleteButton();
 }
 
-// ÍĞİ ÂÎÑ ÑŞã
+// Ø­Ø°Ù Ø¢Ø®Ø± Ø±Ù‚Ù…
 function deleteDigit() {
     phoneNumber = phoneNumber.slice(0, -1);
     displayNumber.textContent = phoneNumber || '';
     updateDeleteButton();
 }
 
-// ÊÍÏíË ÒÑ ÇáÍĞİ
+// ØªØ­Ø¯ÙŠØ« Ø²Ø± Ø§Ù„Ø­Ø°Ù
 function updateDeleteButton() {
     const deleteBtn = document.getElementById('delete-btn');
     if (deleteBtn) {
@@ -452,74 +452,74 @@ function updateDeleteButton() {
     }
 }
 
-// ÅÌÑÇÁ ãßÇáãÉ ÈÇÓÊÎÏÇã REST API
+// Ø¥Ø¬Ø±Ø§Ø¡ Ù…ÙƒØ§Ù„Ù…Ø© Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù… REST API
 async function makeCall() {
     if (!phoneNumber) {
-        alert('ÇáÑÌÇÁ ÅÏÎÇá ÑŞã ÇáåÇÊİ');
+        alert('Ø§Ù„Ø±Ø¬Ø§Ø¡ Ø¥Ø¯Ø®Ø§Ù„ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ');
         return;
     }
 
-    // ?? ÇáÊÍŞŞ ãä ÇáÍÓÇÈ ÇáÊÌÑíÈí
+    // ğŸ”’ Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ
     if (isTrialAccount() && !canTrialMakeCall()) {
         showInsufficientBalanceAlert();
-        console.log('? ÇáÍÓÇÈ ÇáÊÌÑíÈí ÇÓÊäİÏ ÇáãßÇáãÇÊ ÇáãÌÇäíÉ');
+        console.log('âŒ Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ Ø§Ø³ØªÙ†ÙØ¯ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª Ø§Ù„Ù…Ø¬Ø§Ù†ÙŠØ©');
         return;
     }
 
-    // ÊäÙíİ ÇáÑŞã ãä ÇáãÓÇİÇÊ æÇáÃÍÑİ ÇáÎÇÕÉ İŞØ - ÈÏæä ÊÍæíá
-    // ÅÒÇáÉ ÌãíÚ ÇáãÓÇİÇÊ æÇáÃÍÑİ ÇáÎÇÕÉ ÛíÑ ÇáãÑÆíÉ æÇáÔÑØÇÊ
+    // ØªÙ†Ø¸ÙŠÙ Ø§Ù„Ø±Ù‚Ù… Ù…Ù† Ø§Ù„Ù…Ø³Ø§ÙØ§Øª ÙˆØ§Ù„Ø£Ø­Ø±Ù Ø§Ù„Ø®Ø§ØµØ© ÙÙ‚Ø· - Ø¨Ø¯ÙˆÙ† ØªØ­ÙˆÙŠÙ„
+    // Ø¥Ø²Ø§Ù„Ø© Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø³Ø§ÙØ§Øª ÙˆØ§Ù„Ø£Ø­Ø±Ù Ø§Ù„Ø®Ø§ØµØ© ØºÙŠØ± Ø§Ù„Ù…Ø±Ø¦ÙŠØ© ÙˆØ§Ù„Ø´Ø±Ø·Ø§Øª
     let formattedNumber = phoneNumber
-        .replace(/[\u200E\u200F\u202A\u202B\u202C\u202D\u202E\uFEFF]/g, '') // ÍĞİ Right-to-Left æ Left-to-Right marks
-        .replace(/[\s\-\(\)]/g, ''); // ÍĞİ ÇáãÓÇİÇÊ æÇáÔÑØÇÊ æÇáÃŞæÇÓ
+        .replace(/[\u200E\u200F\u202A\u202B\u202C\u202D\u202E\uFEFF]/g, '') // Ø­Ø°Ù Right-to-Left Ùˆ Left-to-Right marks
+        .replace(/[\s\-\(\)]/g, ''); // Ø­Ø°Ù Ø§Ù„Ù…Ø³Ø§ÙØ§Øª ÙˆØ§Ù„Ø´Ø±Ø·Ø§Øª ÙˆØ§Ù„Ø£Ù‚ÙˆØ§Ø³
     
-    console.log('?? ÇáÑŞã ÈÚÏ ÇáÊäÙíİ:', formattedNumber);
-    console.log('?? ÇÊÕÇá ãÈÇÔÑ ÈÇáÑŞã:', formattedNumber);
+    console.log('ğŸ” Ø§Ù„Ø±Ù‚Ù… Ø¨Ø¹Ø¯ Ø§Ù„ØªÙ†Ø¸ÙŠÙ:', formattedNumber);
+    console.log('ğŸ“ Ø§ØªØµØ§Ù„ Ù…Ø¨Ø§Ø´Ø± Ø¨Ø§Ù„Ø±Ù‚Ù…:', formattedNumber);
     
     try {
         if (!device) {
-            throw new Error('Device ÛíÑ ÌÇåÒ. ÃÚÏ ÊÍãíá ÇáÕİÍÉ.');
+            throw new Error('Device ØºÙŠØ± Ø¬Ø§Ù‡Ø². Ø£Ø¹Ø¯ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØµÙØ­Ø©.');
         }
         
-        // ÅÙåÇÑ ÔÇÔÉ ÇáãßÇáãÉ
+        // Ø¥Ø¸Ù‡Ø§Ø± Ø´Ø§Ø´Ø© Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©
         dialpad.classList.add('hidden');
         callScreen.classList.remove('hidden');
         
-        // ÚÑÖ ÇÓã ÇáãæÙİ
-        const employeeName = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'ãæÙİ';
+        // Ø¹Ø±Ø¶ Ø§Ø³Ù… Ø§Ù„Ù…ÙˆØ¸Ù
+        const employeeName = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'Ù…ÙˆØ¸Ù';
         const callEmployeeName = document.getElementById('call-employee-name');
         if (callEmployeeName) {
-            callEmployeeName.textContent = `?? ${employeeName}`;
+            callEmployeeName.textContent = `ğŸ‘¤ ${employeeName}`;
         }
         
-        // ÚÑÖ ÑŞã ÇáåÇÊİ
-        callNumber.textContent = `?? ${formattedNumber}`;
-        updateCallStatus('ÌÇÑí ÇáÇÊÕÇá...');
+        // Ø¹Ø±Ø¶ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ
+        callNumber.textContent = `ğŸ“ ${formattedNumber}`;
+        updateCallStatus('Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø§ØªØµØ§Ù„...');
         
-        // ÅÌÑÇÁ ÇáãßÇáãÉ ÚÈÑ Device
-        console.log('?? ÌÇÑí ÇáÇÊÕÇá ÈÜ:', formattedNumber);
+        // Ø¥Ø¬Ø±Ø§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø¹Ø¨Ø± Device
+        console.log('ğŸ“ Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ù€:', formattedNumber);
         
-        // ÇáÊÃßÏ ãä ÅĞä ÇáãíßÑæİæä ŞÈá ÇáãßÇáãÉ
+        // Ø§Ù„ØªØ£ÙƒØ¯ Ù…Ù† Ø¥Ø°Ù† Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ† Ù‚Ø¨Ù„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©
         try {
             const testStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            console.log('? ÇáãíßÑæİæä ÌÇåÒ ááãßÇáãÉ');
+            console.log('âœ… Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ† Ø¬Ø§Ù‡Ø² Ù„Ù„Ù…ÙƒØ§Ù„Ù…Ø©');
             testStream.getTracks().forEach(track => track.stop());
         } catch (micError) {
-            console.error('? ÇáãíßÑæİæä ÛíÑ ãÊÇÍ:', micError);
-            alert('íÑÌì ÇáÓãÇÍ ÈÇÓÊÎÏÇã ÇáãíßÑæİæä');
+            console.error('âŒ Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ† ØºÙŠØ± Ù…ØªØ§Ø­:', micError);
+            alert('ÙŠØ±Ø¬Ù‰ Ø§Ù„Ø³Ù…Ø§Ø­ Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ†');
             endCall();
             return;
         }
         
         const employeeId = localStorage.getItem('employeeId') || 'unknown';
         
-        // ÇáÍÕæá Úáì ÑŞã ÇáãÊÕá ÇáãÎÊÇÑ
+        // Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø±Ù‚Ù… Ø§Ù„Ù…ØªØµÙ„ Ø§Ù„Ù…Ø®ØªØ§Ø±
         const callerIdSelect = document.getElementById('caller-id-select');
         const selectedCallerId = callerIdSelect ? callerIdSelect.value : 'default';
-        console.log('?? ÑŞã ÇáãÊÕá ÇáãÎÊÇÑ:', selectedCallerId);
+        console.log('ğŸ“± Ø±Ù‚Ù… Ø§Ù„Ù…ØªØµÙ„ Ø§Ù„Ù…Ø®ØªØ§Ø±:', selectedCallerId);
         
-        // ============ Zadarma Call (ÃÑŞÇã ãÕÑíÉ!) ============
+        // ============ Zadarma Call (Ø£Ø±Ù‚Ø§Ù… Ù…ØµØ±ÙŠØ©!) ============
         if (selectedCallerId.startsWith('zadarma-')) {
-            console.log('?? ÇÓÊÎÏÇã Zadarma ááÇÊÕÇá (ÑŞã ãÕÑí)');
+            console.log('ğŸ“ Ø§Ø³ØªØ®Ø¯Ø§Ù… Zadarma Ù„Ù„Ø§ØªØµØ§Ù„ (Ø±Ù‚Ù… Ù…ØµØ±ÙŠ)');
             try {
                 const response = await fetch(`${API_BASE}/zadarma-call`, {
                     method: 'POST',
@@ -533,21 +533,21 @@ async function makeCall() {
                 const result = await response.json();
                 
                 if (result.success) {
-                    updateCallStatus('ÌÇÑí ÇáÇÊÕÇá ãä ' + result.callerId + ' ??');
+                    updateCallStatus('Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø§ØªØµØ§Ù„ Ù…Ù† ' + result.callerId + ' ğŸ“');
                     showCallScreen(formattedNumber);
-                    alert('? ÌÇÑí ÇáÇÊÕÇá ãä ÇáÑŞã ÇáãÕÑí!\nÇáÚãíá ÓíÑì: ' + result.callerId);
+                    alert('âœ… Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø§ØªØµØ§Ù„ Ù…Ù† Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ù…ØµØ±ÙŠ!\nØ§Ù„Ø¹Ù…ÙŠÙ„ Ø³ÙŠØ±Ù‰: ' + result.callerId);
                 } else if (result.setupSteps) {
-                    alert('?? Zadarma ÛíÑ ãõÚÏ:\n\n' + result.setupSteps.join('\n'));
+                    alert('âš ï¸ Zadarma ØºÙŠØ± Ù…ÙØ¹Ø¯:\n\n' + result.setupSteps.join('\n'));
                 } else {
-                    alert('? ' + (result.error || 'İÔá ÇáÇÊÕÇá'));
+                    alert('âŒ ' + (result.error || 'ÙØ´Ù„ Ø§Ù„Ø§ØªØµØ§Ù„'));
                 }
             } catch (error) {
-                console.error('? Zadarma Error:', error);
-                alert('? ÎØÃ İí ÇáÇÊÕÇá ÈÜ Zadarma');
+                console.error('âŒ Zadarma Error:', error);
+                alert('âŒ Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ù€ Zadarma');
             }
             return;
         }
-        // ============ äåÇíÉ Zadarma ============
+        // ============ Ù†Ù‡Ø§ÙŠØ© Zadarma ============
         
         const params = {
             To: formattedNumber,
@@ -555,97 +555,97 @@ async function makeCall() {
             callerId: selectedCallerId
         };
         
-        console.log('?? ãÚÑİ ÇáãÏíÑ ááãßÇáãÉ:', employeeId);
+        console.log('ğŸ‘¤ Ù…Ø¹Ø±Ù Ø§Ù„Ù…Ø¯ÙŠØ± Ù„Ù„Ù…ÙƒØ§Ù„Ù…Ø©:', employeeId);
         
         currentCall = await device.connect({ params });
         
-        // ãÚÇáÌÉ ÃÍÏÇË ÇáãßÇáãÉ
+        // Ù…Ø¹Ø§Ù„Ø¬Ø© Ø£Ø­Ø¯Ø§Ø« Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©
         currentCall.on('accept', () => {
-            console.log('?? Êã ÅäÔÇÁ ÇáãßÇáãÉ - ÌÇÑí ÇáÇÊÕÇá...');
-            updateCallStatus('ÌÇÑí ÇáÇÊÕÇá... ??');
-            // áÇ äÈÏÃ ÇáÚÏÇÏ åäÇ - ääÊÙÑ ÇáÚãíá íÑÏ
+            console.log('ğŸ“ ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© - Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø§ØªØµØ§Ù„...');
+            updateCallStatus('Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø§ØªØµØ§Ù„... ğŸ“');
+            // Ù„Ø§ Ù†Ø¨Ø¯Ø£ Ø§Ù„Ø¹Ø¯Ø§Ø¯ Ù‡Ù†Ø§ - Ù†Ù†ØªØ¸Ø± Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙŠØ±Ø¯
         });
         
         currentCall.on('ringing', () => {
-            console.log('?? ÇáÑäíä...');
-            updateCallStatus('Ñäíä... ??');
+            console.log('ğŸ“ Ø§Ù„Ø±Ù†ÙŠÙ†...');
+            updateCallStatus('Ø±Ù†ÙŠÙ†... ğŸ””');
         });
         
-        // åĞÇ ÇáÍÏË íõØáŞ ÚäÏãÇ íÑÏ ÇáÚãíá İÚáíÇğ - äÈÏÃ ÇáÚÏÇÏ åäÇ
+        // Ù‡Ø°Ø§ Ø§Ù„Ø­Ø¯Ø« ÙŠÙØ·Ù„Ù‚ Ø¹Ù†Ø¯Ù…Ø§ ÙŠØ±Ø¯ Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙØ¹Ù„ÙŠØ§Ù‹ - Ù†Ø¨Ø¯Ø£ Ø§Ù„Ø¹Ø¯Ø§Ø¯ Ù‡Ù†Ø§
         currentCall.on('connected', () => {
-            console.log('? ÇáÚãíá ÑÏ Úáì ÇáãßÇáãÉ - ÈÏÁ ÇáÚÏÇÏ');
-            updateCallStatus('ãÊÕá ?');
-            startCallTimer(); // ÈÏÁ ÇáÚÏÇÏ İŞØ ÚäÏ ÑÏ ÇáÚãíá
+            console.log('âœ… Ø§Ù„Ø¹Ù…ÙŠÙ„ Ø±Ø¯ Ø¹Ù„Ù‰ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© - Ø¨Ø¯Ø¡ Ø§Ù„Ø¹Ø¯Ø§Ø¯');
+            updateCallStatus('Ù…ØªØµÙ„ âœ…');
+            startCallTimer(); // Ø¨Ø¯Ø¡ Ø§Ù„Ø¹Ø¯Ø§Ø¯ ÙÙ‚Ø· Ø¹Ù†Ø¯ Ø±Ø¯ Ø§Ù„Ø¹Ù…ÙŠÙ„
             
-            // ?? ÊÓÌíá ÇáãßÇáãÉ ááÍÓÇÈ ÇáÊÌÑíÈí
+            // ğŸ”’ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ù„Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ
             recordTrialCall();
             if (isTrialAccount()) {
                 const remaining = getTrialCallsRemaining();
-                console.log('?? ÇáãßÇáãÇÊ ÇáãÊÈŞíÉ ááÍÓÇÈ ÇáÊÌÑíÈí:', remaining);
+                console.log('ğŸ“Š Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª Ø§Ù„Ù…ØªØ¨Ù‚ÙŠØ© Ù„Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ:', remaining);
             }
         });
         
         currentCall.on('disconnect', () => {
-            console.log('?? ÇäÊåÊ ÇáãßÇáãÉ');
-            // ÇáÊÍŞŞ ÅĞÇ ßÇä ÇáÚÏÇÏ áã íÈÏÃ (íÚäí ÇáÚãíá áã íÑÏ)
+            console.log('â¹ï¸ Ø§Ù†ØªÙ‡Øª Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©');
+            // Ø§Ù„ØªØ­Ù‚Ù‚ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ø¹Ø¯Ø§Ø¯ Ù„Ù… ÙŠØ¨Ø¯Ø£ (ÙŠØ¹Ù†ÙŠ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù„Ù… ÙŠØ±Ø¯)
             if (!callTimer) {
-                updateCallStatus('áã íÊã ÇáÑÏ');
+                updateCallStatus('Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø±Ø¯');
             }
             endCall();
         });
         
         currentCall.on('cancel', () => {
-            console.log('?? Êã ÅáÛÇÁ ÇáãßÇáãÉ ãä ŞÈá ÇáÚãíá');
-            updateCallStatus('Êã ÅáÛÇÁ ÇáãßÇáãÉ ãä ÇáÚãíá ??');
+            console.log('ğŸš« ØªÙ… Ø¥Ù„ØºØ§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ù…Ù† Ù‚Ø¨Ù„ Ø§Ù„Ø¹Ù…ÙŠÙ„');
+            updateCallStatus('ØªÙ… Ø¥Ù„ØºØ§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ù…Ù† Ø§Ù„Ø¹Ù…ÙŠÙ„ ğŸš«');
             setTimeout(() => endCall(), 1500);
         });
         
         currentCall.on('reject', () => {
-            console.log('? Êã ÑİÖ ÇáãßÇáãÉ ãä ÇáÚãíá');
-            updateCallStatus('ÑİÖ ÇáÚãíá ÇáãßÇáãÉ ?');
+            console.log('âŒ ØªÙ… Ø±ÙØ¶ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ù…Ù† Ø§Ù„Ø¹Ù…ÙŠÙ„');
+            updateCallStatus('Ø±ÙØ¶ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© âŒ');
             setTimeout(() => endCall(), 1500);
         });
         
         currentCall.on('error', (error) => {
-            console.error('? ÎØÃ İí ÇáãßÇáãÉ:', error);
-            // ÊÍáíá äæÚ ÇáÎØÃ
-            let errorMsg = 'ÎØÃ İí ÇáãßÇáãÉ';
+            console.error('âŒ Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©:', error);
+            // ØªØ­Ù„ÙŠÙ„ Ù†ÙˆØ¹ Ø§Ù„Ø®Ø·Ø£
+            let errorMsg = 'Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©';
             if (error.message && error.message.includes('busy')) {
-                errorMsg = 'ÇáÚãíá ãÔÛæá ÍÇáíÇğ';
+                errorMsg = 'Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù…Ø´ØºÙˆÙ„ Ø­Ø§Ù„ÙŠØ§Ù‹';
             } else if (error.message && error.message.includes('no answer')) {
-                errorMsg = 'áã íÑÏ ÇáÚãíá';
+                errorMsg = 'Ù„Ù… ÙŠØ±Ø¯ Ø§Ù„Ø¹Ù…ÙŠÙ„';
             } else if (error.message && error.message.includes('invalid')) {
-                errorMsg = 'ÑŞã ÛíÑ ÕÍíÍ';
+                errorMsg = 'Ø±Ù‚Ù… ØºÙŠØ± ØµØ­ÙŠØ­';
             }
-            updateCallStatus(errorMsg + ' ??');
+            updateCallStatus(errorMsg + ' âš ï¸');
             setTimeout(() => endCall(), 2000);
         });
         
     } catch (error) {
-        console.error('? ÎØÃ İí ÇáãßÇáãÉ:', error);
-        alert('İÔá ÅÌÑÇÁ ÇáãßÇáãÉ: ' + error.message);
+        console.error('âŒ Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©:', error);
+        alert('ÙØ´Ù„ Ø¥Ø¬Ø±Ø§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©: ' + error.message);
         endCall();
     }
 }
 
-// ãÊÛíÑÇÊ ÇáãßÇáãÉ ÇáæÇÑÏÉ
+// Ù…ØªØºÙŠØ±Ø§Øª Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø§Ù„ÙˆØ§Ø±Ø¯Ø©
 let incomingCallRef = null;
 let ringtoneAudio = null;
 
-// ÊÔÛíá ÕæÊ ÇáÑäíä
+// ØªØ´ØºÙŠÙ„ ØµÙˆØª Ø§Ù„Ø±Ù†ÙŠÙ†
 function playRingtone() {
     try {
         ringtoneAudio = document.getElementById('ringtone');
         if (ringtoneAudio) {
             ringtoneAudio.volume = 0.7;
-            ringtoneAudio.play().catch(e => console.log('áÇ íãßä ÊÔÛíá ÇáÑäíä:', e));
+            ringtoneAudio.play().catch(e => console.log('Ù„Ø§ ÙŠÙ…ÙƒÙ† ØªØ´ØºÙŠÙ„ Ø§Ù„Ø±Ù†ÙŠÙ†:', e));
         }
     } catch (e) {
-        console.log('ÎØÃ İí ÇáÑäíä:', e);
+        console.log('Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ø±Ù†ÙŠÙ†:', e);
     }
 }
 
-// ÅíŞÇİ ÕæÊ ÇáÑäíä
+// Ø¥ÙŠÙ‚Ø§Ù ØµÙˆØª Ø§Ù„Ø±Ù†ÙŠÙ†
 function stopRingtone() {
     if (ringtoneAudio) {
         ringtoneAudio.pause();
@@ -653,30 +653,30 @@ function stopRingtone() {
     }
 }
 
-// ÅÙåÇÑ ÔÇÔÉ ÇáãßÇáãÉ ÇáæÇÑÏÉ
+// Ø¥Ø¸Ù‡Ø§Ø± Ø´Ø§Ø´Ø© Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø§Ù„ÙˆØ§Ø±Ø¯Ø©
 function showIncomingCallScreen(callerNumber, callerName) {
     const overlay = document.getElementById('incoming-call-overlay');
     const numberEl = document.getElementById('incoming-caller-number');
     const nameEl = document.getElementById('incoming-caller-name');
     
     if (overlay) {
-        numberEl.textContent = callerNumber || 'ÑŞã ãÌåæá';
-        nameEl.textContent = callerName || 'ÌåÉ ÇÊÕÇá ÛíÑ ãÚÑæİÉ';
+        numberEl.textContent = callerNumber || 'Ø±Ù‚Ù… Ù…Ø¬Ù‡ÙˆÙ„';
+        nameEl.textContent = callerName || 'Ø¬Ù‡Ø© Ø§ØªØµØ§Ù„ ØºÙŠØ± Ù…Ø¹Ø±ÙˆÙØ©';
         overlay.classList.remove('hidden');
         playRingtone();
         
-        // ÅÔÚÇÑ ÇáãÊÕİÍ
+        // Ø¥Ø´Ø¹Ø§Ø± Ø§Ù„Ù…ØªØµÙØ­
         if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('?? ãßÇáãÉ æÇÑÏÉ', {
-                body: `ãä: ${callerNumber}`,
-                icon: '??',
+            new Notification('ğŸ“ Ù…ÙƒØ§Ù„Ù…Ø© ÙˆØ§Ø±Ø¯Ø©', {
+                body: `Ù…Ù†: ${callerNumber}`,
+                icon: 'ğŸ“',
                 requireInteraction: true
             });
         }
     }
 }
 
-// ÅÎİÇÁ ÔÇÔÉ ÇáãßÇáãÉ ÇáæÇÑÏÉ
+// Ø¥Ø®ÙØ§Ø¡ Ø´Ø§Ø´Ø© Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø§Ù„ÙˆØ§Ø±Ø¯Ø©
 function hideIncomingCallScreen() {
     const overlay = document.getElementById('incoming-call-overlay');
     if (overlay) {
@@ -685,19 +685,19 @@ function hideIncomingCallScreen() {
     stopRingtone();
 }
 
-// ãÚÇáÌÉ ãßÇáãÉ æÇÑÏÉ
+// Ù…Ø¹Ø§Ù„Ø¬Ø© Ù…ÙƒØ§Ù„Ù…Ø© ÙˆØ§Ø±Ø¯Ø©
 function handleIncomingCall(call) {
-    console.log('?? ãßÇáãÉ æÇÑÏÉ ãä:', call.parameters.From);
+    console.log('ğŸ“ Ù…ÙƒØ§Ù„Ù…Ø© ÙˆØ§Ø±Ø¯Ø© Ù…Ù†:', call.parameters.From);
     
-    // ÍİÙ ÇáãßÇáãÉ
+    // Ø­ÙØ¸ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©
     incomingCallRef = call;
     
-    // ÅÙåÇÑ ÔÇÔÉ ÇáãßÇáãÉ ÇáÇÍÊÑÇİíÉ
+    // Ø¥Ø¸Ù‡Ø§Ø± Ø´Ø§Ø´Ø© Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø§Ù„Ø§Ø­ØªØ±Ø§ÙÙŠØ©
     showIncomingCallScreen(call.parameters.From, null);
     
-    // ÚäÏ ŞØÚ ÇáãßÇáãÉ ãä ÇáãÊÕá
+    // Ø¹Ù†Ø¯ Ù‚Ø·Ø¹ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ù…Ù† Ø§Ù„Ù…ØªØµÙ„
     call.on('cancel', () => {
-        console.log('? ÇáãÊÕá ÃÛáŞ ÇáãßÇáãÉ');
+        console.log('âŒ Ø§Ù„Ù…ØªØµÙ„ Ø£ØºÙ„Ù‚ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©');
         hideIncomingCallScreen();
         incomingCallRef = null;
     });
@@ -707,7 +707,7 @@ function handleIncomingCall(call) {
     });
 }
 
-// ŞÈæá ÇáãßÇáãÉ ÇáæÇÑÏÉ
+// Ù‚Ø¨ÙˆÙ„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø§Ù„ÙˆØ§Ø±Ø¯Ø©
 function acceptIncomingCall() {
     if (incomingCallRef) {
         hideIncomingCallScreen();
@@ -718,23 +718,23 @@ function acceptIncomingCall() {
         dialpad.classList.add('hidden');
         callScreen.classList.remove('hidden');
         
-        // ÚÑÖ ÇÓã ÇáãæÙİ
-        const employeeName = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'ãæÙİ';
+        // Ø¹Ø±Ø¶ Ø§Ø³Ù… Ø§Ù„Ù…ÙˆØ¸Ù
+        const employeeName = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'Ù…ÙˆØ¸Ù';
         const callEmployeeName = document.getElementById('call-employee-name');
         if (callEmployeeName) {
-            callEmployeeName.textContent = `?? ${employeeName}`;
+            callEmployeeName.textContent = `ğŸ‘¤ ${employeeName}`;
         }
         
-        // ÚÑÖ ÑŞã ÇáåÇÊİ
-        callNumber.textContent = `?? ${incomingCallRef.parameters.From}`;
-        updateCallStatus('ãÊÕá ?');
+        // Ø¹Ø±Ø¶ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ
+        callNumber.textContent = `ğŸ“ ${incomingCallRef.parameters.From}`;
+        updateCallStatus('Ù…ØªØµÙ„ âœ…');
         startCallTimer();
         
         incomingCallRef = null;
     }
 }
 
-// ÑİÖ ÇáãßÇáãÉ ÇáæÇÑÏÉ
+// Ø±ÙØ¶ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø§Ù„ÙˆØ§Ø±Ø¯Ø©
 function rejectIncomingCall() {
     if (incomingCallRef) {
         hideIncomingCallScreen();
@@ -743,7 +743,7 @@ function rejectIncomingCall() {
     }
 }
 
-// ÑÈØ ÃÒÑÇÑ ÇáãßÇáãÉ ÇáæÇÑÏÉ
+// Ø±Ø¨Ø· Ø£Ø²Ø±Ø§Ø± Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø§Ù„ÙˆØ§Ø±Ø¯Ø©
 document.addEventListener('DOMContentLoaded', () => {
     const acceptBtn = document.getElementById('accept-call-btn');
     const rejectBtn = document.getElementById('reject-call-btn');
@@ -755,36 +755,36 @@ document.addEventListener('DOMContentLoaded', () => {
         rejectBtn.addEventListener('click', rejectIncomingCall);
     }
     
-    // ØáÈ ÅĞä ÇáÅÔÚÇÑÇÊ
+    // Ø·Ù„Ø¨ Ø¥Ø°Ù† Ø§Ù„Ø¥Ø´Ø¹Ø§Ø±Ø§Øª
     if ('Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission();
     }
     
-    // ÊÕİíÉ ÎíÇÑÇÊ ÇáÇÊÕÇá ÈäÇÁğ Úáì ÕáÇÍíÇÊ ÇáãæÙİ
+    // ØªØµÙÙŠØ© Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ù…ÙˆØ¸Ù
     filterCallerIdOptions();
 });
 
-// ÊÕİíÉ ÎíÇÑÇÊ ÑŞã ÇáãÊÕá ÈäÇÁğ Úáì ÇáÕáÇÍíÇÊ
+// ØªØµÙÙŠØ© Ø®ÙŠØ§Ø±Ø§Øª Ø±Ù‚Ù… Ø§Ù„Ù…ØªØµÙ„ Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
 function filterCallerIdOptions() {
     const callerIdSelect = document.getElementById('caller-id-select');
     if (!callerIdSelect) return;
     
     const userRole = sessionStorage.getItem('userRole');
     
-    // ÇáãØæÑ áÏíå ßá ÇáÕáÇÍíÇÊ
+    // Ø§Ù„Ù…Ø·ÙˆØ± Ù„Ø¯ÙŠÙ‡ ÙƒÙ„ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
     if (userRole === 'admin') {
-        console.log('?? ÇáãÏíÑ áÏíå ßá ÕáÇÍíÇÊ ÇáÇÊÕÇá');
+        console.log('ğŸ”“ Ø§Ù„Ù…Ø¯ÙŠØ± Ù„Ø¯ÙŠÙ‡ ÙƒÙ„ ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø§ØªØµØ§Ù„');
         return;
     }
     
-    // ŞÑÇÁÉ ÇáÕáÇÍíÇÊ
+    // Ù‚Ø±Ø§Ø¡Ø© Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
     const canCallFromUSA = sessionStorage.getItem('canCallFromUSA') !== 'false';
     const canCallFromEgypt = sessionStorage.getItem('canCallFromEgypt') === 'true';
     const canCallFromSaudi = sessionStorage.getItem('canCallFromSaudi') === 'true';
     
-    console.log('?? ÕáÇÍíÇÊ ÇáÇÊÕÇá:', { canCallFromUSA, canCallFromEgypt, canCallFromSaudi });
+    console.log('ğŸ“ ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø§ØªØµØ§Ù„:', { canCallFromUSA, canCallFromEgypt, canCallFromSaudi });
     
-    // ÅÎİÇÁ ÇáÎíÇÑÇÊ ÛíÑ ÇáãÓãæÍ ÈåÇ
+    // Ø¥Ø®ÙØ§Ø¡ Ø§Ù„Ø®ÙŠØ§Ø±Ø§Øª ØºÙŠØ± Ø§Ù„Ù…Ø³Ù…ÙˆØ­ Ø¨Ù‡Ø§
     const options = callerIdSelect.querySelectorAll('option');
     options.forEach(option => {
         const value = option.value;
@@ -801,26 +801,26 @@ function filterCallerIdOptions() {
         }
     });
     
-    // ÇÎÊíÇÑ Ãæá ÎíÇÑ ãÊÇÍ
+    // Ø§Ø®ØªÙŠØ§Ø± Ø£ÙˆÙ„ Ø®ÙŠØ§Ø± Ù…ØªØ§Ø­
     const firstAvailable = callerIdSelect.querySelector('option:not([disabled])');
     if (firstAvailable) {
         callerIdSelect.value = firstAvailable.value;
     }
     
-    // ÅĞÇ áã íßä åäÇß Ãí ÕáÇÍíÉ
+    // Ø¥Ø°Ø§ Ù„Ù… ÙŠÙƒÙ† Ù‡Ù†Ø§Ùƒ Ø£ÙŠ ØµÙ„Ø§Ø­ÙŠØ©
     if (!canCallFromUSA && !canCallFromEgypt && !canCallFromSaudi) {
-        callerIdSelect.innerHTML = '<option value="" disabled selected>? áÇ ÊæÌÏ ÕáÇÍíÇÊ ÇÊÕÇá</option>';
+        callerIdSelect.innerHTML = '<option value="" disabled selected>âŒ Ù„Ø§ ØªÙˆØ¬Ø¯ ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§ØªØµØ§Ù„</option>';
         const callBtn = document.getElementById('call-btn');
         if (callBtn) {
             callBtn.disabled = true;
-            callBtn.title = 'áÇ ÊæÌÏ áÏíß ÕáÇÍíÇÊ ááÇÊÕÇá';
+            callBtn.title = 'Ù„Ø§ ØªÙˆØ¬Ø¯ Ù„Ø¯ÙŠÙƒ ØµÙ„Ø§Ø­ÙŠØ§Øª Ù„Ù„Ø§ØªØµØ§Ù„';
         }
     }
 }
 
-// ãÑÇŞÈÉ ÍÇáÉ ÇáãßÇáãÉ (áä ÊõÓÊÎÏã ãÚ SDK)
+// Ù…Ø±Ø§Ù‚Ø¨Ø© Ø­Ø§Ù„Ø© Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© (Ù„Ù† ØªÙØ³ØªØ®Ø¯Ù… Ù…Ø¹ SDK)
 function startCallMonitoring() {
-    // áÇ ÍÇÌÉ áåÇ ãÚ SDK - ÇáÃÍÏÇË ÊõÚÇáÌ ãÈÇÔÑÉ
+    // Ù„Ø§ Ø­Ø§Ø¬Ø© Ù„Ù‡Ø§ Ù…Ø¹ SDK - Ø§Ù„Ø£Ø­Ø¯Ø§Ø« ØªÙØ¹Ø§Ù„Ø¬ Ù…Ø¨Ø§Ø´Ø±Ø©
     if (callCheckInterval) {
         clearInterval(callCheckInterval);
     }
@@ -840,36 +840,36 @@ function startCallMonitoring() {
                 data.status === 'busy' || data.status === 'no-answer') {
                 endCall();
             } else if (data.status === 'in-progress') {
-                updateCallStatus('ãÊÕá ?');
+                updateCallStatus('Ù…ØªØµÙ„ âœ…');
                 if (!callTimer) startCallTimer();
             } else if (data.status === 'ringing') {
-                updateCallStatus('ÌÇÑí ÇáÇÊÕÇá... ??');
+                updateCallStatus('Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø§ØªØµØ§Ù„... ğŸ“');
             }
         } catch (error) {
-            console.error('ÎØÃ İí ãÑÇŞÈÉ ÇáãßÇáãÉ:', error);
+            console.error('Ø®Ø·Ø£ ÙÙŠ Ù…Ø±Ø§Ù‚Ø¨Ø© Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©:', error);
         }
     }, 2000);
 }
 
-// ÅäåÇÁ ÇáãßÇáãÉ
+// Ø¥Ù†Ù‡Ø§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©
 async function endCall() {
     if (callCheckInterval) {
         clearInterval(callCheckInterval);
         callCheckInterval = null;
     }
     
-    // ÅäåÇÁ ÇáãßÇáãÉ ÚÈÑ SDK
+    // Ø¥Ù†Ù‡Ø§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø¹Ø¨Ø± SDK
     if (currentCall) {
         try {
             currentCall.disconnect();
-            console.log('? Êã ÅäåÇÁ ÇáãßÇáãÉ');
+            console.log('âœ… ØªÙ… Ø¥Ù†Ù‡Ø§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©');
         } catch (error) {
-            console.error('ÎØÃ İí ÅäåÇÁ ÇáãßÇáãÉ:', error);
+            console.error('Ø®Ø·Ø£ ÙÙŠ Ø¥Ù†Ù‡Ø§Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©:', error);
         }
         currentCall = null;
     }
     
-    // ÍİÙ ÇáãßÇáãÉ İí ÇáÓÌá
+    // Ø­ÙØ¸ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© ÙÙŠ Ø§Ù„Ø³Ø¬Ù„
     if (phoneNumber) {
         const callDurationText = callDuration.textContent;
         const [minutes, seconds] = callDurationText.split(':').map(Number);
@@ -883,7 +883,7 @@ async function endCall() {
             duration: callDurationText
         });
         
-        // ÊÓÌíá ÇáãßÇáãÉ İí ÓÌá ÇáÚãá
+        // ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© ÙÙŠ Ø³Ø¬Ù„ Ø§Ù„Ø¹Ù…Ù„
         try {
             const employeeId = localStorage.getItem('employeeId');
             const employeeName = localStorage.getItem('employeeName');
@@ -909,9 +909,9 @@ async function endCall() {
                         }
                     }
                 })
-            }).catch(err => console.error('ÎØÃ İí ÊÓÌíá ÇáãßÇáãÉ:', err));
+            }).catch(err => console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©:', err));
         } catch (error) {
-            console.error('ÎØÃ İí ÊÓÌíá ÇáãßÇáãÉ:', error);
+            console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©:', error);
         }
     }
     
@@ -920,11 +920,11 @@ async function endCall() {
     stopCallTimer();
     stopRecording();
     
-    // ÇáÚæÏÉ Åáì áæÍÉ ÇáÃÑŞÇã
+    // Ø§Ù„Ø¹ÙˆØ¯Ø© Ø¥Ù„Ù‰ Ù„ÙˆØ­Ø© Ø§Ù„Ø£Ø±Ù‚Ø§Ù…
     callScreen.classList.add('hidden');
     dialpad.classList.remove('hidden');
     
-    // ãÓÍ ÇáÑŞã
+    // Ù…Ø³Ø­ Ø§Ù„Ø±Ù‚Ù…
     phoneNumber = '';
     displayNumber.textContent = '';
     callDuration.textContent = '00:00';
@@ -935,10 +935,10 @@ async function endCall() {
     isSpeakerOn = false;
     updateSpeakerButton();
     
-    updateConnectionStatus('connected', 'ÌÇåÒ ááãßÇáãÇÊ');
+    updateConnectionStatus('connected', 'Ø¬Ø§Ù‡Ø² Ù„Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª');
 }
 
-// ÈÏÁ ÚÏÇÏ ÇáãßÇáãÉ
+// Ø¨Ø¯Ø¡ Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©
 function startCallTimer() {
     callStartTime = Date.now();
     callTimer = setInterval(() => {
@@ -949,7 +949,7 @@ function startCallTimer() {
     }, 1000);
 }
 
-// ÅíŞÇİ ÚÏÇÏ ÇáãßÇáãÉ
+// Ø¥ÙŠÙ‚Ø§Ù Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©
 function stopCallTimer() {
     if (callTimer) {
         clearInterval(callTimer);
@@ -957,68 +957,68 @@ function stopCallTimer() {
     }
 }
 
-// ßÊã ÇáÕæÊ
+// ÙƒØªÙ… Ø§Ù„ØµÙˆØª
 function toggleMute() {
     if (!currentCall) return;
     
     isMuted = !isMuted;
     
-    // ÇÓÊÎÏÇã SDK áßÊã ÇáÕæÊ
+    // Ø§Ø³ØªØ®Ø¯Ø§Ù… SDK Ù„ÙƒØªÙ… Ø§Ù„ØµÙˆØª
     currentCall.mute(isMuted);
-    console.log(isMuted ? '?? Êã ßÊã ÇáÕæÊ' : '?? Êã ÅáÛÇÁ ßÊã ÇáÕæÊ');
+    console.log(isMuted ? 'ğŸ”‡ ØªÙ… ÙƒØªÙ… Ø§Ù„ØµÙˆØª' : 'ğŸ”Š ØªÙ… Ø¥Ù„ØºØ§Ø¡ ÙƒØªÙ… Ø§Ù„ØµÙˆØª');
     
     muteBtn.style.background = isMuted ? '#f44336' : '#f5f5f5';
     muteBtn.style.color = isMuted ? 'white' : 'black';
 }
 
-// ÅíŞÇİ ãÄŞÊ
+// Ø¥ÙŠÙ‚Ø§Ù Ù…Ø¤Ù‚Øª
 function toggleHold() {
     if (!currentCallSid) return;
     
     isOnHold = !isOnHold;
     
     if (isOnHold) {
-        updateCallStatus('İí ÇáÇäÊÙÇÑ');
+        updateCallStatus('ÙÙŠ Ø§Ù„Ø§Ù†ØªØ¸Ø§Ø±');
     } else {
-        updateCallStatus('ãÊÕá');
+        updateCallStatus('Ù…ØªØµÙ„');
     }
     
     holdBtn.style.background = isOnHold ? '#ff9800' : '#f5f5f5';
     holdBtn.style.color = isOnHold ? 'white' : 'black';
 }
 
-// ÊÈÏíá ÇáÓÈíßÑ
+// ØªØ¨Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¨ÙŠÙƒØ±
 async function toggleSpeaker() {
     if (!device) return;
     
     try {
-        // ÇáÍÕæá Úáì ŞÇÆãÉ ÃÌåÒÉ ÇáÕæÊ ÇáãÊÇÍÉ
+        // Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ù‚Ø§Ø¦Ù…Ø© Ø£Ø¬Ù‡Ø²Ø© Ø§Ù„ØµÙˆØª Ø§Ù„Ù…ØªØ§Ø­Ø©
         const devices = await navigator.mediaDevices.enumerateDevices();
         const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
         
-        console.log('?? ÃÌåÒÉ ÇáÕæÊ ÇáãÊÇÍÉ:', audioOutputs);
+        console.log('ğŸ”Š Ø£Ø¬Ù‡Ø²Ø© Ø§Ù„ØµÙˆØª Ø§Ù„Ù…ØªØ§Ø­Ø©:', audioOutputs);
         
         if (audioOutputs.length > 1) {
-            // ÇáÊÈÏíá Èíä ÇáÃÌåÒÉ
+            // Ø§Ù„ØªØ¨Ø¯ÙŠÙ„ Ø¨ÙŠÙ† Ø§Ù„Ø£Ø¬Ù‡Ø²Ø©
             isSpeakerOn = !isSpeakerOn;
             
-            // ÇÎÊíÇÑ ÇáÌåÇÒ ÇáãäÇÓÈ
-            // ÚÇÏÉğ ÇáÌåÇÒ ÇáÃæá åæ ÇáÓãÇÚÉ ÇáÇİÊÑÇÖíÉ (earpiece) æÇáËÇäí åæ ÇáÓÈíßÑ
+            // Ø§Ø®ØªÙŠØ§Ø± Ø§Ù„Ø¬Ù‡Ø§Ø² Ø§Ù„Ù…Ù†Ø§Ø³Ø¨
+            // Ø¹Ø§Ø¯Ø©Ù‹ Ø§Ù„Ø¬Ù‡Ø§Ø² Ø§Ù„Ø£ÙˆÙ„ Ù‡Ùˆ Ø§Ù„Ø³Ù…Ø§Ø¹Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ© (earpiece) ÙˆØ§Ù„Ø«Ø§Ù†ÙŠ Ù‡Ùˆ Ø§Ù„Ø³Ø¨ÙŠÙƒØ±
             const targetDevice = isSpeakerOn ? audioOutputs[1] : audioOutputs[0];
             
-            // ÇÓÊÎÏÇã Twilio Device áÊÛííÑ ÌåÇÒ ÇáÅÎÑÇÌ
+            // Ø§Ø³ØªØ®Ø¯Ø§Ù… Twilio Device Ù„ØªØºÙŠÙŠØ± Ø¬Ù‡Ø§Ø² Ø§Ù„Ø¥Ø®Ø±Ø§Ø¬
             if (device.audio && device.audio.speakerDevices) {
                 await device.audio.speakerDevices.set(targetDevice.deviceId);
-                console.log(isSpeakerOn ? '?? Êã ÊÔÛíá ÇáÓÈíßÑ' : '?? Êã ÇáÊÈÏíá ááÓãÇÚÉ');
+                console.log(isSpeakerOn ? 'ğŸ”Š ØªÙ… ØªØ´ØºÙŠÙ„ Ø§Ù„Ø³Ø¨ÙŠÙƒØ±' : 'ğŸ”ˆ ØªÙ… Ø§Ù„ØªØ¨Ø¯ÙŠÙ„ Ù„Ù„Ø³Ù…Ø§Ø¹Ø©');
             }
             
-            // ÊÍÏíË æÇÌåÉ ÇáãÓÊÎÏã
+            // ØªØ­Ø¯ÙŠØ« ÙˆØ§Ø¬Ù‡Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…
             updateSpeakerButton();
         } else {
-            // ÅĞÇ ßÇä ÌåÇÒ æÇÍÏ İŞØ¡ äÍÇæá ÇÓÊÎÏÇã setSinkId ãÈÇÔÑÉ Úáì ÚäÕÑ ÇáÕæÊ
+            // Ø¥Ø°Ø§ ÙƒØ§Ù† Ø¬Ù‡Ø§Ø² ÙˆØ§Ø­Ø¯ ÙÙ‚Ø·ØŒ Ù†Ø­Ø§ÙˆÙ„ Ø§Ø³ØªØ®Ø¯Ø§Ù… setSinkId Ù…Ø¨Ø§Ø´Ø±Ø© Ø¹Ù„Ù‰ Ø¹Ù†ØµØ± Ø§Ù„ØµÙˆØª
             isSpeakerOn = !isSpeakerOn;
             
-            // ÇáÈÍË Úä ÚäÕÑ ÇáÕæÊ İí ÇáÕİÍÉ
+            // Ø§Ù„Ø¨Ø­Ø« Ø¹Ù† Ø¹Ù†ØµØ± Ø§Ù„ØµÙˆØª ÙÙŠ Ø§Ù„ØµÙØ­Ø©
             const audioElements = document.querySelectorAll('audio');
             for (const audio of audioElements) {
                 if (audio.setSinkId && audioOutputs.length > 0) {
@@ -1028,31 +1028,31 @@ async function toggleSpeaker() {
             }
             
             updateSpeakerButton();
-            console.log(isSpeakerOn ? '?? Êã ÊÔÛíá ÇáÓÈíßÑ' : '?? Êã ÇáÊÈÏíá ááÓãÇÚÉ');
+            console.log(isSpeakerOn ? 'ğŸ”Š ØªÙ… ØªØ´ØºÙŠÙ„ Ø§Ù„Ø³Ø¨ÙŠÙƒØ±' : 'ğŸ”ˆ ØªÙ… Ø§Ù„ØªØ¨Ø¯ÙŠÙ„ Ù„Ù„Ø³Ù…Ø§Ø¹Ø©');
         }
     } catch (error) {
-        console.error('? ÎØÃ İí ÊÈÏíá ÇáÓÈíßÑ:', error);
+        console.error('âŒ Ø®Ø·Ø£ ÙÙŠ ØªØ¨Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¨ÙŠÙƒØ±:', error);
         
-        // İí ÍÇáÉ ÇáÎØÃ¡ äÛíÑ ÇáÍÇáÉ ÈÕÑíÇğ İŞØ
+        // ÙÙŠ Ø­Ø§Ù„Ø© Ø§Ù„Ø®Ø·Ø£ØŒ Ù†ØºÙŠØ± Ø§Ù„Ø­Ø§Ù„Ø© Ø¨ØµØ±ÙŠØ§Ù‹ ÙÙ‚Ø·
         isSpeakerOn = !isSpeakerOn;
         updateSpeakerButton();
         
-        // ÅÙåÇÑ ÑÓÇáÉ ááãÓÊÎÏã
-        alert('ãáÇÍÙÉ: ÊÈÏíá ÇáÓÈíßÑ ŞÏ áÇ íÚãá Úáì ÌãíÚ ÇáãÊÕİÍÇÊ æÇáÃÌåÒÉ');
+        // Ø¥Ø¸Ù‡Ø§Ø± Ø±Ø³Ø§Ù„Ø© Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù…
+        alert('Ù…Ù„Ø§Ø­Ø¸Ø©: ØªØ¨Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¨ÙŠÙƒØ± Ù‚Ø¯ Ù„Ø§ ÙŠØ¹Ù…Ù„ Ø¹Ù„Ù‰ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…ØªØµÙØ­Ø§Øª ÙˆØ§Ù„Ø£Ø¬Ù‡Ø²Ø©');
     }
 }
 
-// ÊÍÏíË ÒÑ ÇáÓÈíßÑ
+// ØªØ­Ø¯ÙŠØ« Ø²Ø± Ø§Ù„Ø³Ø¨ÙŠÙƒØ±
 function updateSpeakerButton() {
     if (speakerBtn) {
         speakerBtn.style.background = isSpeakerOn ? '#4CAF50' : '#f5f5f5';
         speakerBtn.style.color = isSpeakerOn ? 'white' : 'black';
-        speakerBtn.querySelector('.icon').textContent = isSpeakerOn ? '??' : '??';
-        speakerBtn.querySelector('.label').textContent = isSpeakerOn ? 'ÇáÓÈíßÑ ?' : 'ÇáÓÈíßÑ';
+        speakerBtn.querySelector('.icon').textContent = isSpeakerOn ? 'ğŸ”Š' : 'ğŸ”ˆ';
+        speakerBtn.querySelector('.label').textContent = isSpeakerOn ? 'Ø§Ù„Ø³Ø¨ÙŠÙƒØ± âœ“' : 'Ø§Ù„Ø³Ø¨ÙŠÙƒØ±';
     }
 }
 
-// ÈÏÁ ÇáÊÓÌíá
+// Ø¨Ø¯Ø¡ Ø§Ù„ØªØ³Ø¬ÙŠÙ„
 async function startRecording() {
     if (!currentCallSid) return;
     
@@ -1071,14 +1071,14 @@ async function startRecording() {
         if (data.success) {
             isRecording = true;
             recordingStatus.classList.remove('hidden');
-            console.log('ÈÏÃ ÇáÊÓÌíá:', data.recordingSid);
+            console.log('Ø¨Ø¯Ø£ Ø§Ù„ØªØ³Ø¬ÙŠÙ„:', data.recordingSid);
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÈÏÁ ÇáÊÓÌíá:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ Ø¨Ø¯Ø¡ Ø§Ù„ØªØ³Ø¬ÙŠÙ„:', error);
     }
 }
 
-// ÅíŞÇİ ÇáÊÓÌíá
+// Ø¥ÙŠÙ‚Ø§Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„
 async function stopRecording() {
     if (!isRecording || !currentCallSid) return;
     
@@ -1093,29 +1093,29 @@ async function stopRecording() {
         const data = await response.json();
         
         if (data.success) {
-            console.log('?? Êã ÅíŞÇİ ÇáÊÓÌíá');
+            console.log('â¹ï¸ ØªÙ… Ø¥ÙŠÙ‚Ø§Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„');
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÅíŞÇİ ÇáÊÓÌíá:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ Ø¥ÙŠÙ‚Ø§Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„:', error);
     }
     
     recordingStatus.classList.add('hidden');
     isRecording = false;
     
-    // ÅÚÇÏÉ ÊÍãíá ŞÇÆãÉ ÇáÊÓÌíáÇÊ
+    // Ø¥Ø¹Ø§Ø¯Ø© ØªØ­Ù…ÙŠÙ„ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª
     setTimeout(() => loadRecordings(), 2000);
 }
 
-// ÊÍãíá ÇáÊÓÌíáÇÊ
+// ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª
 async function loadRecordings() {
     try {
         const userRole = sessionStorage.getItem('userRole');
         const canViewOwn = sessionStorage.getItem('canViewOwnRecordings') === 'true';
         const canViewAll = sessionStorage.getItem('canViewAllRecordings') === 'true';
         
-        // ÇáÊÍŞŞ ãä ÇáÕáÇÍíÇÊ
+        // Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
         if (userRole !== 'admin' && !canViewOwn && !canViewAll) {
-            recordingsContainer.innerHTML = '<p style="text-align: center; color: #ff6b6b; padding: 20px;">?? áíÓ áÏíß ÕáÇÍíÉ áãÔÇåÏÉ ÇáÊÓÌíáÇÊ</p>';
+            recordingsContainer.innerHTML = '<p style="text-align: center; color: #ff6b6b; padding: 20px;">âš ï¸ Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ ØµÙ„Ø§Ø­ÙŠØ© Ù„Ù…Ø´Ø§Ù‡Ø¯Ø© Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª</p>';
             updateRecordingsBadge(0);
             return;
         }
@@ -1123,37 +1123,37 @@ async function loadRecordings() {
         const baseUrl = window.location.origin;
         const employeeId = localStorage.getItem('employeeId');
         
-        console.log('?? ÌáÈ ÇáÊÓÌíáÇÊ - employeeId:', employeeId, 'userRole:', userRole, 'canViewAll:', canViewAll);
+        console.log('ğŸ“‹ Ø¬Ù„Ø¨ Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª - employeeId:', employeeId, 'userRole:', userRole, 'canViewAll:', canViewAll);
         
-        // ÈäÇÁ URL ãÚ ÇáãÚÇãáÇÊ
+        // Ø¨Ù†Ø§Ø¡ URL Ù…Ø¹ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª
         let url = `${baseUrl}/recordings`;
         const params = new URLSearchParams();
         
-        // ÅĞÇ ßÇä ãÏíÑ æáíÓ áÏíå ÕáÇÍíÉ ÑÄíÉ Çáßá
+        // Ø¥Ø°Ø§ ÙƒØ§Ù† Ù…Ø¯ÙŠØ± ÙˆÙ„ÙŠØ³ Ù„Ø¯ÙŠÙ‡ ØµÙ„Ø§Ø­ÙŠØ© Ø±Ø¤ÙŠØ© Ø§Ù„ÙƒÙ„
         if (employeeId && !canViewAll && userRole !== 'admin') {
             params.append('employeeId', employeeId);
-            console.log('?? İáÊÑÉ ÇáÊÓÌíáÇÊ ááãÏíÑ:', employeeId);
+            console.log('ğŸ”’ ÙÙ„ØªØ±Ø© Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª Ù„Ù„Ù…Ø¯ÙŠØ±:', employeeId);
         } else {
             params.append('viewAll', 'true');
-            console.log('?? ÚÑÖ ÌãíÚ ÇáÊÓÌíáÇÊ');
+            console.log('ğŸŒ Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª');
         }
         
         if (params.toString()) {
             url += '?' + params.toString();
         }
         
-        console.log('?? URL:', url);
+        console.log('ğŸŒ URL:', url);
         
         const response = await fetch(url);
         const data = await response.json();
         
         recordings = data.recordings || [];
         
-        console.log(`?? Êã ÌáÈ ${recordings.length} ÊÓÌíá`);
+        console.log(`ğŸ“Š ØªÙ… Ø¬Ù„Ø¨ ${recordings.length} ØªØ³Ø¬ÙŠÙ„`);
         
-        // ÚÑÖ ÊİÇÕíá ßá ÊÓÌíá ááÊÔÎíÕ
+        // Ø¹Ø±Ø¶ ØªÙØ§ØµÙŠÙ„ ÙƒÙ„ ØªØ³Ø¬ÙŠÙ„ Ù„Ù„ØªØ´Ø®ÙŠØµ
         recordings.forEach((rec, idx) => {
-            console.log(`?? ÊÓÌíá ${idx + 1}:`, {
+            console.log(`ğŸ“¼ ØªØ³Ø¬ÙŠÙ„ ${idx + 1}:`, {
                 sid: rec.sid,
                 to: rec.to,
                 employeeId: rec.employeeId,
@@ -1162,7 +1162,7 @@ async function loadRecordings() {
             });
         });
         
-        // ÌáÈ ÈíÇäÇÊ ÇáãÏíÑíä áÚÑÖ ÇáÃÓãÇÁ
+        // Ø¬Ù„Ø¨ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ† Ù„Ø¹Ø±Ø¶ Ø§Ù„Ø£Ø³Ù…Ø§Ø¡
         const employeesResponse = await fetch(`${baseUrl}/employees`);
         const employeesData = await employeesResponse.json();
         window.employeesMap = {};
@@ -1171,17 +1171,17 @@ async function loadRecordings() {
                 window.employeesMap[emp.id] = emp.name;
             });
         }
-        console.log('?? Êã ÊÍãíá ÈíÇäÇÊ', Object.keys(window.employeesMap).length, 'ãÏíÑ');
+        console.log('ğŸ‘¥ ØªÙ… ØªØ­Ù…ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª', Object.keys(window.employeesMap).length, 'Ù…Ø¯ÙŠØ±');
         
         displayRecordings();
         updateRecordingsBadge(recordings.length);
         
     } catch (error) {
-        console.error('ÎØÃ İí ÊÍãíá ÇáÊÓÌíáÇÊ:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª:', error);
     }
 }
 
-// ÊÍÏíË ÚÏÏ ÇáÊÓÌíáÇÊ İí ÇáÔÇÑÉ
+// ØªØ­Ø¯ÙŠØ« Ø¹Ø¯Ø¯ Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª ÙÙŠ Ø§Ù„Ø´Ø§Ø±Ø©
 function updateRecordingsBadge(count) {
     const badge = document.getElementById('recordings-badge');
     if (badge) {
@@ -1194,17 +1194,17 @@ function updateRecordingsBadge(count) {
     }
 }
 
-// ÚÑÖ ÇáÊÓÌíáÇÊ
+// Ø¹Ø±Ø¶ Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª
 function displayRecordings() {
     recordingsContainer.innerHTML = '';
     
     if (recordings.length === 0) {
-        recordingsContainer.innerHTML = '<p style="text-align: center; color: #666;">áÇ ÊæÌÏ ÊÓÌíáÇÊ</p>';
+        recordingsContainer.innerHTML = '<p style="text-align: center; color: #666;">Ù„Ø§ ØªÙˆØ¬Ø¯ ØªØ³Ø¬ÙŠÙ„Ø§Øª</p>';
         return;
     }
     
-    // ÇáÍÕæá Úáì ÇÓã ÇáãÓÊÎÏã ÇáÍÇáí
-    const currentUser = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'ÛíÑ ãÚÑæİ';
+    // Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø­Ø§Ù„ÙŠ
+    const currentUser = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'ØºÙŠØ± Ù…Ø¹Ø±ÙˆÙ';
     
     recordings.forEach((recording, index) => {
         const item = document.createElement('div');
@@ -1219,29 +1219,29 @@ function displayRecordings() {
             minute: '2-digit'
         });
         
-        // ÇÓÊÎÑÇÌ ÑŞã ÇáåÇÊİ (ÇáÑŞã ÇáãÊÕá Èå)
-        let phoneNumber = recording.to || 'ÛíÑ ãÍÏÏ';
-        console.log(`?? ÑŞã ÇáÊÓÌíá ${index + 1}:`, recording.to, '?', phoneNumber);
+        // Ø§Ø³ØªØ®Ø±Ø§Ø¬ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ (Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ù…ØªØµÙ„ Ø¨Ù‡)
+        let phoneNumber = recording.to || 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯';
+        console.log(`ğŸ“ Ø±Ù‚Ù… Ø§Ù„ØªØ³Ø¬ÙŠÙ„ ${index + 1}:`, recording.to, 'â†’', phoneNumber);
         
-        // ÊäÙíİ ÑŞã ÇáåÇÊİ
-        if (phoneNumber !== 'ÛíÑ ãÍÏÏ' && phoneNumber.startsWith('+')) {
+        // ØªÙ†Ø¸ÙŠÙ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ
+        if (phoneNumber !== 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' && phoneNumber.startsWith('+')) {
             phoneNumber = phoneNumber.substring(1);
         }
         
-        // ÇáÍÕæá Úáì ÇÓã ÇáãÏíÑ ãä employeeId
-        console.log(`?? employeeId ááÊÓÌíá ${index + 1}:`, recording.employeeId);
+        // Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ø³Ù… Ø§Ù„Ù…Ø¯ÙŠØ± Ù…Ù† employeeId
+        console.log(`ğŸ‘¤ employeeId Ù„Ù„ØªØ³Ø¬ÙŠÙ„ ${index + 1}:`, recording.employeeId);
         const employeeName = window.employeesMap && recording.employeeId 
-            ? (window.employeesMap[recording.employeeId] || window.employeesMap[String(recording.employeeId)] || 'ÛíÑ ãÚÑæİ')
-            : 'ÛíÑ ãÚÑæİ';
-        console.log(`? ÇÓã ÇáãæÙİ ááÊÓÌíá ${index + 1}:`, employeeName);
+            ? (window.employeesMap[recording.employeeId] || window.employeesMap[String(recording.employeeId)] || 'ØºÙŠØ± Ù…Ø¹Ø±ÙˆÙ')
+            : 'ØºÙŠØ± Ù…Ø¹Ø±ÙˆÙ';
+        console.log(`âœ… Ø§Ø³Ù… Ø§Ù„Ù…ÙˆØ¸Ù Ù„Ù„ØªØ³Ø¬ÙŠÙ„ ${index + 1}:`, employeeName);
         
-        // ÍÓÇÈ ÇáãÏÉ ÈÇáÏŞÇÆŞ æÇáËæÇäí
+        // Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø¯Ø© Ø¨Ø§Ù„Ø¯Ù‚Ø§Ø¦Ù‚ ÙˆØ§Ù„Ø«ÙˆØ§Ù†ÙŠ
         const duration = recording.duration || 0;
         const minutes = Math.floor(duration / 60);
         const seconds = duration % 60;
-        const durationText = minutes > 0 ? `${minutes} Ï ${seconds} Ë` : `${seconds} Ë`;
+        const durationText = minutes > 0 ? `${minutes} Ø¯ ${seconds} Ø«` : `${seconds} Ø«`;
         
-        // ÇáÊÍŞŞ ãä ÕáÇÍíÉ ÇáÍĞİ
+        // Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ØµÙ„Ø§Ø­ÙŠØ© Ø§Ù„Ø­Ø°Ù
         const userRole = sessionStorage.getItem('userRole');
         const canDelete = sessionStorage.getItem('canDeleteRecordings') === 'true';
         const showDeleteBtn = userRole === 'admin' || canDelete;
@@ -1249,35 +1249,35 @@ function displayRecordings() {
         item.innerHTML = `
             <div class="recording-info">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <span style="font-size: 24px;">??</span>
+                    <span style="font-size: 24px;">ğŸ“</span>
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div class="recording-number" style="font-weight: bold; font-size: 16px; color: #333;">
                                 ${phoneNumber}
                             </div>
-                            <button onclick="copyPhoneNumber('${phoneNumber}')" style="background: linear-gradient(135deg, #5ec4d4, #1e3a5f); color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px; transition: all 0.3s;" title="äÓÎ ÇáÑŞã">
-                                ?? äÓÎ
+                            <button onclick="copyPhoneNumber('${phoneNumber}')" style="background: linear-gradient(135deg, #5ec4d4, #1e3a5f); color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px; transition: all 0.3s;" title="Ù†Ø³Ø® Ø§Ù„Ø±Ù‚Ù…">
+                                ğŸ“‹ Ù†Ø³Ø®
                             </button>
                         </div>
                         <div style="font-size: 12px; color: #666;">
-                            ÈæÇÓØÉ: ${employeeName}
+                            Ø¨ÙˆØ§Ø³Ø·Ø©: ${employeeName}
                         </div>
                     </div>
                 </div>
                 <div class="recording-date" style="font-size: 13px; color: #888;">
-                    ?? ${formattedDate} • ?? ${durationText}
+                    ğŸ“… ${formattedDate} â€¢ â±ï¸ ${durationText}
                 </div>
             </div>
             <div class="recording-controls">
                 <button class="play-btn" onclick="playRecording('${recording.sid}')" style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                    ?? ÊÔÛíá
+                    â–¶ï¸ ØªØ´ØºÙŠÙ„
                 </button>
                 <button class="download-btn" onclick="downloadRecording('${recording.sid}', '${phoneNumber}')" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                    ?? ÊÍãíá
+                    â¬‡ï¸ ØªØ­Ù…ÙŠÙ„
                 </button>
                 ${showDeleteBtn ? `
                 <button class="delete-btn" onclick="deleteRecording('${recording.sid}')" style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                    ??? ÍĞİ
+                    ğŸ—‘ï¸ Ø­Ø°Ù
                 </button>
                 ` : ''}
             </div>
@@ -1287,19 +1287,19 @@ function displayRecordings() {
     });
 }
 
-// ãÊÛíÑ áÍİÙ ÇáãÔÛá ÇáÍÇáí
+// Ù…ØªØºÙŠØ± Ù„Ø­ÙØ¸ Ø§Ù„Ù…Ø´ØºÙ„ Ø§Ù„Ø­Ø§Ù„ÙŠ
 let currentAudio = null;
 let currentPlayButton = null;
 
-// ÊÔÛíá ÇáÊÓÌíá
+// ØªØ´ØºÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„
 async function playRecording(recordingSid) {
     try {
-        // ÅíŞÇİ Ãí ÊÓÌíá íÚãá ÍÇáíÇğ
+        // Ø¥ÙŠÙ‚Ø§Ù Ø£ÙŠ ØªØ³Ø¬ÙŠÙ„ ÙŠØ¹Ù…Ù„ Ø­Ø§Ù„ÙŠØ§Ù‹
         if (currentAudio) {
             currentAudio.pause();
             currentAudio = null;
             if (currentPlayButton) {
-                currentPlayButton.innerHTML = '?? ÊÔÛíá';
+                currentPlayButton.innerHTML = 'â–¶ï¸ ØªØ´ØºÙŠÙ„';
                 currentPlayButton.style.background = '#4CAF50';
             }
         }
@@ -1308,33 +1308,33 @@ async function playRecording(recordingSid) {
         const audioUrl = `${baseUrl}/play-recording/${recordingSid}`;
         const audio = new Audio(audioUrl);
         
-        // ÇáÈÍÊ Úä ÒÑ ÇáÊÔÛíá
+        // Ø§Ù„Ø¨Ø­Øª Ø¹Ù† Ø²Ø± Ø§Ù„ØªØ´ØºÙŠÙ„
         const playBtn = event.target;
         currentPlayButton = playBtn;
         
-        // ÊÛííÑ ÇáÒÑ áÜ "ÅíŞÇİ"
-        playBtn.innerHTML = '?? ÅíŞÇİ';
+        // ØªØºÙŠÙŠØ± Ø§Ù„Ø²Ø± Ù„Ù€ "Ø¥ÙŠÙ‚Ø§Ù"
+        playBtn.innerHTML = 'â¸ï¸ Ø¥ÙŠÙ‚Ø§Ù';
         playBtn.style.background = '#ff9800';
         
         audio.play();
         currentAudio = audio;
         
-        console.log('?? ÊÔÛíá ÇáÊÓÌíá:', recordingSid);
+        console.log('ğŸµ ØªØ´ØºÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„:', recordingSid);
         
-        // ÚäÏ ÇäÊåÇÁ ÇáÊÓÌíá
+        // Ø¹Ù†Ø¯ Ø§Ù†ØªÙ‡Ø§Ø¡ Ø§Ù„ØªØ³Ø¬ÙŠÙ„
         audio.onended = () => {
-            playBtn.innerHTML = '?? ÊÔÛíá';
+            playBtn.innerHTML = 'â–¶ï¸ ØªØ´ØºÙŠÙ„';
             playBtn.style.background = '#4CAF50';
             currentAudio = null;
             currentPlayButton = null;
         };
         
-        // ÚäÏ ÇáÖÛØ Úáì ÇáÒÑ ãÑÉ ÃÎÑì (áÅíŞÇİ)
+        // Ø¹Ù†Ø¯ Ø§Ù„Ø¶ØºØ· Ø¹Ù„Ù‰ Ø§Ù„Ø²Ø± Ù…Ø±Ø© Ø£Ø®Ø±Ù‰ (Ù„Ø¥ÙŠÙ‚Ø§Ù)
         playBtn.onclick = (e) => {
             e.preventDefault();
             if (currentAudio && !currentAudio.paused) {
                 currentAudio.pause();
-                playBtn.innerHTML = '?? ÊÔÛíá';
+                playBtn.innerHTML = 'â–¶ï¸ ØªØ´ØºÙŠÙ„';
                 playBtn.style.background = '#4CAF50';
                 currentAudio = null;
                 currentPlayButton = null;
@@ -1344,32 +1344,32 @@ async function playRecording(recordingSid) {
         };
         
     } catch (error) {
-        console.error('ÎØÃ İí ÊÔÛíá ÇáÊÓÌíá:', error);
-        alert('İÔá ÊÔÛíá ÇáÊÓÌíá');
+        console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ´ØºÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„:', error);
+        alert('ÙØ´Ù„ ØªØ´ØºÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„');
         if (currentPlayButton) {
-            currentPlayButton.innerHTML = '?? ÊÔÛíá';
+            currentPlayButton.innerHTML = 'â–¶ï¸ ØªØ´ØºÙŠÙ„';
             currentPlayButton.style.background = '#4CAF50';
         }
     }
 }
 
-// ÍĞİ ÇáÊÓÌíá
+// Ø­Ø°Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„
 async function deleteRecording(recordingSid) {
-    // ÇáÊÍŞŞ ãä ÇáÕáÇÍíÉ
+    // Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ©
     const userRole = sessionStorage.getItem('userRole');
     const canDelete = sessionStorage.getItem('canDeleteRecordings') === 'true';
     
     if (userRole !== 'admin' && !canDelete) {
-        alert('?? áíÓ áÏíß ÕáÇÍíÉ áÍĞİ ÇáÊÓÌíáÇÊ');
+        alert('âš ï¸ Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ ØµÙ„Ø§Ø­ÙŠØ© Ù„Ø­Ø°Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„Ø§Øª');
         return;
     }
     
-    if (!confirm('åá ÃäÊ ãÊÃßÏ ãä ÍĞİ åĞÇ ÇáÊÓÌíá¿')) {
+    if (!confirm('Ù‡Ù„ Ø£Ù†Øª Ù…ØªØ£ÙƒØ¯ Ù…Ù† Ø­Ø°Ù Ù‡Ø°Ø§ Ø§Ù„ØªØ³Ø¬ÙŠÙ„ØŸ')) {
         return;
     }
     
     try {
-        console.log('??? ÌÇÑí ÍĞİ ÇáÊÓÌíá:', recordingSid);
+        console.log('ğŸ—‘ï¸ Ø¬Ø§Ø±ÙŠ Ø­Ø°Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„:', recordingSid);
         const baseUrl = window.location.origin;
         const response = await fetch(`${baseUrl}/delete-recording/${recordingSid}`, {
             method: 'DELETE'
@@ -1378,29 +1378,29 @@ async function deleteRecording(recordingSid) {
         const data = await response.json();
         
         if (data.success) {
-            console.log('? Êã ÍĞİ ÇáÊÓÌíá');
-            alert('? Êã ÍĞİ ÇáÊÓÌíá ÈäÌÇÍ');
-            loadRecordings(); // ÅÚÇÏÉ ÊÍãíá ÇáŞÇÆãÉ
+            console.log('âœ… ØªÙ… Ø­Ø°Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„');
+            alert('âœ… ØªÙ… Ø­Ø°Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„ Ø¨Ù†Ø¬Ø§Ø­');
+            loadRecordings(); // Ø¥Ø¹Ø§Ø¯Ø© ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©
         } else {
-            throw new Error(data.error || 'İÔá ÍĞİ ÇáÊÓÌíá');
+            throw new Error(data.error || 'ÙØ´Ù„ Ø­Ø°Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„');
         }
     } catch (error) {
-        console.error('? ÎØÃ İí ÍĞİ ÇáÊÓÌíá:', error);
-        alert('? İÔá ÍĞİ ÇáÊÓÌíá: ' + error.message);
+        console.error('âŒ Ø®Ø·Ø£ ÙÙŠ Ø­Ø°Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„:', error);
+        alert('âŒ ÙØ´Ù„ Ø­Ø°Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„: ' + error.message);
     }
 }
 
-// ÊÍãíá ÇáÊÓÌíá ãÈÇÔÑÉ
+// ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„ Ù…Ø¨Ø§Ø´Ø±Ø©
 async function downloadRecording(recordingSid, phoneNumber) {
     try {
-        console.log('?? ÌÇÑí ÊÍãíá ÇáÊÓÌíá:', recordingSid);
+        console.log('â¬‡ï¸ Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„:', recordingSid);
         
         const baseUrl = window.location.origin;
         
-        // ÊÍãíá ãÈÇÔÑ ãä ÇáÓíÑİÑ
+        // ØªØ­Ù…ÙŠÙ„ Ù…Ø¨Ø§Ø´Ø± Ù…Ù† Ø§Ù„Ø³ÙŠØ±ÙØ±
         const downloadUrl = `${baseUrl}/download-recording/${recordingSid}`;
         
-        // ÅäÔÇÁ ÑÇÈØ ÊÍãíá
+        // Ø¥Ù†Ø´Ø§Ø¡ Ø±Ø§Ø¨Ø· ØªØ­Ù…ÙŠÙ„
         const a = document.createElement('a');
         a.href = downloadUrl;
         a.download = `recording_${phoneNumber}_${recordingSid}.mp3`;
@@ -1409,17 +1409,17 @@ async function downloadRecording(recordingSid, phoneNumber) {
         a.click();
         document.body.removeChild(a);
         
-        console.log('? Êã ÈÏÁ ÇáÊÍãíá');
+        console.log('âœ… ØªÙ… Ø¨Ø¯Ø¡ Ø§Ù„ØªØ­Ù…ÙŠÙ„');
     } catch (error) {
-        console.error('? ÎØÃ İí ÊÍãíá ÇáÊÓÌíá:', error);
-        alert('İÔá ÊÍãíá ÇáÊÓÌíá: ' + error.message);
+        console.error('âŒ Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„:', error);
+        alert('ÙØ´Ù„ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„: ' + error.message);
     }
 }
 
-// äÓÎ ÑŞã ÇáåÇÊİ
+// Ù†Ø³Ø® Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ
 async function copyPhoneNumber(phoneNumber) {
     try {
-        // ÅÖÇİÉ + ÅĞÇ áã íßä ãæÌæÏ
+        // Ø¥Ø¶Ø§ÙØ© + Ø¥Ø°Ø§ Ù„Ù… ÙŠÙƒÙ† Ù…ÙˆØ¬ÙˆØ¯
         let formattedNumber = phoneNumber;
         if (!formattedNumber.startsWith('+')) {
             formattedNumber = '+' + formattedNumber;
@@ -1427,12 +1427,12 @@ async function copyPhoneNumber(phoneNumber) {
         
         await navigator.clipboard.writeText(formattedNumber);
         
-        // ÅÙåÇÑ ÑÓÇáÉ äÌÇÍ
+        // Ø¥Ø¸Ù‡Ø§Ø± Ø±Ø³Ø§Ù„Ø© Ù†Ø¬Ø§Ø­
         const event = window.event;
         const button = event.target.closest('button');
         const originalText = button.innerHTML;
         
-        button.innerHTML = '? Êã ÇáäÓÎ';
+        button.innerHTML = 'âœ… ØªÙ… Ø§Ù„Ù†Ø³Ø®';
         button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
         
         setTimeout(() => {
@@ -1440,11 +1440,11 @@ async function copyPhoneNumber(phoneNumber) {
             button.style.background = 'linear-gradient(135deg, #5ec4d4, #1e3a5f)';
         }, 2000);
         
-        console.log('? Êã äÓÎ ÇáÑŞã:', formattedNumber);
+        console.log('âœ… ØªÙ… Ù†Ø³Ø® Ø§Ù„Ø±Ù‚Ù…:', formattedNumber);
     } catch (error) {
-        console.error('? ÎØÃ İí äÓÎ ÇáÑŞã:', error);
+        console.error('âŒ Ø®Ø·Ø£ ÙÙŠ Ù†Ø³Ø® Ø§Ù„Ø±Ù‚Ù…:', error);
         
-        // ØÑíŞÉ ÈÏíáÉ ááäÓÎ
+        // Ø·Ø±ÙŠÙ‚Ø© Ø¨Ø¯ÙŠÙ„Ø© Ù„Ù„Ù†Ø³Ø®
         try {
             const textArea = document.createElement('textarea');
             textArea.value = phoneNumber.startsWith('+') ? phoneNumber : '+' + phoneNumber;
@@ -1459,7 +1459,7 @@ async function copyPhoneNumber(phoneNumber) {
             const button = event.target.closest('button');
             const originalText = button.innerHTML;
             
-            button.innerHTML = '? Êã ÇáäÓÎ';
+            button.innerHTML = 'âœ… ØªÙ… Ø§Ù„Ù†Ø³Ø®';
             button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
             
             setTimeout(() => {
@@ -1467,31 +1467,31 @@ async function copyPhoneNumber(phoneNumber) {
                 button.style.background = 'linear-gradient(135deg, #5ec4d4, #1e3a5f)';
             }, 2000);
             
-            console.log('? Êã äÓÎ ÇáÑŞã (ØÑíŞÉ ÈÏíáÉ)');
+            console.log('âœ… ØªÙ… Ù†Ø³Ø® Ø§Ù„Ø±Ù‚Ù… (Ø·Ø±ÙŠÙ‚Ø© Ø¨Ø¯ÙŠÙ„Ø©)');
         } catch (err) {
-            alert('İÔá äÓÎ ÇáÑŞã: ' + error.message);
+            alert('ÙØ´Ù„ Ù†Ø³Ø® Ø§Ù„Ø±Ù‚Ù…: ' + error.message);
         }
     }
 }
 
-// ãÚÇáÌÉ ÃÒÑÇÑ áæÍÉ ÇáÃÑŞÇã
+// Ù…Ø¹Ø§Ù„Ø¬Ø© Ø£Ø²Ø±Ø§Ø± Ù„ÙˆØ­Ø© Ø§Ù„Ø£Ø±Ù‚Ø§Ù…
 document.querySelectorAll('.num-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const digit = btn.dataset.num;
         addDigit(digit);
         
-        // DTMF ÛíÑ ãÊÇÍ İí REST API
+        // DTMF ØºÙŠØ± Ù…ØªØ§Ø­ ÙÙŠ REST API
     });
 });
 
-// ãÚÇáÌÉ ÃÒÑÇÑ ÇáÊÍßã
+// Ù…Ø¹Ø§Ù„Ø¬Ø© Ø£Ø²Ø±Ø§Ø± Ø§Ù„ØªØ­ÙƒÙ…
 callBtn.addEventListener('click', makeCall);
 endCallBtn.addEventListener('click', endCall);
 muteBtn.addEventListener('click', toggleMute);
 if (speakerBtn) speakerBtn.addEventListener('click', toggleSpeaker);
 holdBtn.addEventListener('click', toggleHold);
 
-// ÏÇáÉ áÅÎİÇÁ ÌãíÚ ÇáÃŞÓÇã
+// Ø¯Ø§Ù„Ø© Ù„Ø¥Ø®ÙØ§Ø¡ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ù‚Ø³Ø§Ù…
 function hideAllSections() {
     dialpad.classList.add('hidden');
     callHistoryList.classList.add('hidden');
@@ -1502,7 +1502,7 @@ function hideAllSections() {
     if (workReportsPanel) workReportsPanel.classList.add('hidden');
 }
 
-// ÏÇáÉ áÅÒÇáÉ ÇáÊİÚíá ãä ÌãíÚ ÃÒÑÇÑ ÇáŞÇÆãÉ
+// Ø¯Ø§Ù„Ø© Ù„Ø¥Ø²Ø§Ù„Ø© Ø§Ù„ØªÙØ¹ÙŠÙ„ Ù…Ù† Ø¬Ù…ÙŠØ¹ Ø£Ø²Ø±Ø§Ø± Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©
 function removeAllActiveStates() {
     dialpadBtn.classList.remove('active');
     callHistoryBtn.classList.remove('active');
@@ -1512,20 +1512,20 @@ function removeAllActiveStates() {
     if (workReportsBtn) workReportsBtn.classList.remove('active');
 }
 
-// ÚÑÖ ÇáÅÚÏÇÏÇÊ
+// Ø¹Ø±Ø¶ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª
 function showSettings() {
     hideAllSections();
     removeAllActiveStates();
     settingsPanel.classList.remove('hidden');
     settingsBtn.classList.add('active');
-    // ÇáÊÑßíÒ Úáì ÍŞá ÑŞã ÇáåÇÊİ
+    // Ø§Ù„ØªØ±ÙƒÙŠØ² Ø¹Ù„Ù‰ Ø­Ù‚Ù„ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ
     const userPhoneInput = document.getElementById('user-phone-number');
     if (userPhoneInput) {
         setTimeout(() => userPhoneInput.focus(), 100);
     }
 }
 
-// ãÚÇáÌÉ ÃÒÑÇÑ ÇáŞÇÆãÉ
+// Ù…Ø¹Ø§Ù„Ø¬Ø© Ø£Ø²Ø±Ø§Ø± Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©
 if (dialpadBtn) {
     dialpadBtn.addEventListener('click', () => {
         console.log('Dialpad clicked');
@@ -1587,7 +1587,7 @@ if (workReportsBtn) {
         document.getElementById('work-reports-panel').classList.remove('hidden');
         workReportsBtn.classList.add('active');
         
-        // ÊÚííä ÇáÊæÇÑíÎ ÇáÇİÊÑÇÖíÉ (ÂÎÑ 7 ÃíÇã)
+        // ØªØ¹ÙŠÙŠÙ† Ø§Ù„ØªÙˆØ§Ø±ÙŠØ® Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ© (Ø¢Ø®Ø± 7 Ø£ÙŠØ§Ù…)
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - 7);
@@ -1597,12 +1597,12 @@ if (workReportsBtn) {
     });
 }
 
-// ÒÑ ÊÓÌíá ÇáÎÑæÌ
+// Ø²Ø± ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø®Ø±ÙˆØ¬
 const logoutBtn = document.getElementById('logout-btn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
-        if (confirm('åá ÊÑíÏ ÊÓÌíá ÇáÎÑæÌ¿')) {
-            // ÊÓÌíá æŞÊ ÇáÎÑæÌ
+        if (confirm('Ù‡Ù„ ØªØ±ÙŠØ¯ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø®Ø±ÙˆØ¬ØŸ')) {
+            // ØªØ³Ø¬ÙŠÙ„ ÙˆÙ‚Øª Ø§Ù„Ø®Ø±ÙˆØ¬
             try {
                 const employeeId = localStorage.getItem('employeeId');
                 const employeeName = localStorage.getItem('employeeName');
@@ -1620,7 +1620,7 @@ if (logoutBtn) {
                     })
                 });
             } catch (error) {
-                console.error('ÎØÃ İí ÊÓÌíá æŞÊ ÇáÎÑæÌ:', error);
+                console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ³Ø¬ÙŠÙ„ ÙˆÙ‚Øª Ø§Ù„Ø®Ø±ÙˆØ¬:', error);
             }
             
             sessionStorage.removeItem('isLoggedIn');
@@ -1630,15 +1630,15 @@ if (logoutBtn) {
     });
 }
 
-// ===== ÅÏÇÑÉ ÇáãÏíÑíä =====
+// ===== Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ† =====
 
-// ÇáÊÍŞŞ ãä ÕáÇÍíÉ ÇáæÕæá
+// Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ØµÙ„Ø§Ø­ÙŠØ© Ø§Ù„ÙˆØµÙˆÙ„
 function checkAdminAccess() {
     const username = sessionStorage.getItem('username');
     return username === 'akram';
 }
 
-// ÅÎİÇÁ/ÅÙåÇÑ ÇáÃŞÓÇã ÍÓÈ ÇáÕáÇÍíÉ
+// Ø¥Ø®ÙØ§Ø¡/Ø¥Ø¸Ù‡Ø§Ø± Ø§Ù„Ø£Ù‚Ø³Ø§Ù… Ø­Ø³Ø¨ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ©
 const userRole = sessionStorage.getItem('userRole');
 const employeesSection = document.getElementById('employees-section');
 const adminAccountSection = document.getElementById('admin-account-section');
@@ -1647,100 +1647,100 @@ const employeeProfileSection = document.getElementById('employee-profile-section
 const pricingSection = document.getElementById('pricing-section');
 
 if (userRole === 'admin') {
-    // ÇáãØæÑ íÑì ÅÏÇÑÉ ÇáãÏíÑíä æÇáÅÚÏÇÏÇÊ æÇáÊÓÚíÑÉ
+    // Ø§Ù„Ù…Ø·ÙˆØ± ÙŠØ±Ù‰ Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ† ÙˆØ§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª ÙˆØ§Ù„ØªØ³Ø¹ÙŠØ±Ø©
     if (employeesSection) employeesSection.style.display = 'block';
     if (adminAccountSection) adminAccountSection.style.display = 'block';
     if (adminAudioSection) adminAudioSection.style.display = 'block';
     if (pricingSection) pricingSection.style.display = 'block';
     if (employeeProfileSection) employeeProfileSection.style.display = 'none';
 } else {
-    // ÇáãÏíÑ íÑì İŞØ ÊÚÏíá ãáİå ÇáÔÎÕí
+    // Ø§Ù„Ù…Ø¯ÙŠØ± ÙŠØ±Ù‰ ÙÙ‚Ø· ØªØ¹Ø¯ÙŠÙ„ Ù…Ù„ÙÙ‡ Ø§Ù„Ø´Ø®ØµÙŠ
     if (employeesSection) employeesSection.style.display = 'none';
     if (adminAccountSection) adminAccountSection.style.display = 'none';
     if (adminAudioSection) adminAudioSection.style.display = 'none';
     if (pricingSection) pricingSection.style.display = 'none';
     if (employeeProfileSection) {
         employeeProfileSection.style.display = 'block';
-        // ÊÍãíá ÈíÇäÇÊ ÇáãÏíÑ
+        // ØªØ­Ù…ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¯ÙŠØ±
         loadEmployeeProfile();
     }
 }
 
-// ÌáÈ ÇáãÏíÑíä ãä localStorage
+// Ø¬Ù„Ø¨ Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ† Ù…Ù† localStorage
 function getEmployees() {
     const employees = localStorage.getItem('employees');
     return employees ? JSON.parse(employees) : [];
 }
 
-// ÍİÙ ÇáãÏíÑíä İí localStorage
+// Ø­ÙØ¸ Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ† ÙÙŠ localStorage
 function saveEmployees(employees) {
     localStorage.setItem('employees', JSON.stringify(employees));
 }
 
-// ÚÑÖ ŞÇÆãÉ ÇáãÏíÑíä
+// Ø¹Ø±Ø¶ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ†
 async function loadEmployeesList() {
     const userRole = sessionStorage.getItem('userRole');
-    console.log('?? ÊÍãíá ŞÇÆãÉ ÇáãÏíÑíä... Role:', userRole);
+    console.log('ğŸ”„ ØªØ­Ù…ÙŠÙ„ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ†... Role:', userRole);
     
     if (userRole !== 'admin') {
-        console.log('?? ÇáãÏíÑ áÇ íãßäå ÑÄíÉ ŞÇÆãÉ ÇáãÏíÑíä');
+        console.log('âš ï¸ Ø§Ù„Ù…Ø¯ÙŠØ± Ù„Ø§ ÙŠÙ…ÙƒÙ†Ù‡ Ø±Ø¤ÙŠØ© Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ†');
         return;
     }
     
     const container = document.getElementById('employees-list-container');
     if (!container) {
-        console.error('? áã íÊã ÇáÚËæÑ Úáì employees-list-container');
+        console.error('âŒ Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ employees-list-container');
         return;
     }
     
-    console.log('? Container ãæÌæÏ¡ ÌÇÑí ÌáÈ ÇáÈíÇäÇÊ...');
+    console.log('âœ… Container Ù…ÙˆØ¬ÙˆØ¯ØŒ Ø¬Ø§Ø±ÙŠ Ø¬Ù„Ø¨ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª...');
     
     try {
         const baseUrl = window.location.origin;
-        console.log('?? ÌÇÑí ÌáÈ ÇáÈíÇäÇÊ ãä:', `${baseUrl}/employees`);
+        console.log('ğŸŒ Ø¬Ø§Ø±ÙŠ Ø¬Ù„Ø¨ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ù…Ù†:', `${baseUrl}/employees`);
         
         const response = await fetch(`${baseUrl}/employees`);
         
-        console.log('?? ÇÓÊÌÇÈÉ ÇáÓíÑİÑ:', response.status, response.statusText);
+        console.log('ğŸ“¡ Ø§Ø³ØªØ¬Ø§Ø¨Ø© Ø§Ù„Ø³ÙŠØ±ÙØ±:', response.status, response.statusText);
         
         if (!response.ok) {
-            throw new Error(`ÎØÃ İí ÇáÓíÑİÑ: ${response.status}`);
+            throw new Error(`Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ø³ÙŠØ±ÙØ±: ${response.status}`);
         }
         
         const data = await response.json();
         
-        console.log('?? ÇáÈíÇäÇÊ ÇáãÓÊáãÉ:', data);
+        console.log('ğŸ“Š Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø³ØªÙ„Ù…Ø©:', data);
         
         const employees = data.employees || [];
         
-        console.log('?? ÚÏÏ ÇáãÏíÑíä:', employees.length);
+        console.log('ğŸ‘¥ Ø¹Ø¯Ø¯ Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ†:', employees.length);
         
         if (employees.length === 0) {
-            container.innerHTML = '<p class="no-employees">áÇ íæÌÏ ãÏíÑíä ãÖÇİíä. ÇÖÛØ "ÅÖÇİÉ ãÏíÑ" áÅÖÇİÉ Ãæá ãÏíÑ.</p>';
+            container.innerHTML = '<p class="no-employees">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù…Ø¯ÙŠØ±ÙŠÙ† Ù…Ø¶Ø§ÙÙŠÙ†. Ø§Ø¶ØºØ· "Ø¥Ø¶Ø§ÙØ© Ù…Ø¯ÙŠØ±" Ù„Ø¥Ø¶Ø§ÙØ© Ø£ÙˆÙ„ Ù…Ø¯ÙŠØ±.</p>';
             return;
         }
         
         container.innerHTML = employees.map(emp => {
             const perms = emp.permissions || {};
             const permsList = [];
-            if (perms.viewOwnRecordings) permsList.push('?? ÊÓÌíáÇÊ ÎÇÕÉ');
-            if (perms.viewAllRecordings) permsList.push('?? ÊÓÌíáÇÊ ÚÇãÉ');
-            if (perms.deleteRecordings) permsList.push('??? ãÓÍ');
-            if (perms.editProfile) permsList.push('?? ÊÚÏíá');
-            // ÕáÇÍíÇÊ ÇáÇÊÕÇá
+            if (perms.viewOwnRecordings) permsList.push('ğŸ“¹ ØªØ³Ø¬ÙŠÙ„Ø§Øª Ø®Ø§ØµØ©');
+            if (perms.viewAllRecordings) permsList.push('ğŸ“Š ØªØ³Ø¬ÙŠÙ„Ø§Øª Ø¹Ø§Ù…Ø©');
+            if (perms.deleteRecordings) permsList.push('ğŸ—‘ï¸ Ù…Ø³Ø­');
+            if (perms.editProfile) permsList.push('âœï¸ ØªØ¹Ø¯ÙŠÙ„');
+            // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø§ØªØµØ§Ù„
             const callPerms = [];
-            if (perms.callFromUSA) callPerms.push('????');
-            if (perms.callFromEgypt) callPerms.push('????');
-            if (perms.callFromSaudi) callPerms.push('????');
-            if (callPerms.length > 0) permsList.push('?? ' + callPerms.join(' '));
+            if (perms.callFromUSA) callPerms.push('ğŸ‡ºğŸ‡¸');
+            if (perms.callFromEgypt) callPerms.push('ğŸ‡ªğŸ‡¬');
+            if (perms.callFromSaudi) callPerms.push('ğŸ‡¸ğŸ‡¦');
+            if (callPerms.length > 0) permsList.push('ğŸ“ ' + callPerms.join(' '));
             
-            // ÇáÊÍŞŞ ÅĞÇ ßÇä ÍÓÇÈ ÊÌÑíÈí
+            // Ø§Ù„ØªØ­Ù‚Ù‚ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø­Ø³Ø§Ø¨ ØªØ¬Ø±ÙŠØ¨ÙŠ
             const trialBadge = emp.isTrial || emp.role === 'trial' 
-                ? '<span style="background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-right: 5px;">?? ÊÌÑíÈí</span>' 
+                ? '<span style="background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-right: 5px;">ğŸ ØªØ¬Ø±ÙŠØ¨ÙŠ</span>' 
                 : '';
             
-            // ÇáÍÕæá Úáì ÇÓã ÇáãæÙİ ÈÔßá Âãä
-            const empName = emp.name || emp.fullname || emp.username || 'ÛíÑ ãÚÑæİ';
+            // Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ø³Ù… Ø§Ù„Ù…ÙˆØ¸Ù Ø¨Ø´ÙƒÙ„ Ø¢Ù…Ù†
+            const empName = emp.name || emp.fullname || emp.username || 'ØºÙŠØ± Ù…Ø¹Ø±ÙˆÙ';
             const safeEmpName = empName.replace(/'/g, "\\'");
             
             return `
@@ -1748,49 +1748,49 @@ async function loadEmployeesList() {
                 <div class="employee-header">
                     <div class="employee-info">
                         <h6>${empName} ${trialBadge}</h6>
-                        <span class="employee-username">@${emp.username || 'ÛíÑ ãÍÏÏ'}</span>
-                        <span class="employee-phone">?? ${emp.phone || 'ÛíÑ ãÍÏÏ'}</span>
-                        <span class="employee-dept">?? ${emp.departmentName || emp.departmentArabic || 'ÛíÑ ãÍÏÏ'}</span>
+                        <span class="employee-username">@${emp.username || 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯'}</span>
+                        <span class="employee-phone">ğŸ“± ${emp.phone || 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯'}</span>
+                        <span class="employee-dept">ğŸ“‚ ${emp.departmentName || emp.departmentArabic || 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯'}</span>
                         <div class="employee-perms" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;">
                             ${permsList.length > 0 
                                 ? permsList.map(p => `<span style="background: #e3f2fd; padding: 3px 8px; border-radius: 12px; font-size: 11px;">${p}</span>`).join('') 
-                                : '<span style="color: #999; font-size: 11px;">áÇ ÊæÌÏ ÕáÇÍíÇÊ</span>'}
+                                : '<span style="color: #999; font-size: 11px;">Ù„Ø§ ØªÙˆØ¬Ø¯ ØµÙ„Ø§Ø­ÙŠØ§Øª</span>'}
                         </div>
                     </div>
                     <div class="employee-actions" style="display: flex; gap: 8px;">
-                        <button class="edit-employee-btn" onclick="openEditEmployeeModal(${emp.id}, '${safeEmpName}', '${emp.username || ''}', '${emp.phone || ''}', '${emp.department || ''}')" title="ÊÚÏíá" style="background: #4CAF50; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">??</button>
-                        <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${safeEmpName}')" title="ÍĞİ" style="background: #f44336; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">???</button>
+                        <button class="edit-employee-btn" onclick="openEditEmployeeModal(${emp.id}, '${safeEmpName}', '${emp.username || ''}', '${emp.phone || ''}', '${emp.department || ''}')" title="ØªØ¹Ø¯ÙŠÙ„" style="background: #4CAF50; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">âœï¸</button>
+                        <button class="delete-employee-btn" onclick="deleteEmployee(${emp.id}, '${safeEmpName}')" title="Ø­Ø°Ù" style="background: #f44336; border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer;">ğŸ—‘ï¸</button>
                     </div>
                 </div>
             </div>
         `;
         }).join('');
     } catch (error) {
-        console.error('? ÎØÃ İí ÊÍãíá ÇáãÏíÑíä:', error);
-        console.error('ÊİÇÕíá ÇáÎØÃ:', error.message, error.stack);
-        container.innerHTML = `<p class="no-employees" style="color: #ff6b6b;">ÎØÃ İí ÊÍãíá ÇáÈíÇäÇÊ<br><small>${error.message}</small></p>`;
+        console.error('âŒ Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ†:', error);
+        console.error('ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø®Ø·Ø£:', error.message, error.stack);
+        container.innerHTML = `<p class="no-employees" style="color: #ff6b6b;">Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª<br><small>${error.message}</small></p>`;
     }
 }
 
-// ÇáÍÕæá Úáì ÊÓãíÉ ÇáÕáÇÍíÉ ÈÇáÚÑÈí
+// Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ ØªØ³Ù…ÙŠØ© Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ© Ø¨Ø§Ù„Ø¹Ø±Ø¨ÙŠ
 function getPermissionLabel(permission) {
     const labels = {
-        'make_calls': '?? ãßÇáãÇÊ',
-        'view_history': '?? ÇáÓÌá',
-        'view_recordings': '??? ÊÓÌíáÇÊ',
-        'manage_contacts': '?? ÌåÇÊ ÇáÇÊÕÇá'
+        'make_calls': 'ğŸ“ Ù…ÙƒØ§Ù„Ù…Ø§Øª',
+        'view_history': 'ğŸ“‹ Ø§Ù„Ø³Ø¬Ù„',
+        'view_recordings': 'ğŸ™ï¸ ØªØ³Ø¬ÙŠÙ„Ø§Øª',
+        'manage_contacts': 'ğŸ‘¥ Ø¬Ù‡Ø§Øª Ø§Ù„Ø§ØªØµØ§Ù„'
     };
     return labels[permission] || permission;
 }
 
-// ÅÖÇİÉ ãÏíÑ ÌÏíÏ
+// Ø¥Ø¶Ø§ÙØ© Ù…Ø¯ÙŠØ± Ø¬Ø¯ÙŠØ¯
 const addEmployeeBtn = document.getElementById('add-employee-btn');
 if (addEmployeeBtn) {
     addEmployeeBtn.addEventListener('click', async (e) => {
-        e.preventDefault(); // ãäÚ ÅÚÇÏÉ ÊÍãíá ÇáÕİÍÉ
+        e.preventDefault(); // Ù…Ù†Ø¹ Ø¥Ø¹Ø§Ø¯Ø© ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØµÙØ­Ø©
         
         if (!checkAdminAccess()) {
-            alert('áíÓ áÏíß ÕáÇÍíÉ ááæÕæá áåĞå ÇáãíÒÉ!');
+            alert('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ ØµÙ„Ø§Ø­ÙŠØ© Ù„Ù„ÙˆØµÙˆÙ„ Ù„Ù‡Ø°Ù‡ Ø§Ù„Ù…ÙŠØ²Ø©!');
             return;
         }
         
@@ -1800,32 +1800,32 @@ if (addEmployeeBtn) {
         const phone = document.getElementById('emp-phone')?.value.trim() || '';
         const department = document.getElementById('emp-department')?.value;
         
-        // ÌãÚ ÇáÕáÇÍíÇÊ
+        // Ø¬Ù…Ø¹ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
         const permissions = {
             viewOwnRecordings: document.getElementById('emp-perm-view-own-recordings')?.checked || false,
             viewAllRecordings: document.getElementById('emp-perm-view-all-recordings')?.checked || false,
             deleteRecordings: document.getElementById('emp-perm-delete-recordings')?.checked || false,
             editProfile: document.getElementById('emp-perm-edit-profile')?.checked || false,
-            // ÕáÇÍíÇÊ ÇáÇÊÕÇá ãä ÇáÏæá
+            // ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø§ØªØµØ§Ù„ Ù…Ù† Ø§Ù„Ø¯ÙˆÙ„
             callFromUSA: document.getElementById('emp-perm-call-usa')?.checked || false,
             callFromEgypt: document.getElementById('emp-perm-call-egypt')?.checked || false,
             callFromSaudi: document.getElementById('emp-perm-call-saudi')?.checked || false
         };
         
-        console.log('?? ÈíÇäÇÊ ÇáãÏíÑ:', { username, name, department, permissions });
+        console.log('ğŸ“ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¯ÙŠØ±:', { username, name, department, permissions });
         
         if (!username || !password || !name || !department) {
-            alert('ÇáÑÌÇÁ ãáÁ ÌãíÚ ÇáÍŞæá ÇáãØáæÈÉ:\n- ÇÓã ÇáãÓÊÎÏã\n- ßáãÉ ÇáãÑæÑ\n- ÇáÇÓã ÇáßÇãá\n- ÇáŞÓã');
+            alert('Ø§Ù„Ø±Ø¬Ø§Ø¡ Ù…Ù„Ø¡ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ù‚ÙˆÙ„ Ø§Ù„Ù…Ø·Ù„ÙˆØ¨Ø©:\n- Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…\n- ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±\n- Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„\n- Ø§Ù„Ù‚Ø³Ù…');
             return;
         }
         
-        // ÊÚØíá ÇáÒÑ ÃËäÇÁ ÇáÍİÙ
+        // ØªØ¹Ø·ÙŠÙ„ Ø§Ù„Ø²Ø± Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„Ø­ÙØ¸
         addEmployeeBtn.disabled = true;
-        addEmployeeBtn.textContent = '? ÌÇÑí ÇáÍİÙ...';
+        addEmployeeBtn.textContent = 'â³ Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø­ÙØ¸...';
         
         try {
             const baseUrl = window.location.origin;
-            console.log('?? ÅÑÓÇá ÇáÈíÇäÇÊ Åáì:', `${baseUrl}/employees`);
+            console.log('ğŸ”„ Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø¥Ù„Ù‰:', `${baseUrl}/employees`);
             
             const response = await fetch(`${baseUrl}/employees`, {
                 method: 'POST',
@@ -1843,61 +1843,61 @@ if (addEmployeeBtn) {
                 })
             });
             
-            console.log('?? ÇÓÊÌÇÈÉ ÇáÎÇÏã:', response.status);
+            console.log('ğŸ“¡ Ø§Ø³ØªØ¬Ø§Ø¨Ø© Ø§Ù„Ø®Ø§Ø¯Ù…:', response.status);
             
             const data = await response.json();
-            console.log('?? ÇáÈíÇäÇÊ ÇáãÓÊáãÉ:', data);
+            console.log('ğŸ“„ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø³ØªÙ„Ù…Ø©:', data);
             
             if (response.ok && data.success) {
-                console.log('? ÊãÊ ÅÖÇİÉ ÇáãÏíÑ ÈäÌÇÍ');
+                console.log('âœ… ØªÙ…Øª Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ø¯ÙŠØ± Ø¨Ù†Ø¬Ø§Ø­');
                 
-                // ÊäÙíİ ÇáäãæĞÌ
+                // ØªÙ†Ø¸ÙŠÙ Ø§Ù„Ù†Ù…ÙˆØ°Ø¬
                 document.getElementById('emp-username').value = '';
                 document.getElementById('emp-password').value = '';
                 document.getElementById('emp-fullname').value = '';
                 document.getElementById('emp-phone').value = '';
                 document.getElementById('emp-department').value = '';
                 
-                // ÅáÛÇÁ ÊÍÏíÏ ÌãíÚ ÇáÕáÇÍíÇÊ
+                // Ø¥Ù„ØºØ§Ø¡ ØªØ­Ø¯ÙŠØ¯ Ø¬Ù…ÙŠØ¹ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
                 document.getElementById('emp-perm-view-own-recordings').checked = false;
                 document.getElementById('emp-perm-view-all-recordings').checked = false;
                 document.getElementById('emp-perm-delete-recordings').checked = false;
                 document.getElementById('emp-perm-edit-profile').checked = false;
-                // ÅÚÇÏÉ ÊÚííä ÕáÇÍíÇÊ ÇáÇÊÕÇá
-                document.getElementById('emp-perm-call-usa').checked = true; // ÃãÑíßÇ ÇİÊÑÇÖí
+                // Ø¥Ø¹Ø§Ø¯Ø© ØªØ¹ÙŠÙŠÙ† ØµÙ„Ø§Ø­ÙŠØ§Øª Ø§Ù„Ø§ØªØµØ§Ù„
+                document.getElementById('emp-perm-call-usa').checked = true; // Ø£Ù…Ø±ÙŠÙƒØ§ Ø§ÙØªØ±Ø§Ø¶ÙŠ
                 document.getElementById('emp-perm-call-egypt').checked = false;
                 document.getElementById('emp-perm-call-saudi').checked = false;
                 
-                // ÊÍÏíË ÇáŞÇÆãÉ
+                // ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©
                 await loadEmployeesList();
                 
-                alert('? Êã ÅÖÇİÉ ÇáãÏíÑ ÈäÌÇÍ!\n\n' +
-                      '?? ÇÓã ÇáãÓÊÎÏã: ' + username + '\n' +
-                      '?? ßáãÉ ÇáãÑæÑ: ' + password + '\n' +
-                      '?? ÇáÇÓã: ' + name);
+                alert('âœ… ØªÙ… Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ø¯ÙŠØ± Ø¨Ù†Ø¬Ø§Ø­!\n\n' +
+                      'ğŸ‘¤ Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…: ' + username + '\n' +
+                      'ğŸ”‘ ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±: ' + password + '\n' +
+                      'ğŸ“ Ø§Ù„Ø§Ø³Ù…: ' + name);
             } else {
-                console.error('? ÎØÃ İí ÅÖÇİÉ ÇáãÏíÑ:', data);
-                alert('? ÎØÃ İí ÅÖÇİÉ ÇáãÏíÑ:\n' + (data.error || 'İÔá İí ÇáÍİÙ'));
+                console.error('âŒ Ø®Ø·Ø£ ÙÙŠ Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ø¯ÙŠØ±:', data);
+                alert('âŒ Ø®Ø·Ø£ ÙÙŠ Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ø¯ÙŠØ±:\n' + (data.error || 'ÙØ´Ù„ ÙÙŠ Ø§Ù„Ø­ÙØ¸'));
             }
         } catch (error) {
-            console.error('? ÎØÃ ÔÈßÉ:', error);
-            alert('? ÎØÃ İí ÇáÇÊÕÇá ÈÇáÎÇÏã:\n' + error.message);
+            console.error('âŒ Ø®Ø·Ø£ Ø´Ø¨ÙƒØ©:', error);
+            alert('âŒ Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ø§Ù„Ø®Ø§Ø¯Ù…:\n' + error.message);
         } finally {
-            // ÅÚÇÏÉ ÊİÚíá ÇáÒÑ
+            // Ø¥Ø¹Ø§Ø¯Ø© ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø²Ø±
             addEmployeeBtn.disabled = false;
-            addEmployeeBtn.textContent = '? ÅÖÇİÉ ãÏíÑ';
+            addEmployeeBtn.textContent = 'â• Ø¥Ø¶Ø§ÙØ© Ù…Ø¯ÙŠØ±';
         }
     });
 }
 
-// ÍĞİ ãÏíÑ
+// Ø­Ø°Ù Ù…Ø¯ÙŠØ±
 async function deleteEmployee(employeeId, fullname) {
     if (!checkAdminAccess()) {
-        alert('áíÓ áÏíß ÕáÇÍíÉ ááæÕæá áåĞå ÇáãíÒÉ!');
+        alert('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ ØµÙ„Ø§Ø­ÙŠØ© Ù„Ù„ÙˆØµÙˆÙ„ Ù„Ù‡Ø°Ù‡ Ø§Ù„Ù…ÙŠØ²Ø©!');
         return;
     }
     
-    if (!confirm(`åá ÊÑíÏ ÍĞİ ÇáãÏíÑ ${fullname}¿`)) {
+    if (!confirm(`Ù‡Ù„ ØªØ±ÙŠØ¯ Ø­Ø°Ù Ø§Ù„Ù…Ø¯ÙŠØ± ${fullname}ØŸ`)) {
         return;
     }
     
@@ -1909,27 +1909,27 @@ async function deleteEmployee(employeeId, fullname) {
         
         if (response.ok) {
             loadEmployeesList();
-            alert('Êã ÍĞİ ÇáãÏíÑ ÈäÌÇÍ! ?');
+            alert('ØªÙ… Ø­Ø°Ù Ø§Ù„Ù…Ø¯ÙŠØ± Ø¨Ù†Ø¬Ø§Ø­! âœ…');
         } else {
-            alert('İÔá İí ÍĞİ ÇáãÏíÑ');
+            alert('ÙØ´Ù„ ÙÙŠ Ø­Ø°Ù Ø§Ù„Ù…Ø¯ÙŠØ±');
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÍĞİ ãÏíÑ:', error);
-        alert('İÔá İí ÍĞİ ÇáãÏíÑ');
+        console.error('Ø®Ø·Ø£ ÙÙŠ Ø­Ø°Ù Ù…Ø¯ÙŠØ±:', error);
+        alert('ÙØ´Ù„ ÙÙŠ Ø­Ø°Ù Ø§Ù„Ù…Ø¯ÙŠØ±');
     }
 }
 
-// ÌÚá ÇáÏÇáÉ ãÊÇÍÉ ÚÇáãíÇğ
+// Ø¬Ø¹Ù„ Ø§Ù„Ø¯Ø§Ù„Ø© Ù…ØªØ§Ø­Ø© Ø¹Ø§Ù„Ù…ÙŠØ§Ù‹
 window.deleteEmployee = deleteEmployee;
 
-// İÊÍ äÇİĞÉ ÊÚÏíá ÇáãÏíÑ
+// ÙØªØ­ Ù†Ø§ÙØ°Ø© ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø¯ÙŠØ±
 function openEditEmployeeModal(employeeId, fullname, username, phone, department) {
     if (!checkAdminAccess()) {
-        alert('áíÓ áÏíß ÕáÇÍíÉ ááæÕæá áåĞå ÇáãíÒÉ!');
+        alert('Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ ØµÙ„Ø§Ø­ÙŠØ© Ù„Ù„ÙˆØµÙˆÙ„ Ù„Ù‡Ø°Ù‡ Ø§Ù„Ù…ÙŠØ²Ø©!');
         return;
     }
     
-    // ÅäÔÇÁ ÇáÜ Modal
+    // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù€ Modal
     const modalHTML = `
         <div id="edit-employee-modal" style="
             position: fixed;
@@ -1954,11 +1954,11 @@ function openEditEmployeeModal(employeeId, fullname, username, phone, department
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
                 border: 1px solid rgba(255, 255, 255, 0.1);
             ">
-                <h2 style="color: #fff; margin-bottom: 20px; text-align: center;">?? ÊÚÏíá ÇáãÏíÑ</h2>
+                <h2 style="color: #fff; margin-bottom: 20px; text-align: center;">âœï¸ ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø¯ÙŠØ±</h2>
                 <p style="color: #a0aec0; text-align: center; margin-bottom: 20px;">@${username}</p>
                 
                 <div style="margin-bottom: 15px;">
-                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">ÇáÇÓã ÇáßÇãá:</label>
+                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„:</label>
                     <input type="text" id="edit-emp-fullname" value="${fullname}" style="
                         width: 100%;
                         padding: 12px;
@@ -1972,7 +1972,7 @@ function openEditEmployeeModal(employeeId, fullname, username, phone, department
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">?? ÑŞã ÇáåÇÊİ:</label>
+                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">ğŸ“± Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ:</label>
                     <input type="tel" id="edit-emp-phone" value="${phone}" placeholder="+966..." style="
                         width: 100%;
                         padding: 12px;
@@ -1986,8 +1986,8 @@ function openEditEmployeeModal(employeeId, fullname, username, phone, department
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">?? ßáãÉ ÇáãÑæÑ ÇáÌÏíÏÉ:</label>
-                    <input type="password" id="edit-emp-password" placeholder="ÇÊÑßåÇ İÇÑÛÉ Åä áã ÊÑÏ ÇáÊÛííÑ" style="
+                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">ğŸ” ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ± Ø§Ù„Ø¬Ø¯ÙŠØ¯Ø©:</label>
+                    <input type="password" id="edit-emp-password" placeholder="Ø§ØªØ±ÙƒÙ‡Ø§ ÙØ§Ø±ØºØ© Ø¥Ù† Ù„Ù… ØªØ±Ø¯ Ø§Ù„ØªØºÙŠÙŠØ±" style="
                         width: 100%;
                         padding: 12px;
                         border-radius: 10px;
@@ -2000,7 +2000,7 @@ function openEditEmployeeModal(employeeId, fullname, username, phone, department
                 </div>
                 
                 <div style="margin-bottom: 20px;">
-                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">?? ÇáŞÓã:</label>
+                    <label style="color: #cbd5e0; display: block; margin-bottom: 5px;">ğŸ“‚ Ø§Ù„Ù‚Ø³Ù…:</label>
                     <select id="edit-emp-department" style="
                         width: 100%;
                         padding: 12px;
@@ -2011,13 +2011,13 @@ function openEditEmployeeModal(employeeId, fullname, username, phone, department
                         font-size: 14px;
                         box-sizing: border-box;
                     ">
-                        <option value="1" ${department === '1' ? 'selected' : ''}>ÇáÍÌæÒÇÊ</option>
-                        <option value="2" ${department === '2' ? 'selected' : ''}>ÇáãÈíÚÇÊ</option>
-                        <option value="3" ${department === '3' ? 'selected' : ''}>ÎÏãÉ ÇáÚãáÇÁ</option>
-                        <option value="4" ${department === '4' ? 'selected' : ''}>ÇáÍÓÇÈÇÊ</option>
-                        <option value="5" ${department === '5' ? 'selected' : ''}>ÇáÏÚã Çáİäì</option>
-                        <option value="6" ${department === '6' ? 'selected' : ''}>ÇáÔßÇæì æÇáÇŞÊÑÇÍÇÊ</option>
-                        <option value="trial" ${department === 'trial' ? 'selected' : ''}>ÍÓÇÈ ÊÌÑíÈí</option>
+                        <option value="1" ${department === '1' ? 'selected' : ''}>Ø§Ù„Ø­Ø¬ÙˆØ²Ø§Øª</option>
+                        <option value="2" ${department === '2' ? 'selected' : ''}>Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</option>
+                        <option value="3" ${department === '3' ? 'selected' : ''}>Ø®Ø¯Ù…Ø© Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</option>
+                        <option value="4" ${department === '4' ? 'selected' : ''}>Ø§Ù„Ø­Ø³Ø§Ø¨Ø§Øª</option>
+                        <option value="5" ${department === '5' ? 'selected' : ''}>Ø§Ù„Ø¯Ø¹Ù… Ø§Ù„ÙÙ†Ù‰</option>
+                        <option value="6" ${department === '6' ? 'selected' : ''}>Ø§Ù„Ø´ÙƒØ§ÙˆÙ‰ ÙˆØ§Ù„Ø§Ù‚ØªØ±Ø§Ø­Ø§Øª</option>
+                        <option value="trial" ${department === 'trial' ? 'selected' : ''}>Ø­Ø³Ø§Ø¨ ØªØ¬Ø±ÙŠØ¨ÙŠ</option>
                     </select>
                 </div>
                 
@@ -2030,7 +2030,7 @@ function openEditEmployeeModal(employeeId, fullname, username, phone, department
                         border-radius: 25px;
                         font-size: 16px;
                         cursor: pointer;
-                    ">?? ÍİÙ ÇáÊÚÏíáÇÊ</button>
+                    ">ğŸ’¾ Ø­ÙØ¸ Ø§Ù„ØªØ¹Ø¯ÙŠÙ„Ø§Øª</button>
                     <button onclick="document.getElementById('edit-employee-modal').remove()" style="
                         background: linear-gradient(135deg, #6c757d, #5a6268);
                         color: white;
@@ -2039,20 +2039,20 @@ function openEditEmployeeModal(employeeId, fullname, username, phone, department
                         border-radius: 25px;
                         font-size: 16px;
                         cursor: pointer;
-                    ">? ÅáÛÇÁ</button>
+                    ">âŒ Ø¥Ù„ØºØ§Ø¡</button>
                 </div>
             </div>
         </div>
     `;
     
-    // ÅÒÇáÉ Ãí modal ŞÏíã
+    // Ø¥Ø²Ø§Ù„Ø© Ø£ÙŠ modal Ù‚Ø¯ÙŠÙ…
     const oldModal = document.getElementById('edit-employee-modal');
     if (oldModal) oldModal.remove();
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
-// ÊÍÏíË ÈíÇäÇÊ ÇáãÏíÑ
+// ØªØ­Ø¯ÙŠØ« Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¯ÙŠØ±
 async function updateEmployee(employeeId) {
     const fullname = document.getElementById('edit-emp-fullname').value.trim();
     const phone = document.getElementById('edit-emp-phone').value.trim();
@@ -2060,7 +2060,7 @@ async function updateEmployee(employeeId) {
     const department = document.getElementById('edit-emp-department').value;
     
     if (!fullname) {
-        alert('ÇáÑÌÇÁ ÅÏÎÇá ÇáÇÓã ÇáßÇãá');
+        alert('Ø§Ù„Ø±Ø¬Ø§Ø¡ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„');
         return;
     }
     
@@ -2074,7 +2074,7 @@ async function updateEmployee(employeeId) {
             body: JSON.stringify({
                 fullname,
                 phone,
-                password: password || undefined, // ÅÑÓÇá ßáãÉ ÇáãÑæÑ İŞØ ÅĞÇ Êã ÅÏÎÇáåÇ
+                password: password || undefined, // Ø¥Ø±Ø³Ø§Ù„ ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ± ÙÙ‚Ø· Ø¥Ø°Ø§ ØªÙ… Ø¥Ø¯Ø®Ø§Ù„Ù‡Ø§
                 department
             })
         });
@@ -2082,60 +2082,60 @@ async function updateEmployee(employeeId) {
         if (response.ok) {
             document.getElementById('edit-employee-modal').remove();
             loadEmployeesList();
-            alert('Êã ÊÍÏíË ÈíÇäÇÊ ÇáãÏíÑ ÈäÌÇÍ! ?');
+            alert('ØªÙ… ØªØ­Ø¯ÙŠØ« Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¯ÙŠØ± Ø¨Ù†Ø¬Ø§Ø­! âœ…');
         } else {
             const data = await response.json();
-            alert('İÔá İí ÊÍÏíË ÇáÈíÇäÇÊ: ' + (data.error || 'ÎØÃ ÛíÑ ãÚÑæİ'));
+            alert('ÙØ´Ù„ ÙÙŠ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª: ' + (data.error || 'Ø®Ø·Ø£ ØºÙŠØ± Ù…Ø¹Ø±ÙˆÙ'));
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÊÍÏíË ÇáãÏíÑ:', error);
-        alert('İÔá İí ÊÍÏíË ÇáÈíÇäÇÊ');
+        console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù…Ø¯ÙŠØ±:', error);
+        alert('ÙØ´Ù„ ÙÙŠ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª');
     }
 }
 
-// ÌÚá ÇáÏæÇá ãÊÇÍÉ ÚÇáãíÇğ
+// Ø¬Ø¹Ù„ Ø§Ù„Ø¯ÙˆØ§Ù„ Ù…ØªØ§Ø­Ø© Ø¹Ø§Ù„Ù…ÙŠØ§Ù‹
 window.openEditEmployeeModal = openEditEmployeeModal;
 window.updateEmployee = updateEmployee;
 
-// ÊÍãíá ŞÇÆãÉ ÇáãÏíÑíä ÚäÏ İÊÍ ÇáÅÚÏÇÏÇÊ
+// ØªØ­Ù…ÙŠÙ„ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…Ø¯ÙŠØ±ÙŠÙ† Ø¹Ù†Ø¯ ÙØªØ­ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª
 if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
-        console.log('?? Êã ÇáäŞÑ Úáì ÒÑ ÇáÅÚÏÇÏÇÊ');
+        console.log('âš™ï¸ ØªÙ… Ø§Ù„Ù†Ù‚Ø± Ø¹Ù„Ù‰ Ø²Ø± Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª');
         setTimeout(() => {
             loadEmployeesList();
-        }, 100); // ÇäÊÙÇÑ ŞÕíÑ ááÊÃßÏ ãä ÙåæÑ ÇáÜ container
+        }, 100); // Ø§Ù†ØªØ¸Ø§Ø± Ù‚ØµÙŠØ± Ù„Ù„ØªØ£ÙƒØ¯ Ù…Ù† Ø¸Ù‡ÙˆØ± Ø§Ù„Ù€ container
     });
 }
 
-// ÊÍãíá ÇáŞÇÆãÉ ÚäÏ ÊÍãíá ÇáÕİÍÉ
+// ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ø¹Ù†Ø¯ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØµÙØ­Ø©
 setTimeout(() => {
     loadEmployeesList();
 }, 500);
 
-// ÚÑÖ ãÚáæãÇÊ ÇáãÓÊÎÏã İí ÇáåíÏÑ
+// Ø¹Ø±Ø¶ Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙŠ Ø§Ù„Ù‡ÙŠØ¯Ø±
 function displayUserInfo() {
     const username = sessionStorage.getItem('username');
     const fullname = sessionStorage.getItem('fullname');
     const role = sessionStorage.getItem('userRole');
     
-    console.log('?? ãÚáæãÇÊ ÇáãÓÊÎÏã:', { username, fullname, role });
+    console.log('ğŸ“‹ Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…:', { username, fullname, role });
     
     const headerUsername = document.getElementById('header-username');
     const headerRole = document.getElementById('header-role');
     
     if (headerUsername) {
-        // ÊÃßÏ ãä ÚÑÖ ÇáÇÓã ÈÔßá ÕÍíÍ
-        const displayName = fullname || username || 'ãÓÊÎÏã';
-        console.log('? ÚÑÖ ÇáÇÓã:', displayName);
+        // ØªØ£ÙƒØ¯ Ù…Ù† Ø¹Ø±Ø¶ Ø§Ù„Ø§Ø³Ù… Ø¨Ø´ÙƒÙ„ ØµØ­ÙŠØ­
+        const displayName = fullname || username || 'Ù…Ø³ØªØ®Ø¯Ù…';
+        console.log('âœ… Ø¹Ø±Ø¶ Ø§Ù„Ø§Ø³Ù…:', displayName);
         headerUsername.textContent = displayName;
     }
     
     if (headerRole) {
-        const roleText = role === 'admin' ? '?? ãØæÑ ÑÆíÓí' : '???? ãÏíÑ';
+        const roleText = role === 'admin' ? 'ğŸ‘‘ Ù…Ø·ÙˆØ± Ø±Ø¦ÙŠØ³ÙŠ' : 'ğŸ‘¨â€ğŸ’¼ Ù…Ø¯ÙŠØ±';
         headerRole.textContent = roleText;
     }
     
-    // ÅÙåÇÑ ÒÑ áæÍÉ ÇáÊÍßã ááÃÏãä İŞØ
+    // Ø¥Ø¸Ù‡Ø§Ø± Ø²Ø± Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… Ù„Ù„Ø£Ø¯Ù…Ù† ÙÙ‚Ø·
     const adminLinkBtn = document.getElementById('admin-link-btn');
     if (adminLinkBtn) {
         if (role === 'admin' || username === 'akram') {
@@ -2146,10 +2146,10 @@ function displayUserInfo() {
     }
 }
 
-// ÊÍãíá ãÚáæãÇÊ ÇáãÓÊÎÏã ÚäÏ İÊÍ ÇáÕİÍÉ
+// ØªØ­Ù…ÙŠÙ„ Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¹Ù†Ø¯ ÙØªØ­ Ø§Ù„ØµÙØ­Ø©
 displayUserInfo();
 
-// ========== ÌáÈ ÑÕíÏ ÇáÍÓÇÈ ==========
+// ========== Ø¬Ù„Ø¨ Ø±ØµÙŠØ¯ Ø§Ù„Ø­Ø³Ø§Ø¨ ==========
 let rechargeUrl = 'https://console.twilio.com/us1/billing/manage-billing/billing-overview';
 
 async function loadAccountBalance() {
@@ -2159,14 +2159,14 @@ async function loadAccountBalance() {
     const accountStatusEl = document.getElementById('account-status');
     const balanceDisplay = document.querySelector('.balance-display');
     
-    // ÚäÇÕÑ ÇáåíÏÑ
+    // Ø¹Ù†Ø§ØµØ± Ø§Ù„Ù‡ÙŠØ¯Ø±
     const headerBalanceEl = document.getElementById('header-balance');
     const headerBalanceContainer = document.getElementById('balance-header');
     
     try {
         if (balanceEl) {
             balanceEl.textContent = '...';
-            statusEl.textContent = 'ÌÇÑí ÇáÊÍãíá...';
+            statusEl.textContent = 'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...';
         }
         
         const baseUrl = window.location.origin;
@@ -2175,7 +2175,7 @@ async function loadAccountBalance() {
         if (response.ok) {
             const data = await response.json();
             
-            // ÚÑÖ ÇáÑÕíÏ
+            // Ø¹Ø±Ø¶ Ø§Ù„Ø±ØµÙŠØ¯
             const balance = parseFloat(data.balance).toFixed(2);
             
             if (balanceEl) {
@@ -2183,22 +2183,22 @@ async function loadAccountBalance() {
                 currencyEl.textContent = data.currency || 'USD';
             }
             
-            // ÊÍÏíË ÇáåíÏÑ
+            // ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù‡ÙŠØ¯Ø±
             if (headerBalanceEl) {
                 headerBalanceEl.textContent = balance;
             }
             
-            // ÍİÙ ÑÇÈØ ÇáÔÍä
+            // Ø­ÙØ¸ Ø±Ø§Ø¨Ø· Ø§Ù„Ø´Ø­Ù†
             if (data.rechargeUrl) {
                 rechargeUrl = data.rechargeUrl;
             }
             
-            // ÍÇáÉ ÇáÍÓÇÈ
+            // Ø­Ø§Ù„Ø© Ø§Ù„Ø­Ø³Ø§Ø¨
             if (accountStatusEl) {
-                accountStatusEl.textContent = data.accountStatus === 'active' ? '? äÔØ' : data.accountStatus;
+                accountStatusEl.textContent = data.accountStatus === 'active' ? 'âœ… Ù†Ø´Ø·' : data.accountStatus;
             }
             
-            // ÊÍÏíÏ ÍÇáÉ ÇáÑÕíÏ (ãäÎİÖ/ãÊæÓØ/ÌíÏ)
+            // ØªØ­Ø¯ÙŠØ¯ Ø­Ø§Ù„Ø© Ø§Ù„Ø±ØµÙŠØ¯ (Ù…Ù†Ø®ÙØ¶/Ù…ØªÙˆØ³Ø·/Ø¬ÙŠØ¯)
             if (balanceDisplay) {
                 balanceDisplay.classList.remove('balance-low', 'balance-medium', 'balance-good');
             }
@@ -2207,48 +2207,48 @@ async function loadAccountBalance() {
             }
             
             if (balance < 5) {
-                if (statusEl) statusEl.textContent = '?? ÇáÑÕíÏ ãäÎİÖ! íõäÕÍ ÈÅÚÇÏÉ ÇáÔÍä';
+                if (statusEl) statusEl.textContent = 'âš ï¸ Ø§Ù„Ø±ØµÙŠØ¯ Ù…Ù†Ø®ÙØ¶! ÙŠÙÙ†ØµØ­ Ø¨Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ø´Ø­Ù†';
                 if (balanceDisplay) balanceDisplay.classList.add('balance-low');
                 if (headerBalanceContainer) headerBalanceContainer.classList.add('low');
             } else if (balance < 20) {
-                if (statusEl) statusEl.textContent = '?? ÇáÑÕíÏ ãÊæÓØ';
+                if (statusEl) statusEl.textContent = 'ğŸ’¡ Ø§Ù„Ø±ØµÙŠØ¯ Ù…ØªÙˆØ³Ø·';
                 if (balanceDisplay) balanceDisplay.classList.add('balance-medium');
                 if (headerBalanceContainer) headerBalanceContainer.classList.add('medium');
             } else {
-                if (statusEl) statusEl.textContent = '? ÇáÑÕíÏ ÌíÏ';
+                if (statusEl) statusEl.textContent = 'âœ… Ø§Ù„Ø±ØµÙŠØ¯ Ø¬ÙŠØ¯';
                 if (balanceDisplay) balanceDisplay.classList.add('balance-good');
             }
             
-            console.log('?? ÇáÑÕíÏ ÇáÍÇáí:', balance, data.currency);
+            console.log('ğŸ’° Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ø­Ø§Ù„ÙŠ:', balance, data.currency);
             
         } else {
-            throw new Error('İÔá ÌáÈ ÇáÑÕíÏ');
+            throw new Error('ÙØ´Ù„ Ø¬Ù„Ø¨ Ø§Ù„Ø±ØµÙŠØ¯');
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÌáÈ ÇáÑÕíÏ:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ Ø¬Ù„Ø¨ Ø§Ù„Ø±ØµÙŠØ¯:', error);
         if (balanceEl) balanceEl.textContent = '--';
-        if (statusEl) statusEl.textContent = '? ÊÚĞÑ ÌáÈ ÇáÑÕíÏ';
+        if (statusEl) statusEl.textContent = 'âŒ ØªØ¹Ø°Ø± Ø¬Ù„Ø¨ Ø§Ù„Ø±ØµÙŠØ¯';
         if (headerBalanceEl) headerBalanceEl.textContent = '--';
     }
 }
 
-// İÊÍ ÕİÍÉ ÅÚÇÏÉ ÇáÔÍä
+// ÙØªØ­ ØµÙØ­Ø© Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ø´Ø­Ù†
 function openRechargeUrl() {
     window.open(rechargeUrl, '_blank');
 }
 
-// ÊÍãíá ÇáÑÕíÏ íÊã ÊáŞÇÆíÇğ ßá 5 ËæÇäí İí startBalanceAutoRefresh
+// ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ø±ØµÙŠØ¯ ÙŠØªÙ… ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ ÙƒÙ„ 5 Ø«ÙˆØ§Ù†ÙŠ ÙÙŠ startBalanceAutoRefresh
 
-// ÊÍãíá ÈíÇäÇÊ Çáãáİ ÇáÔÎÕí ááãÏíÑ
+// ØªØ­Ù…ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ù„Ù Ø§Ù„Ø´Ø®ØµÙŠ Ù„Ù„Ù…Ø¯ÙŠØ±
 function loadEmployeeProfile() {
     const fullname = sessionStorage.getItem('fullname');
     const username = sessionStorage.getItem('username');
     
-    // ÇáÍÕæá Úáì ÈíÇäÇÊ ÇáãÏíÑ ãä ÇáÓíÑİÑ
+    // Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¯ÙŠØ± Ù…Ù† Ø§Ù„Ø³ÙŠØ±ÙØ±
     const employeeId = localStorage.getItem('employeeId');
     
     if (employeeId) {
-        // ÊÍãíá ÈíÇäÇÊ ÇáãÏíÑ ãä API
+        // ØªØ­Ù…ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¯ÙŠØ± Ù…Ù† API
         const baseUrl = window.location.origin;
         fetch(`${baseUrl}/employees`)
             .then(res => res.json())
@@ -2260,12 +2260,12 @@ function loadEmployeeProfile() {
                 }
             })
             .catch(error => {
-                console.error('ÎØÃ İí ÊÍãíá ÈíÇäÇÊ ÇáãÏíÑ:', error);
+                console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¯ÙŠØ±:', error);
             });
     }
 }
 
-// ÊÍÏíË Çáãáİ ÇáÔÎÕí ááãÏíÑ
+// ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù…Ù„Ù Ø§Ù„Ø´Ø®ØµÙŠ Ù„Ù„Ù…Ø¯ÙŠØ±
 const updateProfileBtn = document.getElementById('update-profile-btn');
 if (updateProfileBtn) {
     updateProfileBtn.addEventListener('click', async () => {
@@ -2277,18 +2277,18 @@ if (updateProfileBtn) {
         const newPassword = document.getElementById('profile-new-password').value.trim();
         
         if (!currentPassword) {
-            alert('íÑÌì ÅÏÎÇá ßáãÉ ÇáãÑæÑ ÇáÍÇáíÉ ááÊÃßíÏ');
+            alert('ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ± Ø§Ù„Ø­Ø§Ù„ÙŠØ© Ù„Ù„ØªØ£ÙƒÙŠØ¯');
             return;
         }
         
         if (!newFullname) {
-            alert('íÑÌì ÅÏÎÇá ÇáÇÓã ÇáßÇãá');
+            alert('ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„');
             return;
         }
         
         try {
             updateProfileBtn.disabled = true;
-            updateProfileBtn.textContent = 'ÌÇÑí ÇáÍİÙ...';
+            updateProfileBtn.textContent = 'Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø­ÙØ¸...';
             
             const baseUrl = window.location.origin;
             const response = await fetch(`${baseUrl}/update-profile`, {
@@ -2309,35 +2309,35 @@ if (updateProfileBtn) {
             const data = await response.json();
             
             if (response.ok && data.success) {
-                alert('? Êã ÊÍÏíË Çáãáİ ÇáÔÎÕí ÈäÌÇÍ!');
+                alert('âœ… ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù…Ù„Ù Ø§Ù„Ø´Ø®ØµÙŠ Ø¨Ù†Ø¬Ø§Ø­!');
                 
-                // ÊÍÏíË ÇáÇÓã İí sessionStorage
+                // ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø§Ø³Ù… ÙÙŠ sessionStorage
                 sessionStorage.setItem('fullname', newFullname);
                 localStorage.setItem('employeeName', newFullname);
                 displayUserInfo();
                 
-                // ãÓÍ ßáãÇÊ ÇáãÑæÑ
+                // Ù…Ø³Ø­ ÙƒÙ„Ù…Ø§Øª Ø§Ù„Ù…Ø±ÙˆØ±
                 document.getElementById('profile-current-password').value = '';
                 document.getElementById('profile-new-password').value = '';
             } else {
-                alert('? ' + (data.error || 'İÔá ÇáÊÍÏíË'));
+                alert('âŒ ' + (data.error || 'ÙØ´Ù„ Ø§Ù„ØªØ­Ø¯ÙŠØ«'));
             }
         } catch (error) {
-            console.error('ÎØÃ İí ÊÍÏíË Çáãáİ:', error);
-            alert('ÍÏË ÎØÃ ÃËäÇÁ ÇáÊÍÏíË');
+            console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù…Ù„Ù:', error);
+            alert('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„ØªØ­Ø¯ÙŠØ«');
         } finally {
             updateProfileBtn.disabled = false;
-            updateProfileBtn.textContent = '?? ÍİÙ ÇáÊÚÏíáÇÊ';
+            updateProfileBtn.textContent = 'ğŸ’¾ Ø­ÙØ¸ Ø§Ù„ØªØ¹Ø¯ÙŠÙ„Ø§Øª';
         }
     });
 }
 
-// ÒÑ ÊÓÌíá ÇáÎÑæÌ İí ÇáåíÏÑ
+// Ø²Ø± ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø®Ø±ÙˆØ¬ ÙÙŠ Ø§Ù„Ù‡ÙŠØ¯Ø±
 const logoutHeaderBtn = document.getElementById('logout-header-btn');
 if (logoutHeaderBtn) {
     logoutHeaderBtn.addEventListener('click', async () => {
-        if (confirm('åá ÊÑíÏ ÊÓÌíá ÇáÎÑæÌ¿')) {
-            // ÊÓÌíá æŞÊ ÇáÎÑæÌ
+        if (confirm('Ù‡Ù„ ØªØ±ÙŠØ¯ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø®Ø±ÙˆØ¬ØŸ')) {
+            // ØªØ³Ø¬ÙŠÙ„ ÙˆÙ‚Øª Ø§Ù„Ø®Ø±ÙˆØ¬
             try {
                 const employeeId = localStorage.getItem('employeeId');
                 const employeeName = localStorage.getItem('employeeName');
@@ -2355,7 +2355,7 @@ if (logoutHeaderBtn) {
                     })
                 });
             } catch (error) {
-                console.error('ÎØÃ İí ÊÓÌíá æŞÊ ÇáÎÑæÌ:', error);
+                console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ³Ø¬ÙŠÙ„ ÙˆÙ‚Øª Ø§Ù„Ø®Ø±ÙˆØ¬:', error);
             }
             
             sessionStorage.removeItem('isLoggedIn');
@@ -2368,13 +2368,13 @@ if (logoutHeaderBtn) {
     });
 }
 
-// ãÚÇáÌÉ ÒÑ ÇáÍĞİ
+// Ù…Ø¹Ø§Ù„Ø¬Ø© Ø²Ø± Ø§Ù„Ø­Ø°Ù
 const deleteBtn = document.getElementById('delete-btn');
 if (deleteBtn) {
     deleteBtn.addEventListener('click', deleteDigit);
 }
 
-// ãÚÇáÌÉ áæÍÉ ÇáãİÇÊíÍ
+// Ù…Ø¹Ø§Ù„Ø¬Ø© Ù„ÙˆØ­Ø© Ø§Ù„Ù…ÙØ§ØªÙŠØ­
 document.addEventListener('keydown', (e) => {
     if (e.key >= '0' && e.key <= '9' || e.key === '*' || e.key === '#') {
         addDigit(e.key);
@@ -2394,28 +2394,28 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// ÍİÙ ÇáãßÇáãÉ İí ÇáÓÌá ÇáãÍáí
+// Ø­ÙØ¸ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© ÙÙŠ Ø§Ù„Ø³Ø¬Ù„ Ø§Ù„Ù…Ø­Ù„ÙŠ
 function saveCallToHistory(call) {
     try {
         const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
-        calls.unshift(call); // ÅÖÇİÉ İí ÇáÈÏÇíÉ
+        calls.unshift(call); // Ø¥Ø¶Ø§ÙØ© ÙÙŠ Ø§Ù„Ø¨Ø¯Ø§ÙŠØ©
         
-        // ÇáÇÍÊİÇÙ ÈÂÎÑ 100 ãßÇáãÉ İŞØ
+        // Ø§Ù„Ø§Ø­ØªÙØ§Ø¸ Ø¨Ø¢Ø®Ø± 100 Ù…ÙƒØ§Ù„Ù…Ø© ÙÙ‚Ø·
         if (calls.length > 100) {
             calls.splice(100);
         }
         
         localStorage.setItem('callHistory', JSON.stringify(calls));
-        console.log('? Êã ÍİÙ ÇáãßÇáãÉ İí ÇáÓÌá');
+        console.log('âœ… ØªÙ… Ø­ÙØ¸ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© ÙÙŠ Ø§Ù„Ø³Ø¬Ù„');
         
-        // ÊÍÏíË ÇáÜ badge
+        // ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù€ badge
         updateCallHistoryBadge();
     } catch (error) {
-        console.error('ÎØÃ İí ÍİÙ ÇáãßÇáãÉ:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ Ø­ÙØ¸ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©:', error);
     }
 }
 
-// ÊÍÏíË ÚÏÏ ÇáãßÇáãÇÊ Úáì ÇáÜ badge
+// ØªØ­Ø¯ÙŠØ« Ø¹Ø¯Ø¯ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª Ø¹Ù„Ù‰ Ø§Ù„Ù€ badge
 function updateCallHistoryBadge() {
     const badge = document.getElementById('call-history-badge');
     if (!badge) return;
@@ -2431,20 +2431,20 @@ function updateCallHistoryBadge() {
             badge.classList.add('hidden');
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÊÍÏíË badge ÓÌá ÇáãßÇáãÇÊ:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ø¯ÙŠØ« badge Ø³Ø¬Ù„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª:', error);
     }
 }
 
-// ÇÓÊÏÚÇÁ ÊÍÏíË ÇáÜ badge ÚäÏ ÊÍãíá ÇáÕİÍÉ
+// Ø§Ø³ØªØ¯Ø¹Ø§Ø¡ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù€ badge Ø¹Ù†Ø¯ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØµÙØ­Ø©
 setTimeout(updateCallHistoryBadge, 500);
 
-// ÊÍãíá ÓÌá ÇáãßÇáãÇÊ
+// ØªØ­Ù…ÙŠÙ„ Ø³Ø¬Ù„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª
 async function loadCallHistory() {
     try {
-        // ÊÍãíá ÇáãßÇáãÇÊ ãä localStorage ÈÏáÇğ ãä ÇáÓíÑİÑ
+        // ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª Ù…Ù† localStorage Ø¨Ø¯Ù„Ø§Ù‹ Ù…Ù† Ø§Ù„Ø³ÙŠØ±ÙØ±
         const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
         
-        // ÊÍãíá ÌåÇÊ ÇáÇÊÕÇá áÚÑÖ ÇáÃÓãÇÁ
+        // ØªØ­Ù…ÙŠÙ„ Ø¬Ù‡Ø§Øª Ø§Ù„Ø§ØªØµØ§Ù„ Ù„Ø¹Ø±Ø¶ Ø§Ù„Ø£Ø³Ù…Ø§Ø¡
         const baseUrl = window.location.origin;
         let contacts = [];
         try {
@@ -2452,7 +2452,7 @@ async function loadCallHistory() {
             const contactsData = await contactsResponse.json();
             contacts = contactsData.contacts || [];
         } catch (err) {
-            console.log('áã íÊã ÊÍãíá ÌåÇÊ ÇáÇÊÕÇá');
+            console.log('Ù„Ù… ÙŠØªÙ… ØªØ­Ù…ÙŠÙ„ Ø¬Ù‡Ø§Øª Ø§Ù„Ø§ØªØµØ§Ù„');
         }
         
         const container = document.getElementById('call-history-container');
@@ -2461,25 +2461,25 @@ async function loadCallHistory() {
         if (calls.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon">??</div>
-                    <p>áÇ ÊæÌÏ ãßÇáãÇÊ ÍÊì ÇáÂä</p>
+                    <div class="empty-icon">ğŸ“</div>
+                    <p>Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…ÙƒØ§Ù„Ù…Ø§Øª Ø­ØªÙ‰ Ø§Ù„Ø¢Ù†</p>
                 </div>
             `;
             return;
         }
         
-        // ÊÑÊíÈ ÇáãßÇáãÇÊ ãä ÇáÃÍÏË ááÃŞÏã
+        // ØªØ±ØªÙŠØ¨ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª Ù…Ù† Ø§Ù„Ø£Ø­Ø¯Ø« Ù„Ù„Ø£Ù‚Ø¯Ù…
         calls.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
         
         calls.forEach(call => {
             const date = new Date(call.startTime);
             const formattedDate = date.toLocaleString('ar-EG');
-            const duration = call.duration ? `${call.duration} ËÇäíÉ` : 'áã ÊßÊãá';
+            const duration = call.duration ? `${call.duration} Ø«Ø§Ù†ÙŠØ©` : 'Ù„Ù… ØªÙƒØªÙ…Ù„';
             
-            const callType = call.direction === 'inbound' ? '?? æÇÑÏÉ' : '?? ÕÇÏÑÉ';
+            const callType = call.direction === 'inbound' ? 'ğŸ“¥ ÙˆØ§Ø±Ø¯Ø©' : 'ğŸ“¤ ØµØ§Ø¯Ø±Ø©';
             const statusColor = call.status === 'completed' ? '#4ECDC4' : '#FF6B6B';
             
-            // ÇáÈÍË Úä ÇÓã ÌåÉ ÇáÇÊÕÇá
+            // Ø§Ù„Ø¨Ø­Ø« Ø¹Ù† Ø§Ø³Ù… Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„
             let displayName = call.to;
             const contact = contacts.find(c => {
                 const cleanContactPhone = c.phone.replace(/[\s-+]/g, '');
@@ -2488,7 +2488,7 @@ async function loadCallHistory() {
             });
             
             if (contact) {
-                displayName = `?? ${contact.name}`;
+                displayName = `ğŸ‘¤ ${contact.name}`;
             }
             
             const item = document.createElement('div');
@@ -2504,18 +2504,18 @@ async function loadCallHistory() {
                     </div>
                 </div>
                 <div class="call-item-actions">
-                    <button class="play-btn" onclick="dialNumber('${call.to}')">?? ÇÊÕÇá</button>
+                    <button class="play-btn" onclick="dialNumber('${call.to}')">ğŸ“ Ø§ØªØµØ§Ù„</button>
                 </div>
             `;
             container.appendChild(item);
         });
     } catch (error) {
-        console.error('ÎØÃ İí ÊÍãíá ÓÌá ÇáãßÇáãÇÊ:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø³Ø¬Ù„ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª:', error);
     }
 }
 
-// ÊÍãíá ÌåÇÊ ÇáÇÊÕÇá
-// ÊÍãíá ÌåÇÊ ÇáÇÊÕÇá
+// ØªØ­Ù…ÙŠÙ„ Ø¬Ù‡Ø§Øª Ø§Ù„Ø§ØªØµØ§Ù„
+// ØªØ­Ù…ÙŠÙ„ Ø¬Ù‡Ø§Øª Ø§Ù„Ø§ØªØµØ§Ù„
 async function loadContacts() {
     const container = document.getElementById('contacts-container');
     
@@ -2530,9 +2530,9 @@ async function loadContacts() {
         if (contacts.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon">??</div>
-                    <p>áÇ ÊæÌÏ ÌåÇÊ ÇÊÕÇá</p>
-                    <button class="add-contact-btn-empty" onclick="addContact()">ÅÖÇİÉ ÌåÉ ÇÊÕÇá</button>
+                    <div class="empty-icon">ğŸ‘¥</div>
+                    <p>Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¬Ù‡Ø§Øª Ø§ØªØµØ§Ù„</p>
+                    <button class="add-contact-btn-empty" onclick="addContact()">Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø© Ø§ØªØµØ§Ù„</button>
                 </div>
             `;
             return;
@@ -2550,26 +2550,26 @@ async function loadContacts() {
                     <div class="contact-phone">${contact.phone}</div>
                 </div>
                 <div class="contact-actions">
-                    <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="ÇÊÕÇá">??</button>
-                    <button class="contact-delete-btn" onclick="deleteContact(${contact.id}, '${contact.name}')" title="ÍĞİ" style="background: linear-gradient(135deg, #fa709a, #fee140); color: white; width: 35px; height: 35px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; transition: all 0.2s;">???</button>
+                    <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="Ø§ØªØµØ§Ù„">ğŸ“</button>
+                    <button class="contact-delete-btn" onclick="deleteContact(${contact.id}, '${contact.name}')" title="Ø­Ø°Ù" style="background: linear-gradient(135deg, #fa709a, #fee140); color: white; width: 35px; height: 35px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; transition: all 0.2s;">ğŸ—‘ï¸</button>
                 </div>
             `;
             container.appendChild(item);
         });
         
-        console.log('? Êã ÊÍãíá', contacts.length, 'ÌåÉ ÇÊÕÇá');
+        console.log('âœ… ØªÙ… ØªØ­Ù…ÙŠÙ„', contacts.length, 'Ø¬Ù‡Ø© Ø§ØªØµØ§Ù„');
     } catch (error) {
-        console.error('ÎØÃ İí ÊÍãíá ÌåÇÊ ÇáÇÊÕÇá:', error);
-        container.innerHTML = '<p style="text-align: center; color: #f44336;">ÎØÃ İí ÊÍãíá ÌåÇÊ ÇáÇÊÕÇá</p>';
+        console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø¬Ù‡Ø§Øª Ø§Ù„Ø§ØªØµØ§Ù„:', error);
+        container.innerHTML = '<p style="text-align: center; color: #f44336;">Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø¬Ù‡Ø§Øª Ø§Ù„Ø§ØªØµØ§Ù„</p>';
     }
 }
 
-// ÅÖÇİÉ ÌåÉ ÇÊÕÇá
+// Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø© Ø§ØªØµØ§Ù„
 async function addContact() {
-    const name = prompt('ÃÏÎá ÇÓã ÌåÉ ÇáÇÊÕÇá:');
+    const name = prompt('Ø£Ø¯Ø®Ù„ Ø§Ø³Ù… Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„:');
     if (!name) return;
     
-    const phone = prompt('ÃÏÎá ÑŞã ÇáåÇÊİ:');
+    const phone = prompt('Ø£Ø¯Ø®Ù„ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ:');
     if (!phone) return;
     
     try {
@@ -2583,20 +2583,20 @@ async function addContact() {
         const data = await response.json();
         
         if (response.ok && data.success) {
-            console.log('? ÊãÊ ÅÖÇİÉ ÌåÉ ÇáÇÊÕÇá');
+            console.log('âœ… ØªÙ…Øª Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„');
             loadContacts();
         } else {
-            throw new Error(data.error || 'İÔá İí ÅÖÇİÉ ÌåÉ ÇáÇÊÕÇá');
+            throw new Error(data.error || 'ÙØ´Ù„ ÙÙŠ Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„');
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÅÖÇİÉ ÌåÉ ÇáÇÊÕÇá:', error);
-        alert('İÔá İí ÅÖÇİÉ ÌåÉ ÇáÇÊÕÇá: ' + error.message);
+        console.error('Ø®Ø·Ø£ ÙÙŠ Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„:', error);
+        alert('ÙØ´Ù„ ÙÙŠ Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„: ' + error.message);
     }
 }
 
-// ÍĞİ ÌåÉ ÇÊÕÇá
+// Ø­Ø°Ù Ø¬Ù‡Ø© Ø§ØªØµØ§Ù„
 async function deleteContact(contactId, contactName) {
-    if (!confirm(`åá ÊÑíÏ ÍĞİ ${contactName}¿`)) {
+    if (!confirm(`Ù‡Ù„ ØªØ±ÙŠØ¯ Ø­Ø°Ù ${contactName}ØŸ`)) {
         return;
     }
     
@@ -2609,44 +2609,44 @@ async function deleteContact(contactId, contactName) {
         const data = await response.json();
         
         if (response.ok && data.success) {
-            console.log('? Êã ÍĞİ ÌåÉ ÇáÇÊÕÇá');
+            console.log('âœ… ØªÙ… Ø­Ø°Ù Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„');
             loadContacts();
         } else {
-            throw new Error(data.error || 'İÔá İí ÍĞİ ÌåÉ ÇáÇÊÕÇá');
+            throw new Error(data.error || 'ÙØ´Ù„ ÙÙŠ Ø­Ø°Ù Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„');
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÍĞİ ÌåÉ ÇáÇÊÕÇá:', error);
-        alert('İÔá İí ÍĞİ ÌåÉ ÇáÇÊÕÇá: ' + error.message);
+        console.error('Ø®Ø·Ø£ ÙÙŠ Ø­Ø°Ù Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„:', error);
+        alert('ÙØ´Ù„ ÙÙŠ Ø­Ø°Ù Ø¬Ù‡Ø© Ø§Ù„Ø§ØªØµØ§Ù„: ' + error.message);
     }
 }
 
-// ÇáÇÊÕÇá ÈÌåÉ ÇÊÕÇá
+// Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ø¬Ù‡Ø© Ø§ØªØµØ§Ù„
 function callContact(phone) {
     phoneNumber = phone;
     displayNumber.textContent = phone;
     makeCall();
 }
 
-// ÇáÇÊÕÇá ÈÑŞã
+// Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ø±Ù‚Ù…
 function dialNumber(number) {
-    // ÇáÊÈÏíá Åáì áæÍÉ ÇáãİÇÊíÍ
+    // Ø§Ù„ØªØ¨Ø¯ÙŠÙ„ Ø¥Ù„Ù‰ Ù„ÙˆØ­Ø© Ø§Ù„Ù…ÙØ§ØªÙŠØ­
     hideAllSections();
     removeAllActiveStates();
     dialpad.classList.remove('hidden');
     dialpadBtn.classList.add('active');
     
-    // ãáÁ ÇáÑŞã
+    // Ù…Ù„Ø¡ Ø§Ù„Ø±Ù‚Ù…
     phoneNumber = number;
     displayNumber.textContent = number;
 }
 
-// ãÚÇáÌÉ ÒÑ ÅÖÇİÉ ÌåÉ ÇÊÕÇá
+// Ù…Ø¹Ø§Ù„Ø¬Ø© Ø²Ø± Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø© Ø§ØªØµØ§Ù„
 const addContactBtn = document.getElementById('add-contact-btn');
 if (addContactBtn) {
     addContactBtn.addEventListener('click', addContact);
 }
 
-// ÇáÈÍË İí ÌåÇÊ ÇáÇÊÕÇá
+// Ø§Ù„Ø¨Ø­Ø« ÙÙŠ Ø¬Ù‡Ø§Øª Ø§Ù„Ø§ØªØµØ§Ù„
 const contactSearch = document.getElementById('contact-search');
 if (contactSearch) {
     contactSearch.addEventListener('input', (e) => {
@@ -2672,7 +2672,7 @@ if (contactSearch) {
                     <div class="contact-phone">${contact.phone}</div>
                 </div>
                 <div class="contact-actions">
-                    <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="ÇÊÕÇá">??</button>
+                    <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="Ø§ØªØµØ§Ù„">ğŸ“</button>
                 </div>
             `;
             container.appendChild(item);
@@ -2680,20 +2680,20 @@ if (contactSearch) {
     });
 }
 
-// ÊÓÌíá Service Worker ááÜ PWA
+// ØªØ³Ø¬ÙŠÙ„ Service Worker Ù„Ù„Ù€ PWA
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
             .then(registration => {
-                console.log('? Service Worker ãõÓÌá ÈäÌÇÍ:', registration.scope);
+                console.log('âœ… Service Worker Ù…ÙØ³Ø¬Ù„ Ø¨Ù†Ø¬Ø§Ø­:', registration.scope);
             })
             .catch(error => {
-                console.log('? İÔá ÊÓÌíá Service Worker:', error);
+                console.log('âŒ ÙØ´Ù„ ØªØ³Ø¬ÙŠÙ„ Service Worker:', error);
             });
     });
 }
 
-// ÊÓÌíá æŞÊ ÇáÎÑæÌ ÚäÏ ÅÛáÇŞ ÇáÕİÍÉ
+// ØªØ³Ø¬ÙŠÙ„ ÙˆÙ‚Øª Ø§Ù„Ø®Ø±ÙˆØ¬ Ø¹Ù†Ø¯ Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„ØµÙØ­Ø©
 window.addEventListener('beforeunload', async (e) => {
     try {
         const employeeId = localStorage.getItem('employeeId');
@@ -2701,7 +2701,7 @@ window.addEventListener('beforeunload', async (e) => {
         const baseUrl = window.location.origin;
         
         if (employeeId && employeeName) {
-            // ÇÓÊÎÏÇã sendBeacon áÅÑÓÇá ÇáÈíÇäÇÊ ÍÊì ÚäÏ ÅÛáÇŞ ÇáÕİÍÉ
+            // Ø§Ø³ØªØ®Ø¯Ø§Ù… sendBeacon Ù„Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø­ØªÙ‰ Ø¹Ù†Ø¯ Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„ØµÙØ­Ø©
             const data = JSON.stringify({
                 action: 'logout',
                 employeeId: employeeId,
@@ -2711,11 +2711,11 @@ window.addEventListener('beforeunload', async (e) => {
             navigator.sendBeacon(`${baseUrl}/work-tracking`, data);
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÊÓÌíá æŞÊ ÇáÎÑæÌ:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ³Ø¬ÙŠÙ„ ÙˆÙ‚Øª Ø§Ù„Ø®Ø±ÙˆØ¬:', error);
     }
 });
 
-// ÊÓÌíá æŞÊ ÇáÎÑæÌ ÚäÏ ÅÎİÇÁ ÇáÕİÍÉ
+// ØªØ³Ø¬ÙŠÙ„ ÙˆÙ‚Øª Ø§Ù„Ø®Ø±ÙˆØ¬ Ø¹Ù†Ø¯ Ø¥Ø®ÙØ§Ø¡ Ø§Ù„ØµÙØ­Ø©
 document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'hidden') {
         try {
@@ -2737,15 +2737,15 @@ document.addEventListener('visibilitychange', async () => {
                 navigator.sendBeacon(`${baseUrl}/work-tracking`, data);
             }
         } catch (error) {
-            console.error('ÎØÃ İí ÊÓÌíá ÅÎİÇÁ ÇáÊØÈíŞ:', error);
+            console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ³Ø¬ÙŠÙ„ Ø¥Ø®ÙØ§Ø¡ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚:', error);
         }
     }
 });
 
-// ÊåíÆÉ ÇáÊØÈíŞ ÚäÏ ÇáÊÍãíá
+// ØªÙ‡ÙŠØ¦Ø© Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ø¹Ù†Ø¯ Ø§Ù„ØªØ­Ù…ÙŠÙ„
 initializeApp();
 
-// ÊÓÌíá æŞÊ ÇáÏÎæá ááãæÙİíä ãä CRM
+// ØªØ³Ø¬ÙŠÙ„ ÙˆÙ‚Øª Ø§Ù„Ø¯Ø®ÙˆÙ„ Ù„Ù„Ù…ÙˆØ¸ÙÙŠÙ† Ù…Ù† CRM
 if (autoLogin === 'true' && empId && empName) {
     const baseUrl = window.location.origin;
     fetch(`${baseUrl}/work-tracking`, {
@@ -2758,32 +2758,32 @@ if (autoLogin === 'true' && empId && empName) {
             employeeId: empId,
             employeeName: decodeURIComponent(empName)
         })
-    }).catch(err => console.log('? ÊÓÌíá ÇáæŞÊ ÓíÊã áÇÍŞÇğ'));
+    }).catch(err => console.log('â° ØªØ³Ø¬ÙŠÙ„ Ø§Ù„ÙˆÙ‚Øª Ø³ÙŠØªÙ… Ù„Ø§Ø­Ù‚Ø§Ù‹'));
 }
 
-// ===== ÇÓÊŞÈÇá ÃÑŞÇã ÌÏíÏÉ ãä CRM ÚÈÑ postMessage =====
+// ===== Ø§Ø³ØªÙ‚Ø¨Ø§Ù„ Ø£Ø±Ù‚Ø§Ù… Ø¬Ø¯ÙŠØ¯Ø© Ù…Ù† CRM Ø¹Ø¨Ø± postMessage =====
 window.addEventListener('message', (event) => {
-    // ÇáÊÃßÏ ãä ÇáãÕÏÑ
+    // Ø§Ù„ØªØ£ÙƒØ¯ Ù…Ù† Ø§Ù„Ù…ØµØ¯Ø±
     if (event.origin !== 'https://hotel-app-dce62.web.app' && !event.origin.includes('localhost')) {
         return;
     }
     
     if (event.data && event.data.type === 'NEW_CALL') {
-        console.log('?? ÇÓÊŞÈÇá ãßÇáãÉ ÌÏíÏÉ ãä CRM:', event.data.phone);
+        console.log('ğŸ“ Ø§Ø³ØªÙ‚Ø¨Ø§Ù„ Ù…ÙƒØ§Ù„Ù…Ø© Ø¬Ø¯ÙŠØ¯Ø© Ù…Ù† CRM:', event.data.phone);
         
-        // ÊÍÏíË ÇáÑŞã
+        // ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø±Ù‚Ù…
         phoneNumber = event.data.phone;
         if (displayNumber) {
             displayNumber.textContent = event.data.phone;
             updateDeleteButton();
         }
         
-        // ÈÏÁ ÇáãßÇáãÉ ÊáŞÇÆíÇğ
+        // Ø¨Ø¯Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹
         if (device && device.state === 'registered') {
-            console.log('? ÈÏÁ ÇáãßÇáãÉ ÇáÌÏíÏÉ...');
+            console.log('âœ… Ø¨Ø¯Ø¡ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø© Ø§Ù„Ø¬Ø¯ÙŠØ¯Ø©...');
             setTimeout(() => makeCall(), 500);
         } else {
-            console.log('? ÇäÊÙÇÑ ÇÊÕÇá Twilio...');
+            console.log('â³ Ø§Ù†ØªØ¸Ø§Ø± Ø§ØªØµØ§Ù„ Twilio...');
             const checkInterval = setInterval(() => {
                 if (device && device.state === 'registered') {
                     clearInterval(checkInterval);
@@ -2795,9 +2795,9 @@ window.addEventListener('message', (event) => {
     }
 });
 
-// ===== æÙÇÆİ ÊŞÇÑíÑ ÓÇÚÇÊ ÇáÚãá =====
+// ===== ÙˆØ¸Ø§Ø¦Ù ØªÙ‚Ø§Ø±ÙŠØ± Ø³Ø§Ø¹Ø§Øª Ø§Ù„Ø¹Ù…Ù„ =====
 
-// ÊÍãíá ÊŞÑíÑ ÓÇÚÇÊ ÇáÚãá
+// ØªØ­Ù…ÙŠÙ„ ØªÙ‚Ø±ÙŠØ± Ø³Ø§Ø¹Ø§Øª Ø§Ù„Ø¹Ù…Ù„
 async function loadWorkReports(startDate, endDate) {
     try {
         const baseUrl = window.location.origin;
@@ -2808,8 +2808,8 @@ async function loadWorkReports(startDate, endDate) {
             },
             body: JSON.stringify({
                 action: 'get-all-reports',
-                employeeId: 'admin', // ãØáæÈ ááÜ validation
-                employeeName: 'ÇáãØæÑ ÇáÑÆíÓí',
+                employeeId: 'admin', // Ù…Ø·Ù„ÙˆØ¨ Ù„Ù„Ù€ validation
+                employeeName: 'Ø§Ù„Ù…Ø·ÙˆØ± Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ',
                 data: {
                     reportStartDate: startDate,
                     reportEndDate: endDate
@@ -2819,51 +2819,51 @@ async function loadWorkReports(startDate, endDate) {
         
         const data = await response.json();
         
-        console.log('?? Response from work-tracking API:', data);
+        console.log('ğŸ“Š Response from work-tracking API:', data);
         if (data.success && data.reports) {
             displayWorkReports(data.reports);
         } else {
             document.getElementById('reports-container').innerHTML = 
-                '<div class="no-data">áÇ ÊæÌÏ ÈíÇäÇÊ İí åĞå ÇáİÊÑÉ</div>';
+                '<div class="no-data">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„ÙØªØ±Ø©</div>';
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÊÍãíá ÇáÊŞÇÑíÑ:', error);
+        console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±:', error);
         document.getElementById('reports-container').innerHTML = 
-            '<div class="error-message">ÎØÃ İí ÊÍãíá ÇáÊŞÇÑíÑ</div>';
+            '<div class="error-message">Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±</div>';
     }
 }
 
-// ÚÑÖ ÊŞÇÑíÑ ÇáÚãá
+// Ø¹Ø±Ø¶ ØªÙ‚Ø§Ø±ÙŠØ± Ø§Ù„Ø¹Ù…Ù„
 function displayWorkReports(reports) {
     const container = document.getElementById('reports-container');
     
     if (!reports || reports.length === 0) {
-        container.innerHTML = '<div class="no-data">áÇ ÊæÌÏ ÈíÇäÇÊ İí åĞå ÇáİÊÑÉ</div>';
+        container.innerHTML = '<div class="no-data">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„ÙØªØ±Ø©</div>';
         return;
     }
     
-    // ÊÑÊíÈ ÍÓÈ ÚÏÏ ÇáÓÇÚÇÊ (ÇáÃßËÑ ÃæáÇğ)
+    // ØªØ±ØªÙŠØ¨ Ø­Ø³Ø¨ Ø¹Ø¯Ø¯ Ø§Ù„Ø³Ø§Ø¹Ø§Øª (Ø§Ù„Ø£ÙƒØ«Ø± Ø£ÙˆÙ„Ø§Ù‹)
     reports.sort((a, b) => b.totalMinutes - a.totalMinutes);
     
     let html = '<div class="reports-summary">';
-    html += `<div class="summary-card"><strong>ÅÌãÇáí ÇáãæÙİíä:</strong> ${reports.length}</div>`;
+    html += `<div class="summary-card"><strong>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…ÙˆØ¸ÙÙŠÙ†:</strong> ${reports.length}</div>`;
     
     const totalHours = reports.reduce((sum, r) => sum + parseFloat(r.totalHours), 0);
-    html += `<div class="summary-card"><strong>ÅÌãÇáí ÓÇÚÇÊ ÇáÚãá:</strong> ${totalHours.toFixed(2)} ÓÇÚÉ</div>`;
+    html += `<div class="summary-card"><strong>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø³Ø§Ø¹Ø§Øª Ø§Ù„Ø¹Ù…Ù„:</strong> ${totalHours.toFixed(2)} Ø³Ø§Ø¹Ø©</div>`;
     
     const totalCalls = reports.reduce((sum, r) => sum + r.totalCalls, 0);
-    html += `<div class="summary-card"><strong>ÅÌãÇáí ÇáãßÇáãÇÊ:</strong> ${totalCalls} ãßÇáãÉ</div>`;
+    html += `<div class="summary-card"><strong>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª:</strong> ${totalCalls} Ù…ÙƒØ§Ù„Ù…Ø©</div>`;
     html += '</div>';
     
     html += '<table class="reports-table">';
     html += '<thead><tr>';
     html += '<th>#</th>';
-    html += '<th>ÇÓã ÇáãæÙİ</th>';
-    html += '<th>ÚÏÏ ÇáÃíÇã</th>';
-    html += '<th>ÅÌãÇáí ÇáÓÇÚÇÊ</th>';
-    html += '<th>ÚÏÏ ÇáãßÇáãÇÊ</th>';
-    html += '<th>ãÊæÓØ ÓÇÚÇÊ/íæã</th>';
-    html += '<th>ÇáÅÌÑÇÁÇÊ</th>';
+    html += '<th>Ø§Ø³Ù… Ø§Ù„Ù…ÙˆØ¸Ù</th>';
+    html += '<th>Ø¹Ø¯Ø¯ Ø§Ù„Ø£ÙŠØ§Ù…</th>';
+    html += '<th>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø³Ø§Ø¹Ø§Øª</th>';
+    html += '<th>Ø¹Ø¯Ø¯ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª</th>';
+    html += '<th>Ù…ØªÙˆØ³Ø· Ø³Ø§Ø¹Ø§Øª/ÙŠÙˆÙ…</th>';
+    html += '<th>Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡Ø§Øª</th>';
     html += '</tr></thead><tbody>';
     
     reports.forEach((report, index) => {
@@ -2871,11 +2871,11 @@ function displayWorkReports(reports) {
         html += '<tr>';
         html += `<td>${index + 1}</td>`;
         html += `<td><strong>${report.employeeName}</strong></td>`;
-        html += `<td>${report.days.length} íæã</td>`;
-        html += `<td><span class="hours-badge">${report.totalHours} ÓÇÚÉ</span></td>`;
-        html += `<td>${report.totalCalls} ãßÇáãÉ</td>`;
-        html += `<td>${avgHours} ÓÇÚÉ</td>`;
-        html += `<td><button class="btn-details" onclick="showEmployeeDetails('${report.employeeId}', '${report.employeeName}')">ÇáÊİÇÕíá</button></td>`;
+        html += `<td>${report.days.length} ÙŠÙˆÙ…</td>`;
+        html += `<td><span class="hours-badge">${report.totalHours} Ø³Ø§Ø¹Ø©</span></td>`;
+        html += `<td>${report.totalCalls} Ù…ÙƒØ§Ù„Ù…Ø©</td>`;
+        html += `<td>${avgHours} Ø³Ø§Ø¹Ø©</td>`;
+        html += `<td><button class="btn-details" onclick="showEmployeeDetails('${report.employeeId}', '${report.employeeName}')">Ø§Ù„ØªÙØ§ØµÙŠÙ„</button></td>`;
         html += '</tr>';
     });
     
@@ -2883,7 +2883,7 @@ function displayWorkReports(reports) {
     container.innerHTML = html;
 }
 
-// ÚÑÖ ÊİÇÕíá ãæÙİ ãÍÏÏ
+// Ø¹Ø±Ø¶ ØªÙØ§ØµÙŠÙ„ Ù…ÙˆØ¸Ù Ù…Ø­Ø¯Ø¯
 async function showEmployeeDetails(employeeId, employeeName) {
     const startDate = document.getElementById('report-start-date').value;
     const endDate = document.getElementById('report-end-date').value;
@@ -2912,51 +2912,51 @@ async function showEmployeeDetails(employeeId, employeeName) {
             displayEmployeeDetailsModal(data);
         }
     } catch (error) {
-        console.error('ÎØÃ İí ÊÍãíá ÊİÇÕíá ÇáãæÙİ:', error);
-        alert('ÎØÃ İí ÊÍãíá ÇáÊİÇÕíá');
+        console.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…ÙˆØ¸Ù:', error);
+        alert('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªÙØ§ØµÙŠÙ„');
     }
 }
 
-// ÚÑÖ äÇİĞÉ ãäÈËŞÉ ÈÊİÇÕíá ÇáãæÙİ
+// Ø¹Ø±Ø¶ Ù†Ø§ÙØ°Ø© Ù…Ù†Ø¨Ø«Ù‚Ø© Ø¨ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…ÙˆØ¸Ù
 function displayEmployeeDetailsModal(data) {
     let html = `
         <div class="modal-overlay" onclick="this.remove()">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <div class="modal-header">
-                    <h3>ÊİÇÕíá Úãá ${data.employeeName}</h3>
-                    <button class="close-btn" onclick="this.closest('.modal-overlay').remove()">×</button>
+                    <h3>ØªÙØ§ØµÙŠÙ„ Ø¹Ù…Ù„ ${data.employeeName}</h3>
+                    <button class="close-btn" onclick="this.closest('.modal-overlay').remove()">Ã—</button>
                 </div>
                 <div class="modal-body">
                     <div class="employee-summary">
                         <div class="summary-item">
-                            <span class="label">ÅÌãÇáí ÇáÓÇÚÇÊ:</span>
-                            <span class="value">${data.totalHours} ÓÇÚÉ</span>
+                            <span class="label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø³Ø§Ø¹Ø§Øª:</span>
+                            <span class="value">${data.totalHours} Ø³Ø§Ø¹Ø©</span>
                         </div>
                         <div class="summary-item">
-                            <span class="label">ÚÏÏ ÇáÃíÇã:</span>
-                            <span class="value">${data.totalDays} íæã</span>
+                            <span class="label">Ø¹Ø¯Ø¯ Ø§Ù„Ø£ÙŠØ§Ù…:</span>
+                            <span class="value">${data.totalDays} ÙŠÙˆÙ…</span>
                         </div>
                         <div class="summary-item">
-                            <span class="label">ÚÏÏ ÇáãßÇáãÇÊ:</span>
-                            <span class="value">${data.totalCalls} ãßÇáãÉ</span>
+                            <span class="label">Ø¹Ø¯Ø¯ Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª:</span>
+                            <span class="value">${data.totalCalls} Ù…ÙƒØ§Ù„Ù…Ø©</span>
                         </div>
                     </div>
-                    <h4>ÊİÇÕíá íæãíÉ:</h4>
+                    <h4>ØªÙØ§ØµÙŠÙ„ ÙŠÙˆÙ…ÙŠØ©:</h4>
                     <table class="details-table">
                         <thead>
                             <tr>
-                                <th>ÇáÊÇÑíÎ</th>
-                                <th>æŞÊ ÇáÏÎæá</th>
-                                <th>æŞÊ ÇáÎÑæÌ</th>
-                                <th>ÇáÓÇÚÇÊ</th>
-                                <th>ÇáãßÇáãÇÊ</th>
+                                <th>Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
+                                <th>ÙˆÙ‚Øª Ø§Ù„Ø¯Ø®ÙˆÙ„</th>
+                                <th>ÙˆÙ‚Øª Ø§Ù„Ø®Ø±ÙˆØ¬</th>
+                                <th>Ø§Ù„Ø³Ø§Ø¹Ø§Øª</th>
+                                <th>Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø§Øª</th>
                             </tr>
                         </thead>
                         <tbody>`;
     
     data.dailyReport.forEach(day => {
         const loginTime = new Date(day.loginTime).toLocaleTimeString('ar-EG', {hour: '2-digit', minute: '2-digit'});
-        const logoutTime = day.logoutTime ? new Date(day.logoutTime).toLocaleTimeString('ar-EG', {hour: '2-digit', minute: '2-digit'}) : 'áã íÓÌá ÎÑæÌ';
+        const logoutTime = day.logoutTime ? new Date(day.logoutTime).toLocaleTimeString('ar-EG', {hour: '2-digit', minute: '2-digit'}) : 'Ù„Ù… ÙŠØ³Ø¬Ù„ Ø®Ø±ÙˆØ¬';
         const hours = (day.totalMinutes / 60).toFixed(2);
         
         html += `
@@ -2964,8 +2964,8 @@ function displayEmployeeDetailsModal(data) {
                 <td>${day.date}</td>
                 <td>${loginTime}</td>
                 <td>${logoutTime}</td>
-                <td>${hours} ÓÇÚÉ</td>
-                <td>${day.calls?.length || 0} ãßÇáãÉ</td>
+                <td>${hours} Ø³Ø§Ø¹Ø©</td>
+                <td>${day.calls?.length || 0} Ù…ÙƒØ§Ù„Ù…Ø©</td>
             </tr>`;
     });
     
@@ -2979,7 +2979,7 @@ function displayEmployeeDetailsModal(data) {
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
-// ÒÑ ÅäÔÇÁ ÇáÊŞÑíÑ
+// Ø²Ø± Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„ØªÙ‚Ø±ÙŠØ±
 const generateReportBtn = document.getElementById('generate-report-btn');
 if (generateReportBtn) {
     generateReportBtn.addEventListener('click', () => {
@@ -2987,12 +2987,12 @@ if (generateReportBtn) {
         const endDate = document.getElementById('report-end-date').value;
         
         if (!startDate || !endDate) {
-            alert('íÑÌì ÊÍÏíÏ ÇáİÊÑÉ ÇáÒãäíÉ');
+            alert('ÙŠØ±Ø¬Ù‰ ØªØ­Ø¯ÙŠØ¯ Ø§Ù„ÙØªØ±Ø© Ø§Ù„Ø²Ù…Ù†ÙŠØ©');
             return;
         }
         
         if (new Date(startDate) > new Date(endDate)) {
-            alert('ÊÇÑíÎ ÇáÈÏÇíÉ íÌÈ Ãä íßæä ŞÈá ÊÇÑíÎ ÇáäåÇíÉ');
+            alert('ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ù‚Ø¨Ù„ ØªØ§Ø±ÙŠØ® Ø§Ù„Ù†Ù‡Ø§ÙŠØ©');
             return;
         }
         
@@ -3000,27 +3000,27 @@ if (generateReportBtn) {
     });
 }
 
-// ÅÎİÇÁ ÒÑ ÊŞÇÑíÑ ÇáÚãá Úä ÛíÑ ÇáãØæÑíä
+// Ø¥Ø®ÙØ§Ø¡ Ø²Ø± ØªÙ‚Ø§Ø±ÙŠØ± Ø§Ù„Ø¹Ù…Ù„ Ø¹Ù† ØºÙŠØ± Ø§Ù„Ù…Ø·ÙˆØ±ÙŠÙ†
 if (userRole !== 'admin' && workReportsBtn) {
     workReportsBtn.style.display = 'none';
 }
 
-// ===== ÊÍÏíË ÇáÑÕíÏ ÊáŞÇÆíÇğ ßá 5 ËæÇäí =====
+// ===== ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø±ØµÙŠØ¯ ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ ÙƒÙ„ 5 Ø«ÙˆØ§Ù†ÙŠ =====
 let balanceRefreshInterval = null;
 
 function startBalanceAutoRefresh() {
-    // ÊÍÏíË İæÑí
+    // ØªØ­Ø¯ÙŠØ« ÙÙˆØ±ÙŠ
     loadAccountBalance();
     
-    // ÊÍÏíË ßá 5 ËæÇäí
+    // ØªØ­Ø¯ÙŠØ« ÙƒÙ„ 5 Ø«ÙˆØ§Ù†ÙŠ
     balanceRefreshInterval = setInterval(() => {
         loadAccountBalance();
     }, 5000);
     
-    console.log('? ÊÍÏíË ÇáÑÕíÏ ÇáÊáŞÇÆí ãİÚøá - ßá 5 ËæÇäí');
+    console.log('âœ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„ØªÙ„Ù‚Ø§Ø¦ÙŠ Ù…ÙØ¹Ù‘Ù„ - ÙƒÙ„ 5 Ø«ÙˆØ§Ù†ÙŠ');
 }
 
-// ÈÏÁ ÊÍÏíË ÇáÑÕíÏ ÚäÏ ÊÍãíá ÇáÕİÍÉ
+// Ø¨Ø¯Ø¡ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø±ØµÙŠØ¯ Ø¹Ù†Ø¯ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØµÙØ­Ø©
 startBalanceAutoRefresh();
 
-console.log('? ÇáÊØÈíŞ íÚãá ÈÔßá ãÓÊãÑ - áÇ íæÌÏ ÊÓÌíá ÎÑæÌ ÊáŞÇÆí');
+console.log('âœ… Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ ÙŠØ¹Ù…Ù„ Ø¨Ø´ÙƒÙ„ Ù…Ø³ØªÙ…Ø± - Ù„Ø§ ÙŠÙˆØ¬Ø¯ ØªØ³Ø¬ÙŠÙ„ Ø®Ø±ÙˆØ¬ ØªÙ„Ù‚Ø§Ø¦ÙŠ');

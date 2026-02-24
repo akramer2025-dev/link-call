@@ -1039,8 +1039,10 @@ app.post('/incoming-to-browser', async (req, res) => {
     const twiml = new twilio.twiml.VoiceResponse();
     
     // البحث عن المطور المتصل (المتاح في المتصفح)
-    // يمكن تحديد identity معين أو استخدام default
-    const defaultIdentity = 'employee_admin'; // المطور الرئيسي
+    // استخدام identity المطور الرئيسي
+    const defaultIdentity = 'client_admin'; // المطور الرئيسي
+    
+    console.log('📱 توجيه المكالمة للـ Client:', defaultIdentity);
     
     // رسالة للمتصل أثناء الانتظار
     twiml.say({

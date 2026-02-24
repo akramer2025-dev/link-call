@@ -226,8 +226,12 @@ async function initializeApp() {
         console.log('✅ Twilio SDK محمل بنجاح');
         
         // الحصول على Access Token
+        // استخدام identity ثابت مبني على employeeId لاستقبال المكالمات
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/token?identity=employee_${Date.now()}`);
+        const empId = localStorage.getItem('employeeId') || sessionStorage.getItem('employeeId') || 'admin';
+        const clientIdentity = `client_${empId}`;
+        console.log('🆔 Client Identity:', clientIdentity);
+        const response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`);
         const data = await response.json();
         
         if (!data.token) {

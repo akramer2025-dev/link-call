@@ -57,9 +57,20 @@
     </div>
     
     <div class="stars" id="stars"></div>
+    
+    <!-- زر القائمة الجانبية -->
+    <button class="hamburger-menu" id="hamburger-menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+    
+    <!-- الخلفية المعتمة -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
     <div class="container">
         <!-- الشريط الجانبي -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="menu-item active" id="dialpad-btn">
                 <div class="icon">📞</div>
                 <div class="label">لوحة المفاتيح</div>
@@ -659,6 +670,30 @@
         }
         
         createStars();
+        
+        // === القائمة الجانبية ===
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        function toggleSidebar() {
+            hamburgerMenu.classList.toggle('active');
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+        }
+        
+        hamburgerMenu.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+        
+        // إغلاق القائمة عند النقر على عنصر
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (sidebar.classList.contains('active')) {
+                    toggleSidebar();
+                }
+            });
+        });
     </script>
 </body>
 </html>

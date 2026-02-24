@@ -135,16 +135,96 @@ body::after {
     }
 }
 
+/* === زر القائمة الهامبرجر === */
+.hamburger-menu {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, rgba(94, 196, 212, 0.9), rgba(30, 58, 95, 0.9));
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    padding: 12px;
+    box-shadow: 0 4px 20px rgba(94, 196, 212, 0.4);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.hamburger-menu:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(94, 196, 212, 0.6);
+}
+
+.hamburger-line {
+    width: 24px;
+    height: 3px;
+    background: white;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu.active .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger-menu.active .hamburger-line:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active .hamburger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* الخلفية المعتمة */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* الشريط الجانبي */
 .sidebar {
-    width: 200px;
-    background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    backdrop-filter: blur(10px);
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 260px;
+    height: 100vh;
+    background: linear-gradient(180deg, rgba(10, 25, 47, 0.98) 0%, rgba(15, 35, 60, 0.98) 100%);
+    backdrop-filter: blur(20px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 0;
-    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+    padding: 80px 20px 20px;
+    box-shadow: -5px 0 30px rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 1px solid rgba(94, 196, 212, 0.2);
+    overflow-y: auto;
+}
+
+.sidebar.active {
+    right: 0;
 }
 
 .logo {

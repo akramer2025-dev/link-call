@@ -7,6 +7,60 @@ let isRecording = false;
 let callCheckInterval = null;
 let phoneNumber = ''; // متغير لتخزين رقم الهاتف
 
+// ===== PWA تثبيت التطبيق =====
+let deferredPrompt;
+const installBtn = document.getElementById('install-app-btn');
+
+// التقاط حدث التثبيت
+window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('📲 PWA: يمكن تثبيت التطبيق');
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // إظهار زر التثبيت
+    if (installBtn) {
+        installBtn.style.display = 'block';
+        installBtn.classList.add('install-available');
+    }
+});
+
+// عند النقر على زر التثبيت
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) {
+            // إذا كان التطبيق مثبت أو لا يدعم PWA
+            alert('التطبيق مثبت بالفعل أو المتصفح لا يدعم التثبيت\n\nلتثبيت التطبيق:\n1. افتح قائمة المتصفح (⋮)\n2. اختر "إضافة إلى الشاشة الرئيسية"');
+            return;
+        }
+        
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+            console.log('✅ PWA: تم قبول التثبيت');
+            installBtn.style.display = 'none';
+        } else {
+            console.log('❌ PWA: تم رفض التثبيت');
+        }
+        
+        deferredPrompt = null;
+    });
+}
+
+// عند اكتمال التثبيت
+window.addEventListener('appinstalled', () => {
+    console.log('✅ PWA: تم تثبيت التطبيق بنجاح!');
+    if (installBtn) {
+        installBtn.style.display = 'none';
+    }
+    deferredPrompt = null;
+});
+
+// التحقق إذا كان التطبيق يعمل كـ PWA مثبت
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    console.log('📱 التطبيق يعمل كـ PWA مثبت');
+}
+
 // 🔥 DEBUG: طباعة معلومات في بداية التحميل
 console.log('🔥 app.js loaded - Version: 2.0.20251218');
 console.log('🔥 Current URL:', window.location.href);

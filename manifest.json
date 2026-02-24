@@ -2,33 +2,64 @@
   "name": "Link Call - نظام المكالمات السحابي",
   "short_name": "Link Call",
   "description": "نظام مكالمات سحابي احترافي مع Twilio للشركات",
-  "start_url": "/",
+  "start_url": "/login.html",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#1a1a2e",
   "theme_color": "#6c5ce7",
   "orientation": "portrait-primary",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
       "src": "/screenshot.png",
       "sizes": "1280x720",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ],
   "categories": ["business", "productivity", "communication"],
   "dir": "rtl",
-  "lang": "ar"
+  "lang": "ar",
+  "shortcuts": [
+    {
+      "name": "اتصال جديد",
+      "short_name": "اتصال",
+      "description": "بدء مكالمة جديدة",
+      "url": "/index.html?action=call",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "سجل المكالمات",
+      "short_name": "السجل",
+      "description": "عرض سجل المكالمات",
+      "url": "/index.html?action=history",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
 }

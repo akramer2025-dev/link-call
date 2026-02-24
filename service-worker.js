@@ -1,5 +1,5 @@
 // Service Worker for Link Call PWA
-const CACHE_NAME = 'link-call-v3-20251218-1455';
+const CACHE_NAME = 'link-call-v4-20260224';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,6 +8,9 @@ const urlsToCache = [
   '/login-style.css',
   '/app.js',
   '/logo.jpg',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/manifest.json',
   'https://unpkg.com/@twilio/voice-sdk@2.11.2/dist/twilio.min.js'
 ];
 

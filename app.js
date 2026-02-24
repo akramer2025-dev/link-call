@@ -440,14 +440,25 @@ function deleteDigit() {
     updateDeleteButton();
 }
 
-// تحديث زر الحذف
+// تحديث زر الحذف وشاشة العرض
 function updateDeleteButton() {
     const deleteBtn = document.getElementById('delete-btn');
+    const phoneDisplay = document.querySelector('.phone-display');
+    
     if (deleteBtn) {
         if (phoneNumber.length > 0) {
             deleteBtn.classList.remove('hidden');
         } else {
             deleteBtn.classList.add('hidden');
+        }
+    }
+    
+    // إظهار/إخفاء شاشة عرض الرقم
+    if (phoneDisplay) {
+        if (phoneNumber.length > 0) {
+            phoneDisplay.classList.remove('empty');
+        } else {
+            phoneDisplay.classList.add('empty');
         }
     }
 }

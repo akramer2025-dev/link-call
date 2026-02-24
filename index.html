@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="Link Call">
     <link rel="apple-touch-icon" href="/icon-192.png">
     
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
     <!-- Twilio Voice SDK v2.11 from unpkg -->
     <script src="https://unpkg.com/@twilio/voice-sdk@2.11.2/dist/twilio.min.js"></script>
 </head>
@@ -164,7 +164,7 @@
 
             <!-- لوحة الأرقام -->
             <div class="dialpad" id="dialpad">
-                <div class="phone-display">
+                <div class="phone-display empty">
                     <div class="phone-number" id="display-number"></div>
                     <button class="delete-btn hidden" id="delete-btn">⌫</button>
                 </div>
@@ -673,7 +673,7 @@
         }
     </script>
     <!-- App Script - REST API Mode -->
-    <script src="app.js"></script>
+    <script src="app.js?v=5"></script>
     
     <script>
         // إنشاء النجوم المتحركة

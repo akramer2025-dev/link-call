@@ -637,7 +637,13 @@ body::after {
     align-items: center;
     justify-content: center;
     gap: 15px;
-    min-height: 0;
+    min-height: 50px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.phone-display.empty {
+    display: none !important;
 }
 
 .phone-number {

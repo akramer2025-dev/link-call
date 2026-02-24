@@ -15,11 +15,17 @@
     <meta name="apple-mobile-web-app-title" content="Link Call">
     <link rel="apple-touch-icon" href="/icon-192.png">
     
-    <link rel="stylesheet" href="login-style.css">
+    <link rel="stylesheet" href="login-style.css?v=2">
 </head>
 <body>
-    <!-- خلفية الكول سنتر -->
-    <div class="background-image"></div>
+    <!-- خلفية سلايدر الكول سنتر -->
+    <div class="slider-container">
+        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1560264280-88b68371db39?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1587560699334-cc4ff634909a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+    </div>
     <div class="background-overlay"></div>
     
     <!-- الحاوية الرئيسية -->
@@ -240,6 +246,20 @@
                 setTimeout(() => loginForm.classList.remove('shake'), 500);
             }
         });
+        
+        // سلايدر الخلفية
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % totalSlides;
+            slides[currentSlide].classList.add('active');
+        }
+        
+        // تغيير الصورة كل 5 ثواني
+        setInterval(nextSlide, 5000);
     </script>
 </body>
 </html>

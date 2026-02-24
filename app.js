@@ -392,10 +392,45 @@ async function makeCall() {
         const selectedCallerId = callerIdSelect ? callerIdSelect.value : 'default';
         console.log('📱 رقم المتصل المختار:', selectedCallerId);
         
+        // ============ Plivo Call ============
+        if (selectedCallerId.startsWith('plivo-')) {
+            console.log('📞 استخدام Plivo للاتصال');
+            try {
+                const response = await fetch(`${API_BASE}/plivo-call`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: formattedNumber,
+                        employeeId: employeeId,
+                        provider: selectedCallerId // plivo-egypt or plivo-saudi
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateCallStatus('جاري الاتصال عبر Plivo... 📞');
+                    showCallScreen(formattedNumber);
+                    // Plivo سيتصل بالرقم - لكن لن يكون متصل بالمتصفح
+                    alert('⚠️ ملاحظة: Plivo يتصل بالعميل مباشرة.\nللاتصال الكامل من المتصفح، استخدم Twilio.');
+                } else {
+                    alert('❌ ' + (result.error || 'فشل الاتصال عبر Plivo'));
+                    if (result.setupUrl) {
+                        console.log('🔗 للإعداد:', result.setupUrl);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Plivo Error:', error);
+                alert('❌ خطأ في الاتصال بـ Plivo');
+            }
+            return;
+        }
+        // ============ نهاية Plivo ============
+        
         const params = {
             To: formattedNumber,
-            employeeId: employeeId,  // إرسال معرف المدير
-            callerId: selectedCallerId  // إرسال رقم المتصل المختار
+            employeeId: employeeId,
+            callerId: selectedCallerId
         };
         
         console.log('👤 معرف المدير للمكالمة:', employeeId);

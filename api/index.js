@@ -5,6 +5,25 @@ const path = require('path');
 const https = require('https');
 const fs = require('fs');
 
+// ===================== Plivo Integration =====================
+let plivoClient = null;
+const PLIVO_AUTH_ID = process.env.PLIVO_AUTH_ID;
+const PLIVO_AUTH_TOKEN = process.env.PLIVO_AUTH_TOKEN;
+const PLIVO_PHONE_NUMBER = process.env.PLIVO_PHONE_NUMBER; // رقم Plivo (مصري أو سعودي)
+
+if (PLIVO_AUTH_ID && PLIVO_AUTH_TOKEN) {
+    try {
+        const plivo = require('plivo');
+        plivoClient = new plivo.Client(PLIVO_AUTH_ID, PLIVO_AUTH_TOKEN);
+        console.log('✅ Plivo متصل - رقم:', PLIVO_PHONE_NUMBER);
+    } catch (error) {
+        console.log('⚠️ Plivo غير متاح:', error.message);
+    }
+} else {
+    console.log('⚠️ Plivo غير مُعد - لإضافته أضف PLIVO_AUTH_ID و PLIVO_AUTH_TOKEN');
+}
+// ===================== نهاية Plivo =====================
+
 // Upstash Redis للتخزين السحابي
 let redis;
 try {
@@ -529,6 +548,145 @@ app.post('/conference-status', (req, res) => {
 });
 
 // ==================== نهاية Verified Caller ID ====================
+
+// ==================== Plivo Calling (بديل محلي أرخص) ====================
+
+// الاتصال عبر Plivo (للأرقام المحلية المصرية/السعودية)
+app.post('/plivo-call', async (req, res) => {
+    if (!plivoClient) {
+        return res.status(400).json({ 
+            error: 'Plivo غير مُعد. أضف PLIVO_AUTH_ID و PLIVO_AUTH_TOKEN في Vercel',
+            setupUrl: 'https://console.plivo.com/dashboard/'
+        });
+    }
+    
+    const { to, from, employeeId } = req.body;
+    
+    console.log('📞 ================ Plivo Call ================');
+    console.log('📞 إلى:', to);
+    console.log('📱 من:', from || PLIVO_PHONE_NUMBER);
+    console.log('👤 الموظف:', employeeId);
+    
+    try {
+        const baseUrl = 'https://link-call-jade.vercel.app';
+        
+        const call = await plivoClient.calls.create(
+            from || PLIVO_PHONE_NUMBER, // الرقم المصري/السعودي من Plivo
+            to,
+            `${baseUrl}/plivo-answer?employeeId=${employeeId}`,
+            {
+                answerMethod: 'POST',
+                hangupUrl: `${baseUrl}/plivo-hangup?employeeId=${employeeId}`,
+                hangupMethod: 'POST',
+                record: true,
+                recordingCallbackUrl: `${baseUrl}/plivo-recording?employeeId=${employeeId}`,
+                recordingCallbackMethod: 'POST'
+            }
+        );
+        
+        console.log('✅ Plivo Call created:', call.requestUuid);
+        res.json({ 
+            success: true, 
+            callId: call.requestUuid,
+            message: 'جاري الاتصال عبر Plivo'
+        });
+    } catch (error) {
+        console.error('❌ Plivo Error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Plivo Answer XML
+app.all('/plivo-answer', (req, res) => {
+    const employeeId = req.query.employeeId;
+    console.log('📞 Plivo Answer - Employee:', employeeId);
+    
+    // Plivo XML (مشابه لـ TwiML)
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Speak language="ar">جاري توصيلك بالخدمة</Speak>
+        <Record maxLength="3600" recordSession="true" redirect="false"/>
+    </Response>`;
+    
+    res.type('application/xml');
+    res.send(xml);
+});
+
+// Plivo Hangup
+app.post('/plivo-hangup', (req, res) => {
+    console.log('📞 Plivo Hangup:', req.body);
+    res.sendStatus(200);
+});
+
+// Plivo Recording Callback
+app.post('/plivo-recording', async (req, res) => {
+    console.log('🎙️ Plivo Recording:', req.body);
+    
+    const recordingUrl = req.body.RecordingUrl;
+    const callUuid = req.body.CallUUID;
+    const employeeId = req.query.employeeId;
+    
+    if (recordingUrl && redis) {
+        try {
+            // حفظ التسجيل
+            const recording = {
+                sid: callUuid,
+                recordingUrl: recordingUrl,
+                duration: req.body.RecordingDuration,
+                employeeId: employeeId,
+                provider: 'plivo',
+                createdAt: new Date().toISOString()
+            };
+            
+            await redis.lpush('recordings', JSON.stringify(recording));
+            console.log('✅ Plivo recording saved');
+        } catch (error) {
+            console.error('❌ Error saving Plivo recording:', error);
+        }
+    }
+    
+    res.sendStatus(200);
+});
+
+// جلب أرقام Plivo المتاحة
+app.get('/plivo-numbers', async (req, res) => {
+    if (!plivoClient) {
+        return res.json({ 
+            available: false,
+            message: 'Plivo غير مُعد',
+            numbers: []
+        });
+    }
+    
+    try {
+        const numbers = await plivoClient.numbers.list();
+        res.json({ 
+            available: true,
+            numbers: numbers.map(n => ({
+                number: n.number,
+                country: n.country,
+                type: n.type
+            }))
+        });
+    } catch (error) {
+        res.json({ 
+            available: true,
+            error: error.message,
+            numbers: PLIVO_PHONE_NUMBER ? [{ number: PLIVO_PHONE_NUMBER }] : []
+        });
+    }
+});
+
+// حالة Plivo
+app.get('/plivo-status', (req, res) => {
+    res.json({
+        configured: !!plivoClient,
+        phoneNumber: PLIVO_PHONE_NUMBER || null,
+        setupUrl: 'https://console.plivo.com/dashboard/'
+    });
+});
+
+// ==================== نهاية Plivo ====================
 
 // TwiML بسيط للاتصال المباشر
 app.all('/simple-dial', (req, res) => {

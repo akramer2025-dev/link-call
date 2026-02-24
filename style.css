@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #0a192f 0%, #112240 50%, #0d1b2a 100%);
+    background: #0a1628;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -14,6 +14,57 @@ body {
     position: relative;
     overflow-x: hidden;
     padding: 10px;
+}
+
+/* ========== سلايدر خلفية الكول سنتر ========== */
+.slider-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+    transform: scale(1);
+}
+
+.slide.active {
+    opacity: 1;
+    animation: zoomEffect 8s ease-in-out forwards;
+}
+
+@keyframes zoomEffect {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.1);
+    }
+}
+
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(10, 22, 40, 0.88) 0%, 
+        rgba(30, 58, 95, 0.82) 50%, 
+        rgba(10, 22, 40, 0.88) 100%);
+    z-index: 1;
 }
 
 body::before {

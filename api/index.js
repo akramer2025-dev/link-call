@@ -1491,6 +1491,51 @@ app.get('/debug/data-status', async (req, res) => {
     }
 });
 
+// ========== API رصيد Twilio ==========
+
+// جلب رصيد الحساب
+app.get('/account/balance', async (req, res) => {
+    try {
+        if (!twilioClient) {
+            return res.status(500).json({ error: 'خدمة Twilio غير متاحة' });
+        }
+        
+        // جلب معلومات الحساب من Twilio
+        const account = await twilioClient.api.accounts(TWILIO_ACCOUNT_SID).fetch();
+        
+        // جلب الرصيد من Balance API
+        const balanceUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Balance.json`;
+        const authHeader = 'Basic ' + Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
+        
+        const balanceResponse = await fetch(balanceUrl, {
+            headers: { 'Authorization': authHeader }
+        });
+        
+        let balance = 0;
+        let currency = 'USD';
+        
+        if (balanceResponse.ok) {
+            const balanceData = await balanceResponse.json();
+            balance = parseFloat(balanceData.balance) || 0;
+            currency = balanceData.currency || 'USD';
+        }
+        
+        res.json({
+            success: true,
+            balance: balance,
+            currency: currency,
+            accountName: account.friendlyName,
+            accountStatus: account.status,
+            // رابط لإعادة الشحن
+            rechargeUrl: 'https://console.twilio.com/us1/billing/manage-billing/billing-overview'
+        });
+        
+    } catch (error) {
+        console.error('خطأ في جلب الرصيد:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ========== Admin Dashboard APIs ==========
 
 // إحصائيات لوحة التحكم

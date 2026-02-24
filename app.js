@@ -1814,6 +1814,97 @@ function displayUserInfo() {
 // تحميل معلومات المستخدم عند فتح الصفحة
 displayUserInfo();
 
+// ========== جلب رصيد الحساب ==========
+let rechargeUrl = 'https://console.twilio.com/us1/billing/manage-billing/billing-overview';
+
+async function loadAccountBalance() {
+    const balanceEl = document.getElementById('account-balance');
+    const currencyEl = document.getElementById('balance-currency');
+    const statusEl = document.getElementById('balance-status');
+    const accountStatusEl = document.getElementById('account-status');
+    const balanceDisplay = document.querySelector('.balance-display');
+    
+    // عناصر الهيدر
+    const headerBalanceEl = document.getElementById('header-balance');
+    const headerBalanceContainer = document.getElementById('balance-header');
+    
+    try {
+        if (balanceEl) {
+            balanceEl.textContent = '...';
+            statusEl.textContent = 'جاري التحميل...';
+        }
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/account/balance`);
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // عرض الرصيد
+            const balance = parseFloat(data.balance).toFixed(2);
+            
+            if (balanceEl) {
+                balanceEl.textContent = balance;
+                currencyEl.textContent = data.currency || 'USD';
+            }
+            
+            // تحديث الهيدر
+            if (headerBalanceEl) {
+                headerBalanceEl.textContent = balance;
+            }
+            
+            // حفظ رابط الشحن
+            if (data.rechargeUrl) {
+                rechargeUrl = data.rechargeUrl;
+            }
+            
+            // حالة الحساب
+            if (accountStatusEl) {
+                accountStatusEl.textContent = data.accountStatus === 'active' ? '✅ نشط' : data.accountStatus;
+            }
+            
+            // تحديد حالة الرصيد (منخفض/متوسط/جيد)
+            if (balanceDisplay) {
+                balanceDisplay.classList.remove('balance-low', 'balance-medium', 'balance-good');
+            }
+            if (headerBalanceContainer) {
+                headerBalanceContainer.classList.remove('low', 'medium');
+            }
+            
+            if (balance < 5) {
+                if (statusEl) statusEl.textContent = '⚠️ الرصيد منخفض! يُنصح بإعادة الشحن';
+                if (balanceDisplay) balanceDisplay.classList.add('balance-low');
+                if (headerBalanceContainer) headerBalanceContainer.classList.add('low');
+            } else if (balance < 20) {
+                if (statusEl) statusEl.textContent = '💡 الرصيد متوسط';
+                if (balanceDisplay) balanceDisplay.classList.add('balance-medium');
+                if (headerBalanceContainer) headerBalanceContainer.classList.add('medium');
+            } else {
+                if (statusEl) statusEl.textContent = '✅ الرصيد جيد';
+                if (balanceDisplay) balanceDisplay.classList.add('balance-good');
+            }
+            
+            console.log('💰 الرصيد الحالي:', balance, data.currency);
+            
+        } else {
+            throw new Error('فشل جلب الرصيد');
+        }
+    } catch (error) {
+        console.error('خطأ في جلب الرصيد:', error);
+        if (balanceEl) balanceEl.textContent = '--';
+        if (statusEl) statusEl.textContent = '❌ تعذر جلب الرصيد';
+        if (headerBalanceEl) headerBalanceEl.textContent = '--';
+    }
+}
+
+// فتح صفحة إعادة الشحن
+function openRechargeUrl() {
+    window.open(rechargeUrl, '_blank');
+}
+
+// تحميل الرصيد عند فتح الصفحة
+setTimeout(loadAccountBalance, 1000);
+
 // تحميل بيانات الملف الشخصي للمدير
 function loadEmployeeProfile() {
     const fullname = sessionStorage.getItem('fullname');

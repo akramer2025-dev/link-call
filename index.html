@@ -68,6 +68,11 @@
                 <div class="header-top">
                     <h1>رقم الهاتف</h1>
                     <div class="user-info-header">
+                        <div class="balance-header" id="balance-header" title="الرصيد المتاح">
+                            <span class="balance-icon">💰</span>
+                            <span class="balance-header-value" id="header-balance">--</span>
+                            <span class="balance-header-currency">$</span>
+                        </div>
                         <div class="user-badge">
                             <span class="user-icon">👤</span>
                             <div class="user-text">
@@ -262,6 +267,28 @@
                             <span class="setting-label">حالة الاتصال</span>
                             <span class="setting-value status-online">متصل</span>
                         </div>
+                    </div>
+
+                    <!-- قسم الرصيد -->
+                    <div class="settings-section" id="balance-section">
+                        <h4>💰 رصيد المكالمات</h4>
+                        <div class="balance-display">
+                            <div class="balance-amount">
+                                <span class="balance-value" id="account-balance">--</span>
+                                <span class="balance-currency" id="balance-currency">USD</span>
+                            </div>
+                            <div class="balance-status" id="balance-status">جاري التحميل...</div>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-label">حالة الحساب</span>
+                            <span class="setting-value" id="account-status">--</span>
+                        </div>
+                        <button class="recharge-btn" id="recharge-btn" onclick="openRechargeUrl()">
+                            💳 إعادة شحن الرصيد
+                        </button>
+                        <button class="refresh-balance-btn" onclick="loadAccountBalance()">
+                            🔄 تحديث الرصيد
+                        </button>
                     </div>
 
             <!-- تقارير العمل (للمطور فقط) -->

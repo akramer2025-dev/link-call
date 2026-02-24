@@ -1980,11 +1980,6 @@ input:checked + .slider:before {
         letter-spacing: 3px !important;
     }
     
-    .phone-number:empty::before {
-        font-size: 22px !important;
-        letter-spacing: 2px !important;
-    }
-    
     .delete-btn {
         font-size: 20px !important;
         padding: 10px 15px !important;
@@ -2093,11 +2088,6 @@ input:checked + .slider:before {
     
     .phone-number {
         font-size: 24px !important;
-        letter-spacing: 2px !important;
-    }
-    
-    .phone-number:empty::before {
-        font-size: 20px !important;
         letter-spacing: 2px !important;
     }
     
@@ -2925,20 +2915,20 @@ input:checked + .slider:before {
 /* تحسين عرض الرقم - Professional Phone Display */
 .phone-display {
     background: linear-gradient(145deg, rgba(30, 58, 95, 0.9), rgba(10, 22, 40, 0.95));
-    border-radius: 25px;
-    padding: 25px 20px;
-    margin-bottom: 20px;
+    border-radius: 20px;
+    padding: 15px 18px;
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 80px;
+    min-height: 45px;
     position: relative;
     overflow: hidden;
     border: 2px solid transparent;
     background-clip: padding-box;
     box-shadow: 
-        0 10px 40px rgba(0, 0, 0, 0.4),
-        0 0 30px rgba(94, 196, 212, 0.1),
+        0 8px 30px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(94, 196, 212, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -3003,7 +2993,7 @@ input:checked + .slider:before {
     text-shadow: 0 0 20px rgba(94, 196, 212, 0.5);
     position: relative;
     z-index: 1;
-    min-height: 40px;
+    min-height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3013,14 +3003,6 @@ input:checked + .slider:before {
     0% { background-position: 0% center; }
     50% { background-position: 200% center; }
     100% { background-position: 0% center; }
-}
-
-.phone-number:empty::before {
-    content: attr(data-placeholder);
-    color: rgba(255, 255, 255, 0.25);
-    font-size: 28px;
-    letter-spacing: 3px;
-    animation: none;
 }
 
 .delete-btn {
@@ -3211,11 +3193,6 @@ input:checked + .slider:before {
     .phone-number {
         font-size: 22px !important;
         letter-spacing: 2px !important;
-    }
-    
-    .phone-number:empty::before {
-        font-size: 18px !important;
-        letter-spacing: 1px !important;
     }
     
     .delete-btn {

@@ -206,20 +206,19 @@ body::after {
 .sidebar {
     position: fixed;
     top: 0;
-    right: -300px;
-    width: 280px;
+    right: -320px;
+    width: 300px;
     height: 100vh;
-    background: linear-gradient(180deg, rgba(10, 25, 47, 0.98) 0%, rgba(15, 35, 60, 0.98) 100%);
+    background: linear-gradient(180deg, #0d1b2a 0%, #1a365d 50%, #0d1b2a 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 90px 15px 20px;
-    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+    padding: 0;
+    box-shadow: -10px 0 50px rgba(0, 0, 0, 0.7);
     z-index: 999;
     transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border-left: 2px solid rgba(94, 196, 212, 0.3);
+    border-left: 1px solid rgba(94, 196, 212, 0.2);
     overflow-y: auto;
 }
 
@@ -227,211 +226,266 @@ body::after {
     right: 0;
 }
 
-.logo {
-    width: 100px;
-    height: 100px;
-    border-radius: 20px;
+/* هيدر القائمة الجانبية */
+.sidebar-header {
     display: flex;
-    justify-content: center;
     align-items: center;
-    margin-bottom: 30px;
-    overflow: hidden;
-    padding: 0;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s;
-    background: transparent;
+    gap: 12px;
+    padding: 25px 20px;
+    background: linear-gradient(135deg, rgba(94, 196, 212, 0.15), rgba(30, 58, 95, 0.3));
+    border-bottom: 1px solid rgba(94, 196, 212, 0.2);
 }
 
-.logo:hover {
-    transform: scale(1.05);
-}
-
-.logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 20px;
-}
-
-.menu-item {
-    width: 100%;
-    padding: 18px 20px;
-    text-align: center;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
+.sidebar-logo {
+    width: 50px;
+    height: 50px;
     border-radius: 12px;
-    margin-bottom: 8px;
-    background: rgba(94, 196, 212, 0.1);
-    border: 1px solid rgba(94, 196, 212, 0.15);
-}
-
-.menu-item:hover {
-    background: rgba(94, 196, 212, 0.25);
-    transform: scale(1.02);
-    border-color: rgba(94, 196, 212, 0.4);
-}
-
-.menu-item.active {
-    background: linear-gradient(135deg, rgba(94, 196, 212, 0.3), rgba(30, 58, 95, 0.4));
-    border: 1px solid rgba(94, 196, 212, 0.5);
     box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
 }
 
-.menu-item .icon {
-    font-size: 28px;
-    margin-bottom: 6px;
-    display: block;
-}
-
-.menu-item .label {
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: red;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
+.sidebar-brand {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px;
+    flex-direction: column;
+    gap: 3px;
 }
 
-.online-indicator {
-    width: 12px;
-    height: 12px;
-    background: var(--success-color);
-    border-radius: 50%;
-    position: absolute;
-    bottom: 3px;
-    right: 3px;
-    border: 2px solid rgba(10, 25, 47, 0.9);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    animation: pulse-indicator 2s infinite;
+.sidebar-brand-name {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #5ec4d4, #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-@keyframes pulse-indicator {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(79, 172, 254, 0.7);
-    }
-    50% {
-        box-shadow: 0 0 0 6px rgba(79, 172, 254, 0);
-    }
+.sidebar-brand-tagline {
+    font-size: 0.75em;
+    color: rgba(255, 255, 255, 0.6);
 }
 
-/* معلومات المستخدم في القائمة الجانبية */
+/* معلومات المستخدم */
 .sidebar-user-profile {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 20px 15px;
-    background: linear-gradient(135deg, rgba(94, 196, 212, 0.15), rgba(30, 58, 95, 0.25));
-    border-radius: 16px;
-    margin: 10px 10px 5px 10px;
-    border: 1px solid rgba(94, 196, 212, 0.2);
-}
-
-.sidebar-user-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 2px solid rgba(94, 196, 212, 0.5);
-    margin-bottom: 10px;
-    box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
-}
-
-.sidebar-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    gap: 12px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .sidebar-user-info {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 12px;
+    gap: 5px;
 }
 
 .sidebar-username {
-    font-size: 14px;
+    font-size: 1.1em;
     font-weight: 600;
     color: #fff;
-    text-align: center;
 }
 
 .sidebar-role {
-    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8em;
     color: var(--teal-color);
-    background: rgba(94, 196, 212, 0.2);
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-weight: 500;
+    background: rgba(94, 196, 212, 0.15);
+    padding: 4px 12px;
+    border-radius: 20px;
+    width: fit-content;
+    border: 1px solid rgba(94, 196, 212, 0.3);
 }
 
 .sidebar-balance {
     display: flex;
     align-items: center;
-    gap: 5px;
-    background: linear-gradient(135deg, rgba(40, 167, 69, 0.3), rgba(94, 196, 212, 0.2));
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid rgba(40, 167, 69, 0.4);
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(94, 196, 212, 0.1));
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(40, 167, 69, 0.3);
 }
 
 .sidebar-balance-icon {
-    font-size: 14px;
+    font-size: 1.2em;
 }
 
 .sidebar-balance-value {
-    font-size: 16px;
+    font-size: 1.3em;
     font-weight: 700;
-    color: #28a745;
+    color: #4ade80;
 }
 
 .sidebar-balance-currency {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .sidebar-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(94, 196, 212, 0.3), transparent);
-    margin: 10px 15px 15px 15px;
+    margin: 0;
 }
 
-.bottom-logo-container {
-    margin-top: auto;
-    width: 80px;
-    height: 80px;
+/* قائمة التنقل */
+.sidebar-nav {
+    flex: 1;
+    padding: 15px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    transition: all 0.3s ease;
     position: relative;
+    border-radius: 12px;
+    background: transparent;
+    border: 1px solid transparent;
+    text-decoration: none;
+}
+
+.menu-item:hover {
+    background: rgba(94, 196, 212, 0.12);
+    color: #fff;
+    border-color: rgba(94, 196, 212, 0.2);
+    transform: translateX(-5px);
+}
+
+.menu-item.active {
+    background: linear-gradient(135deg, rgba(94, 196, 212, 0.25), rgba(30, 58, 95, 0.35));
+    border: 1px solid rgba(94, 196, 212, 0.4);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(94, 196, 212, 0.2);
+}
+
+.menu-item.active .menu-icon {
+    transform: scale(1.1);
+}
+
+.menu-icon {
+    font-size: 1.4em;
+    width: 32px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.menu-label {
+    flex: 1;
+    font-size: 0.95em;
+    font-weight: 500;
+}
+
+.menu-arrow {
+    font-size: 0.9em;
+    opacity: 0;
+    transition: all 0.3s ease;
+    color: var(--teal-color);
+}
+
+.menu-item:hover .menu-arrow,
+.menu-item.active .menu-arrow {
+    opacity: 1;
+    transform: translateX(-5px);
+}
+
+.menu-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border-radius: 10px;
+    min-width: 20px;
+    height: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: auto auto 20px auto;
-    overflow: hidden;
-    background: rgba(94, 196, 212, 0.15);
-    border-radius: 50%;
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(94, 196, 212, 0.3);
+    font-size: 0.7em;
+    font-weight: 600;
+    padding: 0 6px;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
 
-.bottom-logo-img {
-    width: 70px;
-    height: 70px;
-    object-fit: cover;
-    border-radius: 50%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+.admin-menu-item {
+    border: 1px dashed rgba(94, 196, 212, 0.3) !important;
+}
+
+.install-menu-item {
+    background: rgba(94, 196, 212, 0.08);
+}
+
+/* فوتر القائمة الجانبية */
+.sidebar-footer {
+    padding: 15px 20px 25px;
+    border-top: 1px solid rgba(94, 196, 212, 0.15);
+}
+
+.sidebar-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    color: #fca5a5;
+    font-size: 0.95em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.sidebar-logout-btn:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(220, 38, 38, 0.2));
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fecaca;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+}
+
+.sidebar-logout-btn .logout-icon {
+    font-size: 1.2em;
+}
+
+/* Legacy styles - للتوافق */
+.menu-item .icon {
+    font-size: 1.4em;
+    width: 32px;
+    text-align: center;
+}
+
+.menu-item .label {
+    flex: 1;
+    font-size: 0.95em;
+    font-weight: 500;
+}
+
+.badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border-radius: 10px;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.7em;
+    font-weight: 600;
+    padding: 0 6px;
 }
 
 /* الشعار في الهيدر */
@@ -1857,10 +1911,12 @@ input:checked + .slider:before {
     
     /* زر الهامبرجر في الموبايل */
     .hamburger-menu {
-        top: 15px;
-        right: 15px;
-        width: 45px;
-        height: 45px;
+        top: 12px;
+        right: 12px;
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, rgba(94, 196, 212, 0.2), rgba(30, 58, 95, 0.3));
+        border: 1px solid rgba(94, 196, 212, 0.3);
     }
     
     .hamburger-line {
@@ -1871,63 +1927,61 @@ input:checked + .slider:before {
     /* القائمة الجانبية في الموبايل */
     .sidebar {
         width: 85% !important;
-        max-width: 300px !important;
+        max-width: 320px !important;
         right: -100% !important;
-        padding-top: 70px !important;
+        padding-top: 0 !important;
     }
     
     .sidebar.active {
         right: 0 !important;
     }
     
-    .menu-item {
-        padding: 16px 18px !important;
-        margin-bottom: 10px !important;
+    .sidebar-header {
+        padding: 20px 16px !important;
     }
     
-    .menu-item .icon {
-        font-size: 26px !important;
+    .sidebar-logo {
+        width: 45px !important;
+        height: 45px !important;
     }
     
-    .menu-item .label {
-        font-size: 14px !important;
+    .sidebar-brand-name {
+        font-size: 1.2em !important;
     }
     
-    .bottom-logo-container {
-        width: 70px !important;
-        height: 70px !important;
-    }
-    
-    .bottom-logo-img {
-        width: 60px !important;
-        height: 60px !important;
-    }
-    
-    /* ملف المستخدم في القائمة الجانبية - تحسينات للموبايل */
     .sidebar-user-profile {
-        padding: 15px 12px !important;
-        margin: 5px 8px !important;
-    }
-    
-    .sidebar-user-avatar {
-        width: 50px !important;
-        height: 50px !important;
+        padding: 15px 16px !important;
     }
     
     .sidebar-username {
-        font-size: 13px !important;
+        font-size: 1em !important;
     }
     
-    .sidebar-role {
-        font-size: 10px !important;
+    .sidebar-nav {
+        padding: 12px 10px !important;
     }
     
-    .sidebar-balance {
-        padding: 6px 12px !important;
+    .menu-item {
+        padding: 12px 14px !important;
+        gap: 12px !important;
     }
     
-    .sidebar-balance-value {
-        font-size: 14px !important;
+    .menu-icon {
+        font-size: 1.3em !important;
+        width: 28px !important;
+    }
+    
+    .menu-label {
+        font-size: 0.9em !important;
+    }
+    
+    .sidebar-footer {
+        padding: 12px 16px 20px !important;
+    }
+    
+    .sidebar-logout-btn {
+        padding: 12px 16px !important;
+        font-size: 0.9em !important;
     }
 
     .container {
@@ -1942,10 +1996,6 @@ input:checked + .slider:before {
         padding-top: 70px !important;
     }
     
-    .logo {
-        display: none !important;
-    }
-    
     .main-content {
         width: 100% !important;
         padding: 15px !important;
@@ -1954,8 +2004,9 @@ input:checked + .slider:before {
     }
     
     .header {
-        padding: 10px !important;
+        padding: 10px 15px !important;
         flex-wrap: wrap;
+        background: linear-gradient(135deg, rgba(10, 22, 40, 0.98), rgba(30, 58, 95, 0.95));
     }
     
     .header-top {

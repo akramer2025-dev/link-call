@@ -2434,40 +2434,59 @@ if (updateProfileBtn) {
     });
 }
 
+// وظيفة تسجيل الخروج المشتركة
+async function performLogout() {
+    if (confirm('هل تريد تسجيل الخروج؟')) {
+        // تسجيل وقت الخروج
+        try {
+            const employeeId = localStorage.getItem('employeeId');
+            const employeeName = localStorage.getItem('employeeName');
+            const baseUrl = window.location.origin;
+            
+            await fetch(`${baseUrl}/work-tracking`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'logout',
+                    employeeId: employeeId,
+                    employeeName: employeeName
+                })
+            });
+        } catch (error) {
+            console.error('خطأ في تسجيل وقت الخروج:', error);
+        }
+        
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('username');
+        sessionStorage.removeItem('userRole');
+        sessionStorage.removeItem('fullname');
+        sessionStorage.removeItem('permissions');
+        window.location.href = 'login.html';
+    }
+}
+
 // زر تسجيل الخروج في الهيدر
 const logoutHeaderBtn = document.getElementById('logout-header-btn');
 if (logoutHeaderBtn) {
-    logoutHeaderBtn.addEventListener('click', async () => {
-        if (confirm('هل تريد تسجيل الخروج؟')) {
-            // تسجيل وقت الخروج
-            try {
-                const employeeId = localStorage.getItem('employeeId');
-                const employeeName = localStorage.getItem('employeeName');
-                const baseUrl = window.location.origin;
-                
-                await fetch(`${baseUrl}/work-tracking`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'logout',
-                        employeeId: employeeId,
-                        employeeName: employeeName
-                    })
-                });
-            } catch (error) {
-                console.error('خطأ في تسجيل وقت الخروج:', error);
-            }
-            
-            sessionStorage.removeItem('isLoggedIn');
-            sessionStorage.removeItem('username');
-            sessionStorage.removeItem('userRole');
-            sessionStorage.removeItem('fullname');
-            sessionStorage.removeItem('permissions');
-            window.location.href = 'login.html';
-        }
-    });
+    logoutHeaderBtn.addEventListener('click', performLogout);
+}
+
+// زر تسجيل الخروج في القائمة الجانبية
+const sidebarLogoutBtn = document.getElementById('sidebar-logout-btn');
+if (sidebarLogoutBtn) {
+    sidebarLogoutBtn.addEventListener('click', performLogout);
+}
+
+// إظهار زر لوحة التحكم في القائمة الجانبية للأدمن
+const sidebarAdminBtn = document.getElementById('sidebar-admin-btn');
+if (sidebarAdminBtn) {
+    const role = sessionStorage.getItem('userRole');
+    const username = sessionStorage.getItem('username');
+    if (role === 'admin' || username === 'akram') {
+        sidebarAdminBtn.style.display = 'flex';
+    }
 }
 
 // معالجة زر الحذف

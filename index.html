@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="Link Call">
     <link rel="apple-touch-icon" href="/icon-192.png">
     
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
     <!-- Twilio Voice SDK v2.11 from unpkg -->
     <script src="https://unpkg.com/@twilio/voice-sdk@2.11.2/dist/twilio.min.js"></script>
 </head>
@@ -70,11 +70,17 @@
     
     <!-- الشريط الجانبي (خارج الكونتينر) -->
     <div class="sidebar" id="sidebar">
+        <!-- هيدر القائمة الجانبية -->
+        <div class="sidebar-header">
+            <img src="icon-512.png?v=2" alt="Link Call" class="sidebar-logo">
+            <div class="sidebar-brand">
+                <span class="sidebar-brand-name">Link Call</span>
+                <span class="sidebar-brand-tagline">نظام المكالمات السحابي</span>
+            </div>
+        </div>
+        
         <!-- معلومات المستخدم في القائمة الجانبية -->
         <div class="sidebar-user-profile">
-            <div class="sidebar-user-avatar">
-                <img src="icon-512.png?v=2" alt="User" class="sidebar-avatar-img">
-            </div>
             <div class="sidebar-user-info">
                 <span class="sidebar-username" id="sidebar-username">--</span>
                 <span class="sidebar-role" id="sidebar-role">--</span>
@@ -88,42 +94,63 @@
         
         <div class="sidebar-divider"></div>
         
-        <div class="menu-item active" id="dialpad-btn">
-            <div class="icon">📞</div>
-            <div class="label">لوحة المفاتيح</div>
-        </div>
+        <!-- قائمة التنقل -->
+        <nav class="sidebar-nav">
+            <div class="menu-item active" id="dialpad-btn">
+                <div class="menu-icon">📞</div>
+                <div class="menu-label">لوحة المفاتيح</div>
+                <div class="menu-arrow">←</div>
+            </div>
+            
+            <div class="menu-item" id="contacts-btn">
+                <div class="menu-icon">👥</div>
+                <div class="menu-label">جهات الاتصال</div>
+                <div class="menu-arrow">←</div>
+            </div>
+            
+            <div class="menu-item" id="call-history-btn">
+                <div class="menu-icon">📅</div>
+                <span class="menu-badge hidden" id="call-history-badge">0</span>
+                <div class="menu-label">سجل المكالمات</div>
+                <div class="menu-arrow">←</div>
+            </div>
+            
+            <div class="menu-item" id="recordings-btn">
+                <div class="menu-icon">🎙️</div>
+                <span class="menu-badge hidden" id="recordings-badge">0</span>
+                <div class="menu-label">المحفوظات</div>
+                <div class="menu-arrow">←</div>
+            </div>
+            
+            <div class="menu-item" id="settings-btn">
+                <div class="menu-icon">⚙️</div>
+                <div class="menu-label">الإعدادات</div>
+                <div class="menu-arrow">←</div>
+            </div>
+            
+            <!-- زر لوحة التحكم - للأدمن فقط -->
+            <a href="admin.html" class="menu-item admin-menu-item" id="sidebar-admin-btn" style="display: none;">
+                <div class="menu-icon">🛠️</div>
+                <div class="menu-label">لوحة التحكم</div>
+                <div class="menu-arrow">←</div>
+            </a>
+            
+            <!-- زر تثبيت التطبيق -->
+            <div class="menu-item install-menu-item" id="install-app-btn" style="display: none;">
+                <div class="menu-icon">📲</div>
+                <div class="menu-label">تثبيت التطبيق</div>
+                <div class="menu-arrow">←</div>
+            </div>
+        </nav>
         
-        <div class="menu-item" id="contacts-btn">
-            <div class="icon">👥</div>
-            <div class="label">جهات الاتصال</div>
-        </div>
+        <div class="sidebar-divider"></div>
         
-        <div class="menu-item" id="call-history-btn">
-            <div class="icon">📅</div>
-            <span class="badge hidden" id="call-history-badge">0</span>
-            <div class="label">سجل المكالمات</div>
-        </div>
-        
-        <div class="menu-item" id="recordings-btn">
-            <div class="icon notification">🎙️</div>
-            <span class="badge hidden" id="recordings-badge">0</span>
-            <div class="label">المحفوظات</div>
-        </div>
-        
-        <div class="menu-item" id="settings-btn">
-            <div class="icon">⚙️</div>
-            <div class="label">الإعدادات</div>
-        </div>
-        
-        <!-- زر تثبيت التطبيق -->
-        <div class="menu-item" id="install-app-btn" style="display: none;">
-            <div class="icon">📲</div>
-            <div class="label">تثبيت التطبيق</div>
-        </div>
-        
-        <div class="bottom-logo-container">
-            <img src="icon-512.png?v=2" alt="Link Call" class="bottom-logo-img">
-            <div class="online-indicator"></div>
+        <!-- زر تسجيل الخروج -->
+        <div class="sidebar-footer">
+            <button class="sidebar-logout-btn" id="sidebar-logout-btn">
+                <span class="logout-icon">🚪</span>
+                <span class="logout-text">تسجيل الخروج</span>
+            </button>
         </div>
     </div>
     
@@ -673,7 +700,7 @@
         }
     </script>
     <!-- App Script - REST API Mode -->
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
     
     <script>
         // إنشاء النجوم المتحركة

@@ -5,12 +5,17 @@ const path = require('path');
 const https = require('https');
 const fs = require('fs');
 
-// Vercel KV للتخزين السحابي
-let kv;
+// Upstash Redis للتخزين السحابي
+let redis;
 try {
-    kv = require('@vercel/kv').kv;
+    const { Redis } = require('@upstash/redis');
+    redis = new Redis({
+        url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+    console.log('✅ Upstash Redis متصل');
 } catch (error) {
-    console.log('⚠️ Vercel KV غير متاح (تشغيل محلي)');
+    console.log('⚠️ Upstash Redis غير متاح (تشغيل محلي)');
 }
 
 const app = express();
@@ -126,23 +131,22 @@ try {
     employeesData = JSON.parse(data);
     console.log('✅ تم تحميل بيانات المديرين من الملف');
 } catch (error) {
-    console.log('⚠️ سيتم استخدام KV للتخزين');
+    console.log('⚠️ سيتم استخدام Redis للتخزين');
 }
 
-// دوال مساعدة للتعامل مع KV أو الملف
+// دوال مساعدة للتعامل مع Redis أو الملف
 async function getEmployeesData() {
-    // على Vercel نحاول KV أولاً، وإذا فشل نرجع البيانات الافتراضية
-    if (process.env.VERCEL) {
-        if (kv) {
-            try {
-                const data = await kv.get('employees_data');
-                if (data && data.employees && data.employees.length > 0) {
-                    return data;
-                }
-                console.log('⚠️ KV فارغ، استخدام البيانات الافتراضية');
-            } catch (error) {
-                console.error('❌ خطأ في قراءة KV:', error);
+    // على Vercel نحاول Redis أولاً
+    if (process.env.VERCEL && redis) {
+        try {
+            const data = await redis.get('employees_data');
+            if (data && data.employees && data.employees.length > 0) {
+                console.log('✅ تم جلب البيانات من Redis:', data.employees.length, 'موظف');
+                return data;
             }
+            console.log('⚠️ Redis فارغ، استخدام البيانات الافتراضية');
+        } catch (error) {
+            console.error('❌ خطأ في قراءة Redis:', error);
         }
         // إرجاع البيانات المدمجة في الكود
         return employeesData;
@@ -155,21 +159,21 @@ async function saveEmployeesData(data) {
     console.log('💾 محاولة حفظ البيانات...', {
         employeesCount: data.employees.length,
         isVercel: !!process.env.VERCEL,
-        hasKV: !!kv
+        hasRedis: !!redis
     });
     
-    if (kv && process.env.VERCEL) {
+    if (redis && process.env.VERCEL) {
         try {
-            await kv.set('employees_data', data);
-            console.log('✅ تم حفظ البيانات في Vercel KV بنجاح');
+            await redis.set('employees_data', data);
+            console.log('✅ تم حفظ البيانات في Upstash Redis بنجاح');
             
             // التحقق من الحفظ
-            const saved = await kv.get('employees_data');
+            const saved = await redis.get('employees_data');
             console.log('✅ تم التحقق: عدد المديرين المحفوظين:', saved?.employees?.length || 0);
             
             return true;
         } catch (error) {
-            console.error('❌ خطأ في حفظ KV:', error);
+            console.error('❌ خطأ في حفظ Redis:', error);
             return false;
         }
     } else {
@@ -398,15 +402,15 @@ app.all('/simple-dial', (req, res) => {
 
 // TwiML للمكالمات الصادرة من المتصفح (Voice URL لـ TwiML App)
 // حفظ معرفات المديرين للمكالمات (في الذاكرة مؤقتاً)
-// تخزين علاقة المكالمات بالمديرين في Vercel KV
+// تخزين علاقة المكالمات بالمديرين في Redis
 async function saveCallEmployeeMapping(callSid, employeeId, toNumber = null) {
     try {
-        if (kv) {
+        if (redis) {
             const data = { employeeId };
             if (toNumber) {
                 data.to = toNumber;
             }
-            await kv.set(`call:${callSid}`, JSON.stringify(data), { ex: 604800 }); // حفظ لمدة 7 أيام
+            await redis.set(`call:${callSid}`, JSON.stringify(data), { ex: 604800 }); // حفظ لمدة 7 أيام
             console.log(`✅ حفظ علاقة المكالمة ${callSid} بالمدير ${employeeId}${toNumber ? ' ورقم ' + toNumber : ''}`);
         }
     } catch (error) {
@@ -416,8 +420,8 @@ async function saveCallEmployeeMapping(callSid, employeeId, toNumber = null) {
 
 async function getCallEmployeeId(callSid) {
     try {
-        if (kv) {
-            const data = await kv.get(`call:${callSid}`);
+        if (redis) {
+            const data = await redis.get(`call:${callSid}`);
             if (data) {
                 // التعامل مع البيانات القديمة (نص فقط) والجديدة (JSON)
                 try {
@@ -976,7 +980,10 @@ app.get('/employees', async (req, res) => {
 // إضافة مدير جديد
 app.post('/employees', async (req, res) => {
     try {
-        const { username, password, fullname, phone, department } = req.body;
+        const { username, password, fullname, name, phone, department, permissions } = req.body;
+        const employeeName = fullname || name; // قبول كلا الاسمين
+        
+        console.log('📝 إضافة مدير جديد:', { username, employeeName, department });
         
         const data = await getEmployeesData();
         
@@ -986,15 +993,26 @@ app.post('/employees', async (req, res) => {
             return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل' });
         }
         
+        // إنشاء ID جديد بشكل صحيح (أعلى ID موجود + 1)
+        const maxId = data.employees.reduce((max, emp) => Math.max(max, emp.id || 0), 0);
+        
         const newEmployee = {
-            id: data.employees.length + 1,
+            id: maxId + 1,
             username,
             password,
-            fullname,
-            phone,
+            fullname: employeeName,
+            name: employeeName,
+            phone: phone || '',
             department,
             departmentArabic: data.departments[department]?.name || 'غير محدد',
-            role: 'employee'
+            role: 'employee',
+            permissions: permissions || {
+                viewOwnRecordings: false,
+                viewAllRecordings: false,
+                deleteRecordings: false,
+                editProfile: false
+            },
+            createdAt: new Date().toISOString()
         };
         
         data.employees.push(newEmployee);
@@ -1007,8 +1025,14 @@ app.post('/employees', async (req, res) => {
         }
         
         // حفظ البيانات
-        await saveEmployeesData(data);
+        const saved = await saveEmployeesData(data);
         
+        if (!saved) {
+            console.error('❌ فشل في حفظ البيانات للمدير:', username);
+            return res.status(500).json({ error: 'فشل في حفظ البيانات' });
+        }
+        
+        console.log('✅ تمت إضافة المدير بنجاح:', newEmployee.username, 'ID:', newEmployee.id);
         res.json({ success: true, employee: newEmployee });
     } catch (error) {
         console.error('خطأ في إضافة مدير:', error);
@@ -1017,32 +1041,32 @@ app.post('/employees', async (req, res) => {
 });
 
 // تسجيل دخول المدير
-// تهيئة KV من الملف (للمطور فقط)
+// تهيئة Redis بالبيانات الافتراضية (للمطور فقط)
 app.get('/init-kv', async (req, res) => {
-    if (!kv || !process.env.VERCEL) {
-        return res.json({ error: 'KV غير متاح (تشغيل محلي)', data: employeesData });
+    if (!redis || !process.env.VERCEL) {
+        return res.json({ error: 'Redis غير متاح (تشغيل محلي)', data: employeesData });
     }
     
     try {
-        console.log('🔄 تهيئة Vercel KV بالبيانات الافتراضية...');
+        console.log('🔄 تهيئة Upstash Redis بالبيانات الافتراضية...');
         console.log('📊 عدد المديرين المراد حفظهم:', employeesData.employees.length);
         
-        // حفظ مباشر في KV
-        await kv.set('employees_data', employeesData);
-        console.log('✅ تم الحفظ في KV');
+        // حفظ مباشر في Redis
+        await redis.set('employees_data', employeesData);
+        console.log('✅ تم الحفظ في Redis');
         
         // التحقق من الحفظ
-        const saved = await kv.get('employees_data');
+        const saved = await redis.get('employees_data');
         console.log('✅ تم التحقق: عدد المديرين المحفوظين:', saved?.employees?.length || 0);
         
         return res.json({
             success: true,
-            message: 'تم تهيئة KV بنجاح',
+            message: 'تم تهيئة Redis بنجاح',
             employeesCount: saved?.employees?.length || 0,
             employees: saved?.employees || []
         });
     } catch (error) {
-        console.error('❌ خطأ في تهيئة KV:', error);
+        console.error('❌ خطأ في تهيئة Redis:', error);
         res.status(500).json({ 
             error: error.message,
             stack: error.stack,
@@ -1306,16 +1330,16 @@ if (!process.env.VERCEL) {
 // دوال مساعدة لقراءة وحفظ جهات الاتصال
 async function getContactsData() {
     if (process.env.VERCEL) {
-        // على Vercel نحاول KV أولاً
-        if (kv) {
+        // على Vercel نحاول Redis أولاً
+        if (redis) {
             try {
-                const data = await kv.get('contacts_data');
+                const data = await redis.get('contacts_data');
                 if (data) {
-                    console.log('✅ تم تحميل جهات الاتصال من KV');
+                    console.log('✅ تم تحميل جهات الاتصال من Redis');
                     return data;
                 }
             } catch (error) {
-                console.error('خطأ في قراءة جهات الاتصال من KV:', error);
+                console.error('خطأ في قراءة جهات الاتصال من Redis:', error);
             }
         }
         // إرجاع البيانات الفارغة إذا لم توجد
@@ -1326,16 +1350,16 @@ async function getContactsData() {
 
 async function saveContactsData(data) {
     if (process.env.VERCEL) {
-        // على Vercel استخدم KV فقط
-        if (!kv) {
-            throw new Error('Vercel KV غير متاح');
+        // على Vercel استخدم Redis فقط
+        if (!redis) {
+            throw new Error('Redis غير متاح');
         }
         try {
-            await kv.set('contacts_data', data);
-            console.log('✅ تم حفظ جهات الاتصال في KV');
+            await redis.set('contacts_data', data);
+            console.log('✅ تم حفظ جهات الاتصال في Redis');
             return true;
         } catch (error) {
-            console.error('خطأ في حفظ جهات الاتصال في KV:', error);
+            console.error('خطأ في حفظ جهات الاتصال في Redis:', error);
             throw error;
         }
     } else {

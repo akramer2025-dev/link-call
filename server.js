@@ -48,6 +48,13 @@ async function getEmployeesData() {
             return employeesData;
         }
     }
+    // للتشغيل المحلي: قراءة من الملف للتأكد من أحدث البيانات
+    try {
+        const data = fs.readFileSync(path.join(__dirname, 'employees.json'), 'utf8');
+        employeesData = JSON.parse(data);
+    } catch (error) {
+        console.log('⚠️ استخدام البيانات من الذاكرة');
+    }
     return employeesData;
 }
 
@@ -55,6 +62,7 @@ async function saveEmployeesData(data) {
     if (kv && process.env.VERCEL) {
         try {
             await kv.set('employees_data', data);
+            console.log('✅ تم حفظ البيانات في KV');
             return true;
         } catch (error) {
             console.error('خطأ في حفظ KV:', error);
@@ -63,14 +71,14 @@ async function saveEmployeesData(data) {
     } else {
         // حفظ في ملف للتشغيل المحلي
         try {
-            fs.writeFileSync(
-                path.join(__dirname, 'employees.json'),
-                JSON.stringify(data, null, 2)
-            );
-            employeesData = data;
+            const filePath = path.join(__dirname, 'employees.json');
+            fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+            employeesData = data; // تحديث الذاكرة
+            console.log('✅ تم حفظ البيانات في الملف:', filePath);
+            console.log('📊 عدد المديرين بعد الحفظ:', data.employees.length);
             return true;
         } catch (error) {
-            console.error('خطأ في حفظ الملف:', error);
+            console.error('❌ خطأ في حفظ الملف:', error);
             return false;
         }
     }
@@ -93,10 +101,13 @@ if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
     console.error('TWILIO_PHONE_NUMBER=your_twilio_number');
 }
 
-// تهيئة عميل Twilio (فقط إذا كانت البيانات موجودة)
+// تهيئة عميل Twilio (فقط إذا كانت البيانات صحيحة)
 let twilioClient;
-if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) {
+if (TWILIO_ACCOUNT_SID && TWILIO_ACCOUNT_SID.startsWith('AC') && TWILIO_AUTH_TOKEN) {
     twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+    console.log('✅ تم تهيئة Twilio بنجاح');
+} else {
+    console.log('⚠️ Twilio غير مهيأ - المكالمات لن تعمل');
 }
 
 // Middleware
@@ -770,7 +781,10 @@ app.get('/employees', async (req, res) => {
 // إضافة مدير جديد
 app.post('/employees', async (req, res) => {
     try {
-        const { username, password, fullname, phone, department } = req.body;
+        const { username, password, fullname, name, phone, department, permissions } = req.body;
+        const employeeName = fullname || name; // قبول كلا الاسمين
+        
+        console.log('📝 إضافة مدير جديد:', { username, employeeName, department });
         
         const data = await getEmployeesData();
         
@@ -780,15 +794,25 @@ app.post('/employees', async (req, res) => {
             return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل' });
         }
         
+        // إنشاء ID جديد بشكل صحيح (أعلى ID موجود + 1)
+        const maxId = data.employees.reduce((max, emp) => Math.max(max, emp.id || 0), 0);
+        
         const newEmployee = {
-            id: data.employees.length + 1,
+            id: maxId + 1,
             username,
             password,
-            fullname,
-            phone,
+            fullname: employeeName,
+            name: employeeName,
+            phone: phone || '',
             department,
             departmentArabic: data.departments[department]?.name || 'غير محدد',
-            role: 'employee'
+            role: 'employee',
+            permissions: permissions || {
+                viewOwnRecordings: false,
+                viewAllRecordings: false,
+                deleteRecordings: false,
+                editProfile: false
+            }
         };
         
         data.employees.push(newEmployee);
@@ -801,8 +825,14 @@ app.post('/employees', async (req, res) => {
         }
         
         // حفظ البيانات
-        await saveEmployeesData(data);
+        const saved = await saveEmployeesData(data);
         
+        if (!saved) {
+            console.error('❌ فشل في حفظ البيانات للمدير:', username);
+            return res.status(500).json({ error: 'فشل في حفظ البيانات' });
+        }
+        
+        console.log('✅ تمت إضافة المدير بنجاح:', newEmployee.username, 'ID:', newEmployee.id);
         res.json({ success: true, employee: newEmployee });
     } catch (error) {
         console.error('خطأ في إضافة مدير:', error);

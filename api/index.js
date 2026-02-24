@@ -1601,7 +1601,10 @@ app.delete('/admin/delete-call', async (req, res) => {
     }
 });
 
-// تحويل الصوت إلى نص (Speech-to-Text)
+// OpenAI API Key للتحويل الصوتي
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+// تحويل الصوت إلى نص باستخدام OpenAI Whisper
 app.post('/admin/transcribe', async (req, res) => {
     try {
         const { recordingSid } = req.body;
@@ -1615,45 +1618,69 @@ app.post('/admin/transcribe', async (req, res) => {
             return res.status(500).json({ error: 'خدمة Twilio غير متاحة' });
         }
         
-        // جلب URL التسجيل
-        const recording = await twilioClient.recordings(recordingSid).fetch();
-        const recordingUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Recordings/${recordingSid}.mp3`;
-        
-        // ملاحظة: Twilio يقدم خدمة Transcription مدمجة
-        // يمكن استخدامها أو استخدام خدمة خارجية مثل Google Speech-to-Text
-        
-        // محاولة استخدام Twilio Transcription
-        try {
-            const transcriptions = await twilioClient.recordings(recordingSid).transcriptions.list();
-            
-            if (transcriptions.length > 0) {
-                const transcript = await twilioClient.transcriptions(transcriptions[0].sid).fetch();
-                return res.json({
-                    success: true,
-                    transcript: transcript.transcriptionText || 'لم يتم التعرف على نص'
-                });
-            }
-            
-            // إنشاء transcription جديد
-            await twilioClient.recordings(recordingSid).transcriptions.create();
-            
+        // التحقق من OpenAI API Key
+        if (!OPENAI_API_KEY) {
             return res.json({
                 success: true,
-                transcript: 'جاري معالجة التسجيل... يرجى المحاولة مرة أخرى بعد دقائق.',
-                pending: true
-            });
-        } catch (transcriptionError) {
-            console.log('Twilio Transcription غير متاح، جاري استخدام بديل...');
-            
-            // رسالة بديلة
-            return res.json({
-                success: true,
-                transcript: '⚠️ خدمة تحويل الصوت إلى نص غير متاحة حالياً. يمكنك تفعيل Twilio Intelligence أو خدمة Google Speech-to-Text للحصول على هذه الميزة.',
-                note: 'لتفعيل هذه الميزة، راجع وثائق Twilio Voice Intelligence'
+                transcript: '⚠️ خدمة تحويل الصوت إلى نص غير مفعّلة. أضف OPENAI_API_KEY في متغيرات البيئة.',
+                note: 'احصل على API Key من https://platform.openai.com/api-keys'
             });
         }
+        
+        console.log('🎙️ بدء تحويل التسجيل:', recordingSid);
+        
+        // جلب ملف التسجيل من Twilio
+        const recordingUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Recordings/${recordingSid}.mp3`;
+        const authHeader = 'Basic ' + Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
+        
+        // تحميل ملف الصوت
+        const audioResponse = await fetch(recordingUrl, {
+            headers: { 'Authorization': authHeader }
+        });
+        
+        if (!audioResponse.ok) {
+            throw new Error('فشل في تحميل ملف التسجيل');
+        }
+        
+        const audioBuffer = await audioResponse.arrayBuffer();
+        console.log('📥 تم تحميل الملف، الحجم:', audioBuffer.byteLength, 'bytes');
+        
+        // إرسال إلى OpenAI Whisper API
+        const FormData = require('form-data');
+        const formData = new FormData();
+        formData.append('file', Buffer.from(audioBuffer), {
+            filename: `${recordingSid}.mp3`,
+            contentType: 'audio/mpeg'
+        });
+        formData.append('model', 'whisper-1');
+        formData.append('language', 'ar'); // اللغة العربية
+        formData.append('response_format', 'json');
+        
+        const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                ...formData.getHeaders()
+            },
+            body: formData
+        });
+        
+        if (!whisperResponse.ok) {
+            const error = await whisperResponse.json().catch(() => ({}));
+            console.error('❌ خطأ Whisper:', error);
+            throw new Error(error.error?.message || 'فشل في تحويل الصوت');
+        }
+        
+        const result = await whisperResponse.json();
+        console.log('✅ تم تحويل التسجيل بنجاح');
+        
+        return res.json({
+            success: true,
+            transcript: result.text || 'لم يتم التعرف على نص'
+        });
+        
     } catch (error) {
-        console.error('خطأ في تحويل الصوت إلى نص:', error);
+        console.error('❌ خطأ في تحويل الصوت إلى نص:', error);
         res.status(500).json({ error: error.message });
     }
 });

@@ -387,9 +387,15 @@ async function makeCall() {
         
         const employeeId = localStorage.getItem('employeeId') || 'unknown';
         
+        // الحصول على رقم المتصل المختار
+        const callerIdSelect = document.getElementById('caller-id-select');
+        const selectedCallerId = callerIdSelect ? callerIdSelect.value : 'default';
+        console.log('📱 رقم المتصل المختار:', selectedCallerId);
+        
         const params = {
             To: formattedNumber,
-            employeeId: employeeId  // إرسال معرف المدير
+            employeeId: employeeId,  // إرسال معرف المدير
+            callerId: selectedCallerId  // إرسال رقم المتصل المختار
         };
         
         console.log('👤 معرف المدير للمكالمة:', employeeId);

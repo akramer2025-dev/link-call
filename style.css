@@ -440,6 +440,48 @@ body::before {
     margin-top: 2px;
 }
 
+/* اختيار رقم الاتصال */
+.caller-id-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px 15px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.caller-id-selector label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.caller-id-dropdown {
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    background: white;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    min-width: 150px;
+    transition: all 0.3s ease;
+}
+
+.caller-id-dropdown:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(108, 92, 231, 0.2);
+}
+
+.caller-id-dropdown:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
 .call-btn {
     width: 58px;
     height: 58px;

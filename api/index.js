@@ -198,8 +198,19 @@ const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const TWILIO_TWIML_APP_SID = process.env.TWILIO_TWIML_APP_SID;
 const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
+const TWILIO_PHONE_NUMBER_EGYPT = process.env.TWILIO_PHONE_NUMBER_EGYPT || '+201555512778'; // الرقم المصري
 const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
 const TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
+
+// دالة للحصول على رقم المتصل المناسب
+function getCallerIdNumber(callerId) {
+    if (callerId === 'egypt') {
+        console.log('📱 استخدام الرقم المصري:', TWILIO_PHONE_NUMBER_EGYPT);
+        return TWILIO_PHONE_NUMBER_EGYPT;
+    }
+    console.log('📱 استخدام الرقم السعودي:', TWILIO_PHONE_NUMBER);
+    return TWILIO_PHONE_NUMBER;
+}
 
 if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
     console.error('❌ خطأ: يجب تعيين متغيرات Twilio في ملف .env');
@@ -442,9 +453,11 @@ async function getCallEmployeeId(callSid) {
 app.post('/outgoing-call', (req, res) => {
     let toNumber = req.body.To;
     const employeeId = req.body.employeeId || 'unknown';
+    const callerIdChoice = req.body.callerId || 'default'; // الحصول على اختيار رقم المتصل
     
     console.log('📞 اتصال صادر من المتصفح - الرقم الأصلي:', toNumber);
     console.log('👤 معرف المدير:', employeeId);
+    console.log('📱 رقم المتصل المختار:', callerIdChoice);
     
     // تنظيف الرقم فقط - بدون تحويل
     if (toNumber) {
@@ -470,9 +483,12 @@ app.post('/outgoing-call', (req, res) => {
     
     const twiml = new twilio.twiml.VoiceResponse();
     
+    // الحصول على رقم المتصل المناسب
+    const selectedCallerNumber = getCallerIdNumber(callerIdChoice);
+    
     if (toNumber) {
         const dial = twiml.dial({
-            callerId: TWILIO_PHONE_NUMBER,
+            callerId: selectedCallerNumber,
             record: 'record-from-answer',
             recordingStatusCallback: `/recording-status?employeeId=${employeeId}&to=${encodeURIComponent(toNumber)}`,
             recordingStatusCallbackEvent: ['completed'],

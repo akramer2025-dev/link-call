@@ -1,9 +1,9 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Call - Ù…ÙƒØ§Ù„Ù…Ø© Ù…Ø¨Ø§Ø´Ø±Ø©</title>
+    <title>Link Call - ãßÇáãÉ ãÈÇÔÑÉ</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -49,7 +49,7 @@
         
         .phone-number {
             font-size: 28px;
-            color: #667eea;
+            color: #5ec4d4;
             font-weight: bold;
             margin: 20px 0;
             direction: ltr;
@@ -69,7 +69,7 @@
         
         .loading-progress {
             height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #5ec4d4, #1e3a5f);
             animation: loading 1.5s infinite;
         }
         
@@ -97,20 +97,20 @@
 </head>
 <body>
     <div class="redirect-container">
-        <div class="icon">ðŸ“ž</div>
+        <div class="icon">??</div>
         <h1>Link Call</h1>
-        <div class="phone-number" id="phone-display">Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...</div>
+        <div class="phone-number" id="phone-display">ÌÇÑí ÇáÊÍãíá...</div>
         <div class="loading">
             <div class="loading-bar">
                 <div class="loading-progress"></div>
             </div>
         </div>
-        <div class="message">Ø¬Ø§Ø±ÙŠ ØªØ­Ø¶ÙŠØ± Ø§Ù„Ù…ÙƒØ§Ù„Ù…Ø©...</div>
+        <div class="message">ÌÇÑí ÊÍÖíÑ ÇáãßÇáãÉ...</div>
         <div class="error" id="error-message"></div>
     </div>
 
     <script>
-        // Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ù…Ø¹Ø§Ù…Ù„Ø§Øª URL
+        // ÇáÍÕæá Úáì ãÚÇãáÇÊ URL
         const urlParams = new URLSearchParams(window.location.search);
         const phoneNumber = urlParams.get('phone') || urlParams.get('number');
         const employeeId = urlParams.get('employeeId');
@@ -119,22 +119,22 @@
         const phoneDisplay = document.getElementById('phone-display');
         const errorMessage = document.getElementById('error-message');
         
-        // Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ÙˆØ¬ÙˆØ¯ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ
+        // ÇáÊÍÞÞ ãä æÌæÏ ÑÞã ÇáåÇÊÝ
         if (!phoneNumber) {
-            errorMessage.textContent = 'Ø®Ø·Ø£: Ù„Ù… ÙŠØªÙ… ØªÙˆÙÙŠØ± Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ';
+            errorMessage.textContent = 'ÎØÃ: áã íÊã ÊæÝíÑ ÑÞã ÇáåÇÊÝ';
             errorMessage.style.display = 'block';
-            phoneDisplay.textContent = 'Ø±Ù‚Ù… ØºÙŠØ± Ù…ØªÙˆÙØ±';
+            phoneDisplay.textContent = 'ÑÞã ÛíÑ ãÊæÝÑ';
         } else {
             phoneDisplay.textContent = phoneNumber;
             
-            // ØªØ³Ø¬ÙŠÙ„ Ø¯Ø®ÙˆÙ„ ØªÙ„Ù‚Ø§Ø¦ÙŠ ÙˆØªØ¬Ù‡ÙŠØ² Ø§Ù„Ø¬Ù„Ø³Ø©
+            // ÊÓÌíá ÏÎæá ÊáÞÇÆí æÊÌåíÒ ÇáÌáÓÉ
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('username', 'crm_user');
             sessionStorage.setItem('userRole', 'crm');
-            sessionStorage.setItem('fullname', 'Ù…Ø³ØªØ®Ø¯Ù… CRM');
+            sessionStorage.setItem('fullname', 'ãÓÊÎÏã CRM');
             sessionStorage.setItem('canViewRecordings', 'false');
             
-            // Ø­ÙØ¸ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…ÙˆØ¸Ù Ø¥Ø°Ø§ ÙƒØ§Ù†Øª Ù…ÙˆØ¬ÙˆØ¯Ø©
+            // ÍÝÙ ÈíÇäÇÊ ÇáãæÙÝ ÅÐÇ ßÇäÊ ãæÌæÏÉ
             if (employeeId) {
                 localStorage.setItem('employeeId', employeeId);
                 sessionStorage.setItem('employeeId', employeeId);
@@ -144,7 +144,7 @@
                 sessionStorage.setItem('fullname', employeeName);
             }
             
-            // Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„ØªÙˆØ¬ÙŠÙ‡ Ø¥Ù„Ù‰ Ø§Ù„ØµÙØ­Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ© Ù…Ø¹ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ
+            // ÅÚÇÏÉ ÇáÊæÌíå Åáì ÇáÕÝÍÉ ÇáÑÆíÓíÉ ãÚ ÑÞã ÇáåÇÊÝ
             setTimeout(() => {
                 const redirectUrl = `index.html?autoLogin=true&phone=${encodeURIComponent(phoneNumber)}` +
                     (employeeId ? `&employeeId=${encodeURIComponent(employeeId)}` : '') +

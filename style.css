@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -76,9 +76,9 @@ body::before {
 }
 
 :root {
-    --primary-color: #667eea;
+    --primary-color: #5ec4d4;
     --primary-dark: #5568d3;
-    --secondary-color: #764ba2;
+    --secondary-color: #1e3a5f;
     --accent-color: #f093fb;
     --success-color: #4facfe;
     --danger-color: #fa709a;
@@ -306,7 +306,7 @@ body::before {
 }
 
 .user-role-header {
-    color: #667eea;
+    color: #5ec4d4;
     font-size: 11px;
     font-weight: 500;
 }
@@ -342,7 +342,7 @@ body::before {
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #5ec4d4, #1e3a5f);
     color: white;
     border: none;
     border-radius: 10px;
@@ -628,7 +628,7 @@ body::before {
 
 .call-employee-name {
     font-size: 16px;
-    color: #667eea;
+    color: #5ec4d4;
     font-weight: 600;
     margin-bottom: 10px;
     padding: 8px 16px;
@@ -1162,7 +1162,7 @@ body::before {
 
 /* ========== قسم الرصيد ========== */
 .balance-display {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     padding: 20px;
     border-radius: 15px;
     text-align: center;
@@ -1475,7 +1475,7 @@ input:checked + .slider:before {
 }
 
 .employee-username {
-    color: #667eea;
+    color: #5ec4d4;
     font-size: 13px;
     font-weight: 500;
 }
@@ -1907,7 +1907,7 @@ input:checked + .slider:before {
 
 .btn-primary {
     padding: 10px 30px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -1927,7 +1927,7 @@ input:checked + .slider:before {
     display: block;
     width: 100%;
     padding: 15px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     color: white;
     border: none;
     border-radius: 12px;
@@ -1943,7 +1943,7 @@ input:checked + .slider:before {
 .btn-admin-dashboard:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    background: linear-gradient(135deg, #1e3a5f 0%, #5ec4d4 100%);
 }
 
 .admin-control-section {
@@ -1960,7 +1960,7 @@ input:checked + .slider:before {
 
 .summary-card {
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     color: white;
     border-radius: 10px;
     text-align: center;
@@ -1978,7 +1978,7 @@ input:checked + .slider:before {
 }
 
 .reports-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     color: white;
 }
 
@@ -2057,7 +2057,7 @@ input:checked + .slider:before {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     color: white;
     border-radius: 15px 15px 0 0;
 }
@@ -2107,7 +2107,7 @@ input:checked + .slider:before {
 
 .summary-item .value {
     font-size: 18px;
-    color: #667eea;
+    color: #5ec4d4;
     font-weight: bold;
 }
 
@@ -2277,7 +2277,7 @@ input:checked + .slider:before {
 }
 
 .pricing-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     color: white;
 }
 
@@ -2585,7 +2585,7 @@ input:checked + .slider:before {
 }
 
 .num-btn:hover {
-    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(180deg, #5ec4d4 0%, #1e3a5f 100%);
     transform: scale(1.05);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
@@ -2637,7 +2637,7 @@ input:checked + .slider:before {
 
 /* تحسين عرض الرقم */
 .phone-display {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     border-radius: 20px;
     padding: 20px 25px;
     margin-bottom: 20px;
@@ -2993,7 +2993,7 @@ input:checked + .slider:before {
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5ec4d4 0%, #1e3a5f 100%);
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -3039,7 +3039,7 @@ input:checked + .slider:before {
 
 .install-banner-btn {
     background: white;
-    color: #667eea;
+    color: #5ec4d4;
     border: none;
     padding: 10px 20px;
     border-radius: 25px;

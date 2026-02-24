@@ -312,6 +312,16 @@ app.get('/icon-192.png', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'icon-192.png'));
 });
 
+app.get('/manifest.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.sendFile(path.join(__dirname, '..', 'manifest.json'));
+});
+
+app.get('/service-worker.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.sendFile(path.join(__dirname, '..', 'service-worker.js'));
+});
+
 // توليد Token للعميل (للمكالمات من المتصفح مباشرة)
 app.get('/token', async (req, res) => {
     try {

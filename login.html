@@ -18,12 +18,21 @@
     <link rel="stylesheet" href="login-style.css">
 </head>
 <body>
+    <!-- خلفية الذكاء الاصطناعي -->
+    <div class="ai-background" id="ai-background">
+        <div class="ai-grid"></div>
+    </div>
     <div class="stars" id="stars"></div>
     
     <div class="login-container">
         <div class="login-box">
             <div class="logo-container">
-                <img src="icon-512.png" alt="Link Call" class="login-logo">
+                <div class="logo-wrapper">
+                    <div class="logo-ring"></div>
+                    <div class="logo-ring"></div>
+                    <div class="logo-ring"></div>
+                    <img src="icon-512.png" alt="Link Call" class="login-logo">
+                </div>
             </div>
             
             <h1>تسجيل الدخول</h1>
@@ -63,20 +72,64 @@
         // إنشاء النجوم
         function createStars() {
             const starsContainer = document.getElementById('stars');
-            const numberOfStars = 100;
+            const numberOfStars = 80;
             
             for (let i = 0; i < numberOfStars; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
                 star.style.left = Math.random() * 100 + '%';
                 star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 3 + 's';
-                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                star.style.animationDelay = Math.random() * 4 + 's';
+                star.style.animationDuration = (Math.random() * 3 + 3) + 's';
                 starsContainer.appendChild(star);
             }
         }
         
+        // إنشاء جزيئات الذكاء الاصطناعي
+        function createAIParticles() {
+            const aiBackground = document.getElementById('ai-background');
+            const numberOfParticles = 30;
+            
+            for (let i = 0; i < numberOfParticles; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'ai-particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                particle.style.width = (Math.random() * 6 + 3) + 'px';
+                particle.style.height = particle.style.width;
+                aiBackground.appendChild(particle);
+            }
+            
+            // إنشاء دوائر التقنية
+            for (let i = 0; i < 5; i++) {
+                const techCircle = document.createElement('div');
+                techCircle.className = 'tech-circle';
+                techCircle.style.left = Math.random() * 80 + 10 + '%';
+                techCircle.style.top = Math.random() * 80 + 10 + '%';
+                techCircle.style.width = (Math.random() * 100 + 50) + 'px';
+                techCircle.style.height = techCircle.style.width;
+                techCircle.style.animationDelay = Math.random() * 6 + 's';
+                techCircle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                aiBackground.appendChild(techCircle);
+            }
+            
+            // إنشاء خطوط الاتصال العصبي
+            for (let i = 0; i < 10; i++) {
+                const line = document.createElement('div');
+                line.className = 'neural-line';
+                line.style.left = Math.random() * 100 + '%';
+                line.style.top = Math.random() * 100 + '%';
+                line.style.width = (Math.random() * 200 + 100) + 'px';
+                line.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+                line.style.animationDelay = Math.random() * 3 + 's';
+                aiBackground.appendChild(line);
+            }
+        }
+        
         createStars();
+        createAIParticles();
         
         // معالجة تسجيل الدخول
         const loginForm = document.getElementById('login-form');

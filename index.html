@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="Link Call">
     <link rel="apple-touch-icon" href="/icon-192.png">
     
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4">
     <!-- Twilio Voice SDK v2.11 from unpkg -->
     <script src="https://unpkg.com/@twilio/voice-sdk@2.11.2/dist/twilio.min.js"></script>
 </head>
@@ -70,6 +70,24 @@
     
     <!-- الشريط الجانبي (خارج الكونتينر) -->
     <div class="sidebar" id="sidebar">
+        <!-- معلومات المستخدم في القائمة الجانبية -->
+        <div class="sidebar-user-profile">
+            <div class="sidebar-user-avatar">
+                <img src="icon-512.png?v=2" alt="User" class="sidebar-avatar-img">
+            </div>
+            <div class="sidebar-user-info">
+                <span class="sidebar-username" id="sidebar-username">--</span>
+                <span class="sidebar-role" id="sidebar-role">--</span>
+            </div>
+            <div class="sidebar-balance">
+                <span class="sidebar-balance-icon">💰</span>
+                <span class="sidebar-balance-value" id="sidebar-balance">--</span>
+                <span class="sidebar-balance-currency">$</span>
+            </div>
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
         <div class="menu-item active" id="dialpad-btn">
             <div class="icon">📞</div>
             <div class="label">لوحة المفاتيح</div>

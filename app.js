@@ -2196,18 +2196,28 @@ function displayUserInfo() {
     
     const headerUsername = document.getElementById('header-username');
     const headerRole = document.getElementById('header-role');
+    const sidebarUsername = document.getElementById('sidebar-username');
+    const sidebarRole = document.getElementById('sidebar-role');
+    
+    const displayName = fullname || username || 'مستخدم';
+    console.log('✅ عرض الاسم:', displayName);
     
     if (headerUsername) {
-        // تأكد من عرض الاسم بشكل صحيح
-        const displayName = fullname || username || 'مستخدم';
-        console.log('✅ عرض الاسم:', displayName);
         headerUsername.textContent = displayName;
     }
     
+    if (sidebarUsername) {
+        sidebarUsername.textContent = displayName;
+    }
+    
+    const roleText = role === 'admin' ? '👑 مطور' : '👨‍💼 مدير';
+    
     if (headerRole) {
-        // عرض الدور بدون تكرار الاسم
-        const roleText = role === 'admin' ? '👑 مطور' : '👨‍💼 مدير';
         headerRole.textContent = roleText;
+    }
+    
+    if (sidebarRole) {
+        sidebarRole.textContent = roleText;
     }
     
     // إظهار زر لوحة التحكم للأدمن فقط
@@ -2237,6 +2247,7 @@ async function loadAccountBalance() {
     // عناصر الهيدر
     const headerBalanceEl = document.getElementById('header-balance');
     const headerBalanceContainer = document.getElementById('balance-header');
+    const sidebarBalanceEl = document.getElementById('sidebar-balance');
     
     try {
         if (balanceEl) {
@@ -2261,6 +2272,11 @@ async function loadAccountBalance() {
             // تحديث الهيدر
             if (headerBalanceEl) {
                 headerBalanceEl.textContent = balance;
+            }
+            
+            // تحديث القائمة الجانبية
+            if (sidebarBalanceEl) {
+                sidebarBalanceEl.textContent = balance;
             }
             
             // حفظ رابط الشحن

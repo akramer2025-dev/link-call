@@ -2318,3 +2318,417 @@ input:checked + .slider:before {
         padding: 10px;
     }
 }
+
+/* ===== شاشة المكالمة الواردة ===== */
+.incoming-call-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.98) 0%, rgba(118, 75, 162, 0.98) 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    animation: fadeIn 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.incoming-call-overlay.hidden {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.incoming-call-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    padding: 50px 40px;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+    max-width: 400px;
+    width: 90%;
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.incoming-call-animation {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 30px;
+}
+
+.call-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    animation: pulse 2s ease-out infinite;
+}
+
+.call-pulse.delay-1 {
+    animation-delay: 0.5s;
+}
+
+.call-pulse.delay-2 {
+    animation-delay: 1s;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.caller-avatar {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 10px 40px rgba(79, 172, 254, 0.5);
+    animation: ring 1s ease-in-out infinite;
+}
+
+@keyframes ring {
+    0%, 100% {
+        transform: translate(-50%, -50%) rotate(-5deg);
+    }
+    25% {
+        transform: translate(-50%, -50%) rotate(5deg);
+    }
+    50% {
+        transform: translate(-50%, -50%) rotate(-5deg);
+    }
+    75% {
+        transform: translate(-50%, -50%) rotate(5deg);
+    }
+}
+
+.avatar-icon {
+    font-size: 45px;
+}
+
+.incoming-call-info {
+    margin-bottom: 40px;
+}
+
+.incoming-title {
+    color: white;
+    font-size: 24px;
+    font-weight: 300;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.caller-number {
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    direction: ltr;
+    font-family: 'Segoe UI', monospace;
+}
+
+.caller-name {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 16px;
+}
+
+.incoming-call-actions {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+}
+
+.incoming-btn {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.incoming-btn .btn-icon {
+    font-size: 28px;
+}
+
+.incoming-btn .btn-text {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.reject-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+    color: white;
+}
+
+.reject-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 35px rgba(238, 90, 90, 0.5);
+}
+
+.accept-btn {
+    background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+    color: white;
+    animation: acceptPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes acceptPulse {
+    0%, 100% {
+        box-shadow: 0 8px 25px rgba(64, 192, 87, 0.3);
+    }
+    50% {
+        box-shadow: 0 8px 40px rgba(64, 192, 87, 0.6);
+    }
+}
+
+.accept-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 35px rgba(64, 192, 87, 0.5);
+}
+
+/* تحسين لوحة الاتصال */
+.dialpad {
+    background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
+    border-radius: 25px;
+    padding: 25px;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.number-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.num-btn {
+    background: linear-gradient(180deg, #ffffff 0%, #f5f7ff 100%);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 18px;
+    padding: 18px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 65px;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.1);
+}
+
+.num-btn:hover {
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.num-btn:hover .number,
+.num-btn:hover .letters {
+    color: white;
+}
+
+.num-btn:active {
+    transform: scale(0.95);
+}
+
+.num-btn .number {
+    font-size: 26px;
+    font-weight: 600;
+    color: #2d3748;
+    line-height: 1;
+}
+
+.num-btn .letters {
+    font-size: 10px;
+    color: #a0aec0;
+    margin-top: 4px;
+    letter-spacing: 1px;
+}
+
+.call-btn {
+    width: 100%;
+    padding: 18px;
+    font-size: 32px;
+    background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(64, 192, 87, 0.4);
+    margin-top: 10px;
+}
+
+.call-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(64, 192, 87, 0.5);
+}
+
+.call-btn:active {
+    transform: translateY(0);
+}
+
+/* تحسين عرض الرقم */
+.phone-display {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 20px 25px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+}
+
+.phone-number {
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+    direction: ltr;
+    text-align: left;
+    flex: 1;
+    font-family: 'Segoe UI', monospace;
+    letter-spacing: 2px;
+}
+
+.delete-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 24px;
+    padding: 10px 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* تحسين الرصيد في الهيدر */
+.balance-header {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    padding: 8px 15px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 3px 10px rgba(72, 187, 120, 0.3);
+    animation: balanceGlow 2s ease-in-out infinite;
+}
+
+@keyframes balanceGlow {
+    0%, 100% {
+        box-shadow: 0 3px 10px rgba(72, 187, 120, 0.3);
+    }
+    50% {
+        box-shadow: 0 3px 20px rgba(72, 187, 120, 0.5);
+    }
+}
+
+.balance-header.low {
+    background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+    animation: balancePulse 1s ease-in-out infinite;
+}
+
+@keyframes balancePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.balance-header.medium {
+    background: linear-gradient(135deg, #f6e05e 0%, #ecc94b 100%);
+}
+
+.balance-header-value {
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+}
+
+.balance-header-currency {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.balance-icon {
+    font-size: 18px;
+}
+
+/* Responsive للمكالمة الواردة */
+@media (max-width: 480px) {
+    .incoming-call-card {
+        padding: 35px 25px;
+    }
+    
+    .incoming-call-animation {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .caller-avatar {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .avatar-icon {
+        font-size: 35px;
+    }
+    
+    .caller-number {
+        font-size: 26px;
+    }
+    
+    .incoming-btn {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .incoming-btn .btn-icon {
+        font-size: 24px;
+    }
+}

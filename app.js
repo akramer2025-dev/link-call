@@ -507,11 +507,92 @@ async function makeCall() {
     }
 }
 
+// متغيرات المكالمة الواردة
+let incomingCallRef = null;
+let ringtoneAudio = null;
+
+// تشغيل صوت الرنين
+function playRingtone() {
+    try {
+        ringtoneAudio = document.getElementById('ringtone');
+        if (ringtoneAudio) {
+            ringtoneAudio.volume = 0.7;
+            ringtoneAudio.play().catch(e => console.log('لا يمكن تشغيل الرنين:', e));
+        }
+    } catch (e) {
+        console.log('خطأ في الرنين:', e);
+    }
+}
+
+// إيقاف صوت الرنين
+function stopRingtone() {
+    if (ringtoneAudio) {
+        ringtoneAudio.pause();
+        ringtoneAudio.currentTime = 0;
+    }
+}
+
+// إظهار شاشة المكالمة الواردة
+function showIncomingCallScreen(callerNumber, callerName) {
+    const overlay = document.getElementById('incoming-call-overlay');
+    const numberEl = document.getElementById('incoming-caller-number');
+    const nameEl = document.getElementById('incoming-caller-name');
+    
+    if (overlay) {
+        numberEl.textContent = callerNumber || 'رقم مجهول';
+        nameEl.textContent = callerName || 'جهة اتصال غير معروفة';
+        overlay.classList.remove('hidden');
+        playRingtone();
+        
+        // إشعار المتصفح
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('📞 مكالمة واردة', {
+                body: `من: ${callerNumber}`,
+                icon: '📞',
+                requireInteraction: true
+            });
+        }
+    }
+}
+
+// إخفاء شاشة المكالمة الواردة
+function hideIncomingCallScreen() {
+    const overlay = document.getElementById('incoming-call-overlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+    }
+    stopRingtone();
+}
+
 // معالجة مكالمة واردة
 function handleIncomingCall(call) {
-    if (confirm(`مكالمة واردة من ${call.parameters.From}. هل تريد الرد؟`)) {
-        currentCall = call;
-        call.accept();
+    console.log('📞 مكالمة واردة من:', call.parameters.From);
+    
+    // حفظ المكالمة
+    incomingCallRef = call;
+    
+    // إظهار شاشة المكالمة الاحترافية
+    showIncomingCallScreen(call.parameters.From, null);
+    
+    // عند قطع المكالمة من المتصل
+    call.on('cancel', () => {
+        console.log('❌ المتصل أغلق المكالمة');
+        hideIncomingCallScreen();
+        incomingCallRef = null;
+    });
+    
+    call.on('disconnect', () => {
+        endCall();
+    });
+}
+
+// قبول المكالمة الواردة
+function acceptIncomingCall() {
+    if (incomingCallRef) {
+        hideIncomingCallScreen();
+        
+        currentCall = incomingCallRef;
+        incomingCallRef.accept();
         
         dialpad.classList.add('hidden');
         callScreen.classList.remove('hidden');
@@ -524,17 +605,40 @@ function handleIncomingCall(call) {
         }
         
         // عرض رقم الهاتف
-        callNumber.textContent = `📞 ${call.parameters.From}`;
+        callNumber.textContent = `📞 ${incomingCallRef.parameters.From}`;
         updateCallStatus('متصل ✅');
-        startCallTimer(); // في المكالمة الواردة نبدأ العداد فوراً لأننا نحن من ردينا
+        startCallTimer();
         
-        call.on('disconnect', () => {
-            endCall();
-        });
-    } else {
-        call.reject();
+        incomingCallRef = null;
     }
 }
+
+// رفض المكالمة الواردة
+function rejectIncomingCall() {
+    if (incomingCallRef) {
+        hideIncomingCallScreen();
+        incomingCallRef.reject();
+        incomingCallRef = null;
+    }
+}
+
+// ربط أزرار المكالمة الواردة
+document.addEventListener('DOMContentLoaded', () => {
+    const acceptBtn = document.getElementById('accept-call-btn');
+    const rejectBtn = document.getElementById('reject-call-btn');
+    
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', acceptIncomingCall);
+    }
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', rejectIncomingCall);
+    }
+    
+    // طلب إذن الإشعارات
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+});
 
 // مراقبة حالة المكالمة (لن تُستخدم مع SDK)
 function startCallMonitoring() {
@@ -1941,8 +2045,7 @@ function openRechargeUrl() {
     window.open(rechargeUrl, '_blank');
 }
 
-// تحميل الرصيد عند فتح الصفحة
-setTimeout(loadAccountBalance, 1000);
+// تحميل الرصيد يتم تلقائياً كل 5 ثواني في startBalanceAutoRefresh
 
 // تحميل بيانات الملف الشخصي للمدير
 function loadEmployeeProfile() {
@@ -2710,123 +2813,22 @@ if (userRole !== 'admin' && workReportsBtn) {
     workReportsBtn.style.display = 'none';
 }
 
-// ===== نظام إيقاف التطبيق بعد 5 دقائق من عدم النشاط =====
+// ===== تحديث الرصيد تلقائياً كل 5 ثواني =====
+let balanceRefreshInterval = null;
 
-let inactivityTimer = null;
-let inactivityWarningTimer = null;
-const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 دقائق
-const WARNING_TIMEOUT = 4 * 60 * 1000; // تحذير بعد 4 دقائق
-
-// دالة تسجيل الخروج التلقائي
-async function autoLogout() {
-    console.log('⏰ انتهت مهلة النشاط - تسجيل خروج تلقائي');
+function startBalanceAutoRefresh() {
+    // تحديث فوري
+    loadAccountBalance();
     
-    try {
-        const employeeId = localStorage.getItem('employeeId');
-        const employeeName = localStorage.getItem('employeeName');
-        const baseUrl = window.location.origin;
-        
-        if (employeeId && employeeName) {
-            await fetch(`${baseUrl}/work-tracking`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'logout',
-                    employeeId: employeeId,
-                    employeeName: employeeName
-                })
-            });
-        }
-    } catch (error) {
-        console.error('خطأ في تسجيل الخروج التلقائي:', error);
-    }
+    // تحديث كل 5 ثواني
+    balanceRefreshInterval = setInterval(() => {
+        loadAccountBalance();
+    }, 5000);
     
-    // مسح بيانات الجلسة
-    sessionStorage.clear();
-    
-    // إعادة التوجيه لصفحة تسجيل الدخول
-    alert('⏰ تم تسجيل الخروج تلقائياً بسبب عدم النشاط لمدة 5 دقائق');
-    window.location.href = 'login.html';
+    console.log('✅ تحديث الرصيد التلقائي مفعّل - كل 5 ثواني');
 }
 
-// إعادة تعيين عداد عدم النشاط
-function resetInactivityTimer() {
-    // إلغاء التايمر السابق
-    if (inactivityTimer) {
-        clearTimeout(inactivityTimer);
-    }
-    if (inactivityWarningTimer) {
-        clearTimeout(inactivityWarningTimer);
-    }
-    
-    // إزالة تحذير عدم النشاط إذا كان موجوداً
-    const warningElement = document.getElementById('inactivity-warning');
-    if (warningElement) {
-        warningElement.remove();
-    }
-    
-    // تعيين تايمر جديد للتحذير (4 دقائق)
-    inactivityWarningTimer = setTimeout(() => {
-        showInactivityWarning();
-    }, WARNING_TIMEOUT);
-    
-    // تعيين تايمر جديد للخروج التلقائي (5 دقائق)
-    inactivityTimer = setTimeout(() => {
-        autoLogout();
-    }, INACTIVITY_TIMEOUT);
-}
+// بدء تحديث الرصيد عند تحميل الصفحة
+startBalanceAutoRefresh();
 
-// عرض تحذير عدم النشاط
-function showInactivityWarning() {
-    // إزالة التحذير القديم إذا كان موجوداً
-    const oldWarning = document.getElementById('inactivity-warning');
-    if (oldWarning) {
-        oldWarning.remove();
-    }
-    
-    const warningHtml = `
-        <div id="inactivity-warning" class="inactivity-warning">
-            <div class="warning-content">
-                <div class="warning-icon">⚠️</div>
-                <div class="warning-text">
-                    <strong>تحذير عدم النشاط</strong>
-                    <p>سيتم تسجيل خروجك تلقائياً بعد دقيقة واحدة</p>
-                </div>
-                <button class="warning-btn" onclick="dismissInactivityWarning()">أنا هنا</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', warningHtml);
-}
-
-// إغلاق تحذير عدم النشاط
-function dismissInactivityWarning() {
-    const warningElement = document.getElementById('inactivity-warning');
-    if (warningElement) {
-        warningElement.remove();
-    }
-    resetInactivityTimer();
-}
-
-// قائمة الأحداث التي تعتبر نشاطاً
-const activityEvents = [
-    'mousedown',
-    'mousemove',
-    'keypress',
-    'scroll',
-    'touchstart',
-    'click'
-];
-
-// إضافة مستمعين لجميع أحداث النشاط
-activityEvents.forEach(event => {
-    document.addEventListener(event, resetInactivityTimer, true);
-});
-
-// بدء عداد عدم النشاط عند تحميل الصفحة
-resetInactivityTimer();
-
-console.log('✅ نظام مراقبة النشاط مفعّل - سيتم تسجيل الخروج بعد 5 دقائق من عدم النشاط');
+console.log('✅ التطبيق يعمل بشكل مستمر - لا يوجد تسجيل خروج تلقائي');

@@ -399,6 +399,137 @@ app.post('/make-direct-call', async (req, res) => {
     }
 });
 
+// ==================== اتصال مع Verified Caller ID ====================
+// هذا الـ endpoint يدعم الأرقام المحققة (السعودية/المصرية) عبر Conference
+
+// الخطوة 1: المتصفح يتصل بهذا الـ endpoint ويدخل Conference
+app.post('/verified-outgoing-call', async (req, res) => {
+    let toNumber = req.body.To;
+    const employeeId = req.body.employeeId || 'unknown';
+    const callerIdChoice = req.body.callerId || 'default';
+    
+    console.log('📞 ================ مكالمة Verified Caller ID ================');
+    console.log('📞 الرقم المطلوب:', toNumber);
+    console.log('👤 معرف الموظف:', employeeId);
+    console.log('📱 رقم المتصل المختار:', callerIdChoice);
+    
+    // تنظيف الرقم
+    if (toNumber) {
+        toNumber = toNumber.replace(/[\u200E\u200F\u202A\u202B\u202C\u202D\u202E\uFEFF\s\-\(\)]/g, '');
+    }
+    
+    const twiml = new twilio.twiml.VoiceResponse();
+    
+    // إذا كان الرقم المختار هو الأمريكي (default)، استخدم الطريقة العادية
+    if (callerIdChoice === 'default' || !toNumber) {
+        console.log('📱 استخدام الطريقة العادية (الرقم الأمريكي)');
+        if (toNumber) {
+            const dial = twiml.dial({
+                callerId: TWILIO_PHONE_NUMBER,
+                record: 'record-from-answer',
+                recordingStatusCallback: `/recording-status?employeeId=${employeeId}&to=${encodeURIComponent(toNumber)}`,
+                recordingStatusCallbackEvent: ['completed'],
+                timeout: 30,
+                answerOnBridge: true
+            });
+            dial.number(toNumber);
+        } else {
+            twiml.say({ voice: 'Polly.Zeina', language: 'ar-AE' }, 'لم يتم تحديد رقم للاتصال');
+        }
+        res.type('text/xml');
+        return res.send(twiml.toString());
+    }
+    
+    // للأرقام المحققة (السعودية/المصرية) - استخدام Conference
+    const conferenceName = `verified_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const selectedCallerNumber = getCallerIdNumber(callerIdChoice);
+    
+    console.log('📱✅ الرقم المحقق:', selectedCallerNumber);
+    console.log('🎯 Conference:', conferenceName);
+    
+    // إضافة المتصفح للـ Conference
+    const dial = twiml.dial({
+        timeout: 60
+    });
+    dial.conference({
+        startConferenceOnEnter: true,
+        endConferenceOnExit: true,
+        beep: false,
+        waitUrl: 'http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical',
+        statusCallback: `/conference-status?employeeId=${employeeId}&to=${encodeURIComponent(toNumber)}`,
+        statusCallbackEvent: ['start', 'end', 'join', 'leave']
+    }, conferenceName);
+    
+    // إرسال TwiML للمتصفح فوراً
+    res.type('text/xml');
+    res.send(twiml.toString());
+    
+    // الآن نتصل بالعميل عبر REST API من الرقم المحقق
+    const baseUrl = process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}` 
+        : (process.env.NGROK_URL || 'https://link-call-jade.vercel.app');
+    
+    setTimeout(async () => {
+        try {
+            console.log('📞 جاري الاتصال بالعميل من الرقم المحقق...');
+            const call = await twilioClient.calls.create({
+                url: `${baseUrl}/join-verified-conference?conference=${encodeURIComponent(conferenceName)}&employeeId=${employeeId}`,
+                to: toNumber,
+                from: selectedCallerNumber, // الرقم المحقق (السعودي أو المصري)
+                statusCallback: `${baseUrl}/call-status-webhook?employeeId=${employeeId}`,
+                statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+                record: true,
+                recordingStatusCallback: `${baseUrl}/recording-status?employeeId=${employeeId}&to=${encodeURIComponent(toNumber)}`,
+                recordingStatusCallbackEvent: ['completed']
+            });
+            console.log('✅ تم إنشاء المكالمة للعميل:', call.sid);
+            
+            // حفظ علاقة المكالمة
+            await saveCallEmployeeMapping(call.sid, employeeId, toNumber);
+        } catch (error) {
+            console.error('❌ خطأ في الاتصال بالعميل:', error.message);
+        }
+    }, 1000); // انتظار ثانية ليدخل المتصفح أولاً
+});
+
+// TwiML لإضافة العميل للـ Conference
+app.all('/join-verified-conference', (req, res) => {
+    const conferenceName = req.query.conference || req.body.conference;
+    const employeeId = req.query.employeeId || 'unknown';
+    
+    console.log('📞 إضافة العميل للـ Conference:', conferenceName);
+    
+    const twiml = new twilio.twiml.VoiceResponse();
+    
+    // رسالة ترحيب للعميل
+    twiml.say({ 
+        voice: 'Polly.Zeina', 
+        language: 'ar-AE' 
+    }, 'جاري توصيلك، الرجاء الانتظار');
+    
+    const dial = twiml.dial();
+    dial.conference({
+        startConferenceOnEnter: true,
+        endConferenceOnExit: false,
+        beep: false
+    }, conferenceName);
+    
+    res.type('text/xml');
+    res.send(twiml.toString());
+});
+
+// حالة Conference
+app.post('/conference-status', (req, res) => {
+    console.log('🎯 Conference Status:', {
+        conferenceSid: req.body.ConferenceSid,
+        statusCallbackEvent: req.body.StatusCallbackEvent,
+        friendlyName: req.body.FriendlyName
+    });
+    res.sendStatus(200);
+});
+
+// ==================== نهاية Verified Caller ID ====================
+
 // TwiML بسيط للاتصال المباشر
 app.all('/simple-dial', (req, res) => {
     const toNumber = req.query.to || req.body.to;
@@ -456,63 +587,115 @@ async function getCallEmployeeId(callSid) {
     return null;
 }
 
-app.post('/outgoing-call', (req, res) => {
+app.post('/outgoing-call', async (req, res) => {
     let toNumber = req.body.To;
     const employeeId = req.body.employeeId || 'unknown';
-    const callerIdChoice = req.body.callerId || 'default'; // الحصول على اختيار رقم المتصل
+    const callerIdChoice = req.body.callerId || 'default';
     
     console.log('📞 ================ مكالمة صادرة جديدة ================');
-    console.log('📞 اتصال صادر من المتصفح - الرقم الأصلي:', toNumber);
+    console.log('📞 الرقم الأصلي:', toNumber);
     console.log('👤 معرف المدير:', employeeId);
-    console.log('📱 رقم المتصل المختار (callerId param):', callerIdChoice);
-    console.log('📱 TWILIO_PHONE_NUMBER_EGYPT env:', TWILIO_PHONE_NUMBER_EGYPT);
-    console.log('📱 TWILIO_PHONE_NUMBER env:', TWILIO_PHONE_NUMBER);
+    console.log('📱 رقم المتصل المختار:', callerIdChoice);
     
-    // تنظيف الرقم فقط - بدون تحويل
+    // تنظيف الرقم
     if (toNumber) {
-        // حذف أي أحرف خاصة أو مسافات
         toNumber = toNumber.replace(/[\u200E\u200F\u202A\u202B\u202C\u202D\u202E\uFEFF\s\-\(\)]/g, '');
         
-        console.log('🔍 الرقم بعد التنظيف:', toNumber);
-        
-        // إصلاح فقط إذا كان فيه +966 وبعده 0 (خطأ)
         if (toNumber.match(/^\+9660[1-9]\d{7,8}$/)) {
             toNumber = toNumber.replace(/^\+9660/, '+966');
-            console.log('🔧 تم إصلاح +9660 إلى +966:', toNumber);
-        }
-        // إصلاح +200 (المصرية الخاطئة)
-        else if (toNumber.match(/^\+200\d+$/)) {
+        } else if (toNumber.match(/^\+200\d+$/)) {
             toNumber = toNumber.replace(/^\+200/, '+20');
-            console.log('🔧 تم إصلاح +200 إلى +20:', toNumber);
         }
-        // باقي الأرقام تُترك كما هي
     }
     
-    console.log('📞 الرقم النهائي للاتصال:', toNumber);
+    console.log('📞 الرقم النهائي:', toNumber);
     
     const twiml = new twilio.twiml.VoiceResponse();
     
-    // الحصول على رقم المتصل المناسب
-    const selectedCallerNumber = getCallerIdNumber(callerIdChoice);
-    console.log('📱✅ الرقم المُستخدم كـ Caller ID:', selectedCallerNumber);
-    console.log('📞 ================== TwiML Generation ==================');
+    // ========== اختيار الطريقة حسب رقم المتصل ==========
     
-    if (toNumber) {
-        const dial = twiml.dial({
-            callerId: selectedCallerNumber,
-            record: 'record-from-answer',
-            recordingStatusCallback: `/recording-status?employeeId=${employeeId}&to=${encodeURIComponent(toNumber)}`,
-            recordingStatusCallbackEvent: ['completed'],
-            statusCallback: `/call-status-webhook?employeeId=${employeeId}`,
-            statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
-            // تحسينات جودة الصوت وتقليل التأخير
-            timeout: 30,
-            answerOnBridge: true  // تقليل latency - يبدأ التسجيل لما العميل يرد فعلاً
-        });
-        dial.number(toNumber);
-    } else {
-        twiml.say({ voice: 'Polly.Zeina', language: 'ar-AE' }, 'لم يتم تحديد رقم للاتصال');
+    // الطريقة 1: الرقم الأمريكي (الافتراضي) - الطريقة العادية
+    if (callerIdChoice === 'default' || !toNumber) {
+        console.log('📱 استخدام الرقم الأمريكي (طريقة عادية)');
+        if (toNumber) {
+            const dial = twiml.dial({
+                callerId: TWILIO_PHONE_NUMBER,
+                record: 'record-from-answer',
+                recordingStatusCallback: `/recording-status?employeeId=${employeeId}&to=${encodeURIComponent(toNumber)}`,
+                recordingStatusCallbackEvent: ['completed'],
+                statusCallback: `/call-status-webhook?employeeId=${employeeId}`,
+                statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+                timeout: 30,
+                answerOnBridge: true
+            });
+            dial.number(toNumber);
+        } else {
+            twiml.say({ voice: 'Polly.Zeina', language: 'ar-AE' }, 'لم يتم تحديد رقم للاتصال');
+        }
+        res.type('text/xml');
+        return res.send(twiml.toString());
     }
+    
+    // الطريقة 2: الأرقام المحققة (السعودية/المصرية) - استخدام Conference + REST API
+    console.log('📱 استخدام رقم محقق (Verified) - طريقة Conference');
+    
+    const selectedCallerNumber = getCallerIdNumber(callerIdChoice);
+    const conferenceName = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log('📱✅ الرقم المحقق:', selectedCallerNumber);
+    console.log('🎯 Conference:', conferenceName);
+    
+    // إضافة المتصفح للـ Conference
+    const dial = twiml.dial({ timeout: 60 });
+    dial.conference({
+        startConferenceOnEnter: true,
+        endConferenceOnExit: true,
+        beep: false,
+        waitUrl: 'http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical'
+    }, conferenceName);
+    
+    // إرسال TwiML للمتصفح
+    res.type('text/xml');
+    res.send(twiml.toString());
+    
+    // الآن الاتصال بالعميل من الرقم المحقق عبر REST API
+    const baseUrl = 'https://link-call-jade.vercel.app';
+    
+    setTimeout(async () => {
+        try {
+            console.log('📞 جاري الاتصال بالعميل من الرقم المحقق...');
+            const call = await twilioClient.calls.create({
+                url: `${baseUrl}/join-conference-twiml?conference=${encodeURIComponent(conferenceName)}`,
+                to: toNumber,
+                from: selectedCallerNumber,
+                statusCallback: `${baseUrl}/call-status-webhook?employeeId=${employeeId}`,
+                statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+                record: true,
+                recordingStatusCallback: `${baseUrl}/recording-status?employeeId=${employeeId}&to=${encodeURIComponent(toNumber)}`,
+                recordingStatusCallbackEvent: ['completed']
+            });
+            console.log('✅ تم الاتصال بالعميل:', call.sid);
+            await saveCallEmployeeMapping(call.sid, employeeId, toNumber);
+        } catch (error) {
+            console.error('❌ خطأ في الاتصال بالعميل:', error.message);
+        }
+    }, 1500);
+});
+
+// TwiML لإضافة العميل للـ Conference
+app.all('/join-conference-twiml', (req, res) => {
+    const conferenceName = req.query.conference;
+    console.log('📞 إضافة العميل للـ Conference:', conferenceName);
+    
+    const twiml = new twilio.twiml.VoiceResponse();
+    twiml.say({ voice: 'Polly.Zeina', language: 'ar-AE' }, 'جاري توصيلك');
+    
+    const dial = twiml.dial();
+    dial.conference({
+        startConferenceOnEnter: true,
+        endConferenceOnExit: false,
+        beep: false
+    }, conferenceName);
     
     res.type('text/xml');
     res.send(twiml.toString());

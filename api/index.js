@@ -455,9 +455,12 @@ app.post('/outgoing-call', (req, res) => {
     const employeeId = req.body.employeeId || 'unknown';
     const callerIdChoice = req.body.callerId || 'default'; // الحصول على اختيار رقم المتصل
     
+    console.log('📞 ================ مكالمة صادرة جديدة ================');
     console.log('📞 اتصال صادر من المتصفح - الرقم الأصلي:', toNumber);
     console.log('👤 معرف المدير:', employeeId);
-    console.log('📱 رقم المتصل المختار:', callerIdChoice);
+    console.log('📱 رقم المتصل المختار (callerId param):', callerIdChoice);
+    console.log('📱 TWILIO_PHONE_NUMBER_EGYPT env:', TWILIO_PHONE_NUMBER_EGYPT);
+    console.log('📱 TWILIO_PHONE_NUMBER env:', TWILIO_PHONE_NUMBER);
     
     // تنظيف الرقم فقط - بدون تحويل
     if (toNumber) {
@@ -485,6 +488,8 @@ app.post('/outgoing-call', (req, res) => {
     
     // الحصول على رقم المتصل المناسب
     const selectedCallerNumber = getCallerIdNumber(callerIdChoice);
+    console.log('📱✅ الرقم المُستخدم كـ Caller ID:', selectedCallerNumber);
+    console.log('📞 ================== TwiML Generation ==================');
     
     if (toNumber) {
         const dial = twiml.dial({

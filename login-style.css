@@ -146,12 +146,6 @@ body {
     width: 100%;
     max-width: 440px;
     padding: 20px;
-    animation: containerFloat 6s ease-in-out infinite;
-}
-
-@keyframes containerFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
 }
 
 /* === كارت تسجيل الدخول الزجاجي === */
@@ -304,7 +298,7 @@ body {
         0 0 40px rgba(94, 196, 212, 0.5),
         0 0 80px rgba(94, 196, 212, 0.3),
         inset 0 0 30px rgba(94, 196, 212, 0.1);
-    animation: logoPulse 3s ease-in-out infinite, logoFloat 6s ease-in-out infinite;
+    animation: logoPulse 3s ease-in-out infinite;
 }
 
 @keyframes logoPulse {
@@ -320,11 +314,6 @@ body {
             0 0 120px rgba(94, 196, 212, 0.5),
             inset 0 0 40px rgba(94, 196, 212, 0.2);
     }
-}
-
-@keyframes logoFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
 }
 
 /* حلقات دائرية متوهجة */

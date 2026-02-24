@@ -24,6 +24,20 @@ if (PLIVO_AUTH_ID && PLIVO_AUTH_TOKEN) {
 }
 // ===================== نهاية Plivo =====================
 
+// ===================== Zadarma Integration (أرقام مصرية!) =====================
+const ZADARMA_KEY = process.env.ZADARMA_KEY;
+const ZADARMA_SECRET = process.env.ZADARMA_SECRET;
+const ZADARMA_SIP = process.env.ZADARMA_SIP; // SIP ID الخاص بك
+const ZADARMA_PHONE = process.env.ZADARMA_PHONE; // الرقم المصري من Zadarma
+
+if (ZADARMA_KEY && ZADARMA_SECRET) {
+    console.log('✅ Zadarma معد - رقم مصري:', ZADARMA_PHONE);
+} else {
+    console.log('⚠️ Zadarma غير مُعد - للأرقام المصرية أضف ZADARMA_KEY و ZADARMA_SECRET');
+    console.log('   👉 https://zadarma.com/');
+}
+// ===================== نهاية Zadarma =====================
+
 // Upstash Redis للتخزين السحابي
 let redis;
 try {
@@ -687,6 +701,89 @@ app.get('/plivo-status', (req, res) => {
 });
 
 // ==================== نهاية Plivo ====================
+
+// ==================== Zadarma Integration (أرقام مصرية!) ====================
+const crypto = require('crypto');
+
+// دالة توقيع طلبات Zadarma
+function signZadarmaRequest(method, params) {
+    const sortedParams = Object.keys(params).sort().map(k => `${k}=${params[k]}`).join('');
+    const signStr = method + sortedParams + ZADARMA_SECRET;
+    return crypto.createHash('md5').update(signStr).digest('hex');
+}
+
+// الاتصال عبر Zadarma (للرقم المصري)
+app.post('/zadarma-call', async (req, res) => {
+    if (!ZADARMA_KEY || !ZADARMA_SECRET) {
+        return res.status(400).json({ 
+            error: 'Zadarma غير مُعد',
+            setupSteps: [
+                '1. سجل في https://zadarma.com/',
+                '2. اشتري رقم مصري من Virtual Numbers',
+                '3. اذهب إلى Settings → API وانسخ Key و Secret',
+                '4. أضفهم في Vercel: ZADARMA_KEY, ZADARMA_SECRET, ZADARMA_SIP, ZADARMA_PHONE'
+            ]
+        });
+    }
+    
+    const { to, employeeId } = req.body;
+    
+    console.log('📞 ================ Zadarma Call (مصر) ================');
+    console.log('📞 إلى:', to);
+    console.log('📱 من (الرقم المصري):', ZADARMA_PHONE);
+    console.log('👤 الموظف:', employeeId);
+    
+    try {
+        // Zadarma API - إجراء مكالمة
+        const params = {
+            from: ZADARMA_SIP, // SIP الداخلي
+            to: to,
+            predicted_dst: to,
+            caller_id: ZADARMA_PHONE // الرقم المصري الذي سيظهر للعميل
+        };
+        
+        const signature = signZadarmaRequest('/v1/request/callback/', params);
+        
+        const response = await fetch('https://api.zadarma.com/v1/request/callback/', {
+            method: 'POST',
+            headers: {
+                'Authorization': `${ZADARMA_KEY}:${signature}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams(params).toString()
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            console.log('✅ Zadarma Call created');
+            res.json({ 
+                success: true, 
+                message: 'جاري الاتصال من الرقم المصري عبر Zadarma',
+                callerId: ZADARMA_PHONE
+            });
+        } else {
+            console.error('❌ Zadarma Error:', result);
+            res.status(400).json({ error: result.message || 'فشل الاتصال' });
+        }
+    } catch (error) {
+        console.error('❌ Zadarma Error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// حالة Zadarma
+app.get('/zadarma-status', (req, res) => {
+    res.json({
+        configured: !!(ZADARMA_KEY && ZADARMA_SECRET),
+        phoneNumber: ZADARMA_PHONE || null,
+        sipId: ZADARMA_SIP || null,
+        setupUrl: 'https://zadarma.com/',
+        pricing: 'https://zadarma.com/en/tariffs/calls/'
+    });
+});
+
+// ==================== نهاية Zadarma ====================
 
 // TwiML بسيط للاتصال المباشر
 app.all('/simple-dial', (req, res) => {

@@ -392,40 +392,37 @@ async function makeCall() {
         const selectedCallerId = callerIdSelect ? callerIdSelect.value : 'default';
         console.log('📱 رقم المتصل المختار:', selectedCallerId);
         
-        // ============ Plivo Call ============
-        if (selectedCallerId.startsWith('plivo-')) {
-            console.log('📞 استخدام Plivo للاتصال');
+        // ============ Zadarma Call (أرقام مصرية!) ============
+        if (selectedCallerId.startsWith('zadarma-')) {
+            console.log('📞 استخدام Zadarma للاتصال (رقم مصري)');
             try {
-                const response = await fetch(`${API_BASE}/plivo-call`, {
+                const response = await fetch(`${API_BASE}/zadarma-call`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         to: formattedNumber,
-                        employeeId: employeeId,
-                        provider: selectedCallerId // plivo-egypt or plivo-saudi
+                        employeeId: employeeId
                     })
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    updateCallStatus('جاري الاتصال عبر Plivo... 📞');
+                    updateCallStatus('جاري الاتصال من ' + result.callerId + ' 📞');
                     showCallScreen(formattedNumber);
-                    // Plivo سيتصل بالرقم - لكن لن يكون متصل بالمتصفح
-                    alert('⚠️ ملاحظة: Plivo يتصل بالعميل مباشرة.\nللاتصال الكامل من المتصفح، استخدم Twilio.');
+                    alert('✅ جاري الاتصال من الرقم المصري!\nالعميل سيرى: ' + result.callerId);
+                } else if (result.setupSteps) {
+                    alert('⚠️ Zadarma غير مُعد:\n\n' + result.setupSteps.join('\n'));
                 } else {
-                    alert('❌ ' + (result.error || 'فشل الاتصال عبر Plivo'));
-                    if (result.setupUrl) {
-                        console.log('🔗 للإعداد:', result.setupUrl);
-                    }
+                    alert('❌ ' + (result.error || 'فشل الاتصال'));
                 }
             } catch (error) {
-                console.error('❌ Plivo Error:', error);
-                alert('❌ خطأ في الاتصال بـ Plivo');
+                console.error('❌ Zadarma Error:', error);
+                alert('❌ خطأ في الاتصال بـ Zadarma');
             }
             return;
         }
-        // ============ نهاية Plivo ============
+        // ============ نهاية Zadarma ============
         
         const params = {
             To: formattedNumber,

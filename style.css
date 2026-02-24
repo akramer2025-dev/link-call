@@ -351,6 +351,62 @@ body::after {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
+/* الشعار في الهيدر */
+.header-logo-container {
+    width: 55px;
+    height: 55px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: rgba(94, 196, 212, 0.15);
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(94, 196, 212, 0.3);
+    flex-shrink: 0;
+    animation: headerLogoPulse 3s ease-in-out infinite;
+}
+
+.header-logo-container::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        #5ec4d4,
+        #1e3a5f,
+        #5ec4d4,
+        #1e3a5f,
+        #5ec4d4
+    );
+    animation: rotateBorderHeader 4s linear infinite;
+    z-index: -1;
+}
+
+@keyframes rotateBorderHeader {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes headerLogoPulse {
+    0%, 100% { 
+        box-shadow: 0 0 15px rgba(94, 196, 212, 0.3);
+    }
+    50% { 
+        box-shadow: 0 0 25px rgba(94, 196, 212, 0.5);
+    }
+}
+
+.header-logo-img {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
 /* المحتوى الرئيسي */
 .main-content {
     flex: 1;
@@ -369,13 +425,16 @@ body::after {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    gap: 15px;
 }
 
 .header h1 {
     color: #fff;
-    font-size: 24px;
+    font-size: 22px;
     margin: 0;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    flex: 1;
+    text-align: center;
 }
 
 .user-info-header {
@@ -1744,6 +1803,16 @@ input:checked + .slider:before {
         height: 60px !important;
     }
     
+    .header-logo-container {
+        width: 45px !important;
+        height: 45px !important;
+    }
+    
+    .header-logo-img {
+        width: 38px !important;
+        height: 38px !important;
+    }
+    
     .container {
         width: 100% !important;
         max-width: 100% !important;
@@ -2002,6 +2071,16 @@ input:checked + .slider:before {
     
     .header h1 {
         font-size: 1.2em !important;
+    }
+    
+    .header-logo-container {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .header-logo-img {
+        width: 32px !important;
+        height: 32px !important;
     }
     
     /* شاشة عرض الرقم في الموبايل الصغير */
@@ -3075,6 +3154,16 @@ input:checked + .slider:before {
     
     .header h1 {
         font-size: 0.95em !important;
+    }
+    
+    .header-logo-container {
+        width: 38px !important;
+        height: 38px !important;
+    }
+    
+    .header-logo-img {
+        width: 30px !important;
+        height: 30px !important;
     }
     
     /* الشريط الجانبي يبقى مخفي مع الهامبرجر */

@@ -1358,18 +1358,21 @@ const employeesSection = document.getElementById('employees-section');
 const adminAccountSection = document.getElementById('admin-account-section');
 const adminAudioSection = document.getElementById('admin-audio-section');
 const employeeProfileSection = document.getElementById('employee-profile-section');
+const pricingSection = document.getElementById('pricing-section');
 
 if (userRole === 'admin') {
-    // المطور يرى إدارة المديرين والإعدادات
+    // المطور يرى إدارة المديرين والإعدادات والتسعيرة
     if (employeesSection) employeesSection.style.display = 'block';
     if (adminAccountSection) adminAccountSection.style.display = 'block';
     if (adminAudioSection) adminAudioSection.style.display = 'block';
+    if (pricingSection) pricingSection.style.display = 'block';
     if (employeeProfileSection) employeeProfileSection.style.display = 'none';
 } else {
     // المدير يرى فقط تعديل ملفه الشخصي
     if (employeesSection) employeesSection.style.display = 'none';
     if (adminAccountSection) adminAccountSection.style.display = 'none';
     if (adminAudioSection) adminAudioSection.style.display = 'none';
+    if (pricingSection) pricingSection.style.display = 'none';
     if (employeeProfileSection) {
         employeeProfileSection.style.display = 'block';
         // تحميل بيانات المدير

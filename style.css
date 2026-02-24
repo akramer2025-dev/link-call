@@ -2201,3 +2201,120 @@ input:checked + .slider:before {
         font-size: 30px;
     }
 }
+
+/* ==================== تسعيرة المكالمات ==================== */
+.pricing-section {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.pricing-section h4 {
+    color: #2d3748;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.pricing-note {
+    background: #fff3cd;
+    color: #856404;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 15px;
+    border-right: 4px solid #ffc107;
+}
+
+.pricing-table-container {
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.pricing-table-container h5 {
+    color: #4a5568;
+    font-size: 14px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.pricing-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.pricing-table th {
+    padding: 10px 8px;
+    text-align: right;
+    font-weight: 600;
+}
+
+.pricing-table th:first-child {
+    border-radius: 0 8px 0 0;
+}
+
+.pricing-table th:last-child {
+    border-radius: 8px 0 0 0;
+}
+
+.pricing-table td {
+    padding: 10px 8px;
+    text-align: right;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.pricing-table tbody tr:hover {
+    background: #f7fafc;
+}
+
+.pricing-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.pricing-table .highlight-row {
+    background: #fff5f5 !important;
+}
+
+.pricing-table .highlight-row td {
+    color: #c53030;
+    font-weight: 600;
+}
+
+.pricing-tip {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 15px;
+    border-right: 4px solid #28a745;
+}
+
+.pricing-tip strong {
+    color: #0d5c1d;
+}
+
+/* Responsive للتسعيرة */
+@media (max-width: 480px) {
+    .pricing-table {
+        font-size: 11px;
+    }
+    
+    .pricing-table th,
+    .pricing-table td {
+        padding: 8px 5px;
+    }
+    
+    .pricing-table-container {
+        padding: 10px;
+    }
+}

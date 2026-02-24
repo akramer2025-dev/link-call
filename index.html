@@ -292,6 +292,139 @@
                         </button>
                     </div>
 
+                    <!-- قسم تسعيرة المكالمات (للمطور فقط) -->
+                    <div class="settings-section pricing-section" id="pricing-section" style="display: none;">
+                        <h4>📊 تسعيرة المكالمات</h4>
+                        <p class="pricing-note">* سعر الدولار المستخدم: <span id="usd-rate">50</span> جنيه</p>
+                        
+                        <!-- المكالمات من مصر -->
+                        <div class="pricing-table-container">
+                            <h5>🇪🇬 المكالمات من مصر لدول أخرى:</h5>
+                            <table class="pricing-table">
+                                <thead>
+                                    <tr>
+                                        <th>الوجهة</th>
+                                        <th>بالدولار</th>
+                                        <th>بالجنيه</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>🇸🇦 السعودية - موبايل</td>
+                                        <td>$0.12/دقيقة</td>
+                                        <td>6 ج/دقيقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇸🇦 السعودية - أرضي</td>
+                                        <td>$0.08/دقيقة</td>
+                                        <td>4 ج/دقيقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇦🇪 الإمارات - موبايل</td>
+                                        <td>$0.14/دقيقة</td>
+                                        <td>7 ج/دقيقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇺🇸 أمريكا</td>
+                                        <td>$0.014/دقيقة</td>
+                                        <td>0.70 ج/دقيقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇬🇧 بريطانيا</td>
+                                        <td>$0.04/دقيقة</td>
+                                        <td>2 ج/دقيقة</td>
+                                    </tr>
+                                    <tr class="highlight-row">
+                                        <td>🇪🇬 مصر - موبايل</td>
+                                        <td>$0.45/دقيقة</td>
+                                        <td>22.5 ج/دقيقة ⚠️</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇪🇬 مصر - أرضي</td>
+                                        <td>$0.08/دقيقة</td>
+                                        <td>4 ج/دقيقة</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- المكالمات من السعودية -->
+                        <div class="pricing-table-container">
+                            <h5>🇸🇦 المكالمات من السعودية:</h5>
+                            <table class="pricing-table">
+                                <thead>
+                                    <tr>
+                                        <th>الوجهة</th>
+                                        <th>بالدولار</th>
+                                        <th>بالجنيه</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>🇸🇦 السعودية - موبايل</td>
+                                        <td>$0.065/دقيقة</td>
+                                        <td>3.25 ج/دقيقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇸🇦 السعودية - أرضي</td>
+                                        <td>$0.045/دقيقة</td>
+                                        <td>2.25 ج/دقيقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇪🇬 مصر - موبايل</td>
+                                        <td>$0.45/دقيقة</td>
+                                        <td>22.5 ج/دقيقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇦🇪 الإمارات</td>
+                                        <td>$0.14/دقيقة</td>
+                                        <td>7 ج/دقيقة</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- رسوم إضافية -->
+                        <div class="pricing-table-container">
+                            <h5>💵 رسوم إضافية:</h5>
+                            <table class="pricing-table">
+                                <thead>
+                                    <tr>
+                                        <th>الخدمة</th>
+                                        <th>بالدولار</th>
+                                        <th>بالجنيه</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>🎙️ تسجيل المكالمة</td>
+                                        <td>$0.0025/دقيقة</td>
+                                        <td>0.125 ج/دقيقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>💾 تخزين التسجيل</td>
+                                        <td>$0.0005/دقيقة/شهر</td>
+                                        <td>0.025 ج/دقيقة/شهر</td>
+                                    </tr>
+                                    <tr>
+                                        <td>📝 تحويل لنص (Whisper)</td>
+                                        <td>$0.006/دقيقة</td>
+                                        <td>0.30 ج/دقيقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>📞 رقم Twilio أمريكي</td>
+                                        <td>$1.15/شهر</td>
+                                        <td>57.5 ج/شهر</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pricing-tip">
+                            <p>💡 <strong>نصيحة:</strong> للمكالمات المحلية داخل مصر، استخدام شريحة عادية أرخص بكثير (~0.50 ج/دقيقة)</p>
+                        </div>
+                    </div>
+
             <!-- تقارير العمل (للمطور فقط) -->
             <div class="work-reports-panel hidden" id="work-reports-panel">
                 <h2>📊 تقارير ساعات العمل</h2>

@@ -154,6 +154,12 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 .header h1 {
     font-size: 28px;
     margin-bottom: 5px;
@@ -1121,14 +1127,70 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 768px) {
+    /* إخفاء السايدبار وإظهار زر القائمة */
+    .sidebar {
+        position: fixed;
+        right: -280px;
+        width: 280px;
+        transition: right 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .sidebar.open {
+        right: 0;
+    }
+    
+    .logo-section h2,
+    .nav-item .text,
+    .back-link .text {
+        display: block;
+    }
+    
+    .nav-item {
+        justify-content: flex-start;
+        padding: 14px 25px;
+    }
+    
+    .main-content {
+        margin-right: 0;
+        padding: 15px;
+    }
+    
+    /* زر فتح القائمة */
+    .mobile-menu-btn {
+        display: flex !important;
+    }
+    
+    /* خلفية شفافة عند فتح القائمة */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+    
+    .sidebar-overlay.show {
+        display: block;
+    }
+    
     .header {
         flex-direction: column;
         gap: 15px;
+        padding: 15px;
     }
     
     .header-left {
         width: 100%;
         justify-content: space-between;
+    }
+    
+    .search-box {
+        width: 100%;
+        order: 3;
     }
     
     .search-box input {
@@ -1137,33 +1199,244 @@ input:checked + .slider:before {
     
     .stats-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .stat-card {
+        padding: 15px;
+    }
+    
+    .stat-card .value {
+        font-size: 24px;
     }
     
     .filters {
-        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
     }
     
     .filters select,
     .filters input {
-        flex: 1;
+        width: 100%;
+    }
+    
+    /* جدول المكالمات - تمرير أفقي */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .data-table {
+        min-width: 800px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+    
+    /* بطاقات الموظفين */
+    .employees-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .employee-card {
+        padding: 15px;
+    }
+    
+    /* المكالمات الفائتة */
+    .missed-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* الرسوم البيانية */
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        padding: 15px;
+    }
+    
+    /* الأقسام الأخيرة */
+    .recent-section {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Modal */
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+        max-height: 90vh;
+    }
+    
+    .modal-header {
+        padding: 15px;
+    }
+    
+    .modal-body {
+        padding: 15px;
     }
 }
 
 @media (max-width: 576px) {
-    .sidebar {
-        display: none;
+    .main-content {
+        padding: 10px;
     }
     
-    .main-content {
-        margin-right: 0;
-        padding: 15px;
+    .header {
+        padding: 10px;
+    }
+    
+    .page-title {
+        font-size: 18px;
     }
     
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: 8px;
     }
     
-    .recent-section {
+    .stat-card {
+        padding: 12px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .stat-card .icon {
+        font-size: 24px;
+        margin-bottom: 0;
+    }
+    
+    .stat-card .info {
+        text-align: left;
+    }
+    
+    .stat-card .value {
+        font-size: 20px;
+    }
+    
+    .stat-card .label {
+        font-size: 11px;
+    }
+    
+    /* بطاقات الموظفين */
+    .employees-grid {
         grid-template-columns: 1fr;
     }
+    
+    /* حجم النصوص */
+    .section-title {
+        font-size: 16px;
+    }
+    
+    .card-title {
+        font-size: 14px;
+    }
+    
+    /* الأزرار */
+    .btn-primary,
+    .btn-secondary {
+        padding: 10px 15px;
+        font-size: 13px;
+    }
+    
+    .action-btn {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    
+    /* Transcripts */
+    .transcripts-container {
+        gap: 15px;
+    }
+    
+    .transcript-list {
+        max-height: 200px;
+    }
+    
+    .transcript-content {
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    /* إحصائيات المكالمات الفائتة */
+    .missed-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .missed-stat-card {
+        padding: 12px 15px;
+    }
+    
+    /* Pagination */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .pagination button {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    /* تصدير */
+    #export-calls {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    /* فلاتر */
+    .filter-group {
+        flex-direction: column;
+    }
+    
+    .filter-group label {
+        margin-bottom: 5px;
+    }
 }
+
+/* ========== زر القائمة للهاتف ========== */
+.mobile-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-btn:hover {
+    background: var(--bg-card-hover);
+}
+
+/* ========== تحسينات اللمس ========== */
+@media (hover: none) and (pointer: coarse) {
+    .nav-item,
+    .btn-primary,
+    .btn-secondary,
+    .action-btn,
+    .stat-card,
+    .employee-card,
+    .missed-card,
+    .transcript-item {
+        min-height: 44px;
+    }
+    
+    .data-table td,
+    .data-table th {
+        padding: 12px 10px;
+    }
+}
+

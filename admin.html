@@ -9,8 +9,11 @@
 </head>
 <body>
     <div class="admin-container">
+        <!-- خلفية شفافة للقائمة الجانبية (للهاتف) -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        
         <!-- الشريط الجانبي -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="logo-section">
                 <img src="logo.jpg" alt="Link Call" class="logo">
                 <h2>لوحة المطور</h2>
@@ -60,6 +63,7 @@
             <!-- الهيدر -->
             <header class="header">
                 <div class="header-right">
+                    <button class="mobile-menu-btn" id="mobile-menu-btn" title="القائمة">☰</button>
                     <h1 id="page-title">لوحة التحكم</h1>
                     <p class="date" id="current-date"></p>
                 </div>

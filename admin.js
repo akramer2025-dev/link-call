@@ -66,6 +66,9 @@ function initNavigation() {
                 'settings': 'إعدادات النظام'
             };
             document.getElementById('page-title').textContent = titles[targetSection] || 'لوحة التحكم';
+            
+            // إغلاق القائمة الجانبية في الهاتف عند اختيار قسم
+            closeMobileSidebar();
         });
     });
     
@@ -75,6 +78,35 @@ function initNavigation() {
             btn.closest('.modal').classList.remove('active');
         });
     });
+    
+    // التحكم في القائمة الجانبية للهاتف
+    initMobileSidebar();
+}
+
+// ========== القائمة الجانبية للهاتف ==========
+function initMobileSidebar() {
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (menuBtn) {
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', closeMobileSidebar);
+    }
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('show');
 }
 
 // ========== تحديث التاريخ ==========

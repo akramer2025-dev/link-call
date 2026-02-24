@@ -1535,7 +1535,31 @@ document.querySelectorAll('.num-btn').forEach(btn => {
 });
 
 // معالجة أزرار التحكم
-callBtn.addEventListener('click', makeCall);
+// زر الاتصال يظهر قائمة اختيار رقم الاتصال
+const callerIdSelector = document.getElementById('caller-id-selector');
+const confirmCallBtn = document.getElementById('confirm-call-btn');
+
+callBtn.addEventListener('click', () => {
+    if (!phoneNumber || phoneNumber.length < 3) {
+        alert('الرجاء إدخال رقم صحيح');
+        return;
+    }
+    // إظهار قائمة اختيار رقم الاتصال
+    if (callerIdSelector) {
+        callerIdSelector.classList.toggle('hidden');
+    }
+});
+
+// زر تأكيد الاتصال يبدأ المكالمة
+if (confirmCallBtn) {
+    confirmCallBtn.addEventListener('click', () => {
+        if (callerIdSelector) {
+            callerIdSelector.classList.add('hidden');
+        }
+        makeCall();
+    });
+}
+
 endCallBtn.addEventListener('click', endCall);
 muteBtn.addEventListener('click', toggleMute);
 if (speakerBtn) speakerBtn.addEventListener('click', toggleSpeaker);

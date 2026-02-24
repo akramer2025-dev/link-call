@@ -1538,11 +1538,11 @@ app.get('/admin/all-calls', async (req, res) => {
 
 // جلب المكالمات من Twilio
 async function getRecordingsFromTwilio() {
-    if (!client) return [];
+    if (!twilioClient) return [];
     
     try {
-        const calls = await client.calls.list({ limit: 500 });
-        const recordings = await client.recordings.list({ limit: 500 });
+        const calls = await twilioClient.calls.list({ limit: 500 });
+        const recordings = await twilioClient.recordings.list({ limit: 500 });
         
         // دمج بيانات التسجيلات مع المكالمات
         const recordingsMap = new Map();
@@ -1583,14 +1583,14 @@ app.delete('/admin/delete-call', async (req, res) => {
     try {
         const { callSid } = req.body;
         
-        if (!callSid || !client) {
+        if (!callSid || !twilioClient) {
             return res.status(400).json({ error: 'معرف المكالمة مطلوب' });
         }
         
         // حذف التسجيلات المرتبطة بالمكالمة
-        const recordings = await client.recordings.list({ callSid });
+        const recordings = await twilioClient.recordings.list({ callSid });
         for (const rec of recordings) {
-            await client.recordings(rec.sid).remove();
+            await twilioClient.recordings(rec.sid).remove();
         }
         
         console.log('✅ تم حذف المكالمة:', callSid);
@@ -1611,12 +1611,12 @@ app.post('/admin/transcribe', async (req, res) => {
         }
         
         // التحقق من وجود Twilio client
-        if (!client) {
+        if (!twilioClient) {
             return res.status(500).json({ error: 'خدمة Twilio غير متاحة' });
         }
         
         // جلب URL التسجيل
-        const recording = await client.recordings(recordingSid).fetch();
+        const recording = await twilioClient.recordings(recordingSid).fetch();
         const recordingUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Recordings/${recordingSid}.mp3`;
         
         // ملاحظة: Twilio يقدم خدمة Transcription مدمجة
@@ -1624,10 +1624,10 @@ app.post('/admin/transcribe', async (req, res) => {
         
         // محاولة استخدام Twilio Transcription
         try {
-            const transcriptions = await client.recordings(recordingSid).transcriptions.list();
+            const transcriptions = await twilioClient.recordings(recordingSid).transcriptions.list();
             
             if (transcriptions.length > 0) {
-                const transcript = await client.transcriptions(transcriptions[0].sid).fetch();
+                const transcript = await twilioClient.transcriptions(transcriptions[0].sid).fetch();
                 return res.json({
                     success: true,
                     transcript: transcript.transcriptionText || 'لم يتم التعرف على نص'
@@ -1635,7 +1635,7 @@ app.post('/admin/transcribe', async (req, res) => {
             }
             
             // إنشاء transcription جديد
-            await client.recordings(recordingSid).transcriptions.create();
+            await twilioClient.recordings(recordingSid).transcriptions.create();
             
             return res.json({
                 success: true,

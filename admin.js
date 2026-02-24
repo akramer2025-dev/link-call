@@ -123,23 +123,32 @@ function updateDashboardStats(data) {
 // ========== تحميل جميع المكالمات ==========
 async function loadAllCalls() {
     try {
-        const response = await fetch(`${baseUrl}/admin/all-calls`);
+        // أولاً، محاولة جلب من admin/all-calls
+        let response = await fetch(`${baseUrl}/admin/all-calls`);
+        
         if (response.ok) {
-            allCalls = await response.json();
+            const data = await response.json();
+            allCalls = Array.isArray(data) ? data : [];
         } else {
-            // محاولة جلب من recordings
-            const recResponse = await fetch(`${baseUrl}/recordings`);
-            if (recResponse.ok) {
-                const data = await recResponse.json();
+            // محاولة جلب من recordings كبديل
+            console.log('📋 جلب من /recordings بدلاً من admin/all-calls');
+            response = await fetch(`${baseUrl}/recordings`);
+            if (response.ok) {
+                const data = await response.json();
                 allCalls = data.recordings || [];
+            } else {
+                allCalls = [];
             }
         }
         
+        console.log(`📊 تم تحميل ${allCalls.length} مكالمة`);
         renderCallsTable();
         renderRecentCalls();
         loadMissedCalls();
     } catch (error) {
         console.error('خطأ في تحميل المكالمات:', error);
+        allCalls = [];
+        renderCallsTable();
     }
 }
 
@@ -400,27 +409,53 @@ async function transcribeCall(recordingSid) {
         
         if (response.ok) {
             const data = await response.json();
-            statusText.textContent = '✅ تم التحويل بنجاح!';
             
-            setTimeout(() => {
+            if (data.pending) {
+                statusText.textContent = '⏳ جاري المعالجة...';
                 resultDiv.innerHTML = `
-                    <h4 style="margin-bottom: 15px;">النص المحول:</h4>
                     <div style="background: var(--bg-card-hover); padding: 20px; border-radius: 10px; line-height: 1.8;">
-                        ${data.transcript || 'لم يتم التعرف على نص'}
+                        <p style="color: var(--warning-color);">⏳ ${data.transcript}</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--text-muted);">يرجى المحاولة مرة أخرى بعد دقيقة.</p>
                     </div>
                 `;
-            }, 500);
+            } else if (data.note) {
+                statusText.textContent = 'ℹ️ ملاحظة';
+                resultDiv.innerHTML = `
+                    <div style="background: var(--bg-card-hover); padding: 20px; border-radius: 10px; line-height: 1.8;">
+                        <p>${data.transcript}</p>
+                        <p style="margin-top: 15px; font-size: 13px; color: var(--text-muted);">${data.note}</p>
+                    </div>
+                `;
+            } else {
+                statusText.textContent = '✅ تم التحويل بنجاح!';
+                setTimeout(() => {
+                    resultDiv.innerHTML = `
+                        <h4 style="margin-bottom: 15px;">النص المحول:</h4>
+                        <div style="background: var(--bg-card-hover); padding: 20px; border-radius: 10px; line-height: 1.8;">
+                            ${data.transcript || 'لم يتم التعرف على نص'}
+                        </div>
+                    `;
+                }, 500);
+            }
         } else {
-            throw new Error('فشل التحويل');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'فشل التحويل');
         }
     } catch (error) {
         console.error('خطأ في التحويل:', error);
-        statusText.textContent = '❌ حدث خطأ في التحويل';
+        statusText.textContent = '⚠️ خدمة التحويل';
         resultDiv.innerHTML = `
-            <p style="color: var(--danger-color);">
-                عذراً، لم نتمكن من تحويل هذا التسجيل. 
-                تأكد من أن التسجيل متاح وأن خدمة التحويل مفعلة.
-            </p>
+            <div style="padding: 20px; text-align: center;">
+                <p style="color: var(--warning-color); margin-bottom: 15px;">
+                    ⚠️ خدمة تحويل الصوت إلى نص غير متاحة حالياً
+                </p>
+                <p style="font-size: 14px; color: var(--text-muted); line-height: 1.8;">
+                    لتفعيل هذه الميزة، يجب تفعيل إحدى الخدمات التالية:<br>
+                    • Twilio Voice Intelligence<br>
+                    • Google Speech-to-Text API<br>
+                    • OpenAI Whisper API
+                </p>
+            </div>
         `;
     }
 }

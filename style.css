@@ -115,7 +115,6 @@ body::after {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-radius: 20px;
-    overflow: hidden;
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 1;
@@ -207,19 +206,20 @@ body::after {
 .sidebar {
     position: fixed;
     top: 0;
-    right: -280px;
-    width: 260px;
+    right: -300px;
+    width: 280px;
     height: 100vh;
     background: linear-gradient(180deg, rgba(10, 25, 47, 0.98) 0%, rgba(15, 35, 60, 0.98) 100%);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 80px 20px 20px;
-    box-shadow: -5px 0 30px rgba(0, 0, 0, 0.5);
+    padding: 90px 15px 20px;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
     z-index: 999;
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-left: 1px solid rgba(94, 196, 212, 0.2);
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 2px solid rgba(94, 196, 212, 0.3);
     overflow-y: auto;
 }
 
@@ -255,32 +255,39 @@ body::after {
 
 .menu-item {
     width: 100%;
-    padding: 15px;
+    padding: 18px 20px;
     text-align: center;
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: rgba(94, 196, 212, 0.1);
+    border: 1px solid rgba(94, 196, 212, 0.15);
 }
 
 .menu-item:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateX(-5px);
+    background: rgba(94, 196, 212, 0.25);
+    transform: scale(1.02);
+    border-color: rgba(94, 196, 212, 0.4);
 }
 
 .menu-item.active {
-    background: rgba(255, 255, 255, 0.2);
-    border-right: 4px solid var(--accent-color);
-    box-shadow: inset 0 0 20px rgba(240, 147, 251, 0.3);
+    background: linear-gradient(135deg, rgba(94, 196, 212, 0.3), rgba(30, 58, 95, 0.4));
+    border: 1px solid rgba(94, 196, 212, 0.5);
+    box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
 }
 
 .menu-item .icon {
-    font-size: 30px;
-    margin-bottom: 5px;
+    font-size: 28px;
+    margin-bottom: 6px;
+    display: block;
 }
 
 .menu-item .label {
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .badge {
@@ -299,14 +306,14 @@ body::after {
 }
 
 .online-indicator {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     background: var(--success-color);
     border-radius: 50%;
     position: absolute;
-    bottom: 5px;
-    right: 5px;
-    border: 3px solid white;
+    bottom: 3px;
+    right: 3px;
+    border: 2px solid rgba(10, 25, 47, 0.9);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     animation: pulse-indicator 2s infinite;
 }
@@ -322,25 +329,26 @@ body::after {
 
 .bottom-logo-container {
     margin-top: auto;
-    width: 115px;
-    height: 115px;
+    width: 80px;
+    height: 80px;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 auto 20px auto;
+    margin: auto auto 20px auto;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(94, 196, 212, 0.15);
     border-radius: 50%;
     backdrop-filter: blur(10px);
+    border: 2px solid rgba(94, 196, 212, 0.3);
 }
 
 .bottom-logo-img {
-    width: 120px;
-    height: 120px;
+    width: 70px;
+    height: 70px;
     object-fit: cover;
     border-radius: 50%;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* المحتوى الرئيسي */

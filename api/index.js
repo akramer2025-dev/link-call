@@ -1491,5 +1491,187 @@ app.get('/debug/data-status', async (req, res) => {
     }
 });
 
+// ========== Admin Dashboard APIs ==========
+
+// إحصائيات لوحة التحكم
+app.get('/admin/dashboard-stats', async (req, res) => {
+    try {
+        // جلب المكالمات من Twilio
+        const recordings = await getRecordingsFromTwilio();
+        const employees = await getEmployeesData();
+        
+        const completed = recordings.filter(r => r.status === 'completed').length;
+        const missed = recordings.filter(r => r.status === 'no-answer' || r.status === 'missed' || r.status === 'failed').length;
+        const totalDuration = recordings.reduce((sum, r) => sum + (parseInt(r.duration) || 0), 0);
+        
+        res.json({
+            totalCalls: recordings.length,
+            answeredCalls: completed,
+            missedCalls: missed,
+            activeEmployees: employees.employees.length,
+            totalDuration: totalDuration,
+            totalRecordings: recordings.filter(r => r.recordingUrl).length
+        });
+    } catch (error) {
+        console.error('خطأ في إحصائيات لوحة التحكم:', error);
+        res.json({
+            totalCalls: 0,
+            answeredCalls: 0,
+            missedCalls: 0,
+            activeEmployees: 0,
+            totalDuration: 0,
+            totalRecordings: 0
+        });
+    }
+});
+
+// جميع المكالمات
+app.get('/admin/all-calls', async (req, res) => {
+    try {
+        const calls = await getRecordingsFromTwilio();
+        res.json(calls);
+    } catch (error) {
+        console.error('خطأ في جلب المكالمات:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// جلب المكالمات من Twilio
+async function getRecordingsFromTwilio() {
+    if (!client) return [];
+    
+    try {
+        const calls = await client.calls.list({ limit: 500 });
+        const recordings = await client.recordings.list({ limit: 500 });
+        
+        // دمج بيانات التسجيلات مع المكالمات
+        const recordingsMap = new Map();
+        for (const rec of recordings) {
+            const callSid = rec.callSid;
+            if (!recordingsMap.has(callSid)) {
+                recordingsMap.set(callSid, []);
+            }
+            recordingsMap.get(callSid).push(rec);
+        }
+        
+        return calls.map(call => {
+            const callRecordings = recordingsMap.get(call.sid) || [];
+            const latestRecording = callRecordings[0];
+            
+            return {
+                sid: call.sid,
+                to: call.to,
+                from: call.from,
+                status: call.status,
+                duration: call.duration,
+                dateCreated: call.dateCreated,
+                direction: call.direction,
+                recordingSid: latestRecording?.sid,
+                recordingUrl: latestRecording ? `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Recordings/${latestRecording.sid}.mp3` : null,
+                employeeId: call.fromFormatted,
+                employeeName: null
+            };
+        });
+    } catch (error) {
+        console.error('خطأ في جلب المكالمات من Twilio:', error);
+        return [];
+    }
+}
+
+// حذف مكالمة
+app.delete('/admin/delete-call', async (req, res) => {
+    try {
+        const { callSid } = req.body;
+        
+        if (!callSid || !client) {
+            return res.status(400).json({ error: 'معرف المكالمة مطلوب' });
+        }
+        
+        // حذف التسجيلات المرتبطة بالمكالمة
+        const recordings = await client.recordings.list({ callSid });
+        for (const rec of recordings) {
+            await client.recordings(rec.sid).remove();
+        }
+        
+        console.log('✅ تم حذف المكالمة:', callSid);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('خطأ في حذف المكالمة:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// تحويل الصوت إلى نص (Speech-to-Text)
+app.post('/admin/transcribe', async (req, res) => {
+    try {
+        const { recordingSid } = req.body;
+        
+        if (!recordingSid) {
+            return res.status(400).json({ error: 'معرف التسجيل مطلوب' });
+        }
+        
+        // التحقق من وجود Twilio client
+        if (!client) {
+            return res.status(500).json({ error: 'خدمة Twilio غير متاحة' });
+        }
+        
+        // جلب URL التسجيل
+        const recording = await client.recordings(recordingSid).fetch();
+        const recordingUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Recordings/${recordingSid}.mp3`;
+        
+        // ملاحظة: Twilio يقدم خدمة Transcription مدمجة
+        // يمكن استخدامها أو استخدام خدمة خارجية مثل Google Speech-to-Text
+        
+        // محاولة استخدام Twilio Transcription
+        try {
+            const transcriptions = await client.recordings(recordingSid).transcriptions.list();
+            
+            if (transcriptions.length > 0) {
+                const transcript = await client.transcriptions(transcriptions[0].sid).fetch();
+                return res.json({
+                    success: true,
+                    transcript: transcript.transcriptionText || 'لم يتم التعرف على نص'
+                });
+            }
+            
+            // إنشاء transcription جديد
+            await client.recordings(recordingSid).transcriptions.create();
+            
+            return res.json({
+                success: true,
+                transcript: 'جاري معالجة التسجيل... يرجى المحاولة مرة أخرى بعد دقائق.',
+                pending: true
+            });
+        } catch (transcriptionError) {
+            console.log('Twilio Transcription غير متاح، جاري استخدام بديل...');
+            
+            // رسالة بديلة
+            return res.json({
+                success: true,
+                transcript: '⚠️ خدمة تحويل الصوت إلى نص غير متاحة حالياً. يمكنك تفعيل Twilio Intelligence أو خدمة Google Speech-to-Text للحصول على هذه الميزة.',
+                note: 'لتفعيل هذه الميزة، راجع وثائق Twilio Voice Intelligence'
+            });
+        }
+    } catch (error) {
+        console.error('خطأ في تحويل الصوت إلى نص:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// خدمة ملفات Admin Dashboard
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'admin.html'));
+});
+
+app.get('/admin-style.css', (req, res) => {
+    res.setHeader('Content-Type', 'text/css');
+    res.sendFile(path.join(__dirname, '..', 'admin-style.css'));
+});
+
+app.get('/admin.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.sendFile(path.join(__dirname, '..', 'admin.js'));
+});
+
 // Export for Vercel serverless
 module.exports = app;

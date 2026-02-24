@@ -1799,6 +1799,16 @@ function displayUserInfo() {
         const roleText = role === 'admin' ? '👑 مطور رئيسي' : '👨‍💼 مدير';
         headerRole.textContent = roleText;
     }
+    
+    // إظهار زر لوحة التحكم للأدمن فقط
+    const adminLinkBtn = document.getElementById('admin-link-btn');
+    if (adminLinkBtn) {
+        if (role === 'admin' || username === 'akram') {
+            adminLinkBtn.style.display = 'flex';
+        } else {
+            adminLinkBtn.style.display = 'none';
+        }
+    }
 }
 
 // تحميل معلومات المستخدم عند فتح الصفحة

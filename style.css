@@ -2732,3 +2732,172 @@ input:checked + .slider:before {
         font-size: 24px;
     }
 }
+
+/* تصغير حجم التطبيق على الهاتف */
+@media (max-width: 600px) {
+    body {
+        font-size: 13px;
+    }
+    
+    .header {
+        padding: 8px 10px !important;
+    }
+    
+    .header h1 {
+        font-size: 1.1em !important;
+    }
+    
+    /* تصغير الشريط الجانبي */
+    .sidebar {
+        padding: 6px 0 !important;
+    }
+    
+    .logo {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .menu-item {
+        padding: 6px 8px !important;
+        font-size: 10px !important;
+    }
+    
+    .menu-item span:first-child {
+        font-size: 16px !important;
+    }
+    
+    /* تصغير لوحة الاتصال */
+    .dialpad {
+        padding: 12px !important;
+        border-radius: 15px !important;
+    }
+    
+    .phone-display {
+        padding: 12px 15px !important;
+        min-height: 50px !important;
+        margin-bottom: 12px !important;
+        border-radius: 12px !important;
+    }
+    
+    .phone-display input {
+        font-size: 20px !important;
+    }
+    
+    .number-pad {
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .num-btn {
+        min-height: 50px !important;
+        padding: 10px 6px !important;
+        border-radius: 12px !important;
+    }
+    
+    .num-btn .number {
+        font-size: 20px !important;
+    }
+    
+    .num-btn .letters {
+        font-size: 8px !important;
+    }
+    
+    .call-btn {
+        padding: 12px !important;
+        font-size: 24px !important;
+        border-radius: 14px !important;
+    }
+    
+    /* تصغير اختيار رقم الاتصال */
+    .caller-id-selector {
+        padding: 8px 10px !important;
+        margin: 8px 0 !important;
+        gap: 6px !important;
+    }
+    
+    .caller-id-selector label {
+        font-size: 11px !important;
+    }
+    
+    .caller-id-dropdown {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        min-width: 120px !important;
+    }
+    
+    /* تصغير الرصيد */
+    .balance-header {
+        padding: 8px 12px !important;
+        border-radius: 15px !important;
+        gap: 6px !important;
+    }
+    
+    .balance-header-amount {
+        font-size: 14px !important;
+    }
+    
+    .balance-header-currency {
+        font-size: 10px !important;
+    }
+    
+    .balance-icon {
+        font-size: 14px !important;
+    }
+    
+    /* تصغير معلومات المستخدم */
+    .user-info {
+        font-size: 11px !important;
+    }
+    
+    .user-badge {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+    }
+    
+    .logout-btn {
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+    }
+    
+    /* تصغير الشاشة الرئيسية */
+    .main-content {
+        padding: 8px !important;
+    }
+    
+    h2 {
+        font-size: 1em !important;
+    }
+    
+    .nav-tabs {
+        gap: 4px !important;
+    }
+    
+    .nav-item {
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+    }
+    
+    /* تصغير قوائم التسجيلات */
+    .recording-item {
+        padding: 10px !important;
+    }
+    
+    .recording-info {
+        gap: 3px !important;
+    }
+    
+    /* تصغير النماذج */
+    .modal-content {
+        padding: 12px !important;
+    }
+    
+    .form-group label {
+        font-size: 12px !important;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 8px 10px !important;
+        font-size: 13px !important;
+    }
+}

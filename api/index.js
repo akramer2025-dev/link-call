@@ -1526,8 +1526,23 @@ app.get('/call-history', async (req, res) => {
 
 // جلب قائمة المديرين
 app.get('/employees', async (req, res) => {
-    const data = await getEmployeesData();
-    res.json(data);
+    try {
+        const data = await getEmployeesData();
+        
+        // إرسال المديرين مع أسماء الأقسام
+        const employeesWithDepts = data.employees.map(emp => ({
+            ...emp,
+            departmentName: data.departments && data.departments[emp.department] ? data.departments[emp.department].name : ''
+        }));
+        
+        res.json({
+            employees: employeesWithDepts,
+            departments: data.departments || {}
+        });
+    } catch (error) {
+        console.error('❌ خطأ في جلب المديرين:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // إضافة مدير جديد
@@ -1670,27 +1685,6 @@ app.post('/login', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ خطأ في تسجيل الدخول:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// جلب قائمة المديرين
-app.get('/employees', async (req, res) => {
-    try {
-        const data = await getEmployeesData();
-        
-        // إرسال المديرين مع أسماء الأقسام
-        const employeesWithDepts = data.employees.map(emp => ({
-            ...emp,
-            departmentName: data.departments[emp.department]?.name || ''
-        }));
-        
-        res.json({
-            employees: employeesWithDepts,
-            departments: data.departments
-        });
-    } catch (error) {
-        console.error('❌ خطأ في جلب المديرين:', error);
         res.status(500).json({ error: error.message });
     }
 });

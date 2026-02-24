@@ -1864,6 +1864,76 @@ app.delete('/employees/:id', async (req, res) => {
     }
 });
 
+// تحديث بيانات مدير (PUT)
+app.put('/employees/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const { name, fullname, phone, password, role, department, permissions } = req.body;
+        const employeeName = name || fullname; // قبول كلا المتغيرين
+        
+        console.log('📝 تحديث مدير ID:', id, req.body);
+        
+        const data = await getEmployeesData();
+        
+        const employeeIndex = data.employees.findIndex(emp => emp.id === id);
+        
+        if (employeeIndex === -1) {
+            return res.status(404).json({ error: 'المدير غير موجود' });
+        }
+        
+        const employee = data.employees[employeeIndex];
+        const oldDepartment = employee.department;
+        const oldPhone = employee.phone;
+        
+        // تحديث البيانات
+        if (employeeName) employee.name = employeeName;
+        if (phone) employee.phone = phone;
+        if (password) employee.password = password;
+        if (role) employee.role = role;
+        if (department) employee.department = department;
+        if (permissions) employee.permissions = permissions;
+        
+        // إذا تغير القسم، تحديث الأقسام
+        if (department && department !== oldDepartment) {
+            // إزالة من القسم القديم
+            if (data.departments[oldDepartment]) {
+                const idx = data.departments[oldDepartment].employees.indexOf(oldPhone);
+                if (idx > -1) {
+                    data.departments[oldDepartment].employees.splice(idx, 1);
+                }
+            }
+            // إضافة للقسم الجديد
+            if (data.departments[department]) {
+                if (!data.departments[department].employees.includes(employee.phone)) {
+                    data.departments[department].employees.push(employee.phone);
+                }
+            }
+        }
+        
+        // إذا تغير الهاتف، تحديث في القسم
+        if (phone && phone !== oldPhone && data.departments[employee.department]) {
+            const idx = data.departments[employee.department].employees.indexOf(oldPhone);
+            if (idx > -1) {
+                data.departments[employee.department].employees[idx] = phone;
+            }
+        }
+        
+        // حفظ البيانات
+        await saveEmployeesData(data);
+        
+        console.log('✅ تم تحديث المدير:', employee.name);
+        
+        res.json({
+            success: true,
+            message: 'تم تحديث بيانات المدير بنجاح',
+            employee: employee
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تحديث المدير:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ========== إدارة جهات الاتصال ==========
 
 // بيانات جهات الاتصال الافتراضية

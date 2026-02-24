@@ -1570,9 +1570,12 @@ app.post('/employees', async (req, res) => {
         
         data.employees.push(newEmployee);
         
-        // إضافة المدير لقسمه
-        if (data.departments[department]) {
-            if (!data.departments[department].employees.includes(phone)) {
+        // إضافة المدير لقسمه (التحقق من وجود الـ array)
+        if (data.departments && data.departments[department]) {
+            if (!data.departments[department].employees) {
+                data.departments[department].employees = [];
+            }
+            if (phone && !data.departments[department].employees.includes(phone)) {
                 data.departments[department].employees.push(phone);
             }
         }
@@ -1667,98 +1670,6 @@ app.post('/login', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ خطأ في تسجيل الدخول:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// إضافة أو تعديل مدير
-app.post('/employees', async (req, res) => {
-    try {
-        const { id, name, username, password, department, phone, permissions } = req.body;
-        
-        console.log('👤 حفظ مدير:', { name, username, department, permissions });
-        
-        const data = await getEmployeesData();
-        
-        // التحقق من عدم تكرار اسم المستخدم
-        if (!id) {
-            const existingUser = data.employees.find(emp => emp.username === username);
-            if (existingUser) {
-                console.log('❌ اسم المستخدم موجود مسبقاً:', username);
-                return res.status(400).json({ error: 'اسم المستخدم موجود مسبقاً' });
-            }
-        }
-        
-        if (id) {
-            // تعديل مدير موجود
-            const employeeIndex = data.employees.findIndex(emp => emp.id === id);
-            
-            if (employeeIndex === -1) {
-                return res.status(404).json({ error: 'المدير غير موجود' });
-            }
-            
-            // تحديث البيانات
-            data.employees[employeeIndex] = {
-                ...data.employees[employeeIndex],
-                name,
-                username,
-                password: password || data.employees[employeeIndex].password,
-                department,
-                phone,
-                permissions: permissions || {},
-                updatedAt: new Date().toISOString()
-            };
-            
-            console.log('✅ تم تحديث المدير:', name);
-        } else {
-            // إضافة مدير جديد
-            const newId = data.employees.length > 0 
-                ? Math.max(...data.employees.map(e => e.id)) + 1 
-                : 1;
-            
-            const newEmployee = {
-                id: newId,
-                name,
-                username,
-                password,
-                department,
-                phone: phone || '',
-                permissions: permissions || {
-                    viewOwnRecordings: false,
-                    viewAllRecordings: false,
-                    deleteRecordings: false,
-                    editProfile: false
-                },
-                createdAt: new Date().toISOString()
-            };
-            
-            data.employees.push(newEmployee);
-            
-            // إضافة للقسم
-            if (data.departments[department]) {
-                if (!data.departments[department].employees) {
-                    data.departments[department].employees = [];
-                }
-                if (phone) {
-                    data.departments[department].employees.push(phone);
-                }
-            }
-            
-            console.log('✅ تم إضافة مدير جديد:', name, 'بمعرف:', newId);
-        }
-        
-        // حفظ البيانات
-        const saved = await saveEmployeesData(data);
-        
-        if (!saved) {
-            throw new Error('فشل في حفظ البيانات في قاعدة البيانات');
-        }
-        
-        console.log('💾 تم حفظ البيانات بنجاح');
-        
-        res.json({ success: true, message: 'تم حفظ المدير بنجاح' });
-    } catch (error) {
-        console.error('❌ خطأ في حفظ المدير:', error);
         res.status(500).json({ error: error.message });
     }
 });

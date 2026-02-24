@@ -1023,6 +1023,92 @@ app.post('/join-conference', (req, res) => {
     res.send(twiml.toString());
 });
 
+// ==================== استقبال المكالمات في المتصفح ====================
+
+// استقبال مكالمة واردة وتحويلها للمتصفح مباشرة
+app.post('/incoming-to-browser', async (req, res) => {
+    const fromNumber = req.body.From || 'Unknown';
+    const toNumber = req.body.To || '';
+    const callSid = req.body.CallSid;
+    
+    console.log('📞 ================ مكالمة واردة للمتصفح ================');
+    console.log('📞 من:', fromNumber);
+    console.log('📱 إلى:', toNumber);
+    console.log('🆔 Call SID:', callSid);
+    
+    const twiml = new twilio.twiml.VoiceResponse();
+    
+    // البحث عن المطور المتصل (المتاح في المتصفح)
+    // يمكن تحديد identity معين أو استخدام default
+    const defaultIdentity = 'employee_admin'; // المطور الرئيسي
+    
+    // رسالة للمتصل أثناء الانتظار
+    twiml.say({
+        voice: 'Polly.Zeina',
+        language: 'ar-AE'
+    }, 'جاري توصيلك، الرجاء الانتظار');
+    
+    // تحويل المكالمة للمتصفح
+    const dial = twiml.dial({
+        callerId: fromNumber,
+        timeout: 30,
+        record: 'record-from-answer',
+        recordingStatusCallback: '/recording-status?employeeId=admin',
+        recordingStatusCallbackEvent: ['completed'],
+        action: '/incoming-call-status',
+        method: 'POST'
+    });
+    
+    // الاتصال بالـ Client في المتصفح
+    // سيتم توجيه المكالمة لكل الـ clients المسجلين بهذا الـ identity
+    dial.client({
+        statusCallback: '/client-call-status',
+        statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed']
+    }, defaultIdentity);
+    
+    // إذا لم يرد أحد
+    twiml.say({
+        voice: 'Polly.Zeina',
+        language: 'ar-AE'
+    }, 'عذراً، لا يوجد أحد متاح حالياً. يرجى المحاولة لاحقاً.');
+    
+    res.type('text/xml');
+    res.send(twiml.toString());
+});
+
+// معالجة حالة المكالمة الواردة
+app.post('/incoming-call-status', (req, res) => {
+    console.log('📞 حالة المكالمة الواردة:', {
+        callSid: req.body.CallSid,
+        dialCallStatus: req.body.DialCallStatus,
+        dialCallDuration: req.body.DialCallDuration
+    });
+    
+    const twiml = new twilio.twiml.VoiceResponse();
+    
+    // إذا لم يتم الرد
+    if (req.body.DialCallStatus !== 'completed') {
+        twiml.say({
+            voice: 'Polly.Zeina',
+            language: 'ar-AE'
+        }, 'عذراً، لم يتم الرد. شكراً لاتصالك.');
+    }
+    
+    res.type('text/xml');
+    res.send(twiml.toString());
+});
+
+// حالة الـ Client call
+app.post('/client-call-status', (req, res) => {
+    console.log('📱 حالة Client Call:', {
+        callSid: req.body.CallSid,
+        callStatus: req.body.CallStatus
+    });
+    res.sendStatus(200);
+});
+
+// ==================== نهاية استقبال المكالمات ====================
+
 // TwiML للمكالمات الواردة - نظام IVR
 app.post('/voice', (req, res) => {
     const twiml = new twilio.twiml.VoiceResponse();

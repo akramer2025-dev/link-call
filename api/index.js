@@ -1642,27 +1642,54 @@ app.post('/admin/transcribe', async (req, res) => {
             throw new Error('فشل في تحميل ملف التسجيل');
         }
         
-        const audioBuffer = await audioResponse.arrayBuffer();
+        const audioBuffer = Buffer.from(await audioResponse.arrayBuffer());
         console.log('📥 تم تحميل الملف، الحجم:', audioBuffer.byteLength, 'bytes');
         
-        // إرسال إلى OpenAI Whisper API
-        const FormData = require('form-data');
-        const formData = new FormData();
-        formData.append('file', Buffer.from(audioBuffer), {
-            filename: `${recordingSid}.mp3`,
-            contentType: 'audio/mpeg'
-        });
-        formData.append('model', 'whisper-1');
-        formData.append('language', 'ar'); // اللغة العربية
-        formData.append('response_format', 'json');
+        // إنشاء boundary للـ multipart form
+        const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
+        
+        // بناء الـ multipart يدوياً
+        const parts = [];
+        
+        // إضافة الملف
+        parts.push(
+            `--${boundary}\r\n` +
+            `Content-Disposition: form-data; name="file"; filename="${recordingSid}.mp3"\r\n` +
+            `Content-Type: audio/mpeg\r\n\r\n`
+        );
+        parts.push(audioBuffer);
+        parts.push('\r\n');
+        
+        // إضافة model
+        parts.push(
+            `--${boundary}\r\n` +
+            `Content-Disposition: form-data; name="model"\r\n\r\n` +
+            `whisper-1\r\n`
+        );
+        
+        // إضافة language
+        parts.push(
+            `--${boundary}\r\n` +
+            `Content-Disposition: form-data; name="language"\r\n\r\n` +
+            `ar\r\n`
+        );
+        
+        // إنهاء الـ form
+        parts.push(`--${boundary}--\r\n`);
+        
+        // دمج الأجزاء
+        const bodyParts = parts.map(part => 
+            typeof part === 'string' ? Buffer.from(part) : part
+        );
+        const body = Buffer.concat(bodyParts);
         
         const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                ...formData.getHeaders()
+                'Content-Type': `multipart/form-data; boundary=${boundary}`
             },
-            body: formData
+            body: body
         });
         
         if (!whisperResponse.ok) {

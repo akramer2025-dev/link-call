@@ -61,6 +61,73 @@ if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.
     console.log('📱 التطبيق يعمل كـ PWA مثبت');
 }
 
+// ===== تتبع المستخدمين الأونلاين =====
+let heartbeatInterval = null;
+
+// إرسال نبضة للخادم
+async function sendHeartbeat() {
+    const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
+    const userName = sessionStorage.getItem('fullname') || localStorage.getItem('employeeName') || 'مستخدم';
+    
+    if (!userId) return;
+    
+    try {
+        await fetch(`${window.location.origin}/heartbeat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, userName })
+        });
+    } catch (error) {
+        console.error('خطأ في إرسال Heartbeat:', error);
+    }
+}
+
+// بدء تتبع المستخدم الأونلاين
+function startOnlineTracking() {
+    const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
+    const userName = sessionStorage.getItem('fullname') || localStorage.getItem('employeeName');
+    
+    if (!userId) return;
+    
+    // تسجيل الدخول
+    fetch(`${window.location.origin}/track-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, userName })
+    }).catch(err => console.error('خطأ في تسجيل الدخول:', err));
+    
+    // إرسال Heartbeat كل 15 ثانية
+    sendHeartbeat();
+    heartbeatInterval = setInterval(sendHeartbeat, 15000);
+    
+    console.log('🟢 بدأ تتبع الأونلاين للمستخدم:', userName);
+}
+
+// إيقاف تتبع المستخدم عند الخروج
+function stopOnlineTracking() {
+    const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
+    
+    if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+    }
+    
+    if (userId) {
+        // إرسال طلب تسجيل الخروج
+        navigator.sendBeacon(`${window.location.origin}/track-logout`, JSON.stringify({ userId }));
+    }
+}
+
+// بدء التتبع عند تحميل الصفحة
+window.addEventListener('load', () => {
+    startOnlineTracking();
+});
+
+// إيقاف التتبع عند إغلاق الصفحة
+window.addEventListener('beforeunload', () => {
+    stopOnlineTracking();
+});
+
 // 🔥 DEBUG: طباعة معلومات في بداية التحميل
 console.log('🔥 app.js loaded - Version: 2.0.20251218');
 console.log('🔥 Current URL:', window.location.href);

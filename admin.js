@@ -134,9 +134,100 @@ async function loadDashboardData() {
                 totalRecordings: allRecordings.length
             });
         }
+        
+        // تحميل المستخدمين الأونلاين
+        loadOnlineUsers();
+        // تحديث كل 10 ثواني
+        setInterval(loadOnlineUsers, 10000);
     } catch (error) {
         console.error('خطأ في تحميل الإحصائيات:', error);
     }
+}
+
+// ========== تحميل المستخدمين الأونلاين ==========
+async function loadOnlineUsers() {
+    try {
+        const response = await fetch(`${baseUrl}/online-users`);
+        if (response.ok) {
+            const data = await response.json();
+            renderOnlineUsers(data);
+        }
+    } catch (error) {
+        console.error('خطأ في تحميل المستخدمين الأونلاين:', error);
+    }
+}
+
+function renderOnlineUsers(data) {
+    const countEl = document.getElementById('online-count');
+    const listEl = document.getElementById('online-users-list');
+    const lastLoginEl = document.getElementById('last-login-info');
+    
+    // تحديث العدد
+    if (countEl) {
+        countEl.textContent = data.count || 0;
+    }
+    
+    // عرض قائمة المستخدمين الأونلاين
+    if (listEl) {
+        if (data.users && data.users.length > 0) {
+            listEl.innerHTML = data.users.map(user => `
+                <div class="online-user-item">
+                    <div class="online-avatar">👤</div>
+                    <div class="online-user-info">
+                        <div class="online-user-name">${user.name}</div>
+                        <div class="online-user-time">دخل ${formatTimeAgo(user.loginTime)}</div>
+                    </div>
+                    <div class="online-duration">${user.onlineDuration} دقيقة</div>
+                </div>
+            `).join('');
+        } else {
+            listEl.innerHTML = '<div class="no-users">🔴 لا يوجد مستخدمين أونلاين حالياً</div>';
+        }
+    }
+    
+    // عرض آخر تسجيل دخول
+    if (lastLoginEl) {
+        if (data.lastLoggedIn) {
+            const loginTime = new Date(data.lastLoggedIn.loginTime);
+            lastLoginEl.innerHTML = `
+                <div class="last-login-user">
+                    <div class="last-login-avatar">👤</div>
+                    <div class="last-login-details">
+                        <div class="last-login-name">${data.lastLoggedIn.name}</div>
+                        <div class="last-login-time">
+                            <span>${loginTime.toLocaleDateString('ar-EG')}</span>
+                            الساعة
+                            <span>${loginTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            lastLoginEl.innerHTML = '<div class="no-login">لا توجد بيانات تسجيل دخول</div>';
+        }
+    }
+    
+    // تحديث عدد الموظفين النشطين في الإحصائيات
+    const activeEmployeesEl = document.getElementById('active-employees');
+    if (activeEmployeesEl) {
+        activeEmployeesEl.textContent = data.count || 0;
+    }
+}
+
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'الآن';
+    if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `منذ ${diffHours} ساعة`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    return `منذ ${diffDays} يوم`;
 }
 
 function updateDashboardStats(data) {

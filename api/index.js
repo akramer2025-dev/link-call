@@ -2284,5 +2284,96 @@ app.get('/admin.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'admin.js'));
 });
 
+// ===== تتبع المستخدمين الأونلاين =====
+let onlineUsers = new Map(); // { odUserId: { name, lastSeen, loginTime } }
+let lastLoggedInUser = null;
+
+// Heartbeat - إرسال نبضة من المستخدم للتأكيد على أنه أونلاين
+app.post('/heartbeat', (req, res) => {
+    const { userId, userName } = req.body;
+    
+    if (!userId) {
+        return res.status(400).json({ error: 'userId مطلوب' });
+    }
+    
+    const now = new Date();
+    const existingUser = onlineUsers.get(userId);
+    
+    onlineUsers.set(userId, {
+        name: userName || 'مستخدم',
+        lastSeen: now,
+        loginTime: existingUser?.loginTime || now
+    });
+    
+    console.log(`💓 Heartbeat من: ${userName} (${userId})`);
+    res.json({ success: true, time: now });
+});
+
+// تسجيل الدخول - تتبع آخر مستخدم
+app.post('/track-login', (req, res) => {
+    const { userId, userName } = req.body;
+    
+    const now = new Date();
+    
+    // حفظ آخر مستخدم سجل دخول
+    lastLoggedInUser = {
+        userId,
+        name: userName,
+        loginTime: now
+    };
+    
+    // إضافة للمستخدمين الأونلاين
+    onlineUsers.set(userId, {
+        name: userName,
+        lastSeen: now,
+        loginTime: now
+    });
+    
+    console.log(`🔐 تسجيل دخول: ${userName} (${userId}) في ${now.toLocaleTimeString('ar-EG')}`);
+    res.json({ success: true });
+});
+
+// تسجيل الخروج
+app.post('/track-logout', (req, res) => {
+    const { userId } = req.body;
+    
+    if (userId) {
+        const user = onlineUsers.get(userId);
+        console.log(`👋 تسجيل خروج: ${user?.name || userId}`);
+        onlineUsers.delete(userId);
+    }
+    
+    res.json({ success: true });
+});
+
+// الحصول على المستخدمين الأونلاين
+app.get('/online-users', (req, res) => {
+    const now = new Date();
+    const TIMEOUT = 30000; // 30 ثانية - إذا لم يرسل heartbeat يعتبر أوفلاين
+    
+    // تنظيف المستخدمين غير النشطين
+    for (const [userId, userData] of onlineUsers.entries()) {
+        if (now - userData.lastSeen > TIMEOUT) {
+            console.log(`⚠️ المستخدم ${userData.name} أصبح أوفلاين (انتهت المهلة)`);
+            onlineUsers.delete(userId);
+        }
+    }
+    
+    // تحويل Map لـ Array
+    const users = Array.from(onlineUsers.entries()).map(([userId, data]) => ({
+        userId,
+        name: data.name,
+        loginTime: data.loginTime,
+        lastSeen: data.lastSeen,
+        onlineDuration: Math.floor((now - data.loginTime) / 1000 / 60) // بالدقائق
+    }));
+    
+    res.json({
+        count: users.length,
+        users,
+        lastLoggedIn: lastLoggedInUser
+    });
+});
+
 // Export for Vercel serverless
 module.exports = app;

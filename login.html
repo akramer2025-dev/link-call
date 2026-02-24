@@ -209,6 +209,10 @@
                     sessionStorage.setItem('canViewAllRecordings', permissions.viewAllRecordings ? 'true' : 'false');
                     sessionStorage.setItem('canDeleteRecordings', permissions.deleteRecordings ? 'true' : 'false');
                     sessionStorage.setItem('canEditProfile', permissions.editProfile ? 'true' : 'false');
+                    // صلاحيات الاتصال
+                    sessionStorage.setItem('canCallFromUSA', permissions.callFromUSA !== false ? 'true' : 'false');
+                    sessionStorage.setItem('canCallFromEgypt', permissions.callFromEgypt ? 'true' : 'false');
+                    sessionStorage.setItem('canCallFromSaudi', permissions.callFromSaudi ? 'true' : 'false');
                     
                     console.log('✅ تم تسجيل الدخول:', data.employee.name);
                     console.log('🔐 الصلاحيات:', permissions);

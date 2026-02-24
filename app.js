@@ -638,7 +638,64 @@ document.addEventListener('DOMContentLoaded', () => {
     if ('Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission();
     }
+    
+    // تصفية خيارات الاتصال بناءً على صلاحيات الموظف
+    filterCallerIdOptions();
 });
+
+// تصفية خيارات رقم المتصل بناءً على الصلاحيات
+function filterCallerIdOptions() {
+    const callerIdSelect = document.getElementById('caller-id-select');
+    if (!callerIdSelect) return;
+    
+    const userRole = sessionStorage.getItem('userRole');
+    
+    // المطور لديه كل الصلاحيات
+    if (userRole === 'admin') {
+        console.log('🔓 المدير لديه كل صلاحيات الاتصال');
+        return;
+    }
+    
+    // قراءة الصلاحيات
+    const canCallFromUSA = sessionStorage.getItem('canCallFromUSA') !== 'false';
+    const canCallFromEgypt = sessionStorage.getItem('canCallFromEgypt') === 'true';
+    const canCallFromSaudi = sessionStorage.getItem('canCallFromSaudi') === 'true';
+    
+    console.log('📞 صلاحيات الاتصال:', { canCallFromUSA, canCallFromEgypt, canCallFromSaudi });
+    
+    // إخفاء الخيارات غير المسموح بها
+    const options = callerIdSelect.querySelectorAll('option');
+    options.forEach(option => {
+        const value = option.value;
+        
+        if (value === 'default' && !canCallFromUSA) {
+            option.style.display = 'none';
+            option.disabled = true;
+        } else if (value === 'zadarma-egypt' && !canCallFromEgypt) {
+            option.style.display = 'none';
+            option.disabled = true;
+        } else if (value === 'zadarma-saudi' && !canCallFromSaudi) {
+            option.style.display = 'none';
+            option.disabled = true;
+        }
+    });
+    
+    // اختيار أول خيار متاح
+    const firstAvailable = callerIdSelect.querySelector('option:not([disabled])');
+    if (firstAvailable) {
+        callerIdSelect.value = firstAvailable.value;
+    }
+    
+    // إذا لم يكن هناك أي صلاحية
+    if (!canCallFromUSA && !canCallFromEgypt && !canCallFromSaudi) {
+        callerIdSelect.innerHTML = '<option value="" disabled selected>❌ لا توجد صلاحيات اتصال</option>';
+        const callBtn = document.getElementById('call-btn');
+        if (callBtn) {
+            callBtn.disabled = true;
+            callBtn.title = 'لا توجد لديك صلاحيات للاتصال';
+        }
+    }
+}
 
 // مراقبة حالة المكالمة (لن تُستخدم مع SDK)
 function startCallMonitoring() {
@@ -1549,6 +1606,12 @@ async function loadEmployeesList() {
             if (perms.viewAllRecordings) permsList.push('📊 تسجيلات عامة');
             if (perms.deleteRecordings) permsList.push('🗑️ مسح');
             if (perms.editProfile) permsList.push('✏️ تعديل');
+            // صلاحيات الاتصال
+            const callPerms = [];
+            if (perms.callFromUSA) callPerms.push('🇺🇸');
+            if (perms.callFromEgypt) callPerms.push('🇪🇬');
+            if (perms.callFromSaudi) callPerms.push('🇸🇦');
+            if (callPerms.length > 0) permsList.push('📞 ' + callPerms.join(' '));
             
             // التحقق إذا كان حساب تجريبي
             const trialBadge = emp.isTrial || emp.role === 'trial' 
@@ -1621,7 +1684,11 @@ if (addEmployeeBtn) {
             viewOwnRecordings: document.getElementById('emp-perm-view-own-recordings')?.checked || false,
             viewAllRecordings: document.getElementById('emp-perm-view-all-recordings')?.checked || false,
             deleteRecordings: document.getElementById('emp-perm-delete-recordings')?.checked || false,
-            editProfile: document.getElementById('emp-perm-edit-profile')?.checked || false
+            editProfile: document.getElementById('emp-perm-edit-profile')?.checked || false,
+            // صلاحيات الاتصال من الدول
+            callFromUSA: document.getElementById('emp-perm-call-usa')?.checked || false,
+            callFromEgypt: document.getElementById('emp-perm-call-egypt')?.checked || false,
+            callFromSaudi: document.getElementById('emp-perm-call-saudi')?.checked || false
         };
         
         console.log('📝 بيانات المدير:', { username, name, department, permissions });
@@ -1675,6 +1742,10 @@ if (addEmployeeBtn) {
                 document.getElementById('emp-perm-view-all-recordings').checked = false;
                 document.getElementById('emp-perm-delete-recordings').checked = false;
                 document.getElementById('emp-perm-edit-profile').checked = false;
+                // إعادة تعيين صلاحيات الاتصال
+                document.getElementById('emp-perm-call-usa').checked = true; // أمريكا افتراضي
+                document.getElementById('emp-perm-call-egypt').checked = false;
+                document.getElementById('emp-perm-call-saudi').checked = false;
                 
                 // تحديث القائمة
                 await loadEmployeesList();

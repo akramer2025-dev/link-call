@@ -1108,16 +1108,43 @@ document.getElementById('add-company-btn')?.addEventListener('click', () => {
 document.getElementById('add-company-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    const companyName = document.getElementById('company-name').value.trim();
+    const companyPhone = document.getElementById('company-phone')?.value.trim() || '';
+    const companyEmail = document.getElementById('company-email')?.value.trim() || '';
+    const adminUsername = document.getElementById('company-admin-username').value.trim();
+    const adminName = document.getElementById('company-admin-name').value.trim();
+    const adminPassword = document.getElementById('company-admin-password').value;
+    const subscription = document.getElementById('company-subscription').value;
+    
+    // التحقق من البيانات
+    if (!companyName || !adminUsername || !adminName || !adminPassword) {
+        alert('❌ يرجى إدخال جميع البيانات المطلوبة');
+        return;
+    }
+    
+    if (adminPassword.length < 8) {
+        alert('❌ كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+        return;
+    }
+    
     const data = {
-        name: document.getElementById('company-name').value,
-        adminUsername: document.getElementById('company-admin-username').value,
-        adminName: document.getElementById('company-admin-name').value,
-        adminPassword: document.getElementById('company-admin-password').value,
-        subscription: document.getElementById('company-subscription').value
+        companyName,
+        companyPhone,
+        companyEmail,
+        adminUsername,
+        adminName,
+        adminPassword,
+        subscription
     };
     
+    // عرض مؤشر تحميل
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.textContent = '⏳ جاري الإنشاء...';
+    submitButton.disabled = true;
+    
     try {
-        const response = await fetch(`${baseUrl}/companies`, {
+        const response = await fetch(`${baseUrl}/api/company-management`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -1126,15 +1153,41 @@ document.getElementById('add-company-form')?.addEventListener('submit', async (e
         const result = await response.json();
         
         if (response.ok && result.success) {
-            alert(`✅ تم إنشاء الشركة بنجاح!\n\nاسم المستخدم: ${result.admin.username}\nيمكن للمدير الدخول الآن.`);
+            alert(`✅ تم إنشاء الشركة بنجاح! 🎉\n\n` +
+                  `📝 اسم الشركة: ${companyName}\n` +
+                  `👤 اسم المدير: ${adminName}\n` +
+                  `🔑 اسم المستخدم: ${adminUsername}\n` +
+                  `📦 الباقة: ${subscription === 'basic' ? 'أساسي' : subscription === 'pro' ? 'احترافي' : 'غير محدود'}\n` +
+                  `🆔 معرف الشركة: ${result.company.id}\n\n` +
+                  `✅ تم إنشاء قاعدة بيانات منفصلة تماماً للشركة\n` +
+                  `✅ تم إنشاء حساب المدير مع صلاحيات كاملة\n\n` +
+                  `يمكن للمدير تسجيل الدخول الآن والبدء في العمل! 🚀`);
+            
             document.getElementById('add-company-modal').classList.remove('active');
             document.getElementById('add-company-form').reset();
-            loadCompanies();
+            
+            // إعادة تعيين البطاقات
+            document.querySelectorAll('.subscription-card').forEach(card => {
+                card.style.borderColor = '#e0e6f0';
+                card.style.background = 'white';
+            });
+            document.querySelector('.subscription-card[data-plan="basic"]').style.borderColor = '#667eea';
+            document.querySelector('.subscription-card[data-plan="basic"]').style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
+            
+            // تحديث قائمة الشركات إذا كانت موجودة
+            if (typeof loadCompanies === 'function') {
+                await loadCompanies();
+            }
         } else {
-            alert('❌ ' + (result.error || 'خطأ في إنشاء الشركة'));
+            alert('❌ فشل في إنشاء الشركة\n\n' + (result.error || 'خطأ غير معروف'));
         }
     } catch (error) {
-        alert('❌ خطأ في الاتصال بالخادم');
+        console.error('❌ خطأ في إضافة الشركة:', error);
+        alert('❌ خطأ في الاتصال بالخادم\n\nالرجاء المحاولة مرة أخرى');
+    } finally {
+        // إعادة تفعيل الزر
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
     }
 });
 

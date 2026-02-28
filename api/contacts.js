@@ -1,169 +1,297 @@
-const fs = require('fs');
-const path = require('path');
+const { readCompanyData, writeCompanyData, logCompanyActivity } = require('../utils/company-database');
 
-// استيراد Vercel KV للتخزين السحابي المركزي
-let kv;
-try {
-    kv = require('@vercel/kv').kv;
-    console.log('✅ Vercel KV متاح - سيتم استخدام التخزين المركزي');
-} catch (error) {
-    console.log('⚠️ Vercel KV غير متاح - سيتم استخدام التخزين المحلي');
-}
+/**
+ * إدارة جهات الاتصال - نظام قواعد بيانات منفصلة لكل شركة
+ * 
+ * كل شركة لها ملف contacts.json خاص بها في:
+ * companies-data/{companyId}/contacts.json
+ * 
+ * هذا يضمن عزل كامل لبيانات كل شركة
+ */
 
-// دالة لحفظ نسخة احتياطية في KV
-async function createBackupInKV(data) {
-    if (!kv) return;
-    
-    try {
-        const timestamp = new Date().toISOString();
-        const backupKey = `contacts-backup-${timestamp}`;
-        
-        // حفظ النسخة الاحتياطية
-        await kv.set(backupKey, data);
-        
-        // إضافة المفتاح لقائمة النسخ الاحتياطية
-        const backupsList = await kv.get('contacts-backups-list') || [];
-        backupsList.push({ key: backupKey, timestamp });
-        
-        // الاحتفاظ بآخر 50 نسخة فقط
-        if (backupsList.length > 50) {
-            const oldBackups = backupsList.splice(0, backupsList.length - 50);
-            for (const backup of oldBackups) {
-                await kv.del(backup.key);
-            }
-        }
-        
-        await kv.set('contacts-backups-list', backupsList);
-        console.log('💾 تم حفظ نسخة احتياطية في KV:', backupKey);
-    } catch (error) {
-        console.error('⚠️ فشل حفظ النسخة الاحتياطية في KV:', error);
-    }
-}
-
-// دالة للحصول على البيانات من KV أو الملف المحلي
-async function getContactsData() {
-    // إذا كان KV متاح (على Vercel)، استخدمه
-    if (kv) {
-        try {
-            const data = await kv.get('contacts-data');
-            if (data) {
-                console.log('📥 تم جلب البيانات من KV المركزي');
-                return data;
-            }
-        } catch (error) {
-            console.error('⚠️ خطأ في قراءة KV:', error);
-        }
-    }
-    
-    // إذا لم يكن KV متاح، استخدم الملف المحلي
-    const contactsPath = path.join(process.cwd(), 'contacts.json');
-    if (fs.existsSync(contactsPath)) {
-        try {
-            const data = fs.readFileSync(contactsPath, 'utf8');
-            return JSON.parse(data);
-        } catch (error) {
-            console.error('⚠️ خطأ في قراءة الملف المحلي:', error);
-        }
-    }
-    
-    return { contacts: [] };
-}
-
-// دالة لحفظ البيانات في KV والملف المحلي
-async function saveContactsData(data) {
-    // حفظ في KV إذا كان متاحاً (التخزين الرئيسي)
-    if (kv) {
-        try {
-            await kv.set('contacts-data', data);
-            await createBackupInKV(data);
-            console.log('💾 تم حفظ البيانات في KV المركزي');
-        } catch (error) {
-            console.error('⚠️ خطأ في حفظ KV:', error);
-        }
-    }
-    
-    // حفظ نسخة في الملف المحلي (نسخة احتياطية)
-    try {
-        const contactsPath = path.join(process.cwd(), 'contacts.json');
-        fs.writeFileSync(contactsPath, JSON.stringify(data, null, 2));
-        console.log('💾 تم حفظ نسخة محلية');
-    } catch (error) {
-        console.error('⚠️ خطأ في حفظ الملف المحلي:', error);
-    }
-}
+/**
+ * HTTP Methods:
+ * - GET: جلب جميع جهات الاتصال لشركة معينة
+ * - POST: إضافة جهة اتصال جديدة لشركة معينة
+ * - PUT: تحديث جهة اتصال لشركة معينة
+ * - DELETE: حذف جهة اتصال لشركة معينة
+ */
 
 module.exports = async (req, res) => {
+    // إعدادات CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
+    // التعامل مع OPTIONS request
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
     
     try {
-        // جلب البيانات من المصدر المركزي
-        let contactsData = await getContactsData();
-
+        // التعامل مع GET - جلب جهات الاتصال
         if (req.method === 'GET') {
-            // جلب جميع جهات الاتصال
-            console.log('📋 جلب جهات الاتصال:', contactsData.contacts.length);
-            return res.status(200).json(contactsData);
+            const { companyId } = req.query;
+            
+            // التحقق من وجود companyId
+            if (!companyId) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Company ID is required' 
+                });
+            }
+            
+            // قراءة جهات الاتصال من قاعدة بيانات الشركة
+            const contactsData = readCompanyData(companyId, 'contacts.json');
+            
+            console.log(`📋 [${companyId}] جلب ${contactsData.contacts.length} جهة اتصال`);
+            
+            return res.status(200).json({
+                success: true,
+                contacts: contactsData.contacts,
+                count: contactsData.contacts.length
+            });
         }
 
+        // التعامل مع POST - إضافة جهة اتصال جديدة
         if (req.method === 'POST') {
-            // إضافة جهة اتصال جديدة
-            const { name, phone } = req.body;
+            const { companyId, name, phone, email, notes, tags, addedBy, device } = req.body;
+            
+            // التحقق من البيانات المطلوبة
+            if (!companyId) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Company ID is required' 
+                });
+            }
             
             if (!name || !phone) {
-                return res.status(400).json({ error: 'الاسم ورقم الهاتف مطلوبان' });
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Name and phone are required' 
+                });
             }
-
+            
+            // قراءة جهات الاتصال الحالية
+            const contactsData = readCompanyData(companyId, 'contacts.json');
+            
+            // التحقق من عدم تكرار رقم الهاتف
+            const existingContact = contactsData.contacts.find(c => c.phone === phone);
+            if (existingContact) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Phone number already exists',
+                    existingContact: {
+                        id: existingContact.id,
+                        name: existingContact.name
+                    }
+                });
+            }
+            
+            // إنشاء جهة اتصال جديدة
             const newContact = {
-                id: Date.now(),
+                id: `contact_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                companyId,
                 name,
                 phone,
+                email: email || null,
+                notes: notes || '',
+                tags: tags || [],
+                addedBy: addedBy || 'unknown',
+                device: device || 'unknown',
                 createdAt: new Date().toISOString(),
-                addedBy: req.body.addedBy || 'unknown',
-                device: req.body.device || 'unknown'
+                lastModified: new Date().toISOString(),
+                callHistory: [],
+                totalCalls: 0,
+                totalDuration: 0,
+                lastCallDate: null
             };
-
+            
+            // إضافة جهة الاتصال الجديدة
             contactsData.contacts.push(newContact);
             
-            // حفظ في المصدر المركزي
-            await saveContactsData(contactsData);
+            // حفظ في قاعدة بيانات الشركة
+            const success = writeCompanyData(companyId, 'contacts.json', contactsData);
             
-            console.log('✅ تم إضافة جهة اتصال:', name, '| الجهاز:', newContact.device);
-            return res.status(200).json({ success: true, contact: newContact });
+            if (success) {
+                // تسجيل النشاط
+                logCompanyActivity(companyId, {
+                    action: 'contact_added',
+                    contactId: newContact.id,
+                    contactName: name,
+                    contactPhone: phone,
+                    addedBy: addedBy || 'unknown',
+                    device: device || 'unknown',
+                    timestamp: new Date().toISOString()
+                });
+                
+                console.log(`✅ [${companyId}] تم إضافة جهة اتصال: ${name} (${phone}) | الجهاز: ${device || 'unknown'}`);
+                
+                return res.status(200).json({ 
+                    success: true, 
+                    contact: newContact,
+                    message: 'Contact added successfully'
+                });
+            } else {
+                throw new Error('Failed to save contact');
+            }
         }
 
+        // التعامل مع PUT - تحديث جهة اتصال
+        if (req.method === 'PUT') {
+            const { companyId, contactId, name, phone, email, notes, tags, updatedBy } = req.body;
+            
+            // التحقق من البيانات المطلوبة
+            if (!companyId || !contactId) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Company ID and Contact ID are required' 
+                });
+            }
+            
+            // قراءة جهات الاتصال
+            const contactsData = readCompanyData(companyId, 'contacts.json');
+            
+            // البحث عن جهة الاتصال
+            const contactIndex = contactsData.contacts.findIndex(c => c.id === contactId);
+            
+            if (contactIndex === -1) {
+                return res.status(404).json({ 
+                    success: false,
+                    error: 'Contact not found' 
+                });
+            }
+            
+            // التحقق من عدم تكرار رقم الهاتف (إذا تم تغييره)
+            if (phone && phone !== contactsData.contacts[contactIndex].phone) {
+                const existingContact = contactsData.contacts.find(c => c.phone === phone && c.id !== contactId);
+                if (existingContact) {
+                    return res.status(400).json({ 
+                        success: false,
+                        error: 'Phone number already exists',
+                        existingContact: {
+                            id: existingContact.id,
+                            name: existingContact.name
+                        }
+                    });
+                }
+            }
+            
+            // حفظ البيانات القديمة للمقارنة
+            const oldContact = { ...contactsData.contacts[contactIndex] };
+            
+            // تحديث البيانات
+            if (name !== undefined) contactsData.contacts[contactIndex].name = name;
+            if (phone !== undefined) contactsData.contacts[contactIndex].phone = phone;
+            if (email !== undefined) contactsData.contacts[contactIndex].email = email;
+            if (notes !== undefined) contactsData.contacts[contactIndex].notes = notes;
+            if (tags !== undefined) contactsData.contacts[contactIndex].tags = tags;
+            
+            contactsData.contacts[contactIndex].lastModified = new Date().toISOString();
+            
+            // حفظ في قاعدة بيانات الشركة
+            const success = writeCompanyData(companyId, 'contacts.json', contactsData);
+            
+            if (success) {
+                // تسجيل النشاط
+                const changes = [];
+                if (name && name !== oldContact.name) changes.push(`name: ${oldContact.name} → ${name}`);
+                if (phone && phone !== oldContact.phone) changes.push(`phone: ${oldContact.phone} → ${phone}`);
+                if (email && email !== oldContact.email) changes.push(`email: ${oldContact.email} → ${email}`);
+                
+                logCompanyActivity(companyId, {
+                    action: 'contact_updated',
+                    contactId,
+                    contactName: contactsData.contacts[contactIndex].name,
+                    changes,
+                    updatedBy: updatedBy || 'unknown',
+                    timestamp: new Date().toISOString()
+                });
+                
+                console.log(`✏️ [${companyId}] تم تحديث جهة اتصال: ${contactsData.contacts[contactIndex].name}`);
+                
+                return res.status(200).json({ 
+                    success: true, 
+                    contact: contactsData.contacts[contactIndex],
+                    message: 'Contact updated successfully'
+                });
+            } else {
+                throw new Error('Failed to update contact');
+            }
+        }
+
+        // التعامل مع DELETE - حذف جهة اتصال
         if (req.method === 'DELETE') {
-            // حذف جهة اتصال
-            const contactId = parseInt(req.query.id);
+            const { companyId, contactId, deletedBy } = req.query;
             
-            if (!contactId) {
-                return res.status(400).json({ error: 'معرف جهة الاتصال مطلوب' });
+            // التحقق من البيانات المطلوبة
+            if (!companyId || !contactId) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Company ID and Contact ID are required' 
+                });
             }
-
-            const index = contactsData.contacts.findIndex(c => c.id === contactId);
             
-            if (index === -1) {
-                return res.status(404).json({ error: 'جهة الاتصال غير موجودة' });
+            // قراءة جهات الاتصال
+            const contactsData = readCompanyData(companyId, 'contacts.json');
+            
+            // البحث عن جهة الاتصال
+            const contactIndex = contactsData.contacts.findIndex(c => c.id === contactId);
+            
+            if (contactIndex === -1) {
+                return res.status(404).json({ 
+                    success: false,
+                    error: 'Contact not found' 
+                });
             }
-
-            const deletedContact = contactsData.contacts.splice(index, 1)[0];
             
-            // حفظ في المصدر المركزي
-            await saveContactsData(contactsData);
+            // حفظ بيانات جهة الاتصال المحذوفة
+            const deletedContact = contactsData.contacts[contactIndex];
             
-            console.log('🗑️ تم حذف جهة اتصال:', deletedContact.name);
-            return res.status(200).json({ success: true });
+            // حذف جهة الاتصال
+            contactsData.contacts.splice(contactIndex, 1);
+            
+            // حفظ في قاعدة بيانات الشركة
+            const success = writeCompanyData(companyId, 'contacts.json', contactsData);
+            
+            if (success) {
+                // تسجيل النشاط
+                logCompanyActivity(companyId, {
+                    action: 'contact_deleted',
+                    contactId,
+                    contactName: deletedContact.name,
+                    contactPhone: deletedContact.phone,
+                    deletedBy: deletedBy || 'unknown',
+                    timestamp: new Date().toISOString()
+                });
+                
+                console.log(`🗑️ [${companyId}] تم حذف جهة اتصال: ${deletedContact.name} (${deletedContact.phone})`);
+                
+                return res.status(200).json({ 
+                    success: true,
+                    deletedContact: {
+                        id: deletedContact.id,
+                        name: deletedContact.name,
+                        phone: deletedContact.phone
+                    },
+                    message: 'Contact deleted successfully'
+                });
+            } else {
+                throw new Error('Failed to delete contact');
+            }
         }
 
-        return res.status(405).json({ error: 'Method not allowed' });
+        // طريقة غير مدعومة
+        return res.status(405).json({ 
+            success: false,
+            error: 'Method not allowed' 
+        });
 
     } catch (error) {
         console.error('❌ خطأ في contacts API:', error);
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ 
+            success: false,
+            error: error.message 
+        });
     }
 };

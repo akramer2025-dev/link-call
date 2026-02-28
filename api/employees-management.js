@@ -2,33 +2,27 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-// مسارات الملفات
-const EMPLOYEES_FILE = path.join(__dirname, '..', 'employees.json');
-const PERMISSIONS_FILE = path.join(__dirname, '..', 'permissions.json');
-const MINUTES_USAGE_FILE = path.join(__dirname, '..', 'minutes-usage.json');
+// استيراد نظام قواعد البيانات المنفصلة
+const { 
+  readCompanyData, 
+  writeCompanyData, 
+  logCompanyActivity 
+} = require('../utils/company-database');
 
-// قراءة البيانات
-function readJSONFile(filePath) {
+// مسار ملف الصلاحيات (مشترك لجميع الشركات)
+const PERMISSIONS_FILE = path.join(__dirname, '..', 'permissions.json');
+
+// قراءة ملف الصلاحيات (مشترك)
+function readPermissions() {
   try {
-    if (!fs.existsSync(filePath)) {
+    if (!fs.existsSync(PERMISSIONS_FILE)) {
       return null;
     }
-    const data = fs.readFileSync(filePath, 'utf8');
+    const data = fs.readFileSync(PERMISSIONS_FILE, 'utf8');
     return JSON.parse(data);
   } catch (error) {
-    console.error(`Error reading ${filePath}:`, error);
+    console.error('Error reading permissions:', error);
     return null;
-  }
-}
-
-// كتابة البيانات
-function writeJSONFile(filePath, data) {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error(`Error writing ${filePath}:`, error);
-    return false;
   }
 }
 
@@ -51,18 +45,16 @@ exports.getAllEmployees = (req, res) => {
       return res.status(400).json({ success: false, message: 'Company ID is required' });
     }
 
-    const employees = readJSONFile(EMPLOYEES_FILE);
+    // قراءة بيانات الموظفين من قاعدة بيانات الشركة
+    const employees = readCompanyData(companyId, 'employees.json');
     if (!employees) {
-      return res.status(500).json({ success: false, message: 'Error reading employees data' });
+      return res.json({ success: true, employees: [], total: 0 });
     }
 
-    // تصفية الموظفين حسب الشركة
-    const companyEmployees = employees.employees.filter(emp => emp.companyId === companyId);
-
     // إضافة معلومات استخدام الدقائق
-    const minutesUsage = readJSONFile(MINUTES_USAGE_FILE) || { usage: [] };
+    const minutesUsage = readCompanyData(companyId, 'minutes-usage.json') || { usage: [] };
     
-    const employeesWithUsage = companyEmployees.map(emp => {
+    const employeesWithUsage = employees.employees.map(emp => {
       const usage = minutesUsage.usage.find(u => u.employeeId === emp.id) || {
         minutesAllocated: emp.minutesAllocated || 0,
         minutesUsed: 0,
@@ -113,14 +105,12 @@ exports.addEmployee = (req, res) => {
       });
     }
 
-    const employees = readJSONFile(EMPLOYEES_FILE);
-    if (!employees) {
-      return res.status(500).json({ success: false, message: 'Error reading employees data' });
-    }
+    // قراءة بيانات الموظفين من قاعدة بيانات الشركة
+    const employees = readCompanyData(companyId, 'employees.json') || { employees: [] };
 
     // التحقق من عدم تكرار اسم المستخدم داخل نفس الشركة
     const existingEmployee = employees.employees.find(
-      emp => emp.username === username && emp.companyId === companyId
+      emp => emp.username === username
     );
 
     if (existingEmployee) {
@@ -150,13 +140,13 @@ exports.addEmployee = (req, res) => {
 
     employees.employees.push(newEmployee);
 
-    // حفظ البيانات
-    if (!writeJSONFile(EMPLOYEES_FILE, employees)) {
+    // حفظ البيانات في قاعدة بيانات الشركة
+    if (!writeCompanyData(companyId, 'employees.json', employees)) {
       return res.status(500).json({ success: false, message: 'Error saving employee data' });
     }
 
-    // إنشاء سجل استخدام الدقائق
-    const minutesUsage = readJSONFile(MINUTES_USAGE_FILE) || { usage: [] };
+    // إنشاء سجل استخدام الدقائق في قاعدة بيانات الشركة
+    const minutesUsage = readCompanyData(companyId, 'minutes-usage.json') || { usage: [] };
     minutesUsage.usage.push({
       employeeId: newEmployee.id,
       companyId,
@@ -167,7 +157,15 @@ exports.addEmployee = (req, res) => {
       history: []
     });
 
-    writeJSONFile(MINUTES_USAGE_FILE, minutesUsage);
+    writeCompanyData(companyId, 'minutes-usage.json', minutesUsage);
+    
+    // تسجيل النشاط
+    logCompanyActivity(companyId, {
+      action: 'employee_added',
+      employeeId: newEmployee.id,
+      employeeName: newEmployee.name,
+      performedBy: 'admin'
+    });
 
     // إرجاع البيانات بدون كلمة المرور
     const employeeResponse = { ...newEmployee };
@@ -190,6 +188,7 @@ exports.updateEmployee = (req, res) => {
   try {
     const { id } = req.params;
     const {
+      companyId,
       name,
       email,
       phone,
@@ -201,7 +200,11 @@ exports.updateEmployee = (req, res) => {
       password
     } = req.body;
 
-    const employees = readJSONFile(EMPLOYEES_FILE);
+    if (!companyId) {
+      return res.status(400).json({ success: false, message: 'Company ID is required' });
+    }
+
+    const employees = readCompanyData(companyId, 'employees.json');
     if (!employees) {
       return res.status(500).json({ success: false, message: 'Error reading employees data' });
     }
@@ -230,7 +233,7 @@ exports.updateEmployee = (req, res) => {
       employee.minutesAllocated = newMinutes;
 
       // تحديث سجل استخدام الدقائق
-      const minutesUsage = readJSONFile(MINUTES_USAGE_FILE) || { usage: [] };
+      const minutesUsage = readCompanyData(companyId, 'minutes-usage.json') || { usage: [] };
       const usageIndex = minutesUsage.usage.findIndex(u => u.employeeId === id);
       
       if (usageIndex !== -1) {
@@ -249,7 +252,7 @@ exports.updateEmployee = (req, res) => {
           difference: difference
         });
 
-        writeJSONFile(MINUTES_USAGE_FILE, minutesUsage);
+        writeCompanyData(companyId, 'minutes-usage.json', minutesUsage);
       }
     }
 
@@ -257,9 +260,17 @@ exports.updateEmployee = (req, res) => {
     employees.employees[employeeIndex] = employee;
 
     // حفظ البيانات
-    if (!writeJSONFile(EMPLOYEES_FILE, employees)) {
+    if (!writeCompanyData(companyId, 'employees.json', employees)) {
       return res.status(500).json({ success: false, message: 'Error saving employee data' });
     }
+
+    // تسجيل النشاط
+    logCompanyActivity(companyId, {
+      action: 'employee_updated',
+      employeeId: employee.id,
+      employeeName: employee.name,
+      performedBy: 'admin'
+    });
 
     // إرجاع البيانات بدون كلمة المرور
     const employeeResponse = { ...employee };
@@ -281,8 +292,13 @@ exports.updateEmployee = (req, res) => {
 exports.deleteEmployee = (req, res) => {
   try {
     const { id } = req.params;
+    const { companyId } = req.query;
 
-    const employees = readJSONFile(EMPLOYEES_FILE);
+    if (!companyId) {
+      return res.status(400).json({ success: false, message: 'Company ID is required' });
+    }
+
+    const employees = readCompanyData(companyId, 'employees.json');
     if (!employees) {
       return res.status(500).json({ success: false, message: 'Error reading employees data' });
     }
@@ -292,13 +308,23 @@ exports.deleteEmployee = (req, res) => {
       return res.status(404).json({ success: false, message: 'Employee not found' });
     }
 
+    const employee = employees.employees[employeeIndex];
+
     // حذف الموظف
     employees.employees.splice(employeeIndex, 1);
 
     // حفظ البيانات
-    if (!writeJSONFile(EMPLOYEES_FILE, employees)) {
+    if (!writeCompanyData(companyId, 'employees.json', employees)) {
       return res.status(500).json({ success: false, message: 'Error saving employee data' });
     }
+
+    // تسجيل النشاط
+    logCompanyActivity(companyId, {
+      action: 'employee_deleted',
+      employeeId: employee.id,
+      employeeName: employee.name,
+      performedBy: 'admin'
+    });
 
     res.json({
       success: true,
@@ -315,8 +341,13 @@ exports.deleteEmployee = (req, res) => {
 exports.getEmployee = (req, res) => {
   try {
     const { id } = req.params;
+    const { companyId } = req.query;
 
-    const employees = readJSONFile(EMPLOYEES_FILE);
+    if (!companyId) {
+      return res.status(400).json({ success: false, message: 'Company ID is required' });
+    }
+
+    const employees = readCompanyData(companyId, 'employees.json');
     if (!employees) {
       return res.status(500).json({ success: false, message: 'Error reading employees data' });
     }
@@ -327,7 +358,7 @@ exports.getEmployee = (req, res) => {
     }
 
     // إضافة معلومات استخدام الدقائق
-    const minutesUsage = readJSONFile(MINUTES_USAGE_FILE) || { usage: [] };
+    const minutesUsage = readCompanyData(companyId, 'minutes-usage.json') || { usage: [] };
     const usage = minutesUsage.usage.find(u => u.employeeId === id) || {
       minutesAllocated: employee.minutesAllocated || 0,
       minutesUsed: 0,
@@ -353,7 +384,7 @@ exports.getEmployee = (req, res) => {
 // الحصول على قائمة الصلاحيات المتاحة
 exports.getPermissions = (req, res) => {
   try {
-    const permissions = readJSONFile(PERMISSIONS_FILE);
+    const permissions = readPermissions();
     if (!permissions) {
       return res.status(500).json({ success: false, message: 'Error reading permissions data' });
     }
@@ -373,16 +404,16 @@ exports.getPermissions = (req, res) => {
 // تسجيل استخدام الدقائق
 exports.recordMinutesUsage = (req, res) => {
   try {
-    const { employeeId, minutesUsed, callId, callType } = req.body;
+    const { employeeId, minutesUsed, callId, callType, companyId } = req.body;
 
-    if (!employeeId || !minutesUsed) {
+    if (!employeeId || !minutesUsed || !companyId) {
       return res.status(400).json({
         success: false,
-        message: 'Employee ID and minutes used are required'
+        message: 'Employee ID, minutes used, and company ID are required'
       });
     }
 
-    const minutesUsage = readJSONFile(MINUTES_USAGE_FILE) || { usage: [] };
+    const minutesUsage = readCompanyData(companyId, 'minutes-usage.json') || { usage: [] };
     const usageIndex = minutesUsage.usage.findIndex(u => u.employeeId === employeeId);
 
     if (usageIndex === -1) {
@@ -410,23 +441,31 @@ exports.recordMinutesUsage = (req, res) => {
     minutesUsage.usage[usageIndex] = usage;
 
     // حفظ البيانات
-    if (!writeJSONFile(MINUTES_USAGE_FILE, minutesUsage)) {
+    if (!writeCompanyData(companyId, 'minutes-usage.json', minutesUsage)) {
       return res.status(500).json({ success: false, message: 'Error saving usage data' });
     }
 
     // إذا انتهت الدقائق، تعطيل الموظف
     if (usage.minutesRemaining <= 0) {
-      const employees = readJSONFile(EMPLOYEES_FILE);
+      const employees = readCompanyData(companyId, 'employees.json');
       if (employees) {
         const empIndex = employees.employees.findIndex(e => e.id === employeeId);
         if (empIndex !== -1) {
           employees.employees[empIndex].active = false;
           employees.employees[empIndex].deactivatedReason = 'no_minutes_remaining';
           employees.employees[empIndex].deactivatedAt = new Date().toISOString();
-          writeJSONFile(EMPLOYEES_FILE, employees);
+          writeCompanyData(companyId, 'employees.json', employees);
         }
       }
     }
+
+    // تسجيل النشاط
+    logCompanyActivity(companyId, {
+      action: 'minutes_recorded',
+      employeeId: employeeId,
+      minutesUsed: minutes,
+      callId: callId
+    });
 
     res.json({
       success: true,
@@ -448,8 +487,13 @@ exports.recordMinutesUsage = (req, res) => {
 exports.getMinutesUsage = (req, res) => {
   try {
     const { employeeId } = req.params;
+    const { companyId } = req.query;
 
-    const minutesUsage = readJSONFile(MINUTES_USAGE_FILE) || { usage: [] };
+    if (!companyId) {
+      return res.status(400).json({ success: false, message: 'Company ID is required' });
+    }
+
+    const minutesUsage = readCompanyData(companyId, 'minutes-usage.json') || { usage: [] };
     const usage = minutesUsage.usage.find(u => u.employeeId === employeeId);
 
     if (!usage) {
@@ -471,8 +515,13 @@ exports.getMinutesUsage = (req, res) => {
 exports.checkMinutesAvailability = (req, res) => {
   try {
     const { employeeId } = req.params;
+    const { companyId } = req.query;
 
-    const employees = readJSONFile(EMPLOYEES_FILE);
+    if (!companyId) {
+      return res.status(400).json({ success: false, message: 'Company ID is required' });
+    }
+
+    const employees = readCompanyData(companyId, 'employees.json');
     if (!employees) {
       return res.status(500).json({ success: false, message: 'Error reading employees data' });
     }
@@ -491,7 +540,7 @@ exports.checkMinutesAvailability = (req, res) => {
       });
     }
 
-    const minutesUsage = readJSONFile(MINUTES_USAGE_FILE) || { usage: [] };
+    const minutesUsage = readCompanyData(companyId, 'minutes-usage.json') || { usage: [] };
     const usage = minutesUsage.usage.find(u => u.employeeId === employeeId);
 
     if (!usage) {

@@ -1137,4 +1137,93 @@ document.getElementById('add-company-form')?.addEventListener('submit', async (e
     }
 });
 
+// ========== إدارة الموظفين ==========
+// إضافة موظف جديد
+document.getElementById('add-employee-btn')?.addEventListener('click', () => {
+    console.log('🔘 تم الضغط على زر إضافة موظف');
+    const modal = document.getElementById('add-employee-modal');
+    if (modal) {
+        modal.classList.add('active');
+    } else {
+        console.error('❌ لم يتم العثور على modal إضافة الموظف');
+    }
+});
+
+document.getElementById('add-employee-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log('📝 إرسال نموذج إضافة موظف');
+    
+    const departmentMap = {
+        '1': 'حجز وحدات الضيافة والفنادق',
+        '2': 'تأجير السيارات',
+        '3': 'البرامج والجولات السياحية',
+        '0': 'خدمة العملاء',
+        '9': 'الشكاوى'
+    };
+    
+    const dept = document.getElementById('employee-department').value;
+    const data = {
+        fullname: document.getElementById('employee-fullname').value.trim(),
+        username: document.getElementById('employee-username').value.trim(),
+        password: document.getElementById('employee-password').value,
+        phone: document.getElementById('employee-phone').value.trim(),
+        department: dept,
+        departmentArabic: departmentMap[dept] || 'غير محدد',
+        email: document.getElementById('employee-email').value.trim(),
+        role: 'employee',
+        createdAt: new Date().toISOString()
+    };
+    
+    console.log('📤 بيانات الموظف:', data);
+    
+    try {
+        const response = await fetch(`${baseUrl}/api/employees/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        console.log('📥 استجابة الخادم:', result);
+        
+        if (response.ok && result.success) {
+            alert(`✅ تم إضافة الموظف بنجاح!\n\nالاسم: ${data.fullname}\nاسم المستخدم: ${data.username}\n\n✅ تم حفظ البيانات بشكل دائم في قاعدة البيانات`);
+            document.getElementById('add-employee-modal').classList.remove('active');
+            document.getElementById('add-employee-form').reset();
+            // إعادة تحميل قائمة الموظفين
+            await loadEmployees();
+        } else {
+            alert('❌ ' + (result.error || 'خطأ في إضافة الموظف'));
+        }
+    } catch (error) {
+        console.error('❌ خطأ في الاتصال:', error);
+        alert('❌ خطأ في الاتصال بالخادم');
+    }
+});
+
+// حذف موظف
+async function deleteEmployee(employeeId) {
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذا الموظف؟\n\nملاحظة: البيانات محفوظة في قاعدة البيانات ويمكن استرجاعها.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${baseUrl}/api/employees/${employeeId}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            alert('✅ تم حذف الموظف (يمكن استرجاع البيانات)');
+            await loadEmployees();
+        } else {
+            alert('❌ ' + (result.error || 'خطأ في الحذف'));
+        }
+    } catch (error) {
+        console.error('❌ خطأ:', error);
+        alert('❌ خطأ في الاتصال');
+    }
+}
+
 console.log('✅ Admin Dashboard Ready');

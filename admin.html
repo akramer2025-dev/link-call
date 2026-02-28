@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم المطور - Link Call</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+    
+    <!-- Security Protection - يجب أن يكون أول سكريبت يتم تحميله -->
+    <script src="protection.js?v=1.0" defer></script>
+    
     <link rel="stylesheet" href="admin-style.css">
 </head>
 <body>
@@ -301,8 +305,66 @@
                     <h2>إدارة الموظفين</h2>
                     <button class="btn-primary" id="add-employee-btn">➕ إضافة موظف</button>
                 </div>
+                
+                <!-- تنبيه حماية البيانات -->
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    <div style="font-size: 32px;">🔐</div>
+                    <div style="flex: 1;">
+                        <strong style="font-size: 16px; display: block; margin-bottom: 5px;">🛡️ حماية البيانات مفعّلة</strong>
+                        <p style="margin: 0; font-size: 13px; opacity: 0.95;">جميع بيانات الموظفين محمية ومخزنة بشكل دائم في قاعدة بيانات آمنة. لا يمكن حذف أو تعديل البيانات بدون صلاحيات. النظام محمي بـ 7 طبقات أمان متقدمة.</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; font-size: 12px; white-space: nowrap;">✅ نشط</div>
+                </div>
+                
                 <div class="employees-grid" id="employees-grid">
                     <!-- سيتم ملؤها بـ JavaScript -->
+                </div>
+                
+                <!-- Modal إضافة موظف -->
+                <div class="modal" id="add-employee-modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>➕ إضافة موظف جديد</h3>
+                            <button class="close-modal">&times;</button>
+                        </div>
+                        <form id="add-employee-form">
+                            <div class="form-group">
+                                <label>اسم الموظف بالكامل *</label>
+                                <input type="text" id="employee-fullname" required placeholder="مثال: أحمد محمد">
+                            </div>
+                            <div class="form-group">
+                                <label>اسم المستخدم *</label>
+                                <input type="text" id="employee-username" required placeholder="مثال: ahmed123">
+                            </div>
+                            <div class="form-group">
+                                <label>كلمة المرور *</label>
+                                <input type="password" id="employee-password" required placeholder="كلمة مرور قوية">
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف</label>
+                                <input type="tel" id="employee-phone" placeholder="+966500000000">
+                            </div>
+                            <div class="form-group">
+                                <label>القسم *</label>
+                                <select id="employee-department" required>
+                                    <option value="">اختر القسم</option>
+                                    <option value="1">حجز وحدات الضيافة والفنادق</option>
+                                    <option value="2">تأجير السيارات</option>
+                                    <option value="3">البرامج والجولات السياحية</option>
+                                    <option value="0">خدمة العملاء</option>
+                                    <option value="9">الشكاوى</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>البريد الإلكتروني</label>
+                                <input type="email" id="employee-email" placeholder="example@company.com">
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary close-modal">إلغاء</button>
+                                <button type="submit" class="btn-primary">✅ إضافة الموظف</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </section>
 

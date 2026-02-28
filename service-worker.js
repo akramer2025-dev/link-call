@@ -1,5 +1,5 @@
 // Service Worker for Link Call PWA
-const CACHE_NAME = 'link-call-v18-pro-sidebar';
+const CACHE_NAME = 'link-call-v19-protected';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const urlsToCache = [
   '/style.css',
   '/login-style.css',
   '/app.js',
+  '/protection.js',
   '/icon-192.png',
   '/icon-512.png',
   '/manifest.json',

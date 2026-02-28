@@ -16,6 +16,150 @@ try {
 const app = express();
 const PORT = 3000;
 
+// ==================== نظام حماية الـ API ====================
+const rateLimitStore = new Map();
+const securityAlerts = [];
+const blockedIPs = new Set();
+
+// Rate Limiting Middleware
+function rateLimiter(maxRequests = 100, windowMs = 60000) {
+    return (req, res, next) => {
+        const ip = req.ip || req.connection.remoteAddress;
+        const key = `${ip}:${req.path}`;
+        const now = Date.now();
+        
+        // تنظيف البيانات القديمة
+        if (rateLimitStore.size > 10000) {
+            rateLimitStore.clear();
+        }
+        
+        if (!rateLimitStore.has(key)) {
+            rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
+            return next();
+        }
+        
+        const rateLimit = rateLimitStore.get(key);
+        
+        if (now > rateLimit.resetTime) {
+            rateLimit.count = 1;
+            rateLimit.resetTime = now + windowMs;
+            return next();
+        }
+        
+        if (rateLimit.count >= maxRequests) {
+            logSecurityAlert({
+                type: 'rate_limit_exceeded',
+                ip: ip,
+                path: req.path,
+                count: rateLimit.count
+            });
+            return res.status(429).json({ 
+                error: 'تم تجاوز الحد المسموح من الطلبات',
+                retryAfter: Math.ceil((rateLimit.resetTime - now) / 1000)
+            });
+        }
+        
+        rateLimit.count++;
+        next();
+    };
+}
+
+// Security Headers Middleware
+function securityHeaders(req, res, next) {
+    // Content Security Policy
+    res.setHeader('Content-Security-Policy', 
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://*.twilio.com; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: https: blob:; " +
+        "font-src 'self' data:; " +
+        "connect-src 'self' https://*.twilio.com wss://*.twilio.com https://images.unsplash.com; " +
+        "media-src 'self' https: blob:; " +
+        "frame-ancestors 'none'; " +
+        "base-uri 'self'; " +
+        "form-action 'self';"
+    );
+    
+    // Prevent clickjacking
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Frame-Options', 'DENY');
+    
+    // XSS Protection
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    
+    // Content Type Options
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    
+    // HSTS (إذا كان HTTPS)
+    if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+        res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+    
+    // Referrer Policy
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    // Permissions Policy
+    res.setHeader('Permissions-Policy', 
+        'geolocation=(), microphone=(self), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=()'
+    );
+    
+    // Hide powered by
+    res.removeHeader('X-Powered-By');
+    
+    next();
+}
+
+// IP Blocking Middleware
+function ipBlocker(req, res, next) {
+    const ip = req.ip || req.connection.remoteAddress;
+    
+    if (blockedIPs.has(ip)) {
+        logSecurityAlert({
+            type: 'blocked_ip_attempt',
+            ip: ip,
+            path: req.path
+        });
+        return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    next();
+}
+
+// Security Alert Logger
+function logSecurityAlert(alert) {
+    alert.timestamp = new Date().toISOString();
+    securityAlerts.push(alert);
+    
+    // الاحتفاظ بآخر 1000 تنبيه فقط
+    if (securityAlerts.length > 1000) {
+        securityAlerts.shift();
+    }
+    
+    console.warn('🚨 تنبيه أمني:', JSON.stringify(alert));
+    
+    // حظر IP بعد 10 محاولات مشبوهة
+    if (alert.ip) {
+        const ipAlerts = securityAlerts.filter(a => a.ip === alert.ip);
+        if (ipAlerts.length >= 10) {
+            blockedIPs.add(alert.ip);
+            console.error('🚫 تم حظر IP:', alert.ip);
+        }
+    }
+}
+
+// API endpoint لتسجيل محاولات الاختراق
+app.post('/api/security-alert', rateLimiter(50, 60000), (req, res) => {
+    const ip = req.ip || req.connection.remoteAddress;
+    const alert = {
+        ...req.body,
+        ip: ip,
+        userAgent: req.headers['user-agent']
+    };
+    
+    logSecurityAlert(alert);
+    res.json({ success: true });
+});
+
 // قراءة بيانات المديرين (للتشغيل المحلي فقط)
 let employeesData = {
     employees: [],
@@ -110,10 +254,13 @@ if (TWILIO_ACCOUNT_SID && TWILIO_ACCOUNT_SID.startsWith('AC') && TWILIO_AUTH_TOK
     console.log('⚠️ Twilio غير مهيأ - المكالمات لن تعمل');
 }
 
-// Middleware
+// Middleware - تطبيق الحماية على كل الطلبات
+app.use(ipBlocker);
+app.use(securityHeaders);
+app.use(rateLimiter(200, 60000)); // 200 طلب في الدقيقة
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' })); // حد أقصى لحجم البيانات
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('.'));
 
 // Routes للصفحات الرئيسية
@@ -840,7 +987,88 @@ app.post('/employees', async (req, res) => {
     }
 });
 
-// حذف مدير
+// API endpoint لإضافة موظف من لوحة الإدارة (حفظ دائم في قاعدة البيانات)
+app.post('/api/employees/add', async (req, res) => {
+    try {
+        const { username, password, fullname, phone, department, departmentArabic, email } = req.body;
+        
+        console.log('🔐 إضافة موظف جديد (API):', { username, fullname, department });
+        
+        const data = await getEmployeesData();
+        
+        // التحقق من عدم وجود موظف بنفس اسم المستخدم
+        const exists = data.employees.find(emp => emp.username === username);
+        if (exists) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'اسم المستخدم موجود بالفعل. الرجاء اختيار اسم مختلف.' 
+            });
+        }
+        
+        // إنشاء ID جديد (أعلى ID + 1)
+        const maxId = data.employees.reduce((max, emp) => Math.max(max, emp.id || 0), 0);
+        
+        const newEmployee = {
+            id: maxId + 1,
+            username: username.trim(),
+            password: password,
+            fullname: fullname.trim(),
+            name: fullname.trim(),
+            phone: phone?.trim() || '',
+            email: email?.trim() || '',
+            department: department,
+            departmentArabic: departmentArabic || data.departments[department]?.name || 'غير محدد',
+            role: 'employee',
+            createdAt: new Date().toISOString(),
+            isActive: true,
+            permissions: {
+                viewOwnRecordings: true,
+                viewAllRecordings: false,
+                deleteRecordings: false,
+                editProfile: true
+            }
+        };
+        
+        // إضافة الموظف للقائمة
+        data.employees.push(newEmployee);
+        
+        // إضافة الموظف لقسمه
+        if (data.departments[department]) {
+            const phone = newEmployee.phone || newEmployee.username;
+            if (!data.departments[department].employees.includes(phone)) {
+                data.departments[department].employees.push(phone);
+            }
+        }
+        
+        // حفظ البيانات بشكل دائم
+        const saved = await saveEmployeesData(data);
+        
+        if (!saved) {
+            console.error('❌ فشل في حفظ بيانات الموظف:', username);
+            return res.status(500).json({ 
+                success: false, 
+                error: 'فشل في حفظ البيانات في قاعدة البيانات' 
+            });
+        }
+        
+        console.log('✅ تم حفظ الموظف بشكل دائم:', newEmployee.username, 'ID:', newEmployee.id);
+        console.log('💾 البيانات محفوظة في:', process.env.VERCEL ? 'Vercel KV' : 'employees.json');
+        
+        res.json({ 
+            success: true, 
+            employee: newEmployee,
+            message: 'تم إضافة الموظف وحفظه بشكل دائم في قاعدة البيانات'
+        });
+    } catch (error) {
+        console.error('❌ خطأ في إضافة موظف:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'حدث خطأ في الخادم: ' + error.message 
+        });
+    }
+});
+
+// حذف مدير (تعطيل بدلاً من الحذف النهائي - حماية البيانات)
 app.delete('/employees/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -872,6 +1100,52 @@ app.delete('/employees/:id', async (req, res) => {
     } catch (error) {
         console.error('خطأ في حذف مدير:', error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// حذف موظف عبر API (تعطيل فقط - البيانات تبقى محفوظة)
+app.delete('/api/employees/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const data = await getEmployeesData();
+        
+        const employeeIndex = data.employees.findIndex(emp => emp.id === id);
+        
+        if (employeeIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'الموظف غير موجود' 
+            });
+        }
+        
+        const employee = data.employees[employeeIndex];
+        
+        // بدلاً من الحذف، نقوم بتعطيل الحساب فقط (حماية البيانات)
+        employee.isActive = false;
+        employee.deactivatedAt = new Date().toISOString();
+        
+        console.log('⚠️ تم تعطيل الموظف (البيانات محفوظة):', employee.username);
+        
+        // حفظ البيانات
+        const saved = await saveEmployeesData(data);
+        
+        if (!saved) {
+            return res.status(500).json({ 
+                success: false, 
+                error: 'فشل في حفظ التغييرات' 
+            });
+        }
+        
+        res.json({ 
+            success: true,
+            message: 'تم تعطيل الموظف. البيانات محفوظة ويمكن استرجاعها.'
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تعطيل موظف:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 

@@ -1,0 +1,29 @@
+{
+  "name": "link-call",
+  "version": "2.0.0",
+  "description": "Link Call - منصة إدارة المكالمات السحابية",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "deploy": "vercel --prod"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "homepage": "https://www.akrammostafa.com/linkcall",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akramer2025-dev/link-call.git"
+  },
+  "keywords": [
+    "call center",
+    "voip",
+    "twilio",
+    "cloud calling",
+    "crm",
+    "akrammostafa"
+  ],
+  "author": "Eng. Akram Mostafa",
+  "license": "UNLICENSED"
+}

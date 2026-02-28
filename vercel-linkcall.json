@@ -1,0 +1,77 @@
+{
+  "version": 2,
+  "name": "linkcall",
+  "rewrites": [
+    {
+      "source": "/linkcall/api/voice",
+      "destination": "/api/voice"
+    },
+    {
+      "source": "/linkcall/api/token",
+      "destination": "/api/token"
+    },
+    {
+      "source": "/linkcall/api/recordings",
+      "destination": "/api/recordings"
+    },
+    {
+      "source": "/linkcall/api/recording-status",
+      "destination": "/api/recording-status"
+    },
+    {
+      "source": "/linkcall/api/call-history",
+      "destination": "/api/call-history"
+    },
+    {
+      "source": "/linkcall/api/contacts",
+      "destination": "/api/contacts"
+    },
+    {
+      "source": "/linkcall/api/companies/(.*)",
+      "destination": "/api/companies"
+    },
+    {
+      "source": "/linkcall/api/work-tracking",
+      "destination": "/api/work-tracking"
+    },
+    {
+      "source": "/linkcall/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/linkcall",
+      "destination": "/linkcall/login.html"
+    },
+    {
+      "source": "/linkcall/(.*)",
+      "destination": "/linkcall/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/linkcall/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        }
+      ]
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "BASE_PATH": "/linkcall"
+  }
+}

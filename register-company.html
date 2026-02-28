@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل شركة جديدة - Link Call</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --success: #00b894;
+            --danger: #d63031;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .registration-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ddd;
+            z-index: 0;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-circle {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .step.completed .step-circle {
+            background: var(--success);
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: #636e72;
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-group label span {
+            color: var(--danger);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        .form-group input.error,
+        .form-group select.error {
+            border-color: var(--danger);
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-group input.error + .error-message {
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #ddd;
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: #bdc3c7;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #00cec9;
+        }
+
+        .plan-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .plan-card {
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .plan-card.selected {
+            border-color: var(--primary);
+            background: rgba(108, 92, 231, 0.05);
+        }
+
+        .plan-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .plan-price {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+
+        .plan-features {
+            list-style: none;
+            font-size: 14px;
+            color: #636e72;
+        }
+
+        .plan-features li {
+            padding: 5px 0;
+        }
+
+        .summary-section {
+            background: var(--light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .summary-value {
+            color: #636e72;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .success-message h2 {
+            color: var(--success);
+            margin-bottom: 15px;
+            font-size: 32px;
+        }
+
+        .success-message p {
+            color: #636e72;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .info-box {
+            background: rgba(108, 92, 231, 0.1);
+            border-right: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            color: var(--dark);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-container">
+        <div class="header">
+            <h1>🚀 تسجيل شركة جديدة</h1>
+            <p>انضم إلى أكثر من 50 شركة تستخدم Link Call</p>
+            <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">powered by www.akrammostafa.com</p>
+        </div>
+
+        <div class="form-container">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">معلومات الشركة</div>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">معلومات المسؤول</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">اختيار الخطة</div>
+                </div>
+                <div class="step" data-step="4">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">المراجعة</div>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <form id="registration-form">
+                <!-- Step 1: Company Info -->
+                <div class="form-step active" data-step="1">
+                    <h2 style="margin-bottom: 20px; color: var(--primary);">معلومات الشركة</h2>
+                    
+                    <div class="form-group">
+                        <label>اسم الشركة <span>*</span></label>
+                        <input type="text" name="companyName" required placeholder="مثال: شركة التقنية المتقدمة">
+                        <div class="error-message">الرجاء إدخال اسم الشركة</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>رقم السجل التجاري <span>*</span></label>
+                            <input type="text" name="commercialNumber" required placeholder="1234567890">
+                            <div class="error-message">الرجاء إدخال رقم السجل التجاري</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>نوع النشاط <span>*</span></label>
+                            <select name="businessType" required>
+                                <option value="">اختر نوع النشاط</option>
+                                <option value="technology">تقنية المعلومات</option>
+                                <option value="ecommerce">التجارة الإلكترونية</option>
+                                <option value="finance">الخدمات المالية</option>
+                                <option value="healthcare">الرعاية الصحية</option>
+                                <option value="education">التعليم</option>
+                                <option value="realestate">العقارات</option>
+                                <option value="other">أخرى</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>البلد <span>*</span></label>
+                            <select name="country" required>
+                                <option value="">اختر البلد</option>
+                                <option value="SA">السعودية 🇸🇦</option>
+                                <option value="AE">الإمارات 🇦🇪</option>
+                                <option value="KW">الكويت 🇰🇼</option>
+                                <option value="QA">قطر 🇶🇦</option>
+                                <option value="BH">البحرين 🇧🇭</option>
+                                <option value="OM">عمان 🇴🇲</option>
+                                <option value="EG">مصر 🇪🇬</option>
+                                <option value="JO">الأردن 🇯🇴</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>المدينة <span>*</span></label>
+                            <input type="text" name="city" required placeholder="مثال: الرياض">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>عنوان الشركة</label>
+                        <textarea name="address" rows="3" placeholder="العنوان التفصيلي للشركة"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>رقم هاتف الشركة <span>*</span></label>
+                            <input type="tel" name="companyPhone" required placeholder="+966 5x xxx xxxx">
+                        </div>
+
+                        <div class="form-group">
+                            <label>البريد الإلكتروني للشركة <span>*</span></label>
+                            <input type="email" name="companyEmail" required placeholder="info@company.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Admin Info -->
+                <div class="form-step" data-step="2">
+                    <h2 style="margin-bottom: 20px; color: var(--primary);">معلومات المسؤول</h2>
+                    
+                    <div class="info-box">
+                        <p><strong>ℹ️ ملاحظة:</strong> هذه البيانات ستستخدم للدخول إلى لوحة التحكم الرئيسية</p>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>الاسم الكامل <span>*</span></label>
+                            <input type="text" name="adminName" required placeholder="محمد أحمد">
+                        </div>
+
+                        <div class="form-group">
+                            <label>المسمى الوظيفي <span>*</span></label>
+                            <input type="text" name="adminTitle" required placeholder="مدير عام">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>رقم الجوال <span>*</span></label>
+                            <input type="tel" name="adminPhone" required placeholder="+966 5x xxx xxxx">
+                        </div>
+
+                        <div class="form-group">
+                            <label>البريد الإلكتروني <span>*</span></label>
+                            <input type="email" name="adminEmail" required placeholder="admin@company.com">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>اسم المستخدم <span>*</span></label>
+                            <input type="text" name="username" required placeholder="admin" pattern="[a-zA-Z0-9_]{3,20}">
+                            <div class="error-message">اسم المستخدم يجب أن يكون 3-20 حرف (حروف وأرقام فقط)</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>كلمة المرور <span>*</span></label>
+                            <input type="password" name="password" required minlength="8" placeholder="8 أحرف على الأقل">
+                            <div class="error-message">كلمة المرور يجب أن تكون 8 أحرف على الأقل</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>تأكيد كلمة المرور <span>*</span></label>
+                        <input type="password" name="confirmPassword" required placeholder="أعد إدخال كلمة المرور">
+                        <div class="error-message">كلمات المرور غير متطابقة</div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Plan Selection -->
+                <div class="form-step" data-step="3">
+                    <h2 style="margin-bottom: 20px; color: var(--primary);">اختر الخطة المناسبة</h2>
+                    
+                    <input type="hidden" name="selectedPlan" value="free">
+                    
+                    <div class="plan-selector">
+                        <div class="plan-card selected" data-plan="free">
+                            <div class="plan-name">الأساسية</div>
+                            <div class="plan-price">مجاناً</div>
+                            <ul class="plan-features">
+                                <li>✓ 5 موظفين</li>
+                                <li>✓ 500 دقيقة/شهر</li>
+                                <li>✓ تسجيل المكالمات</li>
+                                <li>✓ تقارير أساسية</li>
+                                <li>✓ دعم فني</li>
+                            </ul>
+                        </div>
+
+                        <div class="plan-card" data-plan="pro">
+                            <div class="plan-name">الاحترافية</div>
+                            <div class="plan-price">$99<span style="font-size: 16px;">/شهر</span></div>
+                            <ul class="plan-features">
+                                <li>✓ 20 موظف</li>
+                                <li>✓ 2000 دقيقة/شهر</li>
+                                <li>✓ تسجيل غير محدود</li>
+                                <li>✓ تقارير متقدمة</li>
+                                <li>✓ API</li>
+                                <li>✓ دعم أولوية</li>
+                            </ul>
+                        </div>
+
+                        <div class="plan-card" data-plan="enterprise">
+                            <div class="plan-name">المؤسسات</div>
+                            <div class="plan-price">مخصص</div>
+                            <ul class="plan-features">
+                                <li>✓ موظفين غير محدود</li>
+                                <li>✓ دقائق غير محدودة</li>
+                                <li>✓ كل المميزات</li>
+                                <li>✓ تخصيص كامل</li>
+                                <li>✓ مدير حساب</li>
+                                <li>✓ SLA 99.9%</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="margin-top: 20px;">
+                        <p><strong>💡 نصيحة:</strong> يمكنك البدء بالخطة المجانية والترقية في أي وقت!</p>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review -->
+                <div class="form-step" data-step="4">
+                    <h2 style="margin-bottom: 20px; color: var(--primary);">مراجعة البيانات</h2>
+                    
+                    <div class="summary-section">
+                        <h3>معلومات الشركة</h3>
+                        <div class="summary-item">
+                            <span class="summary-label">اسم الشركة:</span>
+                            <span class="summary-value" id="summary-companyName"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">رقم السجل التجاري:</span>
+                            <span class="summary-value" id="summary-commercialNumber"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">نوع النشاط:</span>
+                            <span class="summary-value" id="summary-businessType"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">الموقع:</span>
+                            <span class="summary-value" id="summary-location"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">هاتف الشركة:</span>
+                            <span class="summary-value" id="summary-companyPhone"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">بريد الشركة:</span>
+                            <span class="summary-value" id="summary-companyEmail"></span>
+                        </div>
+                    </div>
+
+                    <div class="summary-section">
+                        <h3>معلومات المسؤول</h3>
+                        <div class="summary-item">
+                            <span class="summary-label">الاسم:</span>
+                            <span class="summary-value" id="summary-adminName"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">المسمى الوظيفي:</span>
+                            <span class="summary-value" id="summary-adminTitle"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">الجوال:</span>
+                            <span class="summary-value" id="summary-adminPhone"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">البريد الإلكتروني:</span>
+                            <span class="summary-value" id="summary-adminEmail"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">اسم المستخدم:</span>
+                            <span class="summary-value" id="summary-username"></span>
+                        </div>
+                    </div>
+
+                    <div class="summary-section">
+                        <h3>الخطة المختارة</h3>
+                        <div class="summary-item">
+                            <span class="summary-label">الخطة:</span>
+                            <span class="summary-value" id="summary-plan"></span>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <p><strong>📝 الشروط والأحكام:</strong></p>
+                        <p>بالتسجيل، أنت توафق على <a href="#" style="color: var(--primary);">شروط الاستخدام</a> و <a href="#" style="color: var(--primary);">سياسة الخصوصية</a></p>
+                    </div>
+                </div>
+
+                <!-- Success Message -->
+                <div class="form-step" data-step="5">
+                    <div class="success-message">
+                        <div class="success-icon">🎉</div>
+                        <h2>تم التسجيل بنجاح!</h2>
+                        <p>مرحباً بك في عائلة Link Call</p>
+                        <p>تم إرسال بريد إلكتروني برابط التفعيل إلى: <strong id="confirmation-email"></strong></p>
+                        
+                        <div class="info-box" style="text-align: right;">
+                            <p><strong>الخطوات التالية:</strong></p>
+                            <p>1️⃣ تحقق من بريدك الإلكتروني وفعّل حسابك</p>
+                            <p>2️⃣ سجّل الدخول باستخدام اسم المستخدم وكلمة المرور</p>
+                            <p>3️⃣ ابدأ بإضافة الموظفين وإعداد النظام</p>
+                        </div>
+
+                        <a href="login.html" class="btn btn-primary" style="display: inline-block; margin-top: 20px; text-decoration: none;">
+                            🔑 تسجيل الدخول الآن
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="button-group" id="navigation-buttons">
+                    <button type="button" class="btn btn-secondary" id="prev-btn" style="display: none;">
+                        ← السابق
+                    </button>
+                    <button type="button" class="btn btn-primary" id="next-btn">
+                        التالي →
+                    </button>
+                    <button type="submit" class="btn btn-success" id="submit-btn" style="display: none;">
+                        ✓ تأكيد التسجيل
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+        const form = document.getElementById('registration-form');
+        const formData = {};
+
+        // Plan Selection
+        document.querySelectorAll('.plan-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                document.querySelector('input[name="selectedPlan"]').value = this.dataset.plan;
+            });
+        });
+
+        // Navigation
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (validateStep(currentStep)) {
+                saveStepData(currentStep);
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            currentStep--;
+            showStep(currentStep);
+        });
+
+        // Form Submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            saveStepData(currentStep);
+            
+            // Show loading
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.textContent = '⏳ جاري التسجيل...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/companies/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('confirmation-email').textContent = formData.adminEmail;
+                    currentStep = 5;
+                    showStep(currentStep);
+                } else {
+                    alert('حدث خطأ: ' + result.error);
+                    submitBtn.textContent = '✓ تأكيد التسجيل';
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.');
+                submitBtn.textContent = '✓ تأكيد التسجيل';
+                submitBtn.disabled = false;
+            }
+        });
+
+        function showStep(step) {
+            // Update step indicator
+            document.querySelectorAll('.step').forEach(s => {
+                const stepNum = parseInt(s.dataset.step);
+                s.classList.remove('active', 'completed');
+                if (stepNum === step) {
+                    s.classList.add('active');
+                } else if (stepNum < step) {
+                    s.classList.add('completed');
+                }
+            });
+
+            // Show form step
+            document.querySelectorAll('.form-step').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');
+
+            // Update buttons
+            document.getElementById('prev-btn').style.display = step > 1 && step <= totalSteps ? 'block' : 'none';
+            document.getElementById('next-btn').style.display = step < totalSteps ? 'block' : 'none';
+            document.getElementById('submit-btn').style.display = step === totalSteps ? 'block' : 'none';
+            document.getElementById('navigation-buttons').style.display = step === 5 ? 'none' : 'flex';
+
+            // Update summary on step 4
+            if (step === 4) {
+                updateSummary();
+            }
+        }
+
+        function validateStep(step) {
+            const currentStepElement = document.querySelector(`.form-step[data-step="${step}"]`);
+            const inputs = currentStepElement.querySelectorAll('input[required], select[required]');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    input.classList.add('error');
+                    isValid = false;
+                } else {
+                    input.classList.remove('error');
+                }
+
+                // Special validation for password confirmation
+                if (input.name === 'confirmPassword') {
+                    const password = document.querySelector('input[name="password"]').value;
+                    if (input.value !== password) {
+                        input.classList.add('error');
+                        isValid = false;
+                    }
+                }
+            });
+
+            return isValid;
+        }
+
+        function saveStepData(step) {
+            const currentStepElement = document.querySelector(`.form-step[data-step="${step}"]`);
+            const inputs = currentStepElement.querySelectorAll('input, select, textarea');
+            
+            inputs.forEach(input => {
+                if (input.name && input.name !== 'confirmPassword') {
+                    formData[input.name] = input.value;
+                }
+            });
+        }
+
+        function updateSummary() {
+            // Company info
+            document.getElementById('summary-companyName').textContent = formData.companyName;
+            document.getElementById('summary-commercialNumber').textContent = formData.commercialNumber;
+            
+            const businessTypes = {
+                'technology': 'تقنية المعلومات',
+                'ecommerce': 'التجارة الإلكترونية',
+                'finance': 'الخدمات المالية',
+                'healthcare': 'الرعاية الصحية',
+                'education': 'التعليم',
+                'realestate': 'العقارات',
+                'other': 'أخرى'
+            };
+            document.getElementById('summary-businessType').textContent = businessTypes[formData.businessType] || formData.businessType;
+            document.getElementById('summary-location').textContent = `${formData.city}, ${formData.country}`;
+            document.getElementById('summary-companyPhone').textContent = formData.companyPhone;
+            document.getElementById('summary-companyEmail').textContent = formData.companyEmail;
+
+            // Admin info
+            document.getElementById('summary-adminName').textContent = formData.adminName;
+            document.getElementById('summary-adminTitle').textContent = formData.adminTitle;
+            document.getElementById('summary-adminPhone').textContent = formData.adminPhone;
+            document.getElementById('summary-adminEmail').textContent = formData.adminEmail;
+            document.getElementById('summary-username').textContent = formData.username;
+
+            // Plan
+            const planNames = {
+                'free': 'الأساسية (مجاناً)',
+                'pro': 'الاحترافية ($99/شهر)',
+                'enterprise': 'المؤسسات (مخصص)'
+            };
+            document.getElementById('summary-plan').textContent = planNames[formData.selectedPlan];
+        }
+
+        // Initialize
+        showStep(currentStep);
+    </script>
+</body>
+</html>

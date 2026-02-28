@@ -1334,10 +1334,38 @@ app.delete('/api/contacts', async (req, res) => {
     }
 });
 
+// ==================== Company Management API ====================
+const companiesAPI = require('./api/companies');
+
+// تسجيل شركة جديدة
+app.post('/api/companies/register', companiesAPI.register);
+
+// تسجيل دخول شركة
+app.post('/api/companies/login', companiesAPI.login);
+
+// الحصول على جميع الشركات (Super Admin فقط)
+app.get('/api/companies', companiesAPI.getAllCompanies);
+
+// الحصول على بيانات شركة محددة
+app.get('/api/companies/:id', companiesAPI.getCompany);
+
+// تحديث بيانات شركة
+app.put('/api/companies/:id', companiesAPI.updateCompany);
+
+// تحديث حالة شركة
+app.put('/api/companies/:id/status', companiesAPI.updateStatus);
+
+// تحديث خطة شركة
+app.put('/api/companies/:id/plan', companiesAPI.updatePlan);
+
+// حذف شركة (soft delete)
+app.delete('/api/companies/:id', companiesAPI.deleteCompany);
+
 // بدء الخادم
 app.listen(PORT, () => {
     console.log(`\n✅ الخادم يعمل على http://localhost:${PORT}`);
     console.log(`📱 رقم Twilio: ${TWILIO_PHONE_NUMBER}`);
+    console.log(`\n📊 المنصة: www.akrammostafa.com`);
     console.log(`\n⚠️  تأكد من تعيين بياناتك في ملف server.js:\n`);
     console.log(`   - TWILIO_ACCOUNT_SID`);
     console.log(`   - TWILIO_AUTH_TOKEN`);

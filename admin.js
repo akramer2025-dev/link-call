@@ -6,6 +6,14 @@ function checkAdminAccess() {
     const userRole = sessionStorage.getItem('userRole');
     const username = sessionStorage.getItem('username');
     
+    // السماح بالدخول على localhost للتطوير
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // تعيين بيانات مطور افتراضية
+        if (!userRole) sessionStorage.setItem('userRole', 'admin');
+        if (!username) sessionStorage.setItem('username', 'akram');
+        return true;
+    }
+    
     if (userRole !== 'admin' && username !== 'akram') {
         alert('⛔ غير مصرح لك بالدخول لهذه الصفحة');
         window.location.href = 'index.html';

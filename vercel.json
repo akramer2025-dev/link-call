@@ -1,41 +1,95 @@
 {
   "version": 2,
-  "rewrites": [
+  "name": "link-call",
+  "builds": [
     {
-      "source": "/api/voice",
-      "destination": "/api/voice"
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     },
     {
-      "source": "/api/token",
-      "destination": "/api/token"
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "."
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/login.html"
     },
     {
-      "source": "/api/recordings",
-      "destination": "/api/recordings"
+      "src": "/index.html",
+      "dest": "/login.html"
     },
     {
-      "source": "/api/recording-status",
-      "destination": "/api/recording-status"
+      "src": "/api/companies/register",
+      "methods": ["POST"],
+      "dest": "/api/companies.js"
     },
     {
-      "source": "/api/call-history",
-      "destination": "/api/call-history"
+      "src": "/api/companies/login",
+      "methods": ["POST"],
+      "dest": "/api/companies.js"
     },
     {
-      "source": "/api/contacts",
-      "destination": "/api/contacts"
+      "src": "/api/companies/(.*)",
+      "dest": "/api/companies.js"
     },
     {
-      "source": "/api/work-tracking",
-      "destination": "/api/work-tracking"
+      "src": "/api/employees/(.*)",
+      "dest": "/api/index.js"
     },
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "src": "/api/(voice|token|recordings|recording-status|call-history|contacts|work-tracking)",
+      "dest": "/api/$1.js"
     },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1.js"
+    },
+    {
+      "src": "/(.*\\.(css|js|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webmanifest))",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(platform|login|admin|register-company|super-admin|direct-call|test-crm-integration)\\.html",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "headers": [
     {
       "source": "/(.*)",
-      "destination": "/api/index"
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

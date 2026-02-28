@@ -215,45 +215,204 @@
                     <!-- سيتم ملؤها بـ JavaScript -->
                 </div>
                 
-                <!-- Modal إضافة شركة -->
+                <!-- Modal إضافة شركة - تصميم احترافي -->
                 <div class="modal" id="add-company-modal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h3>➕ إضافة شركة جديدة</h3>
-                            <button class="close-modal">&times;</button>
+                    <div class="modal-content" style="max-width: 750px; max-height: 90vh; overflow-y: auto;">
+                        <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px 15px 0 0; margin: -20px -20px 25px -20px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                                    🏢
+                                </div>
+                                <div style="flex: 1;">
+                                    <h3 style="margin: 0; font-size: 22px;">إضافة شركة جديدة</h3>
+                                    <p style="margin: 5px 0 0; font-size: 13px; opacity: 0.9;">املأ البيانات أدناه لإنشاء حساب شركة جديد</p>
+                                </div>
+                                <button class="close-modal" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 20px; cursor: pointer; transition: all 0.3s;">&times;</button>
+                            </div>
                         </div>
-                        <form id="add-company-form">
-                            <div class="form-group">
-                                <label>اسم الشركة *</label>
-                                <input type="text" id="company-name" required placeholder="مثال: المسار الساخن">
+                        
+                        <form id="add-company-form" style="padding: 0 20px 20px;">
+                            <!-- معلومات الشركة -->
+                            <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                                <h4 style="color: #667eea; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
+                                    <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">1</span>
+                                    معلومات الشركة الأساسية
+                                </h4>
+                                
+                                <div style="display: grid; gap: 15px;">
+                                    <div class="form-group" style="margin: 0;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                                            <span style="color: #667eea;">🏢</span> اسم الشركة <span style="color: #e74c3c;">*</span>
+                                        </label>
+                                        <input type="text" id="company-name" required placeholder="مثال: شركة النجاح للتسويق" 
+                                               style="width: 100%; padding: 12px 15px; border: 2px solid #e0e6f0; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                        <div class="form-group" style="margin: 0;">
+                                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                                                <span style="color: #667eea;">📞</span> رقم الهاتف
+                                            </label>
+                                            <input type="tel" id="company-phone" placeholder="+966 5x xxx xxxx" 
+                                                   style="width: 100%; padding: 12px 15px; border: 2px solid #e0e6f0; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin: 0;">
+                                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                                                <span style="color: #667eea;">📧</span> البريد الإلكتروني
+                                            </label>
+                                            <input type="email" id="company-email" placeholder="info@company.com" 
+                                                   style="width: 100%; padding: 12px 15px; border: 2px solid #e0e6f0; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>اسم المستخدم للمدير *</label>
-                                <input type="text" id="company-admin-username" required placeholder="مثال: eslam">
+
+                            <!-- معلومات المدير -->
+                            <div style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                                <h4 style="color: #d63031; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
+                                    <span style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">2</span>
+                                    بيانات المدير (حساب تسجيل الدخول)
+                                </h4>
+                                
+                                <div style="display: grid; gap: 15px;">
+                                    <div class="form-group" style="margin: 0;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                                            <span style="color: #e17055;">👤</span> اسم المدير الكامل <span style="color: #e74c3c;">*</span>
+                                        </label>
+                                        <input type="text" id="company-admin-name" required placeholder="مثال: محمد أحمد" 
+                                               style="width: 100%; padding: 12px 15px; border: 2px solid #e0e6f0; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                        <div class="form-group" style="margin: 0;">
+                                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                                                <span style="color: #e17055;">🔑</span> اسم المستخدم <span style="color: #e74c3c;">*</span>
+                                            </label>
+                                            <input type="text" id="company-admin-username" required placeholder="مثال: mohamed_admin" 
+                                                   style="width: 100%; padding: 12px 15px; border: 2px solid #e0e6f0; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                                            <small style="color: #636e72; font-size: 12px; margin-top: 5px; display: block;">سيستخدمه المدير لتسجيل الدخول</small>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin: 0;">
+                                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                                                <span style="color: #e17055;">🔒</span> كلمة المرور <span style="color: #e74c3c;">*</span>
+                                            </label>
+                                            <input type="password" id="company-admin-password" required placeholder="كلمة مرور قوية" 
+                                                   style="width: 100%; padding: 12px 15px; border: 2px solid #e0e6f0; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                                            <small style="color: #636e72; font-size: 12px; margin-top: 5px; display: block;">8 أحرف على الأقل</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>اسم المدير</label>
-                                <input type="text" id="company-admin-name" placeholder="مثال: إسلام محمد">
+
+                            <!-- الباقة والاشتراك -->
+                            <div style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                                <h4 style="color: #00b894; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
+                                    <span style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">3</span>
+                                    نوع الاشتراك والباقة
+                                </h4>
+                                
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                                    <label class="subscription-card" data-plan="basic" style="background: white; border: 3px solid #e0e6f0; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                                        <input type="radio" name="subscription" value="basic" checked style="display: none;">
+                                        <div style="font-size: 28px; margin-bottom: 8px;">📦</div>
+                                        <div style="font-weight: bold; color: #2d3436; margin-bottom: 5px;">أساسي</div>
+                                        <div style="font-size: 12px; color: #636e72;">5 موظفين</div>
+                                        <div style="font-size: 12px; color: #636e72;">500 دقيقة</div>
+                                    </label>
+                                    
+                                    <label class="subscription-card" data-plan="pro" style="background: white; border: 3px solid #e0e6f0; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                                        <input type="radio" name="subscription" value="pro" style="display: none;">
+                                        <div style="font-size: 28px; margin-bottom: 8px;">💼</div>
+                                        <div style="font-weight: bold; color: #2d3436; margin-bottom: 5px;">احترافي</div>
+                                        <div style="font-size: 12px; color: #636e72;">20 موظف</div>
+                                        <div style="font-size: 12px; color: #636e72;">2000 دقيقة</div>
+                                    </label>
+                                    
+                                    <label class="subscription-card" data-plan="unlimited" style="background: white; border: 3px solid #e0e6f0; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                                        <input type="radio" name="subscription" value="unlimited" style="display: none;">
+                                        <div style="font-size: 28px; margin-bottom: 8px;">🚀</div>
+                                        <div style="font-weight: bold; color: #2d3436; margin-bottom: 5px;">غير محدود</div>
+                                        <div style="font-size: 12px; color: #636e72;">موظفين ∞</div>
+                                        <div style="font-size: 12px; color: #636e72;">دقائق ∞</div>
+                                    </label>
+                                </div>
+                                <input type="hidden" id="company-subscription" value="basic">
                             </div>
-                            <div class="form-group">
-                                <label>كلمة المرور *</label>
-                                <input type="password" id="company-admin-password" required placeholder="كلمة مرور قوية">
+
+                            <!-- تنبيه -->
+                            <div style="background: rgba(52, 152, 219, 0.1); border-right: 4px solid #3498db; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <p style="margin: 0; color: #2c3e50; font-size: 13px; line-height: 1.6;">
+                                    <strong style="color: #3498db;">ℹ️ ملاحظة:</strong> 
+                                    سيتم إنشاء قاعدة بيانات منفصلة تماماً للشركة مع جميع البيانات المحمية. 
+                                    المدير سيحصل على صلاحيات كاملة لإضافة الموظفين وإدارة النظام.
+                                </p>
                             </div>
-                            <div class="form-group">
-                                <label>نوع الاشتراك</label>
-                                <select id="company-subscription">
-                                    <option value="basic">أساسي (5 موظفين - 500 دقيقة)</option>
-                                    <option value="pro">احترافي (20 موظف - 2000 دقيقة)</option>
-                                    <option value="unlimited">غير محدود</option>
-                                </select>
-                            </div>
-                            <div class="form-actions">
-                                <button type="button" class="btn-secondary close-modal">إلغاء</button>
-                                <button type="submit" class="btn-primary">إنشاء الشركة</button>
+
+                            <!-- الأزرار -->
+                            <div class="form-actions" style="display: flex; gap: 12px; margin-top: 25px;">
+                                <button type="button" class="btn-secondary close-modal" style="flex: 1; padding: 14px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                                    إلغاء
+                                </button>
+                                <button type="submit" class="btn-primary" style="flex: 2; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                                    ✅ إنشاء الشركة الآن
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
+                
+                <style>
+                    /* تحسين تفاعل البطاقات */
+                    .subscription-card:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                    }
+                    
+                    .subscription-card input:checked + .subscription-card,
+                    .subscription-card:has(input:checked) {
+                        border-color: #667eea !important;
+                        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%) !important;
+                        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3) !important;
+                    }
+                    
+                    /* تحسين حقول الإدخال */
+                    #add-company-form input:focus,
+                    #add-company-form select:focus {
+                        outline: none;
+                        border-color: #667eea !important;
+                        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+                    }
+                    
+                    /* تحسين الأزرار */
+                    .btn-primary:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+                    }
+                    
+                    .btn-secondary:hover {
+                        background: #f8f9fa !important;
+                        border-color: #b2bec3 !important;
+                    }
+                    
+                    .close-modal:hover {
+                        background: rgba(255,255,255,0.3) !important;
+                        transform: rotate(90deg);
+                    }
+                </style>
+                
+                <script>
+                    // إضافة وظيفة اختيار الباقة
+                    document.querySelectorAll('.subscription-card').forEach(card => {
+                        card.addEventListener('click', function() {
+                            document.querySelectorAll('.subscription-card').forEach(c => c.style.borderColor = '#e0e6f0');
+                            this.style.borderColor = '#667eea';
+                            this.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
+                            document.getElementById('company-subscription').value = this.dataset.plan;
+                        });
+                    });
+                </script>
             </section>
 
             <!-- قسم المكالمات -->

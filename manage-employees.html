@@ -600,96 +600,205 @@
         </div>
     </div>
 
-    <!-- Add/Edit Employee Modal -->
+    <!-- Add/Edit Employee Modal - تصميم احترافي -->
     <div class="modal" id="employeeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">إضافة موظف جديد</h2>
-                <button class="btn-close" onclick="closeModal()">&times;</button>
+        <div class="modal-content" style="max-width: 850px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 25px; border-radius: 15px 15px 0 0; margin: -20px -20px 25px -20px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        👤
+                    </div>
+                    <div style="flex: 1;">
+                        <h2 id="modalTitle" style="margin: 0; font-size: 22px;">إضافة موظف جديد</h2>
+                        <p style="margin: 5px 0 0; font-size: 13px; opacity: 0.9;">املأ البيانات أدناه لإضافة موظف إلى فريق العمل</p>
+                    </div>
+                    <button class="btn-close" onclick="closeModal()" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 20px; cursor: pointer; transition: all 0.3s;">&times;</button>
+                </div>
             </div>
 
-            <form id="employeeForm">
+            <form id="employeeForm" style="padding: 0 20px 20px;">
                 <input type="hidden" id="employeeId">
                 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>الاسم الكامل *</label>
-                        <input type="text" id="empName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>اسم المستخدم *</label>
-                        <input type="text" id="empUsername" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>كلمة المرور *</label>
-                        <input type="password" id="empPassword">
-                    </div>
-                    <div class="form-group">
-                        <label>البريد الإلكتروني</label>
-                        <input type="email" id="empEmail">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>رقم الهاتف</label>
-                        <input type="tel" id="empPhone">
-                    </div>
-                    <div class="form-group">
-                        <label>المسمى الوظيفي</label>
-                        <input type="text" id="empTitle" value="موظف">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>عدد الدقائق المخصصة *</label>
-                    <input type="number" id="empMinutes" min="0" value="0" required>
-                    <small style="color: #6b7280;">عدد الدقائق المتاحة للموظف - سيتم إيقاف الحساب عند انتهائها</small>
-                </div>
-
-                <div class="form-group">
-                    <label>الدور الوظيفي</label>
-                    <div class="role-selector">
-                        <div class="role-card" onclick="selectRole('admin')">
-                            <h5>🔑 مدير</h5>
-                            <p>صلاحيات كاملة</p>
+                <!-- المعلومات الشخصية -->
+                <div style="background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="color: #2d3436; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
+                        <span style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">1</span>
+                        المعلومات الأساسية
+                    </h4>
+                    
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
+                                <span style="color: #0984e3;">👤</span> الاسم الكامل <span style="color: #d63031;">*</span>
+                            </label>
+                            <input type="text" id="empName" required placeholder="مثال: أحمد محمد علي"
+                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
                         </div>
-                        <div class="role-card" onclick="selectRole('supervisor')">
-                            <h5>👔 مشرف</h5>
-                            <p>صلاحيات إشرافية</p>
-                        </div>
-                        <div class="role-card selected" onclick="selectRole('agent')">
-                            <h5>👤 موظف</h5>
-                            <p>صلاحيات أساسية</p>
-                        </div>
-                        <div class="role-card" onclick="selectRole('viewer')">
-                            <h5>👁️ مراقب</h5>
-                            <p>عرض فقط</p>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
+                                <span style="color: #0984e3;">🔑</span> اسم المستخدم <span style="color: #d63031;">*</span>
+                            </label>
+                            <input type="text" id="empUsername" required placeholder="مثال: ahmed_123"
+                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
                         </div>
                     </div>
-                    <input type="hidden" id="empRole" value="agent">
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
+                                <span style="color: #0984e3;">🔒</span> كلمة المرور <span style="color: #d63031;">*</span>
+                            </label>
+                            <input type="password" id="empPassword" placeholder="كلمة مرور قوية"
+                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                            <small style="color: #636e72; font-size: 12px; margin-top: 5px; display: block;">8 أحرف على الأقل</small>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
+                                <span style="color: #0984e3;">📧</span> البريد الإلكتروني
+                            </label>
+                            <input type="email" id="empEmail" placeholder="example@company.com"
+                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
+                                <span style="color: #0984e3;">📞</span> رقم الهاتف
+                            </label>
+                            <input type="tel" id="empPhone" placeholder="+966 5x xxx xxxx"
+                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
+                                <span style="color: #0984e3;">💼</span> المسمى الوظيفي
+                            </label>
+                            <input type="text" id="empTitle" value="موظف" placeholder="مثال: موظف مبيعات"
+                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="permissions-section">
-                    <h3 style="color: #1f2937; margin-bottom: 15px;">الصلاحيات التفصيلية</h3>
-                    <div id="permissionsContainer"></div>
+                <!-- الدقائق والدور -->
+                <div style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="color: #e17055; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
+                        <span style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">2</span>
+                        الدقائق والصلاحيات
+                    </h4>
+                    
+                    <div class="form-group" style="margin: 0 0 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
+                            <span style="color: #e17055;">⏱️</span> عدد الدقائق المخصصة <span style="color: #d63031;">*</span>
+                        </label>
+                        <input type="number" id="empMinutes" min="0" value="100" required placeholder="1000"
+                               style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
+                        <small style="color: #636e72; font-size: 12px; margin-top: 5px; display: block;">
+                            ⚠️ سيتم إيقاف حساب الموظف تلقائياً عند نفاذ الدقائق
+                        </small>
+                    </div>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #2d3436; font-size: 14px;">
+                            <span style="color: #e17055;">🎭</span> الدور الوظيفي
+                        </label>
+                        <div class="role-selector" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                            <div class="role-card" onclick="selectRole('admin')" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                                <h5 style="margin: 0 0 5px; font-size: 24px;">🔑</h5>
+                                <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">مدير</div>
+                                <p style="margin: 0; font-size: 11px; color: #636e72;">صلاحيات كاملة</p>
+                            </div>
+                            <div class="role-card" onclick="selectRole('supervisor')" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                                <h5 style="margin: 0 0 5px; font-size: 24px;">👔</h5>
+                                <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">مشرف</div>
+                                <p style="margin: 0; font-size: 11px; color: #636e72;">صلاحيات إشرافية</p>
+                            </div>
+                            <div class="role-card selected" onclick="selectRole('agent')" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); border: 3px solid #10b981; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+                                <h5 style="margin: 0 0 5px; font-size: 24px;">👤</h5>
+                                <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">موظف</div>
+                                <p style="margin: 0; font-size: 11px; color: #636e72;">صلاحيات أساسية</p>
+                            </div>
+                            <div class="role-card" onclick="selectRole('viewer')" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                                <h5 style="margin: 0 0 5px; font-size: 24px;">👁️</h5>
+                                <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">مراقب</div>
+                                <p style="margin: 0; font-size: 11px; color: #636e72;">عرض فقط</p>
+                            </div>
+                        </div>
+                        <input type="hidden" id="empRole" value="agent">
+                    </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 20px;">
-                    <label style="display: flex; align-items: center; cursor: pointer;">
-                        <input type="checkbox" id="empActive" checked 
-                               style="width: 20px; height: 20px; margin-left: 10px;">
-                        <span>تفعيل الحساب</span>
-                    </label>
+                <!-- الصلاحيات التفصيلية -->
+                <div class="permissions-section" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 style="color: white; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
+                        <span style="background: rgba(255,255,255,0.2); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">3</span>
+                        الصلاحيات التفصيلية
+                    </h3>
+                    <div id="permissionsContainer" style="background: white; border-radius: 10px; padding: 15px;"></div>
                 </div>
 
-                <button type="submit" class="btn-submit">حفظ الموظف</button>
+                <!-- حالة الحساب -->
+                <div style="background: rgba(46, 213, 115, 0.1); border: 2px solid #2ed573; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                    <div class="form-group" style="margin: 0;">
+                        <label style="display: flex; align-items: center; cursor: pointer; gap: 10px;">
+                            <input type="checkbox" id="empActive" checked 
+                                   style="width: 22px; height: 22px; cursor: pointer; accent-color: #10b981;">
+                            <div>
+                                <span style="font-weight: 600; color: #2d3436; font-size: 15px;">✅ تفعيل الحساب</span>
+                                <small style="display: block; color: #636e72; margin-top: 3px; font-size: 12px;">
+                                    سيتمكن الموظف من تسجيل الدخول والبدء في العمل فوراً
+                                </small>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- الأزرار -->
+                <div style="display: flex; gap: 12px; margin-top: 25px;">
+                    <button type="button" onclick="closeModal()" style="flex: 1; padding: 14px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        إلغاء
+                    </button>
+                    <button type="submit" class="btn-submit" style="flex: 2; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                        ✅ حفظ الموظف
+                    </button>
+                </div>
             </form>
         </div>
     </div>
+    
+    <style>
+        /* تحسين تفاعل بطاقات الأدوار */
+        .role-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: #10b981 !important;
+        }
+        
+        .role-card.selected {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%) !important;
+            border-color: #10b981 !important;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3) !important;
+        }
+        
+        /* تحسين حقول الإدخال */
+        #employeeForm input:focus,
+        #employeeForm select:focus,
+        #employeeForm textarea:focus {
+            outline: none;
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+        }
+        
+        /* تحسين زر الحفظ */
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+        }
+        
+        .btn-close:hover {
+            background: rgba(255,255,255,0.3) !important;
+            transform: rotate(90deg);
+        }
+    </style>
 
     <script>
         let allEmployees = [];

@@ -6,6 +6,16 @@
 (function() {
     'use strict';
     
+    // ==================== تعطيل الحماية على localhost للتطوير ====================
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.hostname === '';
+    
+    if (isLocalhost) {
+        console.log('%c🔓 Protection Disabled (localhost)', 'color: orange; font-size: 14px; font-weight: bold;');
+        return; // إيقاف تنفيذ نظام الحماية
+    }
+    
     // ==================== إعدادات الحماية ====================
     const PROTECTION_CONFIG = {
         disableDevTools: true,

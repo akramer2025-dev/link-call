@@ -303,7 +303,13 @@
             <section class="section" id="employees-section">
                 <div class="section-header">
                     <h2>إدارة الموظفين</h2>
-                    <button class="btn-primary" id="add-employee-btn">➕ إضافة موظف</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-primary" onclick="window.location.href='manage-employees.html'" 
+                                style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            🔑 إدارة متقدمة (صلاحيات ودقائق)
+                        </button>
+                        <button class="btn-primary" id="add-employee-btn">➕ إضافة موظف</button>
+                    </div>
                 </div>
                 
                 <!-- تنبيه حماية البيانات -->

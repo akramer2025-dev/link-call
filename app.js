@@ -526,6 +526,29 @@ async function makeCall() {
         return;
     }
 
+    // 🔒 التحقق من توفر الدقائق للموظف
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    if (userData.id && userData.companyId) {
+        try {
+            const checkResponse = await fetch(`/api/employees-management/minutes/${userData.id}/check`);
+            const checkData = await checkResponse.json();
+            
+            if (checkData.success && !checkData.available) {
+                const reason = checkData.reason === 'account_inactive' 
+                    ? 'حسابك غير نشط. الرجاء التواصل مع المدير.' 
+                    : `رصيد الدقائق المتاح لك قد انتهى (${checkData.minutesRemaining || 0} دقيقة متبقية). الرجاء التواصل مع المدير لإضافة دقائق إضافية.`;
+                
+                alert('⚠️ لا يمكن إجراء المكالمة\n\n' + reason);
+                console.log('❌ الدقائق المتاحة انتهت:', checkData);
+                return;
+            }
+            
+            console.log('✅ فحص الدقائق: متاح -', checkData.minutesRemaining || 0, 'دقيقة');
+        } catch (error) {
+            console.warn('⚠️ تعذر فحص الدقائق، المتابعة بدون فحص:', error);
+        }
+    }
+
     // تنظيف الرقم من المسافات والأحرف الخاصة فقط - بدون تحويل
     // إزالة جميع المسافات والأحرف الخاصة غير المرئية والشرطات
     let formattedNumber = phoneNumber
@@ -1014,6 +1037,49 @@ function stopCallTimer() {
     if (callTimer) {
         clearInterval(callTimer);
         callTimer = null;
+        
+        // 🔒 تسجيل استخدام الدقائق
+        if (callDuration > 0) {
+            const minutesUsed = Math.ceil(callDuration / 60); // تقريب لأعلى دقيقة
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            
+            if (userData.id && userData.companyId) {
+                // تسجيل الدقائق بشكل غير متزامن (لا ننتظر النتيجة)
+                fetch('/api/employees-management/minutes/record', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        employeeId: userData.id,
+                        minutesUsed: minutesUsed,
+                        callId: currentCallSid || 'unknown',
+                        callType: callDirection || 'outbound'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log(`✅ تم تسجيل ${minutesUsed} دقيقة - المتبقي: ${data.usage.minutesRemaining}`);
+                        
+                        // إذا انتهى الرصيد، إظهار تنبيه
+                        if (!data.usage.accountActive) {
+                            setTimeout(() => {
+                                alert('⚠️ تنبيه\n\nرصيد الدقائق المتاح لك قد انتهى.\nتم إيقاف حسابك مؤقتاً.\n\nالرجاء التواصل مع المدير لإضافة دقائق إضافية.');
+                            }, 2000);
+                        } else if (data.usage.minutesRemaining < 100) {
+                            // تنبيه عند اقتراب انتهاء الرصيد
+                            setTimeout(() => {
+                                alert(`⚠️ تحذير\n\nرصيدك من الدقائق قارب على الانتهاء.\nالمتبقي: ${data.usage.minutesRemaining} دقيقة فقط.`);
+                            }, 2000);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ خطأ في تسجيل الدقائق:', error);
+                });
+            }
+        }
     }
 }
 

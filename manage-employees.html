@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الموظفين - Link Call</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .header-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .company-name {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .btn-add {
+            background: #10b981;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-add:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-info h3 {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            color: #1f2937;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .main-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .employees-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .employees-table thead {
+            background: #f9fafb;
+        }
+
+        .employees-table th {
+            padding: 15px;
+            text-align: right;
+            color: #6b7280;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .employees-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .employees-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-admin {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-supervisor {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-agent {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .minutes-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .minutes-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.3s;
+        }
+
+        .minutes-bar-fill.low {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .minutes-bar-fill.critical {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .btn-edit:hover {
+            background: #bfdbfe;
+        }
+
+        .btn-permissions {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .btn-permissions:hover {
+            background: #fde68a;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            color: #1f2937;
+            font-size: 24px;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.3s;
+        }
+
+        .btn-close:hover {
+            color: #1f2937;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .permissions-section {
+            margin-top: 20px;
+        }
+
+        .permissions-category {
+            margin-bottom: 20px;
+        }
+
+        .permissions-category h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .permission-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .permission-item:hover {
+            background: #e5e7eb;
+        }
+
+        .permission-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .permission-item label {
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .role-card {
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .role-card:hover {
+            border-color: #667eea;
+        }
+
+        .role-card.selected {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .role-card h5 {
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .role-card p {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #6ee7b7;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #fca5a5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state img {
+            width: 200px;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📋 إدارة الموظفين</h1>
+            <div class="header-info">
+                <div class="company-name" id="companyName">شركتي</div>
+                <button class="btn-add" onclick="showAddEmployeeModal()">
+                    ➕ إضافة موظف جديد
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #dbeafe;">
+                    👥
+                </div>
+                <div class="stat-info">
+                    <h3>إجمالي الموظفين</h3>
+                    <p id="totalEmployees">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #d1fae5;">
+                    ✅
+                </div>
+                <div class="stat-info">
+                    <h3>الموظفين النشطون</h3>
+                    <p id="activeEmployees">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fef3c7;">
+                    ⏱️
+                </div>
+                <div class="stat-info">
+                    <h3>إجمالي الدقائق المتاحة</h3>
+                    <p id="totalMinutes">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fee2e2;">
+                    📞
+                </div>
+                <div class="stat-info">
+                    <h3>الدقائق المستخدمة</h3>
+                    <p id="usedMinutes">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="toolbar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 ابحث عن موظف..." 
+                           onkeyup="filterEmployees()">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterByStatus('all')">الكل</button>
+                    <button class="filter-btn" onclick="filterByStatus('active')">نشط</button>
+                    <button class="filter-btn" onclick="filterByStatus('inactive')">غير نشط</button>
+                </div>
+            </div>
+
+            <div id="alertContainer"></div>
+            <div id="employeesContainer"></div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Employee Modal -->
+    <div class="modal" id="employeeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">إضافة موظف جديد</h2>
+                <button class="btn-close" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="employeeForm">
+                <input type="hidden" id="employeeId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الاسم الكامل *</label>
+                        <input type="text" id="empName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم المستخدم *</label>
+                        <input type="text" id="empUsername" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>كلمة المرور *</label>
+                        <input type="password" id="empPassword">
+                    </div>
+                    <div class="form-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" id="empEmail">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>رقم الهاتف</label>
+                        <input type="tel" id="empPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>المسمى الوظيفي</label>
+                        <input type="text" id="empTitle" value="موظف">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>عدد الدقائق المخصصة *</label>
+                    <input type="number" id="empMinutes" min="0" value="0" required>
+                    <small style="color: #6b7280;">عدد الدقائق المتاحة للموظف - سيتم إيقاف الحساب عند انتهائها</small>
+                </div>
+
+                <div class="form-group">
+                    <label>الدور الوظيفي</label>
+                    <div class="role-selector">
+                        <div class="role-card" onclick="selectRole('admin')">
+                            <h5>🔑 مدير</h5>
+                            <p>صلاحيات كاملة</p>
+                        </div>
+                        <div class="role-card" onclick="selectRole('supervisor')">
+                            <h5>👔 مشرف</h5>
+                            <p>صلاحيات إشرافية</p>
+                        </div>
+                        <div class="role-card selected" onclick="selectRole('agent')">
+                            <h5>👤 موظف</h5>
+                            <p>صلاحيات أساسية</p>
+                        </div>
+                        <div class="role-card" onclick="selectRole('viewer')">
+                            <h5>👁️ مراقب</h5>
+                            <p>عرض فقط</p>
+                        </div>
+                    </div>
+                    <input type="hidden" id="empRole" value="agent">
+                </div>
+
+                <div class="permissions-section">
+                    <h3 style="color: #1f2937; margin-bottom: 15px;">الصلاحيات التفصيلية</h3>
+                    <div id="permissionsContainer"></div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="empActive" checked 
+                               style="width: 20px; height: 20px; margin-left: 10px;">
+                        <span>تفعيل الحساب</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-submit">حفظ الموظف</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allEmployees = [];
+        let allPermissions = [];
+        let currentFilter = 'all';
+        let companyId = null;
+        let isEditMode = false;
+
+        // التحميل الأولي
+        window.addEventListener('DOMContentLoaded', () => {
+            // الحصول على معلومات الشركة من localStorage
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            companyId = userData.companyId;
+            
+            if (!companyId) {
+                showAlert('لم يتم العثور على معلومات الشركة', 'error');
+                return;
+            }
+
+            document.getElementById('companyName').textContent = userData.companyName || 'شركتي';
+
+            // تحميل البيانات
+            loadPermissions();
+            loadEmployees();
+        });
+
+        // تحميل الصلاحيات المتاحة
+        async function loadPermissions() {
+            try {
+                const response = await fetch('/api/employees-management/permissions');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allPermissions = data.permissions;
+                    renderPermissionsSection();
+                }
+            } catch (error) {
+                console.error('Error loading permissions:', error);
+            }
+        }
+
+        // عرض قسم الصلاحيات
+        function renderPermissionsSection() {
+            const container = document.getElementById('permissionsContainer');
+            
+            // تجميع الصلاحيات حسب الفئة
+            const categories = {};
+            allPermissions.forEach(perm => {
+                if (!categories[perm.category]) {
+                    categories[perm.category] = [];
+                }
+                categories[perm.category].push(perm);
+            });
+
+            const categoryNames = {
+                'calls': 'المكالمات',
+                'contacts': 'جهات الاتصال',
+                'messages': 'الرسائل',
+                'reports': 'التقارير',
+                'admin': 'الإدارة',
+                'general': 'عام'
+            };
+
+            let html = '';
+            for (const [category, perms] of Object.entries(categories)) {
+                html += `
+                    <div class="permissions-category">
+                        <h4>${categoryNames[category] || category}</h4>
+                        <div class="permissions-grid">
+                            ${perms.map(perm => `
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm_${perm.id}" value="${perm.id}">
+                                    <label for="perm_${perm.id}">${perm.name}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // تحديد الدور
+        function selectRole(role) {
+            document.getElementById('empRole').value = role;
+            
+            // تحديث UI
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.role-card').classList.add('selected');
+
+            // تحديث الصلاحيات تلقائياً بناءً على الدور
+            updatePermissionsByRole(role);
+        }
+
+        // تحديث الصلاحيات حسب الدور
+        function updatePermissionsByRole(role) {
+            const rolePermissions = {
+                'admin': 'all',
+                'supervisor': ['view_calls', 'make_calls', 'listen_recordings', 'download_recordings', 
+                              'view_contacts', 'add_contacts', 'edit_contacts', 'view_messages', 
+                              'send_messages', 'view_reports', 'export_reports', 'view_employees', 
+                              'view_dashboard', 'view_work_schedule'],
+                'agent': ['view_calls', 'make_calls', 'view_contacts', 'view_messages', 
+                         'send_messages', 'view_dashboard'],
+                'viewer': ['view_calls', 'listen_recordings', 'view_contacts', 'view_messages', 
+                          'view_reports', 'view_dashboard']
+            };
+
+            // إلغاء تحديد جميع الصلاحيات
+            document.querySelectorAll('.permission-item input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+
+            // تحديد الصلاحيات المناسبة
+            if (rolePermissions[role] === 'all') {
+                document.querySelectorAll('.permission-item input[type="checkbox"]').forEach(cb => {
+                    cb.checked = true;
+                });
+            } else if (rolePermissions[role]) {
+                rolePermissions[role].forEach(permId => {
+                    const checkbox = document.getElementById('perm_' + permId);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+        }
+
+        // تحميل الموظفين
+        async function loadEmployees() {
+            try {
+                const response = await fetch(`/api/employees-management?companyId=${companyId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allEmployees = data.employees;
+                    updateStats();
+                    renderEmployees();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading employees:', error);
+                showAlert('حدث خطأ أثناء تحميل الموظفين', 'error');
+            }
+        }
+
+        // تحديث الإحصائيات
+        function updateStats() {
+            const active = allEmployees.filter(e => e.active).length;
+            const totalMinutes = allEmployees.reduce((sum, e) => sum + (e.minutesUsage?.minutesAllocated || 0), 0);
+            const usedMinutes = allEmployees.reduce((sum, e) => sum + (e.minutesUsage?.minutesUsed || 0), 0);
+
+            document.getElementById('totalEmployees').textContent = allEmployees.length;
+            document.getElementById('activeEmployees').textContent = active;
+            document.getElementById('totalMinutes').textContent = totalMinutes.toLocaleString();
+            document.getElementById('usedMinutes').textContent = usedMinutes.toLocaleString();
+        }
+
+        // عرض الموظفين
+        function renderEmployees() {
+            const container = document.getElementById('employeesContainer');
+            let filteredEmployees = allEmployees;
+
+            // تطبيق الفلتر
+            if (currentFilter === 'active') {
+                filteredEmployees = allEmployees.filter(e => e.active);
+            } else if (currentFilter === 'inactive') {
+                filteredEmployees = allEmployees.filter(e => !e.active);
+            }
+
+            // البحث
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredEmployees = filteredEmployees.filter(e =>
+                    e.name.toLowerCase().includes(searchTerm) ||
+                    e.username.toLowerCase().includes(searchTerm) ||
+                    (e.email && e.email.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            if (filteredEmployees.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>لا يوجد موظفين</h3>
+                        <p>ابدأ بإضافة أول موظف لشركتك</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="employees-table">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>اسم المستخدم</th>
+                            <th>الدور</th>
+                            <th>الدقائق</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filteredEmployees.forEach(emp => {
+                const usage = emp.minutesUsage || {};
+                const minutesPercent = usage.minutesAllocated > 0 
+                    ? (usage.minutesRemaining / usage.minutesAllocated) * 100 
+                    : 0;
+                
+                let barClass = '';
+                if (minutesPercent < 20) barClass = 'critical';
+                else if (minutesPercent < 50) barClass = 'low';
+
+                const rolebadge = {
+                    'admin': 'badge-admin',
+                    'supervisor': 'badge-supervisor',
+                    'agent': 'badge-agent',
+                    'viewer': 'badge-agent'
+                }[emp.role] || 'badge-agent';
+
+                const roleName = {
+                    'admin': 'مدير',
+                    'supervisor': 'مشرف',
+                    'agent': 'موظف',
+                    'viewer': 'مراقب'
+                }[emp.role] || emp.role;
+
+                html += `
+                    <tr>
+                        <td>
+                            <strong>${emp.name}</strong><br>
+                            <small style="color: #6b7280;">${emp.title || 'موظف'}</small>
+                        </td>
+                        <td>${emp.username}</td>
+                        <td><span class="badge ${roleBadge}">${roleName}</span></td>
+                        <td>
+                            <div style="min-width: 150px;">
+                                <small style="color: #6b7280;">
+                                    ${usage.minutesRemaining || 0} من ${usage.minutesAllocated || 0} دقيقة
+                                </small>
+                                <div class="minutes-bar">
+                                    <div class="minutes-bar-fill ${barClass}" 
+                                         style="width: ${minutesPercent}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge ${emp.active ? 'badge-active' : 'badge-inactive'}">
+                                ${emp.active ? 'نشط' : 'غير نشط'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon btn-edit" onclick="editEmployee('${emp.id}')" 
+                                        title="تعديل">✏️</button>
+                                <button class="btn-icon btn-permissions" onclick="viewPermissions('${emp.id}')" 
+                                        title="الصلاحيات">🔑</button>
+                                <button class="btn-icon btn-delete" onclick="deleteEmployee('${emp.id}')" 
+                                        title="حذف">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // عرض نافذة إضافة موظف
+        function showAddEmployeeModal() {
+            isEditMode = false;
+            document.getElementById('modalTitle').textContent = 'إضافة موظف جديد';
+            document.getElementById('employeeForm').reset();
+            document.getElementById('employeeId').value = '';
+            document.getElementById('empPassword').required = true;
+            
+            // تحديد الدور الافتراضي
+            selectRole('agent');
+            
+            document.getElementById('employeeModal').classList.add('active');
+        }
+
+        // تعديل موظف
+        async function editEmployee(employeeId) {
+            const employee = allEmployees.find(e => e.id === employeeId);
+            if (!employee) return;
+
+            isEditMode = true;
+            document.getElementById('modalTitle').textContent = 'تعديل بيانات الموظف';
+            document.getElementById('employeeId').value = employee.id;
+            document.getElementById('empName').value = employee.name;
+            document.getElementById('empUsername').value = employee.username;
+            document.getElementById('empEmail').value = employee.email || '';
+            document.getElementById('empPhone').value = employee.phone || '';
+            document.getElementById('empTitle').value = employee.title || '';
+            document.getElementById('empMinutes').value = employee.minutesAllocated || 0;
+            document.getElementById('empActive').checked = employee.active;
+            document.getElementById('empPassword').required = false;
+            document.getElementById('empPassword').value = '';
+
+            // تحديد الدور
+            selectRole(employee.role || 'agent');
+
+            // تحديد الصلاحيات
+            document.querySelectorAll('.permission-item input[type="checkbox"]').forEach(cb => {
+                cb.checked = employee.permissions && employee.permissions.includes(cb.value);
+            });
+
+            document.getElementById('employeeModal').classList.add('active');
+        }
+
+        // عرض الصلاحيات
+        function viewPermissions(employeeId) {
+            editEmployee(employeeId);
+        }
+
+        // حذف موظف
+        async function deleteEmployee(employeeId) {
+            if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
+
+            try {
+                const response = await fetch(`/api/employees-management/${employeeId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('تم حذف الموظف بنجاح', 'success');
+                    loadEmployees();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting employee:', error);
+                showAlert('حدث خطأ أثناء حذف الموظف', 'error');
+            }
+        }
+
+        // حفظ الموظف
+        document.getElementById('employeeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const employeeId = document.getElementById('employeeId').value;
+            const selectedPermissions = Array.from(
+                document.querySelectorAll('.permission-item input[type="checkbox"]:checked')
+            ).map(cb => cb.value);
+
+            const employeeData = {
+                companyId: companyId,
+                name: document.getElementById('empName').value,
+                username: document.getElementById('empUsername').value,
+                email: document.getElementById('empEmail').value,
+                phone: document.getElementById('empPhone').value,
+                title: document.getElementById('empTitle').value,
+                role: document.getElementById('empRole').value,
+                permissions: selectedPermissions,
+                minutesAllocated: parseInt(document.getElementById('empMinutes').value),
+                active: document.getElementById('empActive').checked
+            };
+
+            const password = document.getElementById('empPassword').value;
+            if (password) {
+                employeeData.password = password;
+            }
+
+            try {
+                const url = isEditMode 
+                    ? `/api/employees-management/${employeeId}`
+                    : '/api/employees-management';
+                
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(employeeData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(
+                        isEditMode ? 'تم تحديث بيانات الموظف بنجاح' : 'تم إضافة الموظف بنجاح',
+                        'success'
+                    );
+                    closeModal();
+                    loadEmployees();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error saving employee:', error);
+                showAlert('حدث خطأ أثناء حفظ البيانات', 'error');
+            }
+        });
+
+        // إغلاق النافذة المنبثقة
+        function closeModal() {
+            document.getElementById('employeeModal').classList.remove('active');
+        }
+
+        // فلترة حسب الحالة
+        function filterByStatus(status) {
+            currentFilter = status;
+            
+            // تحديث UI للأزرار
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            renderEmployees();
+        }
+
+        // البحث والفلترة
+        function filterEmployees() {
+            renderEmployees();
+        }
+
+        // عرض التنبيهات
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            container.innerHTML = '';
+            container.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

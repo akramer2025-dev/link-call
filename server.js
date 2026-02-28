@@ -1361,6 +1361,36 @@ app.put('/api/companies/:id/plan', companiesAPI.updatePlan);
 // حذف شركة (soft delete)
 app.delete('/api/companies/:id', companiesAPI.deleteCompany);
 
+// ==================== إدارة الموظفين والصلاحيات ====================
+const employeesManagementAPI = require('./api/employees-management');
+
+// الحصول على جميع الموظفين لشركة معينة
+app.get('/api/employees-management', employeesManagementAPI.getAllEmployees);
+
+// إضافة موظف جديد
+app.post('/api/employees-management', employeesManagementAPI.addEmployee);
+
+// الحصول على معلومات موظف واحد
+app.get('/api/employees-management/:id', employeesManagementAPI.getEmployee);
+
+// تحديث بيانات موظف
+app.put('/api/employees-management/:id', employeesManagementAPI.updateEmployee);
+
+// حذف موظف
+app.delete('/api/employees-management/:id', employeesManagementAPI.deleteEmployee);
+
+// الحصول على قائمة الصلاحيات المتاحة
+app.get('/api/employees-management/permissions', employeesManagementAPI.getPermissions);
+
+// تسجيل استخدام الدقائق
+app.post('/api/employees-management/minutes/record', employeesManagementAPI.recordMinutesUsage);
+
+// الحصول على سجل استخدام الدقائق
+app.get('/api/employees-management/minutes/:employeeId', employeesManagementAPI.getMinutesUsage);
+
+// التحقق من توفر الدقائق قبل المكالمة
+app.get('/api/employees-management/minutes/:employeeId/check', employeesManagementAPI.checkMinutesAvailability);
+
 // بدء الخادم
 app.listen(PORT, () => {
     console.log(`\n✅ الخادم يعمل على http://localhost:${PORT}`);

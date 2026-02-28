@@ -1,0 +1,171 @@
+{
+  "permissions": [
+    {
+      "id": "view_calls",
+      "name": "عرض المكالمات",
+      "description": "السماح بعرض سجل المكالمات",
+      "category": "calls"
+    },
+    {
+      "id": "make_calls",
+      "name": "إجراء المكالمات",
+      "description": "السماح بإجراء المكالمات الصادرة",
+      "category": "calls"
+    },
+    {
+      "id": "listen_recordings",
+      "name": "الاستماع للتسجيلات",
+      "description": "السماح بالاستماع لتسجيلات المكالمات",
+      "category": "calls"
+    },
+    {
+      "id": "download_recordings",
+      "name": "تحميل التسجيلات",
+      "description": "السماح بتحميل ملفات التسجيلات",
+      "category": "calls"
+    },
+    {
+      "id": "view_contacts",
+      "name": "عرض جهات الاتصال",
+      "description": "السماح بعرض قائمة جهات الاتصال",
+      "category": "contacts"
+    },
+    {
+      "id": "add_contacts",
+      "name": "إضافة جهات اتصال",
+      "description": "السماح بإضافة جهات اتصال جديدة",
+      "category": "contacts"
+    },
+    {
+      "id": "edit_contacts",
+      "name": "تعديل جهات الاتصال",
+      "description": "السماح بتعديل معلومات جهات الاتصال",
+      "category": "contacts"
+    },
+    {
+      "id": "delete_contacts",
+      "name": "حذف جهات الاتصال",
+      "description": "السماح بحذف جهات الاتصال",
+      "category": "contacts"
+    },
+    {
+      "id": "view_messages",
+      "name": "عرض الرسائل",
+      "description": "السماح بعرض الرسائل النصية",
+      "category": "messages"
+    },
+    {
+      "id": "send_messages",
+      "name": "إرسال رسائل",
+      "description": "السماح بإرسال رسائل نصية",
+      "category": "messages"
+    },
+    {
+      "id": "view_reports",
+      "name": "عرض التقارير",
+      "description": "السماح بعرض التقارير والإحصائيات",
+      "category": "reports"
+    },
+    {
+      "id": "export_reports",
+      "name": "تصدير التقارير",
+      "description": "السماح بتصدير التقارير",
+      "category": "reports"
+    },
+    {
+      "id": "view_employees",
+      "name": "عرض الموظفين",
+      "description": "السماح بعرض قائمة الموظفين",
+      "category": "admin"
+    },
+    {
+      "id": "add_employees",
+      "name": "إضافة موظفين",
+      "description": "السماح بإضافة موظفين جدد (Admin فقط)",
+      "category": "admin"
+    },
+    {
+      "id": "edit_employees",
+      "name": "تعديل الموظفين",
+      "description": "السماح بتعديل بيانات الموظفين (Admin فقط)",
+      "category": "admin"
+    },
+    {
+      "id": "delete_employees",
+      "name": "حذف الموظفين",
+      "description": "السماح بحذف الموظفين (Admin فقط)",
+      "category": "admin"
+    },
+    {
+      "id": "manage_permissions",
+      "name": "إدارة الصلاحيات",
+      "description": "السماح بتعديل صلاحيات الموظفين (Admin فقط)",
+      "category": "admin"
+    },
+    {
+      "id": "view_dashboard",
+      "name": "عرض لوحة التحكم",
+      "description": "السماح بالوصول للوحة التحكم الرئيسية",
+      "category": "general"
+    },
+    {
+      "id": "view_work_schedule",
+      "name": "عرض جدول العمل",
+      "description": "السماح بعرض جدول أوقات العمل",
+      "category": "general"
+    },
+    {
+      "id": "manage_work_schedule",
+      "name": "إدارة جدول العمل",
+      "description": "السماح بتعديل جدول أوقات العمل (Admin فقط)",
+      "category": "admin"
+    }
+  ],
+  "roles": {
+    "admin": {
+      "name": "مدير النظام",
+      "permissions": "all"
+    },
+    "supervisor": {
+      "name": "مشرف",
+      "permissions": [
+        "view_calls",
+        "make_calls",
+        "listen_recordings",
+        "download_recordings",
+        "view_contacts",
+        "add_contacts",
+        "edit_contacts",
+        "view_messages",
+        "send_messages",
+        "view_reports",
+        "export_reports",
+        "view_employees",
+        "view_dashboard",
+        "view_work_schedule"
+      ]
+    },
+    "agent": {
+      "name": "موظف",
+      "permissions": [
+        "view_calls",
+        "make_calls",
+        "view_contacts",
+        "view_messages",
+        "send_messages",
+        "view_dashboard"
+      ]
+    },
+    "viewer": {
+      "name": "مراقب",
+      "permissions": [
+        "view_calls",
+        "listen_recordings",
+        "view_contacts",
+        "view_messages",
+        "view_reports",
+        "view_dashboard"
+      ]
+    }
+  }
+}

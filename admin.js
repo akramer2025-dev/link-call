@@ -20,7 +20,8 @@ if (!checkAdminAccess()) {
 }
 
 // ========== المتغيرات العامة ==========
-const baseUrl = window.location.origin;
+const API_BASE_URL = 'https://link-call-jade.vercel.app';
+const baseUrl = API_BASE_URL;
 let allCalls = [];
 let allEmployees = [];
 let allRecordings = [];

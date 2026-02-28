@@ -1,5 +1,6 @@
 ﻿// معلومات Twilio
 const TWILIO_PHONE_NUMBER = '+13204336644';
+const API_BASE_URL = 'https://link-call-jade.vercel.app';
 let currentCallSid = null;
 let callStartTime;
 let callTimer;
@@ -72,7 +73,7 @@ async function sendHeartbeat() {
     if (!userId) return;
     
     try {
-        await fetch(`${window.location.origin}/heartbeat`, {
+        await fetch(`${API_BASE_URL}/heartbeat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId, userName })
@@ -90,7 +91,7 @@ function startOnlineTracking() {
     if (!userId) return;
     
     // تسجيل الدخول
-    fetch(`${window.location.origin}/track-login`, {
+    fetch(`${API_BASE_URL}/track-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, userName })
@@ -114,7 +115,7 @@ function stopOnlineTracking() {
     
     if (userId) {
         // إرسال طلب تسجيل الخروج
-        navigator.sendBeacon(`${window.location.origin}/track-logout`, JSON.stringify({ userId }));
+        navigator.sendBeacon(`${API_BASE_URL}/track-logout`, JSON.stringify({ userId }));
     }
 }
 
@@ -348,18 +349,56 @@ async function initializeApp() {
         
         // الحصول على Access Token
         // استخدام identity ثابت مبني على employeeId لاستقبال المكالمات
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const empId = localStorage.getItem('employeeId') || sessionStorage.getItem('employeeId') || 'admin';
         const clientIdentity = `client_${empId}`;
         console.log('🆔 Client Identity:', clientIdentity);
-        const response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`);
-        const data = await response.json();
+        console.log('🔗 Fetching token from:', `${baseUrl}/token`);
         
-        if (!data.token) {
-            throw new Error('فشل الحصول على Token');
+        // محاولة الحصول على Token مع retry
+        let response, data;
+        let attempts = 0;
+        const maxAttempts = 3;
+        
+        while (attempts < maxAttempts) {
+            try {
+                attempts++;
+                console.log(`📡 محاولة ${attempts}/${maxAttempts}...`);
+                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                data = await response.json();
+                
+                if (!data.token) {
+                    throw new Error('التوكن غير موجود في الاستجابة');
+                }
+                
+                console.log('✅ تم الحصول على Token بنجاح');
+                break; // نجحت المحاولة
+                
+            } catch (fetchError) {
+                console.error(`❌ فشلت المحاولة ${attempts}:`, fetchError.message);
+                
+                if (attempts >= maxAttempts) {
+                    throw new Error(`فشل الاتصال بعد ${maxAttempts} محاولات: ${fetchError.message}`);
+                }
+                
+                // انتظر ثانية قبل المحاولة التالية
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         }
         
-        console.log('✅ تم الحصول على Token');
+        if (!data || !data.token) {
+            throw new Error('فشل الحصول على Token');
+        }
         
         device = new Twilio.Device(data.token, {
             codecPreferences: ['opus', 'pcmu'],
@@ -411,7 +450,17 @@ async function initializeApp() {
     } catch (error) {
         console.error('❌ خطأ في التهيئة:', error);
         updateConnectionStatus('error', 'خطأ: ' + error.message);
-        alert('فشل الاتصال بالخادم. تأكد من أن الخادم يعمل.');
+        
+        // رسالة خطأ أكثر تفصيلاً
+        const errorMsg = `⚠️ فشل الاتصال بالخادم!\n\n` +
+                        `المشكلة: ${error.message}\n\n` +
+                        `الحلول الممكنة:\n` +
+                        `1. تحقق من اتصالك بالإنترنت\n` +
+                        `2. قد يكون Vercel backend نائم (أول طلب يأخذ 5-10 ثواني)\n` +
+                        `3. جرّب إعادة تحميل الصفحة\n\n` +
+                        `إذا استمرت المشكلة، تواصل مع الدعم الفني.`;
+        
+        alert(errorMsg);
     }
 }
 
@@ -843,7 +892,7 @@ function startCallMonitoring() {
         }
         
         try {
-            const baseUrl = window.location.origin;
+            const baseUrl = API_BASE_URL;
             const response = await fetch(`${baseUrl}/call-status/${currentCallSid}`);
             const data = await response.json();
             
@@ -898,7 +947,7 @@ async function endCall() {
         try {
             const employeeId = localStorage.getItem('employeeId');
             const employeeName = localStorage.getItem('employeeName');
-            const baseUrl = window.location.origin;
+            const baseUrl = API_BASE_URL;
             
             fetch(`${baseUrl}/work-tracking`, {
                 method: 'POST',
@@ -1094,7 +1143,7 @@ async function stopRecording() {
     if (!isRecording || !currentCallSid) return;
     
     try {
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/stop-recording`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1131,7 +1180,7 @@ async function loadRecordings() {
             return;
         }
         
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const employeeId = localStorage.getItem('employeeId');
         
         console.log('📋 جلب التسجيلات - employeeId:', employeeId, 'userRole:', userRole, 'canViewAll:', canViewAll);
@@ -1315,7 +1364,7 @@ async function playRecording(recordingSid) {
             }
         }
         
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const audioUrl = `${baseUrl}/play-recording/${recordingSid}`;
         const audio = new Audio(audioUrl);
         
@@ -1381,7 +1430,7 @@ async function deleteRecording(recordingSid) {
     
     try {
         console.log('🗑️ جاري حذف التسجيل:', recordingSid);
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/delete-recording/${recordingSid}`, {
             method: 'DELETE'
         });
@@ -1406,7 +1455,7 @@ async function downloadRecording(recordingSid, phoneNumber) {
     try {
         console.log('⬇️ جاري تحميل التسجيل:', recordingSid);
         
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         
         // تحميل مباشر من السيرفر
         const downloadUrl = `${baseUrl}/download-recording/${recordingSid}`;
@@ -1691,7 +1740,7 @@ if (logoutBtn) {
             try {
                 const employeeId = localStorage.getItem('employeeId');
                 const employeeName = localStorage.getItem('employeeName');
-                const baseUrl = window.location.origin;
+                const baseUrl = API_BASE_URL;
                 
                 await fetch(`${baseUrl}/work-tracking`, {
                     method: 'POST',
@@ -1781,7 +1830,7 @@ async function loadEmployeesList() {
     console.log('✅ Container موجود، جاري جلب البيانات...');
     
     try {
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         console.log('🌐 جاري جلب البيانات من:', `${baseUrl}/employees`);
         
         const response = await fetch(`${baseUrl}/employees`);
@@ -1909,7 +1958,7 @@ if (addEmployeeBtn) {
         addEmployeeBtn.textContent = '⏳ جاري الحفظ...';
         
         try {
-            const baseUrl = window.location.origin;
+            const baseUrl = API_BASE_URL;
             console.log('🔄 إرسال البيانات إلى:', `${baseUrl}/employees`);
             
             const response = await fetch(`${baseUrl}/employees`, {
@@ -1987,7 +2036,7 @@ async function deleteEmployee(employeeId, fullname) {
     }
     
     try {
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/employees/${employeeId}`, {
             method: 'DELETE'
         });
@@ -2150,7 +2199,7 @@ async function updateEmployee(employeeId) {
     }
     
     try {
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/employees/${employeeId}`, {
             method: 'PUT',
             headers: {
@@ -2266,7 +2315,7 @@ async function loadAccountBalance() {
             statusEl.textContent = 'جاري التحميل...';
         }
         
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/account/balance`);
         
         if (response.ok) {
@@ -2351,7 +2400,7 @@ function loadEmployeeProfile() {
     
     if (employeeId) {
         // تحميل بيانات المدير من API
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         fetch(`${baseUrl}/employees`)
             .then(res => res.json())
             .then(data => {
@@ -2392,7 +2441,7 @@ if (updateProfileBtn) {
             updateProfileBtn.disabled = true;
             updateProfileBtn.textContent = 'جاري الحفظ...';
             
-            const baseUrl = window.location.origin;
+            const baseUrl = API_BASE_URL;
             const response = await fetch(`${baseUrl}/update-profile`, {
                 method: 'POST',
                 headers: {
@@ -2441,7 +2490,7 @@ async function performLogout() {
         try {
             const employeeId = localStorage.getItem('employeeId');
             const employeeName = localStorage.getItem('employeeName');
-            const baseUrl = window.location.origin;
+            const baseUrl = API_BASE_URL;
             
             await fetch(`${baseUrl}/work-tracking`, {
                 method: 'POST',
@@ -2566,7 +2615,7 @@ async function loadCallHistory() {
         const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
         
         // تحميل جهات الاتصال لعرض الأسماء
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         let contacts = [];
         try {
             const contactsResponse = await fetch(`${baseUrl}/api/contacts`);
@@ -2641,7 +2690,7 @@ async function loadContacts() {
     const container = document.getElementById('contacts-container');
     
     try {
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/api/contacts`);
         const data = await response.json();
         const contacts = data.contacts || [];
@@ -2694,7 +2743,7 @@ async function addContact() {
     if (!phone) return;
     
     try {
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/api/contacts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2722,7 +2771,7 @@ async function deleteContact(contactId, contactName) {
     }
     
     try {
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/api/contacts?id=${contactId}`, {
             method: 'DELETE'
         });
@@ -2819,7 +2868,7 @@ window.addEventListener('beforeunload', async (e) => {
     try {
         const employeeId = localStorage.getItem('employeeId');
         const employeeName = localStorage.getItem('employeeName');
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         
         if (employeeId && employeeName) {
             // استخدام sendBeacon لإرسال البيانات حتى عند إغلاق الصفحة
@@ -2842,7 +2891,7 @@ document.addEventListener('visibilitychange', async () => {
         try {
             const employeeId = localStorage.getItem('employeeId');
             const employeeName = localStorage.getItem('employeeName');
-            const baseUrl = window.location.origin;
+            const baseUrl = API_BASE_URL;
             
             if (employeeId && employeeName) {
                 const data = JSON.stringify({
@@ -2868,7 +2917,7 @@ initializeApp();
 
 // تسجيل وقت الدخول للموظفين من CRM
 if (autoLogin === 'true' && empId && empName) {
-    const baseUrl = window.location.origin;
+    const baseUrl = API_BASE_URL;
     fetch(`${baseUrl}/work-tracking`, {
         method: 'POST',
         headers: {
@@ -2921,7 +2970,7 @@ window.addEventListener('message', (event) => {
 // تحميل تقرير ساعات العمل
 async function loadWorkReports(startDate, endDate) {
     try {
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/work-tracking`, {
             method: 'POST',
             headers: {
@@ -3010,7 +3059,7 @@ async function showEmployeeDetails(employeeId, employeeName) {
     const endDate = document.getElementById('report-end-date').value;
     
     try {
-        const baseUrl = window.location.origin;
+        const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/work-tracking`, {
             method: 'POST',
             headers: {

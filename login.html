@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تسجيل الدخول - Link Call</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📞</text></svg>">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- PWA Configuration -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/linkcall/manifest.json">
     <meta name="theme-color" content="#1a365d">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Link Call">
-    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="apple-touch-icon" href="/linkcall/icon-192.png">
     
     <!-- Security Protection - يجب أن يكون أول سكريبت يتم تحميله -->
+    <script src="js/security-protection.js?v=2.0" defer></script>
     <script src="protection.js?v=1.0" defer></script>
     
     <link rel="stylesheet" href="login-style.css?v=2">
@@ -116,6 +118,9 @@
     </div>
 
     <script>
+        // API Base URL
+        const API_BASE_URL = 'https://link-call-jade.vercel.app';
+        
         // معالجة تسجيل الدخول
         const loginForm = document.getElementById('login-form');
         const errorMessage = document.getElementById('error-message');
@@ -168,7 +173,7 @@
                 
                 // تسجيل وقت دخول المطور
                 try {
-                    const baseUrl = window.location.origin;
+                    const baseUrl = API_BASE_URL;
                     await fetch(`${baseUrl}/work-tracking`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -191,7 +196,7 @@
             
             // محاولة تسجيل دخول مدير
             try {
-                const baseUrl = window.location.origin;
+                const baseUrl = API_BASE_URL;
                 const response = await fetch(`${baseUrl}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

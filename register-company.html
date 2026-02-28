@@ -690,6 +690,9 @@
     </div>
 
     <script>
+        // API Base URL
+        const API_BASE_URL = 'https://link-call-jade.vercel.app';
+        
         let currentStep = 1;
         const totalSteps = 4;
         const form = document.getElementById('registration-form');
@@ -730,7 +733,7 @@
             submitBtn.disabled = true;
 
             try {
-                const response = await fetch('/api/companies/register', {
+                const response = await fetch(`${API_BASE_URL}/api/companies/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)

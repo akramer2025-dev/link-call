@@ -19,7 +19,8 @@ module.exports = async (req, res) => {
             return res.status(500).json({ error: 'Missing credentials' });
         }
 
-        const identity = 'link_call_user_' + Date.now();
+        // استخدام identity من query parameter أو إنشاء واحد جديد
+        const identity = req.query.identity || 'link_call_user_' + Date.now();
         
         const AccessToken = twilio.jwt.AccessToken;
         const VoiceGrant = AccessToken.VoiceGrant;

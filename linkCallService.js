@@ -13,7 +13,7 @@
 
 const LINK_CALL_CONFIG = {
     // رابط تطبيق Link Call (غيّره حسب بيئتك)
-    baseUrl: process.env.REACT_APP_LINK_CALL_URL || 'http://localhost:3000',
+    baseUrl: process.env.REACT_APP_LINK_CALL_URL || 'https://linkcall.akrammostafa.com',
     
     // إعدادات النافذة المنبثقة
     windowFeatures: 'width=400,height=700,resizable=yes,scrollbars=yes',

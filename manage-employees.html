@@ -809,16 +809,20 @@
 
         // التحميل الأولي
         window.addEventListener('DOMContentLoaded', () => {
-            // الحصول على معلومات الشركة من localStorage
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            companyId = userData.companyId;
+            // الحصول على معلومات الشركة من sessionStorage
+            companyId = sessionStorage.getItem('companyId');
+            const companyName = sessionStorage.getItem('companyName');
+            const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin');
             
             if (!companyId) {
-                showAlert('لم يتم العثور على معلومات الشركة', 'error');
+                showAlert('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً', 'error');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
                 return;
             }
 
-            document.getElementById('companyName').textContent = userData.companyName || 'شركتي';
+            document.getElementById('companyName').textContent = companyName || 'شركتي';
 
             // تحميل البيانات
             loadPermissions();

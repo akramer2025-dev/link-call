@@ -33,8 +33,8 @@ module.exports = async (req, res) => {
             console.error('❌ مطلوب TWILIO_API_KEY و TWILIO_API_SECRET');
             console.error('   أنشئهم من: console.twilio.com > Account > API Keys');
             return res.status(500).json({ 
-                error: 'Missing API Key credentials',
-                hint: 'Create API Key at console.twilio.com > Account > API Keys & Tokens'
+                error: 'Missing API Key - يجب إضافة TWILIO_API_KEY و TWILIO_API_SECRET في Vercel Environment Variables',
+                hint: 'Go to console.twilio.com > Account > API Keys & Tokens > Create API Key'
             });
         }
 

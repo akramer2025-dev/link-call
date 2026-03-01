@@ -640,7 +640,9 @@ module.exports.getBalance = async (req, res) => {
             balance: Number((company.balance || 0).toFixed(4)),
             costPerMinute: company.costPerMinute || COST_PER_MINUTE,
             totalMinutesUsed: company.totalMinutesUsed || 0,
-            totalCostDeducted: Number((company.totalCostDeducted || 0).toFixed(4))
+            totalCostDeducted: Number((company.totalCostDeducted || 0).toFixed(4)),
+            companyName: company.companyName || '',
+            adminName: company.adminName || ''
         });
     } catch (error) {
         console.error('getBalance error:', error);

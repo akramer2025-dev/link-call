@@ -2454,19 +2454,70 @@ async function loadAccountBalance() {
     const statusEl = document.getElementById('balance-status');
     const accountStatusEl = document.getElementById('account-status');
     const balanceDisplay = document.querySelector('.balance-display');
-    
+
     // عناصر الهيدر
     const headerBalanceEl = document.getElementById('header-balance');
     const headerBalanceContainer = document.getElementById('balance-header');
     const sidebarBalanceEl = document.getElementById('sidebar-balance');
-    
+
     try {
         if (balanceEl) {
             balanceEl.textContent = '...';
-            statusEl.textContent = 'جاري التحميل...';
+            if (statusEl) statusEl.textContent = 'جاري التحميل...';
         }
-        
+
         const baseUrl = API_BASE_URL;
+        const companyId = sessionStorage.getItem('companyId');
+
+        // إذا كان مدير شركة أو موظف شركة → اقرأ رصيد الشركة من API الخاص بنا
+        if (companyId) {
+            const r = await fetch(`${baseUrl}/api/companies/balance?companyId=${companyId}`);
+            if (r.ok) {
+                const d = await r.json();
+                if (d.success) {
+                    const balance = parseFloat(d.balance || 0).toFixed(2);
+                    if (balanceEl)        balanceEl.textContent = balance;
+                    if (currencyEl)      currencyEl.textContent = 'USD';
+                    if (headerBalanceEl) headerBalanceEl.textContent = balance;
+                    if (sidebarBalanceEl) sidebarBalanceEl.textContent = balance;
+                    if (accountStatusEl) accountStatusEl.textContent = '\u2705 نشط';
+                    if (balanceDisplay)  balanceDisplay.classList.remove('balance-low','balance-medium','balance-good');
+                    if (headerBalanceContainer) headerBalanceContainer.classList.remove('low','medium');
+                    if (parseFloat(balance) < 5) {
+                        if (statusEl) statusEl.textContent = '\u26a0\ufe0f الرصيد منخفض!';
+                        if (balanceDisplay) balanceDisplay.classList.add('balance-low');
+                        if (headerBalanceContainer) headerBalanceContainer.classList.add('low');
+                    } else if (parseFloat(balance) < 20) {
+                        if (statusEl) statusEl.textContent = '\ud83d\udca1 الرصيد متوسط';
+                        if (balanceDisplay) balanceDisplay.classList.add('balance-medium');
+                        if (headerBalanceContainer) headerBalanceContainer.classList.add('medium');
+                    } else {
+                        if (statusEl) statusEl.textContent = '\u2705 الرصيد جيد';
+                        if (balanceDisplay) balanceDisplay.classList.add('balance-good');
+                    }
+                    // تحديث اسم الشركة والمدير تلقائياً لو كان مخزّن بشكل خاطئ
+                    if (d.companyName) {
+                        sessionStorage.setItem('companyName', d.companyName);
+                        const el = document.getElementById('companyName');
+                        if (el) el.textContent = d.companyName;
+                    }
+                    if (d.adminName) {
+                        const storedName = sessionStorage.getItem('fullname') || '';
+                        if (storedName.includes('?') || storedName.includes('￿d')) {
+                            sessionStorage.setItem('fullname', d.adminName);
+                            const hEl = document.getElementById('header-username');
+                            const sEl = document.getElementById('sidebar-username');
+                            if (hEl) hEl.textContent = d.adminName;
+                            if (sEl) sEl.textContent = d.adminName;
+                        }
+                    }
+                    console.log('💰 الرصيد الحالي:', balance, 'USD');
+                    return;
+                }
+            }
+        }
+
+        // fallback → رصيد Twilio (للمطور الرئيسي فقط)
         const response = await fetch(`${baseUrl}/account/balance`);
         
         if (response.ok) {

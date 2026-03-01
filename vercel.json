@@ -1,76 +1,235 @@
-﻿{
+{
   "version": 2,
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     },
     {
       "source": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webmanifest))",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/(.*\\.html)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     }
   ],
   "rewrites": [
-    { "source": "/api/companies/register", "destination": "/api/companies" },
-    { "source": "/api/companies/login", "destination": "/api/companies" },
-    { "source": "/api/companies/:path*", "destination": "/api/companies" },
-    { "source": "/api/employees/:path*", "destination": "/api/index" },
-    { "source": "/api/voice", "destination": "/api/voice" },
-    { "source": "/api/token", "destination": "/api/token" },
-    { "source": "/api/recordings/:path*", "destination": "/api/recordings" },
-    { "source": "/api/recording-status", "destination": "/api/recording-status" },
-    { "source": "/api/call-history", "destination": "/api/call-history" },
-    { "source": "/api/contacts/:path*", "destination": "/api/contacts" },
-    { "source": "/api/work-tracking", "destination": "/api/work-tracking" },
-    { "source": "/api/:path*", "destination": "/api/index" },
-    { "source": "/token", "destination": "/api/token" },
-    { "source": "/voice", "destination": "/api/voice" },
-    { "source": "/recordings/:path*", "destination": "/api/recordings" },
-    { "source": "/recording/:path*", "destination": "/api/recordings" },
-    { "source": "/recording-status", "destination": "/api/recording-status" },
-    { "source": "/work-tracking", "destination": "/api/work-tracking" },
-    { "source": "/call-history", "destination": "/api/call-history" },
-    { "source": "/contacts", "destination": "/api/contacts" },
-    { "source": "/contacts/:path*", "destination": "/api/contacts" },
-    { "source": "/companies", "destination": "/api/companies" },
-    { "source": "/companies/:path*", "destination": "/api/companies" },
-    { "source": "/login", "destination": "/api/index" },
-    { "source": "/employees", "destination": "/api/index" },
-    { "source": "/employees/:path*", "destination": "/api/index" },
-    { "source": "/account/:path*", "destination": "/api/index" },
-    { "source": "/balance", "destination": "/api/index" },
-    { "source": "/heartbeat", "destination": "/api/index" },
-    { "source": "/track-login", "destination": "/api/index" },
-    { "source": "/track-logout", "destination": "/api/index" },
-    { "source": "/online-users", "destination": "/api/index" },
-    { "source": "/update-profile", "destination": "/api/index" },
-    { "source": "/my-company", "destination": "/api/index" },
-    { "source": "/admin/:path*", "destination": "/api/index" },
-    { "source": "/init-kv", "destination": "/api/index" },
-    { "source": "/debug/:path*", "destination": "/api/index" },
-    { "source": "/make-direct-call", "destination": "/api/index" },
-    { "source": "/outgoing-call", "destination": "/api/index" },
-    { "source": "/end-call", "destination": "/api/index" },
-    { "source": "/start-recording", "destination": "/api/index" },
-    { "source": "/stop-recording", "destination": "/api/index" },
-    { "source": "/delete-recording/:path*", "destination": "/api/index" },
-    { "source": "/call-status/:path*", "destination": "/api/index" },
-    { "source": "/settings", "destination": "/api/index" },
-    { "source": "/plivo-:path*", "destination": "/api/index" },
-    { "source": "/zadarma-:path*", "destination": "/api/index" }
+    {
+      "source": "/api/companies/register",
+      "destination": "/api/companies"
+    },
+    {
+      "source": "/api/companies/login",
+      "destination": "/api/companies"
+    },
+    {
+      "source": "/api/companies/:path*",
+      "destination": "/api/companies"
+    },
+    {
+      "source": "/api/employees/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/voice",
+      "destination": "/api/voice"
+    },
+    {
+      "source": "/api/token",
+      "destination": "/api/token"
+    },
+    {
+      "source": "/api/recordings/:path*",
+      "destination": "/api/recordings"
+    },
+    {
+      "source": "/api/recording-status",
+      "destination": "/api/recording-status"
+    },
+    {
+      "source": "/api/call-history",
+      "destination": "/api/call-history"
+    },
+    {
+      "source": "/api/contacts/:path*",
+      "destination": "/api/contacts"
+    },
+    {
+      "source": "/api/work-tracking",
+      "destination": "/api/work-tracking"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/token",
+      "destination": "/api/token"
+    },
+    {
+      "source": "/voice",
+      "destination": "/api/voice"
+    },
+    {
+      "source": "/recordings/:path*",
+      "destination": "/api/recordings"
+    },
+    {
+      "source": "/recording/:path*",
+      "destination": "/api/recordings"
+    },
+    {
+      "source": "/recording-status",
+      "destination": "/api/recording-status"
+    },
+    {
+      "source": "/work-tracking",
+      "destination": "/api/work-tracking"
+    },
+    {
+      "source": "/call-history",
+      "destination": "/api/call-history"
+    },
+    {
+      "source": "/contacts",
+      "destination": "/api/contacts"
+    },
+    {
+      "source": "/contacts/:path*",
+      "destination": "/api/contacts"
+    },
+    {
+      "source": "/companies",
+      "destination": "/api/companies"
+    },
+    {
+      "source": "/companies/:path*",
+      "destination": "/api/companies"
+    },
+    {
+      "source": "/login",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/employees",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/employees/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/account/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/balance",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/heartbeat",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/track-login",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/track-logout",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/online-users",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/update-profile",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/my-company",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/init-kv",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/debug/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/make-direct-call",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/outgoing-call",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/end-call",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/start-recording",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/stop-recording",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/delete-recording/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/call-status/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/settings",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/plivo-:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/zadarma-:path*",
+      "destination": "/api/index"
+    }
   ],
   "env": {
     "NODE_ENV": "production"

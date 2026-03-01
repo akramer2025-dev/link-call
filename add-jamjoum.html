@@ -186,9 +186,7 @@
     </div>
     
     <script>
-        const baseUrl = window.location.hostname === 'localhost' 
-            ? 'http://localhost:3000' 
-            : 'https://linkcall.akrammostafa.com';
+        const baseUrl = window.location.origin;
         
         async function addCompany() {
             const btn = document.getElementById('addBtn');

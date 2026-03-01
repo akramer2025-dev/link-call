@@ -724,7 +724,7 @@
 
     <script>
         // API Base URL
-        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'https://linkcall.akrammostafa.com';
+        const API_BASE_URL = window.location.origin;
         
         let currentStep = 1;
         const totalSteps = 4;

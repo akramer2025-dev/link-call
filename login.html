@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تسجيل الدخول - Link Call</title>
+    <!-- i18n -->
+    <script src="js/i18n.js"></script>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     
@@ -20,8 +22,47 @@
     <script src="protection.js?v=1.0" defer></script>
     
     <link rel="stylesheet" href="login-style.css?v=2">
+    <style>
+        .lang-switcher {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 9999;
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.18);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 4px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            opacity: 0.7;
+        }
+        .lang-btn.active {
+            background: rgba(255,255,255,0.9);
+            color: #1a365d;
+            opacity: 1;
+        }
+        .lang-btn:hover { opacity: 1; }
+    </style>
 </head>
-<body>
+<body data-title-key="login_welcome">
+    <!-- Language Switcher -->
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="ar" onclick="i18n.setLang('ar')">ع</button>
+        <button class="lang-btn" data-lang="en" onclick="i18n.setLang('en')">EN</button>
+    </div>
+
     <!-- خلفية سلايدر الكول سنتر -->
     <div class="slider-container">
         <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
@@ -39,24 +80,24 @@
             <div class="info-content">
                 <img src="icon-192.png?v=2" alt="Link Call" class="brand-logo">
                 <h1 class="brand-title">Link Call</h1>
-                <p class="brand-subtitle">نظام المكالمات السحابي المتكامل</p>
+                <p class="brand-subtitle" data-i18n="app_tagline">نظام المكالمات السحابي المتكامل</p>
                 
                 <div class="features-list">
                     <div class="feature-item">
                         <span class="feature-icon">📞</span>
-                        <span class="feature-text">مكالمات عالية الجودة</span>
+                        <span class="feature-text" data-i18n="feature_quality_calls">مكالمات عالية الجودة</span>
                     </div>
                     <div class="feature-item">
                         <span class="feature-icon">🌍</span>
-                        <span class="feature-text">اتصل من أي مكان في العالم</span>
+                        <span class="feature-text" data-i18n="feature_anywhere">اتصل من أي مكان في العالم</span>
                     </div>
                     <div class="feature-item">
                         <span class="feature-icon">🔒</span>
-                        <span class="feature-text">تشفير وحماية كاملة</span>
+                        <span class="feature-text" data-i18n="feature_secure">تشفير وحماية كاملة</span>
                     </div>
                     <div class="feature-item">
                         <span class="feature-icon">📊</span>
-                        <span class="feature-text">تقارير وإحصائيات مفصلة</span>
+                        <span class="feature-text" data-i18n="feature_reports">تقارير وإحصائيات مفصلة</span>
                     </div>
                 </div>
             </div>
@@ -66,24 +107,24 @@
         <div class="login-section">
             <div class="login-card">
                 <div class="login-header">
-                    <h2>مرحباً بك</h2>
-                    <p>سجل دخولك للمتابعة</p>
+                    <h2 data-i18n="login_welcome">مرحباً بك</h2>
+                    <p data-i18n="login_subtitle">سجل دخولك للمتابعة</p>
                 </div>
                 
                 <form id="login-form">
                     <div class="form-group">
-                        <label for="username">اسم المستخدم</label>
+                        <label for="username" data-i18n="login_username_label">اسم المستخدم</label>
                         <div class="input-wrapper">
                             <span class="input-icon">👤</span>
-                            <input type="text" id="username" name="username" placeholder="أدخل اسم المستخدم" required autocomplete="username">
+                            <input type="text" id="username" name="username" data-i18n-placeholder="login_username_placeholder" placeholder="أدخل اسم المستخدم" required autocomplete="username">
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="password">كلمة المرور</label>
+                        <label for="password" data-i18n="login_password_label">كلمة المرور</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
-                            <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور" required autocomplete="current-password">
+                            <input type="password" id="password" name="password" data-i18n-placeholder="login_password_placeholder" placeholder="أدخل كلمة المرور" required autocomplete="current-password">
                             <button type="button" class="toggle-password" id="toggle-password">👁️</button>
                         </div>
                     </div>
@@ -92,16 +133,16 @@
                         <label class="remember-label">
                             <input type="checkbox" id="remember-me">
                             <span class="remember-check"></span>
-                            <span>تذكّر بياناتي</span>
+                            <span data-i18n="login_remember">تذكّر بياناتي</span>
                         </label>
                     </div>
 
-                    <div class="error-message hidden" id="error-message">
+                    <div class="error-message hidden" id="error-message" data-i18n="login_error">
                         ⚠️ اسم المستخدم أو كلمة المرور غير صحيحة
                     </div>
                     
                     <button type="submit" class="login-btn" id="login-btn">
-                        <span class="btn-text">تسجيل الدخول</span>
+                        <span class="btn-text" data-i18n="login_btn">تسجيل الدخول</span>
                         <span class="btn-loader hidden"></span>
                     </button>
                 </form>
@@ -114,9 +155,9 @@
                 <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 10px; border: 1px solid rgba(102, 126, 234, 0.2);">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                         <div style="font-size: 20px;">🔒</div>
-                        <strong style="color: #667eea; font-size: 14px;">حماية البيانات مفعّلة</strong>
+                        <strong style="color: #667eea; font-size: 14px;" data-i18n="login_security_title">حماية البيانات مفعّلة</strong>
                     </div>
-                    <p style="margin: 0; font-size: 12px; color: #666; line-height: 1.6;">
+                    <p style="margin: 0; font-size: 12px; color: #666; line-height: 1.6;" data-i18n="login_security_text">
                         🛡️ جميع بياناتك محمية بتشفير متقدم ومحفوظة بشكل آمن. لا يمكن لأي شخص الوصول إلى معلوماتك بدون تصريح. نظام أمان بـ 7 طبقات لحمايتك.
                     </p>
                 </div>
@@ -181,13 +222,13 @@
         // إظهار حالة التحميل
         function showLoading() {
             loginBtn.classList.add('loading');
-            loginBtn.querySelector('.btn-text').textContent = 'جاري التحقق...';
+            loginBtn.querySelector('.btn-text').textContent = i18n.t('login_loading');
         }
         
         // إخفاء حالة التحميل
         function hideLoading() {
             loginBtn.classList.remove('loading');
-            loginBtn.querySelector('.btn-text').textContent = 'تسجيل الدخول';
+            loginBtn.querySelector('.btn-text').textContent = i18n.t('login_btn');
         }
         
         // معالجة النموذج

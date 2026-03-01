@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الموظفين - Link Call</title>
+    <title data-i18n="emp_page_title">إدارة الموظفين - Link Call</title>
+    <!-- i18n -->
+    <script src="js/i18n.js"></script>
     <style>
         * {
             margin: 0;
@@ -588,17 +590,47 @@
         .empty-state p {
             color: #9ca3af;
         }
+        .lang-switcher {
+            display: flex;
+            gap: 3px;
+            background: rgba(94,196,212,0.1);
+            border-radius: 20px;
+            padding: 3px;
+            border: 1px solid rgba(94,196,212,0.3);
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: #1e3a5f;
+            padding: 4px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.2s;
+            opacity: 0.6;
+        }
+        .lang-btn.active {
+            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            color: white;
+            opacity: 1;
+        }
+        .lang-btn:hover { opacity: 1; }
     </style>
 </head>
-<body>
+<body data-title-key="emp_page_title">
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>📋 إدارة الموظفين</h1>
+            <h1>📋 <span data-i18n="emp_header_title">إدارة الموظفين</span></h1>
             <div class="header-info">
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="ar" onclick="i18n.setLang('ar')">ع</button>
+                    <button class="lang-btn" data-lang="en" onclick="i18n.setLang('en')">EN</button>
+                </div>
                 <div class="company-name" id="companyName">شركتي</div>
                 <button class="btn-add" onclick="showAddEmployeeModal()">
-                    ➕ إضافة موظف جديد
+                    <span data-i18n="emp_btn_add">➕ إضافة موظف جديد</span>
                 </button>
             </div>
         </div>
@@ -610,7 +642,7 @@
                     👥
                 </div>
                 <div class="stat-info">
-                    <h3>إجمالي الموظفين</h3>
+                    <h3 data-i18n="emp_stat_total">إجمالي الموظفين</h3>
                     <p id="totalEmployees">0</p>
                 </div>
             </div>
@@ -620,7 +652,7 @@
                     ✅
                 </div>
                 <div class="stat-info">
-                    <h3>الموظفين النشطون</h3>
+                    <h3 data-i18n="emp_stat_active">الموظفين النشطون</h3>
                     <p id="activeEmployees">0</p>
                 </div>
             </div>
@@ -650,13 +682,13 @@
         <div class="main-content">
             <div class="toolbar">
                 <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="🔍 ابحث عن موظف..." 
+                    <input type="text" id="searchInput" data-i18n-placeholder="emp_search_placeholder" placeholder="🔍 ابحث عن موظف..." 
                            onkeyup="filterEmployees()">
                 </div>
                 <div class="filter-buttons">
-                    <button class="filter-btn active" onclick="filterByStatus('all')">الكل</button>
-                    <button class="filter-btn" onclick="filterByStatus('active')">نشط</button>
-                    <button class="filter-btn" onclick="filterByStatus('inactive')">غير نشط</button>
+                    <button class="filter-btn active" onclick="filterByStatus('all')" data-i18n="emp_filter_all">الكل</button>
+                    <button class="filter-btn" onclick="filterByStatus('active')" data-i18n="emp_filter_active">نشط</button>
+                    <button class="filter-btn" onclick="filterByStatus('inactive')" data-i18n="emp_filter_inactive">غير نشط</button>
                 </div>
             </div>
 
@@ -674,7 +706,7 @@
                         👤
                     </div>
                     <div style="flex: 1;">
-                        <h2 id="modalTitle" style="margin: 0; font-size: 22px;">إضافة موظف جديد</h2>
+                    <h2 id="modalTitle" style="margin: 0; font-size: 22px;" data-i18n="emp_modal_add_title">إضافة موظف جديد</h2>
                         <p style="margin: 5px 0 0; font-size: 13px; opacity: 0.9;">املأ البيانات أدناه لإضافة موظف إلى فريق العمل</p>
                     </div>
                     <button class="btn-close" onclick="closeModal()" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 20px; cursor: pointer; transition: all 0.3s;">&times;</button>
@@ -819,10 +851,10 @@
 
                 <!-- الأزرار -->
                 <div style="display: flex; gap: 12px; margin-top: 25px;">
-                    <button type="button" onclick="closeModal()" style="flex: 1; padding: 14px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                    <button type="button" onclick="closeModal()" style="flex: 1; padding: 14px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;" data-i18n="emp_btn_cancel">
                         إلغاء
                     </button>
-                    <button type="submit" class="btn-submit" style="flex: 2; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                    <button type="submit" class="btn-submit" style="flex: 2; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);" data-i18n="emp_btn_save">
                         ✅ حفظ الموظف
                     </button>
                 </div>
@@ -1122,7 +1154,7 @@
                         </td>
                         <td>
                             <span class="badge ${emp.active ? 'badge-active' : 'badge-inactive'}">
-                                ${emp.active ? 'نشط' : 'غير نشط'}
+                                ${emp.active ? i18n.t('active') : i18n.t('inactive')}
                             </span>
                         </td>
                         <td>
@@ -1150,7 +1182,7 @@
         // عرض نافذة إضافة موظف
         function showAddEmployeeModal() {
             isEditMode = false;
-            document.getElementById('modalTitle').textContent = 'إضافة موظف جديد';
+            document.getElementById('modalTitle').textContent = i18n.t('emp_modal_add_title');
             document.getElementById('employeeForm').reset();
             document.getElementById('employeeId').value = '';
             document.getElementById('empPassword').required = true;
@@ -1168,7 +1200,7 @@
             if (!employee) return;
 
             isEditMode = true;
-            document.getElementById('modalTitle').textContent = 'تعديل بيانات الموظف';
+            document.getElementById('modalTitle').textContent = i18n.t('emp_modal_edit_title');
             document.getElementById('employeeId').value = employee.id;
             document.getElementById('empName').value = employee.name;
             document.getElementById('empUsername').value = employee.username;
@@ -1199,7 +1231,7 @@
 
         // حذف موظف
         async function deleteEmployee(employeeId) {
-            if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
+            if (!confirm(i18n.t('emp_delete_confirm'))) return;
 
             try {
                 const response = await fetch(`/api/employees-management/${employeeId}`, {
@@ -1209,14 +1241,14 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('تم حذف الموظف بنجاح', 'success');
+                    showAlert(i18n.t('emp_delete_success'), 'success');
                     loadEmployees();
                 } else {
                     showAlert(data.message, 'error');
                 }
             } catch (error) {
                 console.error('Error deleting employee:', error);
-                showAlert('حدث خطأ أثناء حذف الموظف', 'error');
+                showAlert(i18n.t('emp_delete_error'), 'error');
             }
         }
 
@@ -1266,7 +1298,7 @@
                 
                 if (data.success) {
                     showAlert(
-                        isEditMode ? 'تم تحديث بيانات الموظف بنجاح' : 'تم إضافة الموظف بنجاح',
+                        isEditMode ? i18n.t('emp_update_success') : i18n.t('emp_save_success'),
                         'success'
                     );
                     closeModal();
@@ -1276,7 +1308,7 @@
                 }
             } catch (error) {
                 console.error('Error saving employee:', error);
-                showAlert('حدث خطأ أثناء حفظ البيانات', 'error');
+                showAlert(i18n.t('emp_save_error'), 'error');
             }
         });
 

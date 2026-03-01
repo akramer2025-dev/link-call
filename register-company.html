@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل شركة جديدة - Link Call</title>
+    <title data-i18n="reg_page_title">تسجيل شركة جديدة - Link Call</title>
+    <!-- i18n -->
+    <script src="js/i18n.js"></script>
     <style>
         * {
             margin: 0;
@@ -373,14 +375,45 @@
                 width: 100%;
             }
         }
+        .lang-switcher {
+            display: flex;
+            gap: 3px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 3px;
+            border: 1px solid rgba(255,255,255,0.25);
+            margin-top: 12px;
+            justify-content: center;
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.2s;
+            opacity: 0.65;
+        }
+        .lang-btn.active {
+            background: rgba(255,255,255,0.3);
+            opacity: 1;
+        }
+        .lang-btn:hover { opacity: 1; }
     </style>
 </head>
-<body>
+<body data-title-key="reg_page_title">
     <div class="registration-container">
         <div class="header">
-            <h1>🚀 تسجيل شركة جديدة</h1>
-            <p>انضم إلى أكثر من 50 شركة تستخدم Link Call</p>
+            <h1>🚀 <span data-i18n="reg_title">تسجيل شركة جديدة</span></h1>
+            <p data-i18n="reg_header_subtitle">انضم إلى أكثر من 50 شركة تستخدم Link Call</p>
             <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">powered by www.akrammostafa.com</p>
+            <div class="lang-switcher">
+                <button class="lang-btn active" data-lang="ar" onclick="i18n.setLang('ar')">عربي</button>
+                <button class="lang-btn" data-lang="en" onclick="i18n.setLang('en')">English</button>
+            </div>
         </div>
 
         <div class="form-container">
@@ -388,19 +421,19 @@
             <div class="step-indicator">
                 <div class="step active" data-step="1">
                     <div class="step-circle">1</div>
-                    <div class="step-label">معلومات الشركة</div>
+                    <div class="step-label" data-i18n="reg_step1">معلومات الشركة</div>
                 </div>
                 <div class="step" data-step="2">
                     <div class="step-circle">2</div>
-                    <div class="step-label">معلومات المسؤول</div>
+                    <div class="step-label" data-i18n="reg_step2">معلومات المسؤول</div>
                 </div>
                 <div class="step" data-step="3">
                     <div class="step-circle">3</div>
-                    <div class="step-label">اختيار الخطة</div>
+                    <div class="step-label" data-i18n="reg_step3">اختيار الخطة</div>
                 </div>
                 <div class="step" data-step="4">
                     <div class="step-circle">4</div>
-                    <div class="step-label">المراجعة</div>
+                    <div class="step-label" data-i18n="reg_step4">المراجعة</div>
                 </div>
             </div>
 
@@ -675,13 +708,13 @@
 
                 <!-- Navigation Buttons -->
                 <div class="button-group" id="navigation-buttons">
-                    <button type="button" class="btn btn-secondary" id="prev-btn" style="display: none;">
+                    <button type="button" class="btn btn-secondary" id="prev-btn" style="display: none;" data-i18n="reg_btn_prev">
                         ← السابق
                     </button>
-                    <button type="button" class="btn btn-primary" id="next-btn">
+                    <button type="button" class="btn btn-primary" id="next-btn" data-i18n="reg_btn_next">
                         التالي →
                     </button>
-                    <button type="submit" class="btn btn-success" id="submit-btn" style="display: none;">
+                    <button type="submit" class="btn btn-success" id="submit-btn" style="display: none;" data-i18n="reg_btn_register">
                         ✓ تأكيد التسجيل
                     </button>
                 </div>

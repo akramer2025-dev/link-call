@@ -3,15 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم المطور - Link Call</title>
+    <title data-i18n="admin_page_title">لوحة تحكم المطور - Link Call</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
     
     <!-- Security Protection - يجب أن يكون أول سكريبت يتم تحميله -->
     <script src="protection.js?v=1.0" defer></script>
     
+    <!-- i18n -->
+    <script src="js/i18n.js"></script>
+    
     <link rel="stylesheet" href="admin-style.css">
+    <style>
+    .lang-switcher {
+        display: flex;
+        gap: 3px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 3px;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .lang-btn {
+        background: transparent;
+        border: none;
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 15px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        transition: all 0.2s;
+        opacity: 0.6;
+    }
+    .lang-btn.active {
+        background: rgba(255,255,255,0.25);
+        opacity: 1;
+    }
+    .lang-btn:hover { opacity: 1; }
+    </style>
 </head>
-<body>
+<body data-title-key="admin_page_title">
     <div class="admin-container">
         <!-- خلفية شفافة للقائمة الجانبية (للهاتف) -->
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -20,48 +50,48 @@
         <aside class="sidebar" id="sidebar">
             <div class="logo-section">
                 <img src="icon-192.png" alt="Link Call" class="logo">
-                <h2>لوحة المطور</h2>
+                <h2 data-i18n="admin_title">لوحة المطور</h2>
             </div>
             
             <nav class="nav-menu">
                 <a href="#" class="nav-item active" data-section="dashboard">
                     <span class="icon">📊</span>
-                    <span class="text">الرئيسية</span>
+                    <span class="text" data-i18n="admin_dashboard">الرئيسية</span>
                 </a>
                 <a href="#" class="nav-item" data-section="companies">
                     <span class="icon">🏢</span>
-                    <span class="text">الشركات</span>
+                    <span class="text" data-i18n="admin_companies">الشركات</span>
                 </a>
                 <a href="#" class="nav-item" data-section="calls">
                     <span class="icon">📞</span>
-                    <span class="text">المكالمات</span>
+                    <span class="text" data-i18n="admin_calls">المكالمات</span>
                 </a>
                 <a href="#" class="nav-item" data-section="employees">
                     <span class="icon">👥</span>
-                    <span class="text">الموظفين</span>
+                    <span class="text" data-i18n="admin_employees">الموظفين</span>
                 </a>
                 <a href="#" class="nav-item" data-section="analytics">
                     <span class="icon">📈</span>
-                    <span class="text">التحليلات</span>
+                    <span class="text" data-i18n="admin_analytics">التحليلات</span>
                 </a>
                 <a href="#" class="nav-item" data-section="transcripts">
                     <span class="icon">📝</span>
-                    <span class="text">تحويل الصوت</span>
+                    <span class="text" data-i18n="admin_transcripts">تحويل الصوت</span>
                 </a>
                 <a href="#" class="nav-item" data-section="missed">
                     <span class="icon">📵</span>
-                    <span class="text">المكالمات الفائتة</span>
+                    <span class="text" data-i18n="admin_missed">المكالمات الفائتة</span>
                 </a>
                 <a href="#" class="nav-item" data-section="settings">
                     <span class="icon">⚙️</span>
-                    <span class="text">الإعدادات</span>
+                    <span class="text" data-i18n="admin_settings">الإعدادات</span>
                 </a>
             </nav>
             
             <div class="sidebar-footer">
                 <a href="index.html" class="back-link">
                     <span class="icon">🔙</span>
-                    <span class="text">العودة للتطبيق</span>
+                    <span class="text" data-i18n="admin_back_app">العودة للتطبيق</span>
                 </a>
             </div>
         </aside>
@@ -77,11 +107,15 @@
                 </div>
                 <div class="header-left">
                     <div class="search-box">
-                        <input type="text" placeholder="بحث..." id="global-search">
+                        <input type="text" data-i18n-placeholder="admin_search_placeholder" placeholder="بحث..." id="global-search">
                         <span class="search-icon">🔍</span>
                     </div>
+                    <div class="lang-switcher">
+                        <button class="lang-btn active" data-lang="ar" onclick="i18n.setLang('ar')">ع</button>
+                        <button class="lang-btn" data-lang="en" onclick="i18n.setLang('en')">EN</button>
+                    </div>
                     <div class="user-info">
-                        <span class="user-name">المطور</span>
+                        <span class="user-name" data-i18n="admin_developer">المطور</span>
                         <span class="user-avatar">👨‍💻</span>
                     </div>
                 </div>
@@ -94,7 +128,7 @@
                         <div class="stat-icon">📞</div>
                         <div class="stat-info">
                             <h3 id="total-calls">0</h3>
-                            <p>إجمالي المكالمات</p>
+                            <p data-i18n="admin_total_calls">إجمالي المكالمات</p>
                         </div>
                         <div class="stat-trend up">
                             <span>↑ 12%</span>
@@ -104,7 +138,7 @@
                         <div class="stat-icon">✅</div>
                         <div class="stat-info">
                             <h3 id="answered-calls">0</h3>
-                            <p>مكالمات ناجحة</p>
+                            <p data-i18n="admin_answered">مكالمات ناجحة</p>
                         </div>
                         <div class="stat-trend up">
                             <span>↑ 8%</span>
@@ -114,7 +148,7 @@
                         <div class="stat-icon">📵</div>
                         <div class="stat-info">
                             <h3 id="missed-calls">0</h3>
-                            <p>مكالمات فائتة</p>
+                            <p data-i18n="admin_missed_calls">مكالمات فائتة</p>
                         </div>
                         <div class="stat-trend down">
                             <span>↓ 5%</span>
@@ -124,21 +158,21 @@
                         <div class="stat-icon">👥</div>
                         <div class="stat-info">
                             <h3 id="active-employees">0</h3>
-                            <p>موظفين نشطين</p>
+                            <p data-i18n="admin_active_employees">موظفين نشطين</p>
                         </div>
                     </div>
                     <div class="stat-card purple">
                         <div class="stat-icon">⏱️</div>
                         <div class="stat-info">
                             <h3 id="total-duration">00:00</h3>
-                            <p>إجمالي مدة المكالمات</p>
+                            <p data-i18n="admin_duration">إجمالي مدة المكالمات</p>
                         </div>
                     </div>
                     <div class="stat-card orange">
                         <div class="stat-icon">🎙️</div>
                         <div class="stat-info">
                             <h3 id="total-recordings">0</h3>
-                            <p>تسجيلات محفوظة</p>
+                            <p data-i18n="admin_recordings">تسجيلات محفوظة</p>
                         </div>
                     </div>
                 </div>
@@ -147,7 +181,7 @@
                 <div class="online-users-section">
                     <div class="online-card">
                         <div class="online-header">
-                            <h3>🟢 المستخدمين الأونلاين الآن</h3>
+                            <h3 data-i18n="admin_online_users">🟢 المستخدمين الأونلاين الآن</h3>
                             <span class="online-count" id="online-count">0</span>
                         </div>
                         <div class="online-users-list" id="online-users-list">
@@ -156,7 +190,7 @@
                     </div>
                     <div class="last-login-card">
                         <div class="last-login-header">
-                            <h3>🕐 آخر تسجيل دخول</h3>
+                            <h3 data-i18n="admin_last_login">🕐 آخر تسجيل دخول</h3>
                         </div>
                         <div class="last-login-info" id="last-login-info">
                             <div class="no-login">لا توجد بيانات</div>

@@ -22,32 +22,13 @@ module.exports = async (req, res) => {
             });
         }
 
-        let redisData = null;
-
-        // إذا كان URL عادي redis:// نحوّله لـ REST API
-        if (redisUrl.startsWith('redis://')) {
-            // redis://default:TOKEN@HOST:PORT
-            const match = redisUrl.match(/redis:\/\/[^:]+:([^@]+)@([^:]+):(\d+)/);
-            if (!match) throw new Error('Cannot parse REDIS_URL: ' + redisUrl.substring(0, 30));
-            const [, token, host] = match;
-            const restBase = `https://${host}`;
-            // استخدام Upstash HTTP API
-            const response = await fetch(`${restBase}/get/companies_data`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (!response.ok) throw new Error(`Redis REST response: ${response.status}`);
-            const json = await response.json();
-            // Upstash REST API يرجع { result: "..." }
-            redisData = json.result;
-        } else {
-            // إذا كان https:// Upstash REST URL مباشرة
-            const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-            const response = await fetch(`${redisUrl}/get/companies_data`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const json = await response.json();
-            redisData = json.result;
-        }
+        // استخدام ioredis مع الـ standard Redis URL
+        const Redis = require('ioredis');
+        const redis = new Redis(redisUrl, { tls: redisUrl.startsWith('rediss://') ? {} : undefined, connectTimeout: 15000, lazyConnect: true });
+        await redis.connect();
+        const rawData = await redis.get('companies_data');
+        redis.disconnect();
+        const redisData = rawData;
 
         if (!redisData) {
             return res.status(404).json({

@@ -2399,13 +2399,16 @@ function displayUserInfo() {
     
     // تحديد النص بناءً على نوع الحساب
     const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
+    const t = (typeof i18n !== 'undefined') ? (k) => i18n.t(k) : (k) => ({
+        role_company_admin: 'مدير شركة', role_developer: 'مطور', role_manager: 'مدير'
+    }[k] || k);
     let roleText;
     if (role === 'company-admin' || isCompanyAdmin) {
-        roleText = '🏢 مدير شركة';
+        roleText = '🏢 ' + t('role_company_admin');
     } else if (role === 'admin') {
-        roleText = '👑 مطور';
+        roleText = '👑 ' + t('role_developer');
     } else {
-        roleText = '👨‍💼 مدير';
+        roleText = '👨‍💼 ' + t('role_manager');
     }
     
     if (headerRole) {
@@ -2429,6 +2432,11 @@ function displayUserInfo() {
 
 // تحميل معلومات المستخدم عند فتح الصفحة
 displayUserInfo();
+
+// إعادة عرض اسم الدور عند تغيير اللغة
+document.addEventListener('langChanged', () => {
+    displayUserInfo();
+});
 
 // ========== جلب رصيد الحساب ==========
 let rechargeUrl = 'https://console.twilio.com/us1/billing/manage-billing/billing-overview';

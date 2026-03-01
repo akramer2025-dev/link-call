@@ -102,7 +102,7 @@
             <img src="icon-192.png?v=2" alt="Link Call" class="sidebar-logo">
             <div class="sidebar-brand">
                 <span class="sidebar-brand-name">Link Call</span>
-                <span class="sidebar-brand-tagline">نظام المكالمات السحابي</span>
+                <span class="sidebar-brand-tagline" data-i18n="sidebar_tagline">نظام المكالمات السحابي</span>
             </div>
         </div>
         
@@ -125,9 +125,9 @@
         <div style="margin: 15px; padding: 12px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%); border-radius: 8px; border: 1px solid rgba(102, 126, 234, 0.3);">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                 <div style="font-size: 18px;">🔐</div>
-                <strong style="color: #667eea; font-size: 13px;">حماية البيانات</strong>
+                <strong style="color: #667eea; font-size: 13px;" data-i18n="data_protect_title">حماية البيانات</strong>
             </div>
-            <p style="margin: 0; font-size: 11px; color: rgba(255, 255, 255, 0.8); line-height: 1.5;">
+            <p style="margin: 0; font-size: 11px; color: rgba(255, 255, 255, 0.8); line-height: 1.5;" data-i18n="data_protect_text">
                 جميع مكالماتك وبياناتك محمية بتقنية أمان متقدمة. لا يمكن حذف أو تعديل البيانات بدون صلاحيات.
             </p>
         </div>
@@ -782,6 +782,7 @@
         }
     </script>
     <!-- App Script - REST API Mode -->
+    <script src="js/i18n.js"></script>
     <script src="app.js?v=6"></script>
     
     <script>
@@ -841,6 +842,5 @@
         // تغيير الصورة كل 6 ثواني
         setInterval(nextSlide, 6000);
     </script>
-    <script src="js/i18n.js"></script>
 </body>
 </html>

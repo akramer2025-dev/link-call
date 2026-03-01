@@ -188,7 +188,21 @@ const i18n = {
             nav_settings: 'الإعدادات',
             nav_manage_employees: 'إدارة الموظفين',
             nav_admin_panel: 'لوحة التحكم',
-            nav_logout: 'تسجيل الخروج'
+            nav_logout: 'تسجيل الخروج',
+
+            // Roles
+            role_company_admin: 'مدير شركة',
+            role_developer: 'مطور',
+            role_manager: 'مدير',
+
+            // Sidebar
+            sidebar_tagline: 'نظام المكالمات السحابي',
+            data_protect_title: 'حماية البيانات',
+            data_protect_text: 'جميع مكالماتك وبياناتك محمية بتقنية أمان متقدمة. لا يمكن حذف أو تعديل البيانات بدون صلاحيات.',
+
+            // Employee stats
+            emp_stat_minutes_total: 'إجمالي الدقائق المتاحة',
+            emp_stat_minutes_used: 'الدقائق المستخدمة'
         },
 
         en: {
@@ -373,7 +387,21 @@ const i18n = {
             nav_settings: 'Settings',
             nav_manage_employees: 'Manage Employees',
             nav_admin_panel: 'Admin Panel',
-            nav_logout: 'Logout'
+            nav_logout: 'Logout',
+
+            // Roles
+            role_company_admin: 'Company Admin',
+            role_developer: 'Developer',
+            role_manager: 'Manager',
+
+            // Sidebar
+            sidebar_tagline: 'Cloud Call System',
+            data_protect_title: 'Data Protection',
+            data_protect_text: 'All your calls and data are protected with advanced security. Data cannot be deleted or modified without proper permissions.',
+
+            // Employee stats
+            emp_stat_minutes_total: 'Total Available Minutes',
+            emp_stat_minutes_used: 'Used Minutes'
         }
     },
 

@@ -160,7 +160,7 @@ let employeesData = {
 
 // محاولة تحميل من الملف (للتشغيل المحلي)
 try {
-    const data = fs.readFileSync(path.join(__dirname, 'employees.json'), 'utf8');
+    const data = fs.readFileSync(path.join(__dirname, '..', 'employees.json'), 'utf8');
     employeesData = JSON.parse(data);
     console.log('✅ تم تحميل بيانات المديرين من الملف');
 } catch (error) {
@@ -177,14 +177,22 @@ async function getEmployeesData() {
                 console.log('✅ تم جلب البيانات من Redis:', data.employees.length, 'موظف');
                 return data;
             }
-            console.log('⚠️ Redis فارغ، استخدام البيانات الافتراضية');
+            console.log('⚠️ Redis فارغ، استخدام employees.json');
         } catch (error) {
             console.error('❌ خطأ في قراءة Redis:', error);
         }
-        // إرجاع البيانات المدمجة في الكود
-        return employeesData;
     }
-    // تشغيل محلي
+    // قراءة من الملف دايمًا كـ fallback
+    try {
+        const raw = fs.readFileSync(path.join(__dirname, '..', 'employees.json'), 'utf8');
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.employees) {
+            console.log('✅ تم قراءة employees.json:', parsed.employees.length, 'موظف');
+            return parsed;
+        }
+    } catch (e) {
+        console.log('⚠️ تعذرت قراءة employees.json، استخدام البيانات الافتراضية');
+    }
     return employeesData;
 }
 
@@ -213,7 +221,7 @@ async function saveEmployeesData(data) {
         // حفظ في ملف للتشغيل المحلي
         try {
             fs.writeFileSync(
-                path.join(__dirname, 'employees.json'),
+                path.join(__dirname, '..', 'employees.json'),
                 JSON.stringify(data, null, 2)
             );
             employeesData = data;

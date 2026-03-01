@@ -69,6 +69,23 @@ async function getEmployeesData() {
             if (data && data.employees) {
                 console.log(`✅ Read ${data.employees.length} employees from Redis`);
                 return data;
+            } else {
+                // Redis is empty, try to initialize from file
+                console.log('⚠️ Redis is empty, attempting auto-initialization from file...');
+                try {
+                    const employeesFile = path.join(__dirname, '..', 'employees.json');
+                    if (fs.existsSync(employeesFile)) {
+                        const raw = fs.readFileSync(employeesFile, 'utf8');
+                        const fileData = JSON.parse(raw);
+                        
+                        // Save to Redis
+                        await redis.set('employees_data', fileData);
+                        console.log(`✅ Auto-initialized Redis with ${fileData.employees.length} employees from file`);
+                        return fileData;
+                    }
+                } catch (initError) {
+                    console.error('❌ Auto-initialization failed:', initError);
+                }
             }
         } catch (e) {
             console.error('❌ Redis read error:', e);

@@ -36,6 +36,10 @@
     {
       "src": "*.json",
       "use": "@vercel/static"
+    },
+    {
+      "src": "*.png",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -104,6 +108,10 @@
     {
       "src": "/voice",
       "dest": "/api/voice.js"
+    },
+    {
+      "src": "/recordings",
+      "dest": "/api/recordings.js"
     },
     {
       "src": "/recordings/(.*)",

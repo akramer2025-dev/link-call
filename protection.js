@@ -406,9 +406,6 @@
     // ==================== حماية المتغيرات العامة ====================
     Object.freeze(PROTECTION_CONFIG);
     
-    // منع تعديل دوال الحماية
-    Object.freeze(Object.prototype);
-    
     // حماية localStorage من التلاعب
     const originalSetItem = Storage.prototype.setItem;
     Storage.prototype.setItem = function(key, value) {

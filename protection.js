@@ -402,12 +402,6 @@
         return originalSetItem.apply(this, arguments);
     };
 
-    console.log('%c⚠️ تحذير أمني', 'color: red; font-size: 40px; font-weight: bold;');
-    console.log('%cهذا التطبيق محمي بحقوق الملكية الفكرية', 'color: #ff4757; font-size: 20px;');
-    console.log('%cأي محاولة لنسخ أو سرقة الكود ستتم ملاحقتها قانونياً', 'color: #ff6348; font-size: 16px;');
-    console.log('%c© 2024-2026 Link Call. All Rights Reserved.', 'color: #999; font-size: 12px;');
-    
+
 })();
 
-// ==================== نقطة دخول البرنامج ====================
-console.log('%c🔐 Protection System Active', 'color: green; font-size: 14px; font-weight: bold;');

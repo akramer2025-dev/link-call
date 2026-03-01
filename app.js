@@ -335,10 +335,10 @@ async function initializeApp() {
         }
         
         // انتظار تحميل Twilio SDK
-        let attempts = 0;
-        while (typeof Twilio === 'undefined' && attempts < 30) {
+        let twilioWaitAttempts = 0;
+        while (typeof Twilio === 'undefined' && twilioWaitAttempts < 30) {
             await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
+            twilioWaitAttempts++;
         }
         
         if (typeof Twilio === 'undefined' || !Twilio.Device) {

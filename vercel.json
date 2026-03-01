@@ -1,1 +1,1 @@
-﻿{"version":2,"name":"link-call","builds":[{"src":"api/index.js","use":"@vercel/node"}],"routes":[{"src":"/(.*)","dest":"/api/index"}],"env":{"NODE_ENV":"production"}}
+﻿{"rewrites":[{"source":"/(.*)","destination":"/api/index"}]}

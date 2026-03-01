@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة العملاء CRM - Link Call</title>
+    <link rel="icon" type="image/png" href="icon-512.png?v=3">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --accent-color: #764ba2;
+            --bg-dark: #0a1628;
+            --bg-card: #1a1f2e;
+            --bg-input: #1e2433;
+            --text-primary: #ccd6f6;
+            --text-secondary: #a8b2d1;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .crm-container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        .crm-header {
+            background: var(--bg-card);
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .crm-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .crm-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .crm-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back {
+            background: linear-gradient(135deg, #5ec4d4, #1e88a8);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(94, 196, 212, 0.4);
+        }
+        
+        .search-section {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.6);
+            background: #252b3d;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+        }
+        
+        .table-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .contacts-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .contacts-table thead {
+            background: #252b3d;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .contacts-table th {
+            padding: 15px 12px;
+            text-align: right;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .contacts-table th:last-child {
+            border-right: none;
+        }
+        
+        .contacts-table tbody tr {
+            background: #1e2433;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        
+        .contacts-table tbody tr:nth-child(even) {
+            background: #1a1f2e;
+        }
+        
+        .contacts-table tbody tr:hover {
+            background: #252b3d;
+            box-shadow: inset 0 0 0 1px rgba(102, 126, 234, 0.3);
+        }
+        
+        .contacts-table td {
+            padding: 12px;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .contacts-table td:last-child {
+            border-right: none;
+        }
+        
+        .contact-avatars-group {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .contact-avatar-multi {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+            border: 2px solid var(--bg-card);
+        }
+        
+        .avatar-gradient-1 { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .avatar-gradient-2 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .avatar-gradient-3 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .avatar-gradient-4 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .avatar-gradient-5 { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .avatar-gradient-6 { background: linear-gradient(135deg, #30cfd0, #330867); }
+        .avatar-gradient-7 { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+        .avatar-gradient-8 { background: linear-gradient(135deg, #ff9a9e, #fecfef); }
+        
+        .contact-status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .badge-premium { background: rgba(255, 215, 0, 0.2); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3); }
+        .badge-new { background: rgba(67, 233, 123, 0.2); color: #43e97b; border: 1px solid rgba(67, 233, 123, 0.3); }
+        .badge-active { background: rgba(79, 172, 254, 0.2); color: #4facfe; border: 1px solid rgba(79, 172, 254, 0.3); }
+        .badge-inactive { background: rgba(136, 146, 176, 0.2); color: #8892b0; border: 1px solid rgba(136, 146, 176, 0.3); }
+        
+        .table-action-btn {
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            margin-left: 4px;
+        }
+        
+        .table-action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .whatsapp-btn { background: linear-gradient(135deg, #25D366, #128C7E); }
+        .call-btn { background: linear-gradient(135deg, #4facfe, #00c6ff); }
+        .edit-btn { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .delete-btn { background: linear-gradient(135deg, #f56565, #c53030); }
+        
+        .contact-rating .star {
+            color: #ffc107;
+            font-size: 14px;
+        }
+        
+        .contact-rating .star.empty {
+            color: transparent;
+            -webkit-text-stroke: 1px #ffc107;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="crm-container">
+        <div class="crm-header">
+            <h1 class="crm-title">🎯 نظام إدارة العملاء CRM</h1>
+            <div class="crm-actions">
+                <a href="index.html" class="crm-btn btn-back">
+                    ← العودة للصفحة الرئيسية
+                </a>
+            </div>
+        </div>
+        
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="crm-search" placeholder="ابحث عن عميل (اسم، موبايل، بريد، بلد)...">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+        
+        <div class="table-container" id="crm-table-container">
+            <div class="empty-state">
+                <div class="empty-icon">⏳</div>
+                <p>جاري تحميل بيانات العملاء...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://linkcall.akrammostafa.com';
+        let _cachedContacts = [];
+        
+        // Premium CRM Contact Rendering
+        function _renderContactItemCRM(contact, index) {
+            const tr = document.createElement('tr');
+            tr.className = 'contact-row';
+            
+            const cid = contact._id || contact.id || contact.contactId || '';
+            const safeId = cid.toString().replace(/'/g, '');
+            const safeName = (contact.name || '').replace(/'/g, '&#39;');
+            const safePhone = (contact.phone || '').replace(/'/g, '');
+            
+            const notes = contact.notes || '';
+            const countryMatch = notes.match(/Country:\s*([^|]+)/);
+            const balanceMatch = notes.match(/Balance:\s*(.+)/);
+            const country = countryMatch ? countryMatch[1].trim() : '-';
+            const balance = balanceMatch ? balanceMatch[1].trim() : '-';
+            
+            const email = contact.email || '-';
+            const createdDate = contact.createdAt ? new Date(contact.createdAt).toLocaleDateString('ar-EG') : '-';
+            
+            const nameWords = (contact.name || 'User').split(' ');
+            const avatarColors = ['avatar-gradient-1', 'avatar-gradient-2', 'avatar-gradient-3', 'avatar-gradient-4'];
+            const avatarsHTML = nameWords.slice(0, 3).map((word, i) => {
+                const letter = word.charAt(0).toUpperCase();
+                const colorClass = avatarColors[i % avatarColors.length];
+                return `<div class="contact-avatar-multi ${colorClass}">${letter}</div>`;
+            }).join('');
+            
+            const isNew = contact.tags?.includes('Excel Import') || !contact.lastCallDate;
+            const isPremium = contact.tags?.includes('VIP') || parseFloat(balance.replace(/[^0-9.-]/g, '')) > 1000;
+            const isActive = contact.totalCalls > 0;
+            
+            let statusBadge = '';
+            if (isPremium) {
+                statusBadge = '<span class="contact-status-badge badge-premium">⭐ مميز</span>';
+            } else if (isNew) {
+                statusBadge = '<span class="contact-status-badge badge-new">🆕 جديد</span>';
+            } else if (isActive) {
+                statusBadge = '<span class="contact-status-badge badge-active">✓ نشط</span>';
+            } else {
+                statusBadge = '<span class="contact-status-badge badge-inactive">○ غير نشط</span>';
+            }
+            
+            const rating = contact.rating || Math.floor(Math.random() * 3) + 3;
+            const starsHTML = Array(5).fill(0).map((_, i) => 
+                `<span class="star ${i < rating ? '' : 'empty'}">★</span>`
+            ).join('');
+            
+            tr.innerHTML = `
+                <td style="text-align:center;font-weight:700;color:#8892b0;">${index + 1}</td>
+                <td>
+                    <div class="contact-avatars-group">${avatarsHTML}</div>
+                </td>
+                <td>
+                    <div style="font-weight:600;color:#ccd6f6;">${contact.name || ''}</div>
+                    <div style="font-size:11px;margin-top:2px;">${statusBadge}</div>
+                </td>
+                <td style="direction:ltr;text-align:right;font-family:monospace;">${contact.phone || ''}</td>
+                <td>${email}</td>
+                <td>${country}</td>
+                <td style="color:#1dd1a1;font-weight:700;">${balance}</td>
+                <td>
+                    <div class="contact-rating">${starsHTML}</div>
+                </td>
+                <td style="font-size:12px;color:#8892b0;">${createdDate}</td>
+                <td style="text-align:center;">
+                    <button class="table-action-btn whatsapp-btn" onclick="openWhatsApp('${safePhone}')" title="واتساب">💬</button>
+                    <button class="table-action-btn call-btn" onclick="openCallPage('${safePhone}')" title="اتصال">📞</button>
+                    <button class="table-action-btn edit-btn" onclick="editContact('${safeId}')" title="تعديل">✏️</button>
+                    <button class="table-action-btn delete-btn" onclick="deleteContact('${safeId}', '${safeName}')" title="حذف">🗑️</button>
+                </td>
+            `;
+            
+            return tr;
+        }
+        
+        async function loadCRMContacts() {
+            const container = document.getElementById('crm-table-container');
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            
+            if (!companyId) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔒</div>
+                        <p>يجب تسجيل الدخول أولاً</p>
+                        <a href="login.html" class="crm-btn btn-back" style="display:inline-block;margin-top:20px;">تسجيل الدخول</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
+                const data = await response.json();
+                const contacts = data.contacts || [];
+                _cachedContacts = contacts;
+                
+                if (contacts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">👥</div>
+                            <p>لا توجد جهات اتصال</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const table = document.createElement('table');
+                table.className = 'contacts-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">#</th>
+                            <th style="width:120px;">الصورة</th>
+                            <th>الاسم</th>
+                            <th style="width:140px;">الموبايل</th>
+                            <th style="width:180px;">البريد</th>
+                            <th style="width:100px;">البلد</th>
+                            <th style="width:100px;">الرصيد</th>
+                            <th style="width:120px;">التقييم</th>
+                            <th style="width:120px;">التاريخ</th>
+                            <th style="width:180px;">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+                
+                const tbody = table.querySelector('tbody');
+                contacts.forEach((contact, index) => tbody.appendChild(_renderContactItemCRM(contact, index)));
+                
+                container.innerHTML = '';
+                container.appendChild(table);
+                
+                console.log('✅ تم تحميل', contacts.length, 'عميل في CRM');
+            } catch (error) {
+                console.error('خطأ في تحميل البيانات:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <p>خطأ في تحميل البيانات</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function openWhatsApp(phone) {
+            const cleanPhone = phone.replace(/[^0-9+]/g, '');
+            window.open(`https://wa.me/${cleanPhone}`, '_blank');
+        }
+        
+        function openCallPage(phone) {
+            window.location.href = `index.html?call=${encodeURIComponent(phone)}`;
+        }
+        
+        function editContact(contactId) {
+            alert('تعديل العميل: ' + contactId + '\n\nهذه الميزة قيد التطوير');
+        }
+        
+        function deleteContact(contactId, name) {
+            if (confirm(`هل تريد حذف العميل: ${name}؟`)) {
+                alert('ميزة الحذف قيد التطوير');
+            }
+        }
+        
+        // Search functionality
+        document.getElementById('crm-search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query) {
+                loadCRMContacts();
+                return;
+            }
+            
+            const filtered = _cachedContacts.filter(c => 
+                (c.name || '').toLowerCase().includes(query) ||
+                (c.phone || '').includes(query) ||
+                (c.email || '').toLowerCase().includes(query) ||
+                (c.notes || '').toLowerCase().includes(query)
+            );
+            
+            const container = document.getElementById('crm-table-container');
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p>لا توجد نتائج للبحث</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const table = document.createElement('table');
+            table.className = 'contacts-table';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th style="width:50px;">#</th>
+                        <th style="width:120px;">الصورة</th>
+                        <th>الاسم</th>
+                        <th style="width:140px;">الموبايل</th>
+                        <th style="width:180px;">البريد</th>
+                        <th style="width:100px;">البلد</th>
+                        <th style="width:100px;">الرصيد</th>
+                        <th style="width:120px;">التقييم</th>
+                        <th style="width:120px;">التاريخ</th>
+                        <th style="width:180px;">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+            
+            const tbody = table.querySelector('tbody');
+            filtered.forEach((contact, index) => tbody.appendChild(_renderContactItemCRM(contact, index)));
+            
+            container.innerHTML = '';
+            container.appendChild(table);
+        });
+        
+        // Load contacts on page load
+        window.addEventListener('DOMContentLoaded', loadCRMContacts);
+    </script>
+</body>
+</html>

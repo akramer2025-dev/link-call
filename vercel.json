@@ -46,6 +46,10 @@
       "continue": true
     },
     {
+      "src": "/api/check-env",
+      "dest": "/api/check-env.js"
+    },
+    {
       "src": "/api/migrate-to-firestore",
       "dest": "/api/migrate-to-firestore.js"
     },

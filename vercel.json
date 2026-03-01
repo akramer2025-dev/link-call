@@ -28,152 +28,197 @@
       }
     },
     {
-      "src": "/login(.*)",
-      "dest": "/api/index/login$1"
+      "src": "/api/companies/register",
+      "methods": [
+        "POST"
+      ],
+      "dest": "/api/companies.js"
     },
     {
-      "src": "/employees(.*)",
-      "dest": "/api/index/employees$1"
+      "src": "/api/companies/login",
+      "methods": [
+        "POST"
+      ],
+      "dest": "/api/companies.js"
     },
     {
-      "src": "/employees/(.*)",
-      "dest": "/api/index/employees/$1"
+      "src": "/api/companies/(.*)",
+      "dest": "/api/companies.js"
     },
     {
-      "src": "/work-tracking(.*)",
-      "dest": "/api/index/work-tracking$1"
+      "src": "/api/employees/(.*)",
+      "dest": "/api/index.js"
     },
     {
-      "src": "/token(.*)",
-      "dest": "/api/index/token$1"
+      "src": "/api/(voice|token|recordings|recording-status|call-history|contacts|work-tracking)",
+      "dest": "/api/$1.js"
     },
     {
-      "src": "/voice(.*)",
-      "dest": "/api/index/voice$1"
+      "src": "/api/(.*)",
+      "dest": "/api/$1.js"
     },
     {
-      "src": "/recordings(.*)",
-      "dest": "/api/index/recordings$1"
+      "src": "/token",
+      "dest": "/api/token.js"
+    },
+    {
+      "src": "/voice",
+      "dest": "/api/voice.js"
+    },
+    {
+      "src": "/recordings",
+      "dest": "/api/recordings.js"
     },
     {
       "src": "/recordings/(.*)",
-      "dest": "/api/index/recordings/$1"
-    },
-    {
-      "src": "/contacts(.*)",
-      "dest": "/api/index/contacts$1"
-    },
-    {
-      "src": "/contacts/(.*)",
-      "dest": "/api/index/contacts/$1"
-    },
-    {
-      "src": "/call-history(.*)",
-      "dest": "/api/index/call-history$1"
-    },
-    {
-      "src": "/track-login(.*)",
-      "dest": "/api/index/track-login$1"
-    },
-    {
-      "src": "/track-logout(.*)",
-      "dest": "/api/index/track-logout$1"
-    },
-    {
-      "src": "/heartbeat(.*)",
-      "dest": "/api/index/heartbeat$1"
-    },
-    {
-      "src": "/online-users(.*)",
-      "dest": "/api/index/online-users$1"
-    },
-    {
-      "src": "/settings(.*)",
-      "dest": "/api/index/settings$1"
-    },
-    {
-      "src": "/account/(.*)",
-      "dest": "/api/index/account/$1"
-    },
-    {
-      "src": "/admin/(.*)",
-      "dest": "/api/index/admin/$1"
-    },
-    {
-      "src": "/companies(.*)",
-      "dest": "/api/index/companies$1"
-    },
-    {
-      "src": "/companies/(.*)",
-      "dest": "/api/index/companies/$1"
-    },
-    {
-      "src": "/update-profile(.*)",
-      "dest": "/api/index/update-profile$1"
-    },
-    {
-      "src": "/api/contacts(.*)",
-      "dest": "/api/index/api/contacts$1"
-    },
-    {
-      "src": "/api/contacts/(.*)",
-      "dest": "/api/index/api/contacts/$1"
-    },
-    {
-      "src": "/init-kv(.*)",
-      "dest": "/api/index/init-kv$1"
-    },
-    {
-      "src": "/debug/(.*)",
-      "dest": "/api/index/debug/$1"
-    },
-    {
-      "src": "/make-direct-call(.*)",
-      "dest": "/api/index/make-direct-call$1"
-    },
-    {
-      "src": "/outgoing-call(.*)",
-      "dest": "/api/index/outgoing-call$1"
-    },
-    {
-      "src": "/end-call(.*)",
-      "dest": "/api/index/end-call$1"
-    },
-    {
-      "src": "/start-recording(.*)",
-      "dest": "/api/index/start-recording$1"
-    },
-    {
-      "src": "/stop-recording(.*)",
-      "dest": "/api/index/stop-recording$1"
+      "dest": "/api/recordings.js"
     },
     {
       "src": "/recording/(.*)",
-      "dest": "/api/index/recording/$1"
+      "dest": "/api/recordings.js"
+    },
+    {
+      "src": "/work-tracking",
+      "dest": "/api/work-tracking.js"
+    },
+    {
+      "src": "/call-history",
+      "dest": "/api/call-history.js"
+    },
+    {
+      "src": "/contacts",
+      "dest": "/api/contacts.js"
+    },
+    {
+      "src": "/contacts/(.*)",
+      "dest": "/api/contacts.js"
+    },
+    {
+      "src": "/companies",
+      "dest": "/api/companies.js"
+    },
+    {
+      "src": "/companies/(.*)",
+      "dest": "/api/companies.js"
+    },
+    {
+      "src": "/login",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/employees",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/employees/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/account/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/heartbeat",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/track-login",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/track-logout",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/online-users",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/update-profile",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/my-company",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/init-kv",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/debug/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/make-direct-call",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/outgoing-call",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/end-call",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/start-recording",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/stop-recording",
+      "dest": "/api/index.js"
     },
     {
       "src": "/delete-recording/(.*)",
-      "dest": "/api/index/delete-recording/$1"
+      "dest": "/api/index.js"
     },
     {
       "src": "/call-status/(.*)",
-      "dest": "/api/index/call-status/$1"
+      "dest": "/api/index.js"
     },
     {
-      "src": "/my-company(.*)",
-      "dest": "/api/index/my-company$1"
+      "src": "/settings",
+      "dest": "/api/index.js"
     },
     {
       "src": "/plivo-(.*)",
-      "dest": "/api/index/plivo-$1"
+      "dest": "/api/index.js"
     },
     {
       "src": "/zadarma-(.*)",
-      "dest": "/api/index/zadarma-$1"
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
       "dest": "/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
     }
   ],
   "env": {

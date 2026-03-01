@@ -5,11 +5,35 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-// Database file for companies
+// Upstash Redis للتخزين السحابي
+let redis;
+try {
+    const { Redis } = require('@upstash/redis');
+    redis = new Redis({
+        url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+} catch (e) {
+    console.log('⚠️ Redis غير متاح في companies.js');
+}
+
+// Database file for companies (local fallback)
 const companiesFile = path.join(__dirname, '../companies.json');
 
 // Helper functions for data management
-function getCompaniesData() {
+async function getCompaniesData() {
+    // Try Redis first (Vercel production)
+    if (redis && process.env.VERCEL) {
+        try {
+            const data = await redis.get('companies_data');
+            if (data && data.companies) {
+                return data;
+            }
+        } catch (e) {
+            console.error('Redis read error in companies:', e);
+        }
+    }
+    // Fallback: local file
     try {
         if (fs.existsSync(companiesFile)) {
             const data = fs.readFileSync(companiesFile, 'utf8');
@@ -21,7 +45,18 @@ function getCompaniesData() {
     return { companies: [] };
 }
 
-function saveCompaniesData(data) {
+async function saveCompaniesData(data) {
+    // Save to Redis in production
+    if (redis && process.env.VERCEL) {
+        try {
+            await redis.set('companies_data', data);
+            return true;
+        } catch (e) {
+            console.error('Redis write error in companies:', e);
+            return false;
+        }
+    }
+    // Save to file locally
     try {
         fs.writeFileSync(companiesFile, JSON.stringify(data, null, 2));
         return true;
@@ -73,7 +108,7 @@ module.exports.register = async (req, res) => {
             });
         }
 
-        const companiesData = getCompaniesData();
+        const companiesData = await getCompaniesData();
 
         // Check if company already exists
         const existingCompany = companiesData.companies.find(
@@ -126,7 +161,7 @@ module.exports.register = async (req, res) => {
 
         // Save to database
         companiesData.companies.push(newCompany);
-        saveCompaniesData(companiesData);
+        await saveCompaniesData(companiesData);
 
         // Log activity
         logActivity('company_registered', newCompany.id, {
@@ -157,7 +192,7 @@ module.exports.register = async (req, res) => {
 // GET /api/companies - Get all companies (Super Admin only)
 module.exports.getAllCompanies = async (req, res) => {
     try {
-        const companiesData = getCompaniesData();
+        const companiesData = await getCompaniesData();
         
         // Remove sensitive data
         const companies = companiesData.companies.map(c => ({
@@ -200,7 +235,7 @@ module.exports.getAllCompanies = async (req, res) => {
 module.exports.getCompany = async (req, res) => {
     try {
         const { id } = req.params;
-        const companiesData = getCompaniesData();
+        const companiesData = await getCompaniesData();
         
         const company = companiesData.companies.find(c => c.id === id);
 
@@ -234,7 +269,7 @@ module.exports.updateCompany = async (req, res) => {
         const { id } = req.params;
         const updates = req.body;
         
-        const companiesData = getCompaniesData();
+        const companiesData = await getCompaniesData();
         const companyIndex = companiesData.companies.findIndex(c => c.id === id);
 
         if (companyIndex === -1) {
@@ -251,7 +286,7 @@ module.exports.updateCompany = async (req, res) => {
             updatedAt: new Date().toISOString()
         };
 
-        saveCompaniesData(companiesData);
+        await saveCompaniesData(companiesData);
 
         logActivity('company_updated', id, updates);
 
@@ -283,7 +318,7 @@ module.exports.updateStatus = async (req, res) => {
             });
         }
 
-        const companiesData = getCompaniesData();
+        const companiesData = await getCompaniesData();
         const companyIndex = companiesData.companies.findIndex(c => c.id === id);
 
         if (companyIndex === -1) {
@@ -297,7 +332,7 @@ module.exports.updateStatus = async (req, res) => {
         companiesData.companies[companyIndex].isActive = status === 'active';
         companiesData.companies[companyIndex].statusChangedAt = new Date().toISOString();
 
-        saveCompaniesData(companiesData);
+        await saveCompaniesData(companiesData);
 
         logActivity('company_status_changed', id, { status });
 
@@ -329,7 +364,7 @@ module.exports.updatePlan = async (req, res) => {
             });
         }
 
-        const companiesData = getCompaniesData();
+        const companiesData = await getCompaniesData();
         const companyIndex = companiesData.companies.findIndex(c => c.id === id);
 
         if (companyIndex === -1) {
@@ -343,7 +378,7 @@ module.exports.updatePlan = async (req, res) => {
         companiesData.companies[companyIndex].limits = getPlanLimits(plan);
         companiesData.companies[companyIndex].planChangedAt = new Date().toISOString();
 
-        saveCompaniesData(companiesData);
+        await saveCompaniesData(companiesData);
 
         logActivity('company_plan_changed', id, { plan });
 
@@ -368,7 +403,7 @@ module.exports.deleteCompany = async (req, res) => {
     try {
         const { id } = req.params;
         
-        const companiesData = getCompaniesData();
+        const companiesData = await getCompaniesData();
         const companyIndex = companiesData.companies.findIndex(c => c.id === id);
 
         if (companyIndex === -1) {
@@ -383,7 +418,7 @@ module.exports.deleteCompany = async (req, res) => {
         companiesData.companies[companyIndex].isActive = false;
         companiesData.companies[companyIndex].deletedAt = new Date().toISOString();
 
-        saveCompaniesData(companiesData);
+        await saveCompaniesData(companiesData);
 
         logActivity('company_deleted', id);
 
@@ -413,7 +448,7 @@ module.exports.login = async (req, res) => {
             });
         }
 
-        const companiesData = getCompaniesData();
+        const companiesData = await getCompaniesData();
         const company = companiesData.companies.find(c => c.username === username);
 
         if (!company || company.password !== hashPassword(password)) {
@@ -433,7 +468,7 @@ module.exports.login = async (req, res) => {
         // Update last login
         const companyIndex = companiesData.companies.findIndex(c => c.id === company.id);
         companiesData.companies[companyIndex].lastLoginAt = new Date().toISOString();
-        saveCompaniesData(companiesData);
+        await saveCompaniesData(companiesData);
 
         logActivity('company_login', company.id);
 
@@ -443,6 +478,7 @@ module.exports.login = async (req, res) => {
             company: {
                 id: company.id,
                 companyName: company.companyName,
+                adminName: company.adminName,
                 username: company.username,
                 plan: company.plan,
                 limits: company.limits
@@ -493,6 +529,8 @@ function getPlanLimits(plan) {
 
 // Helper function to log activities
 function logActivity(type, companyId, details = {}) {
+    // In Vercel, skip file-based logging (filesystem is read-only)
+    if (process.env.VERCEL) return;
     try {
         const logFile = path.join(__dirname, '../activity-log.json');
         let logs = [];

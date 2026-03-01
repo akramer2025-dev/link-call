@@ -1797,6 +1797,9 @@ app.post('/login', async (req, res) => {
                 username: employee.username,
                 department: employee.department,
                 departmentName: data.departments[employee.department]?.name || '',
+                role: employee.role || 'employee',
+                isTrial: employee.isTrial || false,
+                maxCalls: employee.maxCalls || null,
                 permissions: employee.permissions || {
                     viewOwnRecordings: false,
                     viewAllRecordings: false,

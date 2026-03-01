@@ -11,6 +11,32 @@
             box-sizing: border-box;
         }
 
+        /* ========== Custom Scrollbar Styling ========== */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1e2433;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            border: 2px solid #1e2433;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #7c8ef5 0%, #8a5ab8 100%);
+        }
+        
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #1e2433;
+        }
+
         :root {
             --primary: #6c5ce7;
             --secondary: #a29bfe;

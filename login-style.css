@@ -126,12 +126,12 @@ body {
 }
 
 .brand-logo {
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     margin-bottom: 20px;
     box-shadow: 0 10px 40px rgba(94, 196, 212, 0.4);
-    border: 3px solid rgba(94, 196, 212, 0.5);
+    border: 4px solid rgba(94, 196, 212, 0.5);
 }
 
 .brand-title {
@@ -467,8 +467,8 @@ body {
     }
     
     .brand-logo {
-        width: 80px;
-        height: 80px;
+        width: 120px;
+        height: 120px;
     }
     
     .brand-title {
@@ -503,8 +503,8 @@ body {
     }
     
     .brand-logo {
-        width: 70px;
-        height: 70px;
+        width: 100px;
+        height: 100px;
     }
     
     .brand-title {

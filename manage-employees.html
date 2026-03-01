@@ -790,6 +790,20 @@
                 </label>
             </div>
 
+            <!-- قسم الصلاحيات التفصيلية -->
+            <div style="border: 2px solid #e8f4f8; border-radius: 12px; padding: 16px; margin-bottom: 20px; background: #f8fcfe;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                    <h3 style="margin: 0; color: #1e3a5f; font-size: 15px; font-weight: 700;">🔑 صلاحيات التطبيق</h3>
+                    <div style="display: flex; gap: 6px;">
+                        <button type="button" onclick="selectAllPerms(true)"
+                                style="padding: 5px 12px; background: #10b981; color: white; border: none; border-radius: 7px; font-size: 12px; cursor: pointer; font-weight: 600;">✅ تحديد الكل</button>
+                        <button type="button" onclick="selectAllPerms(false)"
+                                style="padding: 5px 12px; background: #ef4444; color: white; border: none; border-radius: 7px; font-size: 12px; cursor: pointer; font-weight: 600;">❌ إلغاء الكل</button>
+                    </div>
+                </div>
+                <div id="permissionsContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+            </div>
+
             <!-- الأزرار -->
             <div style="display: flex; gap: 12px;">
                 <button onclick="closeModal()" style="flex: 1; padding: 13px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">إلغاء</button>
@@ -799,138 +813,173 @@
         </div>
     </div>
 
+    <!-- Permissions Modal - نافذة إدارة الصلاحيات المنفصلة -->
+    <div class="modal" id="permissionsModal">
+        <div class="modal-content" style="max-width: 720px; max-height: 92vh; overflow-y: auto;">
+            <div style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; padding: 20px 25px; border-radius: 15px 15px 0 0; margin: -20px -20px 25px -20px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 28px;">🔑</span>
+                    <div>
+                        <h2 id="permModalTitle" style="margin: 0; font-size: 20px;">إدارة الصلاحيات</h2>
+                        <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.85;">حدد الصلاحيات المناسبة للموظف</p>
+                    </div>
+                </div>
+                <button onclick="closePermissionsModal()" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 20px;">
+                <button type="button" onclick="selectAllPermsModal(true)"
+                        style="padding: 7px 16px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600;">✅ تحديد الكل</button>
+                <button type="button" onclick="selectAllPermsModal(false)"
+                        style="padding: 7px 16px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600;">❌ إلغاء الكل</button>
+            </div>
+            <div id="permModalContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;"></div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="closePermissionsModal()" style="flex: 1; padding: 13px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">إلغاء</button>
+                <button id="savePermBtn" onclick="savePermissionsModal()" style="flex: 2; padding: 13px; background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(124,58,237,0.3);">💾 حفظ الصلاحيات</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let allEmployees = [];
-        let allPermissions = [];
         let currentFilter = 'all';
         let companyId = null;
         let isEditMode = false;
+        let permModalEmpId = null;
 
+        // ═══════════════════════════════════════════
+        // تعريف أقسام الصلاحيات
+        // ═══════════════════════════════════════════
+        const PERMISSION_SECTIONS = [
+            {
+                id: 'calls', icon: '📞', name: 'المكالمات',
+                perms: [
+                    { id: 'make_calls',          name: 'إجراء مكالمات' },
+                    { id: 'view_calls',          name: 'عرض سجل المكالمات' },
+                    { id: 'listen_recordings',   name: 'الاستماع للتسجيلات' },
+                    { id: 'download_recordings', name: 'تحميل التسجيلات' },
+                    { id: 'delete_recordings',   name: 'حذف التسجيلات' }
+                ]
+            },
+            {
+                id: 'contacts', icon: '👥', name: 'جهات الاتصال',
+                perms: [
+                    { id: 'view_contacts',   name: 'عرض جهات الاتصال' },
+                    { id: 'add_contacts',    name: 'إضافة جهات اتصال' },
+                    { id: 'edit_contacts',   name: 'تعديل جهات الاتصال' },
+                    { id: 'delete_contacts', name: 'حذف جهات الاتصال' }
+                ]
+            },
+            {
+                id: 'reports', icon: '📊', name: 'التقارير',
+                perms: [
+                    { id: 'view_reports',   name: 'عرض التقارير' },
+                    { id: 'export_reports', name: 'تصدير التقارير' }
+                ]
+            },
+            {
+                id: 'employees', icon: '👔', name: 'إدارة الموظفين',
+                perms: [
+                    { id: 'view_employees',   name: 'عرض الموظفين' },
+                    { id: 'manage_employees', name: 'إدارة الموظفين' }
+                ]
+            },
+            {
+                id: 'settings', icon: '⚙️', name: 'الإعدادات',
+                perms: [
+                    { id: 'edit_profile',   name: 'تعديل الملف الشخصي' },
+                    { id: 'view_settings',  name: 'عرض الإعدادات' }
+                ]
+            },
+            {
+                id: 'general', icon: '🏠', name: 'عام',
+                perms: [
+                    { id: 'view_dashboard', name: 'عرض لوحة التحكم' }
+                ]
+            }
+        ];
+
+        // ═══════════════════════════════════════════
+        // بناء HTML للصلاحيات
+        // ═══════════════════════════════════════════
+        function buildPermissionsHTML(containerId) {
+            return PERMISSION_SECTIONS.map(section => `
+                <div style="background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 12px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding-bottom: 8px; border-bottom: 1px solid #f3f4f6; margin-bottom: 8px; font-weight: 700; color: #1e3a5f; font-size: 14px;">
+                        <input type="checkbox" class="section-check" data-section="${section.id}"
+                               onchange="toggleSectionPerms('${section.id}', this.checked, '${containerId}')"
+                               style="width: 16px; height: 16px; accent-color: #5ec4d4; cursor: pointer;">
+                        ${section.icon} ${section.name}
+                    </label>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        ${section.perms.map(p => `
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #374151; padding: 4px 6px; border-radius: 6px;"
+                                   onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" class="perm-check" value="${p.id}" data-section="${section.id}"
+                                       onchange="updateSectionHeader('${section.id}', '${containerId}')"
+                                       style="width: 15px; height: 15px; accent-color: #10b981; cursor: pointer;">
+                                ${p.name}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleSectionPerms(sectionId, checked, containerId) {
+            document.querySelectorAll(`#${containerId} .perm-check[data-section="${sectionId}"]`).forEach(cb => cb.checked = checked);
+        }
+
+        function updateSectionHeader(sectionId, containerId) {
+            const allPerms = document.querySelectorAll(`#${containerId} .perm-check[data-section="${sectionId}"]`);
+            const allChecked = [...allPerms].every(cb => cb.checked);
+            const sectionCb = document.querySelector(`#${containerId} .section-check[data-section="${sectionId}"]`);
+            if (sectionCb) sectionCb.checked = allChecked;
+        }
+
+        function selectAllPerms(checked) {
+            document.querySelectorAll('#permissionsContainer .perm-check, #permissionsContainer .section-check').forEach(cb => cb.checked = checked);
+        }
+
+        function selectAllPermsModal(checked) {
+            document.querySelectorAll('#permModalContainer .perm-check, #permModalContainer .section-check').forEach(cb => cb.checked = checked);
+        }
+
+        function setPermissionsChecked(permissionsArray, containerId = 'permissionsContainer') {
+            document.querySelectorAll(`#${containerId} .perm-check, #${containerId} .section-check`).forEach(cb => cb.checked = false);
+            (permissionsArray || []).forEach(permId => {
+                const cb = document.querySelector(`#${containerId} .perm-check[value="${permId}"]`);
+                if (cb) cb.checked = true;
+            });
+            PERMISSION_SECTIONS.forEach(s => {
+                const allPerms = document.querySelectorAll(`#${containerId} .perm-check[data-section="${s.id}"]`);
+                const sectionCb = document.querySelector(`#${containerId} .section-check[data-section="${s.id}"]`);
+                if (sectionCb && allPerms.length) sectionCb.checked = [...allPerms].every(c => c.checked);
+            });
+        }
+
+        function getCheckedPermissions() {
+            return [...document.querySelectorAll('#permissionsContainer .perm-check:checked')].map(cb => cb.value);
+        }
+
+        // ═══════════════════════════════════════════
         // التحميل الأولي
+        // ═══════════════════════════════════════════
         window.addEventListener('DOMContentLoaded', () => {
             // الحصول على معلومات الشركة من sessionStorage
             companyId = sessionStorage.getItem('companyId');
             const companyName = sessionStorage.getItem('companyName');
-            const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin');
-            
+
             if (!companyId) {
                 showAlert('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً', 'error');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
+                setTimeout(() => { window.location.href = 'login.html'; }, 2000);
                 return;
             }
-
             document.getElementById('companyName').textContent = companyName || 'شركتي';
-
-            // تحميل بيانات الموظفين فقط
+            // بناء قسم الصلاحيات في موديل الإضافة/التعديل
+            document.getElementById('permissionsContainer').innerHTML = buildPermissionsHTML('permissionsContainer');
             loadEmployees();
         });
-
-        // تحميل الصلاحيات المتاحة
-        async function loadPermissions() {
-            try {
-                const response = await fetch('/api/employees-management/permissions');
-                const data = await response.json();
-                
-                if (data.success) {
-                    allPermissions = data.permissions;
-                    renderPermissionsSection();
-                }
-            } catch (error) {
-                console.error('Error loading permissions:', error);
-            }
-        }
-
-        // عرض قسم الصلاحيات
-        function renderPermissionsSection() {
-            const container = document.getElementById('permissionsContainer');
-            
-            // تجميع الصلاحيات حسب الفئة
-            const categories = {};
-            allPermissions.forEach(perm => {
-                if (!categories[perm.category]) {
-                    categories[perm.category] = [];
-                }
-                categories[perm.category].push(perm);
-            });
-
-            const categoryNames = {
-                'calls': 'المكالمات',
-                'contacts': 'جهات الاتصال',
-                'messages': 'الرسائل',
-                'reports': 'التقارير',
-                'admin': 'الإدارة',
-                'general': 'عام'
-            };
-
-            let html = '';
-            for (const [category, perms] of Object.entries(categories)) {
-                html += `
-                    <div class="permissions-category">
-                        <h4>${categoryNames[category] || category}</h4>
-                        <div class="permissions-grid">
-                            ${perms.map(perm => `
-                                <div class="permission-item">
-                                    <input type="checkbox" id="perm_${perm.id}" value="${perm.id}">
-                                    <label for="perm_${perm.id}">${perm.name}</label>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            container.innerHTML = html;
-        }
-
-        // تحديد الدور
-        function selectRole(role, element) {
-            document.getElementById('empRole').value = role;
-            
-            // تحديث UI
-            document.querySelectorAll('.role-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            if (element) {
-                element.classList.add('selected');
-            }
-
-            // تحديث الصلاحيات تلقائياً بناءً على الدور
-            updatePermissionsByRole(role);
-        }
-
-        // تحديث الصلاحيات حسب الدور
-        function updatePermissionsByRole(role) {
-            const rolePermissions = {
-                'admin': 'all',
-                'supervisor': ['view_calls', 'make_calls', 'listen_recordings', 'download_recordings', 
-                              'view_contacts', 'add_contacts', 'edit_contacts', 'view_messages', 
-                              'send_messages', 'view_reports', 'export_reports', 'view_employees', 
-                              'view_dashboard', 'view_work_schedule'],
-                'agent': ['view_calls', 'make_calls', 'view_contacts', 'view_messages', 
-                         'send_messages', 'view_dashboard'],
-                'viewer': ['view_calls', 'listen_recordings', 'view_contacts', 'view_messages', 
-                          'view_reports', 'view_dashboard']
-            };
-
-            // إلغاء تحديد جميع الصلاحيات
-            document.querySelectorAll('.permission-item input[type="checkbox"]').forEach(cb => {
-                cb.checked = false;
-            });
-
-            // تحديد الصلاحيات المناسبة
-            if (rolePermissions[role] === 'all') {
-                document.querySelectorAll('.permission-item input[type="checkbox"]').forEach(cb => {
-                    cb.checked = true;
-                });
-            } else if (rolePermissions[role]) {
-                rolePermissions[role].forEach(permId => {
-                    const checkbox = document.getElementById('perm_' + permId);
-                    if (checkbox) checkbox.checked = true;
-                });
-            }
-        }
 
         // تحميل الموظفين
         async function loadEmployees() {
@@ -1002,6 +1051,7 @@
                             <th>الاسم</th>
                             <th>اسم المستخدم</th>
                             <th>الدور</th>
+                            <th>الصلاحيات</th>
                             <th>الدقائق</th>
                             <th>الحالة</th>
                             <th>الإجراءات</th>
@@ -1011,61 +1061,45 @@
             `;
 
             filteredEmployees.forEach(emp => {
-                const usage = emp.minutesUsage || {};
-                const minutesPercent = usage.minutesAllocated > 0 
-                    ? (usage.minutesRemaining / usage.minutesAllocated) * 100 
-                    : 0;
-                
-                let barClass = '';
-                if (minutesPercent < 20) barClass = 'critical';
-                else if (minutesPercent < 50) barClass = 'low';
-
                 const roleBadge = {
-                    'admin': 'badge-admin',
-                    'supervisor': 'badge-supervisor',
-                    'agent': 'badge-agent',
-                    'viewer': 'badge-agent'
+                    'admin': 'badge-admin', 'supervisor': 'badge-supervisor',
+                    'agent': 'badge-agent',  'viewer': 'badge-agent'
                 }[emp.role] || 'badge-agent';
-
-                const roleName = {
-                    'admin': 'مدير',
-                    'supervisor': 'مشرف',
-                    'agent': 'موظف',
-                    'viewer': 'مراقب'
-                }[emp.role] || emp.role;
+                const roleName = {'admin':'مدير','supervisor':'مشرف','agent':'موظف','viewer':'مراقب'}[emp.role] || emp.role;
+                const permsCount = (emp.permissions || []).length;
+                const minutesUsed = emp.minutesUsed || 0;
+                const minutesAlloc = emp.minutesAllocated || 0;
+                const pct = minutesAlloc > 0 ? Math.round((minutesUsed / minutesAlloc) * 100) : 0;
+                const barClass = pct > 80 ? 'critical' : pct > 60 ? 'low' : '';
 
                 html += `
                     <tr>
                         <td>
                             <strong>${emp.name}</strong><br>
-                            <small style="color: #6b7280;">${emp.title || 'موظف'}</small>
+                            <small style="color:#6b7280;">${emp.title || 'موظف'}</small>
                         </td>
                         <td>${emp.username}</td>
                         <td><span class="badge ${roleBadge}">${roleName}</span></td>
                         <td>
-                            <div style="min-width: 150px;">
-                                <small style="color: #6b7280;">
-                                    ${usage.minutesRemaining || 0} من ${usage.minutesAllocated || 0} دقيقة
-                                </small>
-                                <div class="minutes-bar">
-                                    <div class="minutes-bar-fill ${barClass}" 
-                                         style="width: ${minutesPercent}%"></div>
-                                </div>
-                            </div>
+                            <span style="background:#ede9fe;color:#5b21b6;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;"
+                                  onclick="openPermissionsModal('${emp.id}')" title="انقر لتعديل الصلاحيات">
+                                🔑 ${permsCount} صلاحية
+                            </span>
+                        </td>
+                        <td>
+                            <small style="color:#6b7280;">${minutesUsed} / ${minutesAlloc} د</small>
+                            <div class="minutes-bar"><div class="minutes-bar-fill ${barClass}" style="width:${pct}%"></div></div>
                         </td>
                         <td>
                             <span class="badge ${emp.active ? 'badge-active' : 'badge-inactive'}">
-                                ${emp.active ? i18n.t('active') : i18n.t('inactive')}
+                                ${emp.active ? 'نشط' : 'غير نشط'}
                             </span>
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn-icon btn-edit" onclick="editEmployee('${emp.id}')" 
-                                        title="تعديل">✏️</button>
-                                <button class="btn-icon btn-permissions" onclick="viewPermissions('${emp.id}')" 
-                                        title="الصلاحيات">🔑</button>
-                                <button class="btn-icon btn-delete" onclick="deleteEmployee('${emp.id}')" 
-                                        title="حذف">🗑️</button>
+                                <button class="btn-icon btn-edit" onclick="editEmployee('${emp.id}')" title="تعديل البيانات">✏️</button>
+                                <button class="btn-icon btn-permissions" onclick="openPermissionsModal('${emp.id}')" title="إدارة الصلاحيات">🔑</button>
+                                <button class="btn-icon btn-delete" onclick="deleteEmployee('${emp.id}')" title="حذف الموظف">🗑️</button>
                             </div>
                         </td>
                     </tr>
@@ -1083,7 +1117,6 @@
         // عرض نافذة إضافة موظف
         function showAddEmployeeModal() {
             isEditMode = false;
-            // reset
             document.getElementById('employeeId').value = '';
             document.getElementById('empName').value = '';
             document.getElementById('empUsername').value = '';
@@ -1094,17 +1127,19 @@
             document.getElementById('empRole').value = 'agent';
             document.getElementById('empMinutes').value = '100';
             document.getElementById('empActive').checked = true;
-            document.getElementById('modalTitle').textContent = 'إضافة موظف جديد';
+            document.getElementById('modalTitle').textContent = '👤 إضافة موظف جديد';
             document.getElementById('passRequired').style.display = 'inline';
             document.getElementById('passHint').textContent = 'مطلوبة عند الإضافة';
+            // الصلاحيات الافتراضية للموظف العادي
+            setPermissionsChecked(['view_calls', 'make_calls', 'view_contacts', 'view_dashboard'], 'permissionsContainer');
             hideModalAlert();
             document.getElementById('employeeModal').classList.add('active');
         }
 
         // تعديل موظف
-        async function editEmployee(employeeId) {
-            const employee = allEmployees.find(e => e.id === employeeId);
-            if (!employee) return;
+        function editEmployee(employeeId) {
+            const employee = allEmployees.find(e => String(e.id) === String(employeeId));
+            if (!employee) { showAlert('⚠️ لم يتم العثور على الموظف', 'error'); return; }
             isEditMode = true;
             document.getElementById('employeeId').value = employee.id;
             document.getElementById('empName').value = employee.name || '';
@@ -1116,35 +1151,74 @@
             document.getElementById('empRole').value = employee.role || 'agent';
             document.getElementById('empMinutes').value = employee.minutesAllocated || 0;
             document.getElementById('empActive').checked = employee.active !== false;
-            document.getElementById('modalTitle').textContent = 'تعديل بيانات الموظف';
+            document.getElementById('modalTitle').textContent = `✏️ تعديل: ${employee.name}`;
             document.getElementById('passRequired').style.display = 'none';
             document.getElementById('passHint').textContent = 'اتركها فارغة إذا لا تريد تغييرها';
+            setPermissionsChecked(employee.permissions || [], 'permissionsContainer');
             hideModalAlert();
             document.getElementById('employeeModal').classList.add('active');
         }
 
-        function viewPermissions(employeeId) { editEmployee(employeeId); }
+        // نافذة الصلاحيات المخصصة
+        function openPermissionsModal(employeeId) {
+            const employee = allEmployees.find(e => String(e.id) === String(employeeId));
+            if (!employee) { showAlert('⚠️ لم يتم العثور على الموظف', 'error'); return; }
+            permModalEmpId = employeeId;
+            document.getElementById('permModalTitle').textContent = `🔑 صلاحيات: ${employee.name}`;
+            document.getElementById('permModalContainer').innerHTML = buildPermissionsHTML('permModalContainer');
+            setPermissionsChecked(employee.permissions || [], 'permModalContainer');
+            document.getElementById('permissionsModal').classList.add('active');
+        }
+
+        async function savePermissionsModal() {
+            if (!permModalEmpId) return;
+            const permissions = [...document.querySelectorAll('#permModalContainer .perm-check:checked')].map(cb => cb.value);
+            const btn = document.getElementById('savePermBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ جاري الحفظ...';
+            try {
+                const response = await fetch(`/api/employees-management/${permModalEmpId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ permissions, companyId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('✅ تم حفظ الصلاحيات بنجاح', 'success');
+                    closePermissionsModal();
+                    loadEmployees();
+                } else {
+                    showAlert('❌ ' + (data.message || 'فشل في الحفظ'), 'error');
+                }
+            } catch (error) {
+                showAlert('❌ خطأ في الاتصال: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '💾 حفظ الصلاحيات';
+            }
+        }
+
+        function closePermissionsModal() {
+            document.getElementById('permissionsModal').classList.remove('active');
+            permModalEmpId = null;
+        }
 
         // حذف موظف
         async function deleteEmployee(employeeId) {
-            if (!confirm(i18n.t('emp_delete_confirm'))) return;
-
+            const emp = allEmployees.find(e => String(e.id) === String(employeeId));
+            const name = emp ? emp.name : employeeId;
+            if (!confirm(`هل أنت متأكد من حذف الموظف "${name}"؟\n\nسيتم أرشفة البيانات ولن تُحذف نهائياً.`)) return;
             try {
-                const response = await fetch(`/api/employees-management/${employeeId}`, {
-                    method: 'DELETE'
-                });
-
+                const response = await fetch(`/api/employees-management/${employeeId}`, { method: 'DELETE' });
                 const data = await response.json();
-                
                 if (data.success) {
-                    showAlert(i18n.t('emp_delete_success'), 'success');
+                    showAlert('✅ تم حذف الموظف بنجاح (محفوظ في الأرشيف)', 'success');
                     loadEmployees();
                 } else {
-                    showAlert(data.message, 'error');
+                    showAlert('❌ ' + data.message, 'error');
                 }
             } catch (error) {
-                console.error('Error deleting employee:', error);
-                showAlert(i18n.t('emp_delete_error'), 'error');
+                showAlert('❌ خطأ في الاتصال: ' + error.message, 'error');
             }
         }
 
@@ -1173,6 +1247,7 @@
             if (!isEditMode && !password) { showModalAlert('⚠️ أدخل كلمة المرور', 'error'); document.getElementById('empPassword').focus(); return; }
             if (!companyId) { showModalAlert('❌ لم يتم تحديد الشركة - سجل الدخول مرة أخرى', 'error'); return; }
 
+            const permissions = [...document.querySelectorAll('#permissionsContainer .perm-check:checked')].map(cb => cb.value);
             const employeeData = {
                 companyId,
                 name,
@@ -1181,7 +1256,7 @@
                 phone:            document.getElementById('empPhone').value.trim(),
                 title:            document.getElementById('empTitle').value.trim(),
                 role:             document.getElementById('empRole').value || 'agent',
-                permissions:      [],
+                permissions,
                 minutesAllocated: parseInt(document.getElementById('empMinutes').value) || 0,
                 active:           document.getElementById('empActive').checked
             };

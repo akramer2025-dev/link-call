@@ -1792,6 +1792,8 @@ if (settingsBtn) {
         
         // إعادة تطبيق الصلاحيات لضمان ظهور الأقسام الصحيحة
         applyRoleBasedVisibility();
+        // تطبيق مرة ثانية بعد تأخير بسيط (لضمان ظهور الأقسام في جميع المتصفحات)
+        setTimeout(() => applyRoleBasedVisibility(), 50);
         
         // تحميل قائمة الموظفين
         setTimeout(() => {
@@ -1871,6 +1873,10 @@ function applyRoleBasedVisibility() {
     const adminPanelSection = document.getElementById('admin-panel-section');
     const adminDashboardSection = document.getElementById('admin-dashboard-section');
     const companyAdminSection = document.getElementById('company-admin-section');
+    const manageEmployeesNavBtn = document.getElementById('manage-employees-nav-btn');
+    const balanceHeader = document.getElementById('balance-header');
+    const balanceSection = document.getElementById('balance-section');
+    const mobileBalance = document.getElementById('mobile-balance');
 
     if (userRole === 'admin' && !isCompanyAdmin) {
         // المطور يرى إدارة المديرين والإعدادات والتسعيرة
@@ -1882,8 +1888,12 @@ function applyRoleBasedVisibility() {
         if (adminDashboardSection) adminDashboardSection.style.display = 'block';
         if (companyAdminSection) companyAdminSection.style.display = 'none';
         if (employeeProfileSection) employeeProfileSection.style.display = 'none';
+        if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'none';
+        if (balanceHeader) balanceHeader.style.display = 'flex';
+        if (balanceSection) balanceSection.style.display = 'block';
+        if (mobileBalance) mobileBalance.style.display = 'flex';
     } else if (userRole === 'company-admin' || isCompanyAdmin) {
-        // مدير الشركة - يرى فقط إدارة الموظفين
+        // مدير الشركة
         if (employeesSection) employeesSection.style.display = 'none';
         if (adminAccountSection) adminAccountSection.style.display = 'none';
         if (adminAudioSection) adminAudioSection.style.display = 'none';
@@ -1891,6 +1901,11 @@ function applyRoleBasedVisibility() {
         if (adminPanelSection) adminPanelSection.style.display = 'none';
         if (adminDashboardSection) adminDashboardSection.style.display = 'none';
         if (companyAdminSection) companyAdminSection.style.display = 'block';
+        if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'flex';
+        // إخفاء رصيد Twilio - غير مناسب لمدير الشركة
+        if (balanceHeader) balanceHeader.style.display = 'none';
+        if (balanceSection) balanceSection.style.display = 'none';
+        if (mobileBalance) mobileBalance.style.display = 'none';
         if (employeeProfileSection) {
             employeeProfileSection.style.display = 'block';
             loadEmployeeProfile();
@@ -1904,6 +1919,10 @@ function applyRoleBasedVisibility() {
         if (adminPanelSection) adminPanelSection.style.display = 'none';
         if (adminDashboardSection) adminDashboardSection.style.display = 'none';
         if (companyAdminSection) companyAdminSection.style.display = 'none';
+        if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'none';
+        if (balanceHeader) balanceHeader.style.display = 'none';
+        if (balanceSection) balanceSection.style.display = 'none';
+        if (mobileBalance) mobileBalance.style.display = 'none';
         if (employeeProfileSection) {
             employeeProfileSection.style.display = 'block';
             loadEmployeeProfile();

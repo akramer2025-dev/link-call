@@ -1,63 +1,92 @@
 ﻿const fs = require('fs');
 const path = require('path');
 
-// استخدام نفس Redis setup الموجود في companies.js
+// Redis setup (optional - use if available)
 let redis;
 let redisAvailable = false;
 try {
     const { Redis } = require('@upstash/redis');
     const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
     const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-    
     if (redisUrl && redisToken && redisUrl.startsWith('http')) {
         redis = new Redis({ url: redisUrl, token: redisToken });
         redisAvailable = true;
-        console.log('employees API: Redis initialized');
     }
-} catch (error) {
-    console.log('employees API: Redis init failed:', error.message);
+} catch (e) {}
+
+// File paths - use /tmp in Vercel (writable), local file otherwise
+const isVercel = !!process.env.VERCEL;
+const tmpCompaniesFile = '/tmp/companies_data.json';
+const localCompaniesFile = path.join(__dirname, '../companies.json');
+const sourceCompaniesFile = localCompaniesFile; // The deployed read-only copy
+
+function getWorkingFile() {
+    return isVercel ? tmpCompaniesFile : localCompaniesFile;
 }
 
-const companiesFile = path.join(__dirname, '../companies.json');
+function ensureTmpFile() {
+    // On Vercel, copy from deployed companies.json to /tmp on first access
+    if (isVercel && !fs.existsSync(tmpCompaniesFile)) {
+        try {
+            if (fs.existsSync(sourceCompaniesFile)) {
+                fs.copyFileSync(sourceCompaniesFile, tmpCompaniesFile);
+                console.log('Copied companies.json to /tmp');
+            }
+        } catch (e) {
+            console.error('Failed to copy to /tmp:', e.message);
+        }
+    }
+}
 
-// Read/Write companies_data (same key used by working companies.js)
 async function getCompaniesData() {
+    // Try Redis first
     if (redisAvailable && redis) {
         try {
             const data = await redis.get('companies_data');
             if (data && data.companies) return data;
-        } catch (e) {
-            console.error('Redis read error:', e.message);
-        }
+        } catch (e) {}
     }
+    // Try /tmp or local file
+    ensureTmpFile();
+    const workingFile = getWorkingFile();
     try {
-        if (fs.existsSync(companiesFile)) {
-            return JSON.parse(fs.readFileSync(companiesFile, 'utf8'));
+        if (fs.existsSync(workingFile)) {
+            return JSON.parse(fs.readFileSync(workingFile, 'utf8'));
         }
     } catch (e) {
         console.error('File read error:', e.message);
     }
+    // Last resort: read source file
+    try {
+        if (fs.existsSync(sourceCompaniesFile)) {
+            return JSON.parse(fs.readFileSync(sourceCompaniesFile, 'utf8'));
+        }
+    } catch (e) {}
     return { companies: [] };
 }
 
 async function saveCompaniesData(data) {
+    // Save to Redis if available
     if (redisAvailable && redis) {
         try {
             await redis.set('companies_data', data);
-            console.log('Saved to Redis companies_data');
+            // Also save to /tmp as backup
+            try { fs.writeFileSync(getWorkingFile(), JSON.stringify(data, null, 2), 'utf8'); } catch {}
             return true;
         } catch (e) {
             console.error('Redis write error:', e.message);
         }
     }
+    // Save to /tmp (or local file in dev)
+    ensureTmpFile();
     try {
-        fs.writeFileSync(companiesFile, JSON.stringify(data, null, 2), 'utf8');
-        console.log('Saved to companies.json file');
+        fs.writeFileSync(getWorkingFile(), JSON.stringify(data, null, 2), 'utf8');
+        console.log('Saved to', getWorkingFile());
         return true;
     } catch (e) {
         console.error('File write error:', e.message);
+        return false;
     }
-    return false;
 }
 
 const availablePermissions = [
@@ -89,10 +118,8 @@ async function getEmployees(req, res) {
         const data = await getCompaniesData();
         const company = data.companies.find(c => c.id === companyId);
         if (!company) return res.status(404).json({ success: false, message: 'الشركة غير موجودة' });
-        const employees = company.employees || [];
-        res.json({ success: true, employees });
+        res.json({ success: true, employees: company.employees || [] });
     } catch (error) {
-        console.error('getEmployees error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 }
@@ -100,7 +127,6 @@ async function getEmployees(req, res) {
 async function addEmployee(req, res) {
     try {
         const { companyId, name, username, email, phone, title, role, permissions, minutesAllocated, password, active } = req.body;
-        console.log('addEmployee:', { companyId, name, username });
         if (!companyId || !name || !username) {
             return res.status(400).json({ success: false, message: 'companyId و name و username مطلوبة' });
         }
@@ -126,7 +152,6 @@ async function addEmployee(req, res) {
         company.employeesCount = company.employees.length;
         const saved = await saveCompaniesData(data);
         if (!saved) return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات' });
-        console.log('Employee added:', username);
         res.json({ success: true, employee: newEmployee });
     } catch (error) {
         console.error('addEmployee error:', error);
@@ -159,7 +184,6 @@ async function updateEmployee(req, res) {
         if (!saved) return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات' });
         res.json({ success: true, employee: found });
     } catch (error) {
-        console.error('updateEmployee error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 }
@@ -182,7 +206,6 @@ async function deleteEmployee(req, res) {
         if (!saved) return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات' });
         res.json({ success: true, message: 'تم حذف الموظف بنجاح' });
     } catch (error) {
-        console.error('deleteEmployee error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 }
@@ -192,10 +215,8 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'OPTIONS') { res.status(200).end(); return; }
-
     const method = req.method;
     const url = req.url || '';
-
     try {
         if (method === 'GET' && url.includes('/permissions')) return await getPermissions(req, res);
         if (method === 'GET') return await getEmployees(req, res);

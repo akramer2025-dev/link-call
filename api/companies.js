@@ -238,9 +238,15 @@ module.exports.getCompany = async (req, res) => {
 // PUT /api/companies/:id - Update company
 module.exports.updateCompany = async (req, res) => {
     try {
-        const { id } = req.params;
+        // req.params.id لا يعمل في Vercel serverless - نستخرجه من URL
+        const urlParts = (req.url || '').split('/').filter(Boolean);
+        const id = req.params?.id || urlParts[urlParts.length - 1];
+
+        if (!id || id === 'companies') {
+            return res.status(400).json({ success: false, error: 'company id مطلوب في الـ URL' });
+        }
+
         const updates = req.body;
-        
         const companiesData = await getCompaniesData();
         const companyIndex = companiesData.companies.findIndex(c => c.id === id);
 

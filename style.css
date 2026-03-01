@@ -1551,6 +1551,232 @@ body::after {
     box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
 }
 
+/* ─── Excel-like CRM Table Styles ───────────────────────────────────────────── */
+.contacts-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.export-excel-btn,
+.import-excel-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.export-excel-btn {
+    background: linear-gradient(135deg, #1dd1a1, #10ac84);
+    color: white;
+    box-shadow: 0 3px 10px rgba(29, 209, 161, 0.3);
+}
+
+.export-excel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(29, 209, 161, 0.4);
+}
+
+.import-excel-btn {
+    background: linear-gradient(135deg, #5f27cd, #341f97);
+    color: white;
+    box-shadow: 0 3px 10px rgba(95, 39, 205, 0.3);
+}
+
+.import-excel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(95, 39, 205, 0.4);
+}
+
+/* جدول جهات الاتصال الاحترافي */
+.contacts-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.contacts-table thead {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.contacts-table th {
+    padding: 14px 12px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 13px;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.contacts-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.contacts-table th.sortable:hover {
+    background: rgba(102, 126, 234, 0.25);
+}
+
+.sort-icon {
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 11px;
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+.contacts-table tbody tr {
+    transition: all 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.contacts-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.contacts-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(240, 147, 251, 0.08));
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.contacts-table td {
+    padding: 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.col-avatar {
+    width: 50px;
+    text-align: center;
+}
+
+.contact-avatar-small {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.col-name {
+    min-width: 150px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.col-phone {
+    min-width: 130px;
+    direction: ltr;
+    text-align: right;
+}
+
+.col-email {
+    min-width: 180px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.col-country {
+    min-width: 100px;
+}
+
+.col-balance {
+    min-width: 100px;
+    font-weight: 600;
+    color: #1dd1a1;
+}
+
+.col-date {
+    min-width: 110px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+}
+
+.col-actions {
+    min-width: 130px;
+    text-align: center;
+}
+
+.table-action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    margin: 0 2px;
+}
+
+.table-action-btn.call-btn {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+}
+
+.table-action-btn.call-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 3px 10px rgba(79, 172, 254, 0.4);
+}
+
+.table-action-btn.edit-btn {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: white;
+}
+
+.table-action-btn.edit-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 3px 10px rgba(240, 147, 251, 0.4);
+}
+
+.table-action-btn.delete-btn {
+    background: linear-gradient(135deg, #fa709a, #fee140);
+    color: white;
+}
+
+.table-action-btn.delete-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 3px 10px rgba(250, 112, 154, 0.4);
+}
+
+/* Responsive للجدول */
+@media (max-width: 1024px) {
+    .contacts-table {
+        font-size: 12px;
+    }
+    
+    .contacts-table th,
+    .contacts-table td {
+        padding: 10px 8px;
+    }
+    
+    .col-email,
+    .col-date {
+        display: none; /* إخفاء أعمدة أقل أهمية على الشاشات الصغيرة */
+    }
+}
+
+/* ─── End of Excel Table Styles ─────────────────────────────────────────────── */
+
 /* الإعدادات */
 .settings-panel {
     flex: 1;

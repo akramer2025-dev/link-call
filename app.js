@@ -3063,25 +3063,42 @@ async function loadCallHistory() {
 let _cachedContacts = [];
 
 function _renderContactItem(contact) {
-    const item = document.createElement('div');
-    item.className = 'contact-item';
+    const tr = document.createElement('tr');
+    tr.className = 'contact-row';
+    
     const initial = (contact.name || '?').charAt(0).toUpperCase();
-    const cid  = contact._id || contact.id || contact.contactId || '';
+    const cid = contact._id || contact.id || contact.contactId || '';
     const safeId = cid.toString().replace(/'/g, '');
     const safeName = (contact.name || '').replace(/'/g, '&#39;');
     const safePhone = (contact.phone || '').replace(/'/g, '');
-    item.innerHTML = `
-        <div class="contact-avatar">${initial}</div>
-        <div class="contact-info">
-            <div class="contact-name">${contact.name || ''}</div>
-            <div class="contact-phone">${contact.phone || ''}</div>
-        </div>
-        <div class="contact-actions">
-            <button class="contact-call-btn" onclick="callContact('${safePhone}')" title="اتصال">📞</button>
-            <button class="contact-delete-btn" onclick="deleteContact('${safeId}', '${safeName}')" title="حذف" style="background: linear-gradient(135deg, #fa709a, #fee140); color: white; width: 35px; height: 35px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; transition: all 0.2s;">🗑️</button>
-        </div>
+    
+    // استخراج Country و Balance من notes
+    const notes = contact.notes || '';
+    const countryMatch = notes.match(/Country:\s*([^|]+)/);
+    const balanceMatch = notes.match(/Balance:\s*(.+)/);
+    const country = countryMatch ? countryMatch[1].trim() : '-';
+    const balance = balanceMatch ? balanceMatch[1].trim() : '-';
+    
+    const email = contact.email || '-';
+    const createdDate = contact.createdAt ? new Date(contact.createdAt).toLocaleDateString('ar-EG') : '-';
+    
+    tr.innerHTML = `
+        <td class="col-avatar">
+            <div class="contact-avatar-small">${initial}</div>
+        </td>
+        <td class="col-name">${contact.name || ''}</td>
+        <td class="col-phone">${contact.phone || ''}</td>
+        <td class="col-email">${email}</td>
+        <td class="col-country">${country}</td>
+        <td class="col-balance">${balance}</td>
+        <td class="col-date">${createdDate}</td>
+        <td class="col-actions">
+            <button class="table-action-btn call-btn" onclick="callContact('${safePhone}')" title="اتصال">📞</button>
+            <button class="table-action-btn edit-btn" onclick="editContact('${safeId}')" title="تعديل">✏️</button>
+            <button class="table-action-btn delete-btn" onclick="deleteContact('${safeId}', '${safeName}')" title="حذف">🗑️</button>
+        </td>
     `;
-    return item;
+    return tr;
 }
 
 async function loadContacts() {
@@ -3113,12 +3130,188 @@ async function loadContacts() {
             return;
         }
 
-        contacts.forEach(contact => container.appendChild(_renderContactItem(contact)));
+        // إنشاء جدول احترافي
+        const table = document.createElement('table');
+        table.className = 'contacts-table';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th class="col-avatar"></th>
+                    <th class="col-name sortable" onclick="sortContactsBy('name')">
+                        الاسم <span class="sort-icon">⬍</span>
+                    </th>
+                    <th class="col-phone sortable" onclick="sortContactsBy('phone')">
+                        الموبايل <span class="sort-icon">⬍</span>
+                    </th>
+                    <th class="col-email sortable" onclick="sortContactsBy('email')">
+                        البريد الإلكتروني <span class="sort-icon">⬍</span>
+                    </th>
+                    <th class="col-country sortable" onclick="sortContactsBy('country')">
+                        البلد <span class="sort-icon">⬍</span>
+                    </th>
+                    <th class="col-balance sortable" onclick="sortContactsBy('balance')">
+                        الرصيد <span class="sort-icon">⬍</span>
+                    </th>
+                    <th class="col-date sortable" onclick="sortContactsBy('date')">
+                        تاريخ الإضافة <span class="sort-icon">⬍</span>
+                    </th>
+                    <th class="col-actions">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+        
+        const tbody = table.querySelector('tbody');
+        contacts.forEach(contact => tbody.appendChild(_renderContactItem(contact)));
+        
+        container.appendChild(table);
+        
         console.log('✅ تم تحميل', contacts.length, 'جهة اتصال للشركة', companyId);
     } catch (error) {
         console.error('خطأ في تحميل جهات الاتصال:', error);
         container.innerHTML = '<p style="text-align: center; color: #f44336;">خطأ في تحميل جهات الاتصال</p>';
     }
+}
+
+// ─── Sort & Filter Functions for Excel-like CRM ───────────────────────────────
+let _currentSortColumn = null;
+let _currentSortDirection = 'asc'; // 'asc' or 'desc'
+
+function sortContactsBy(column) {
+    if (!_cachedContacts || _cachedContacts.length === 0) return;
+    
+    // تبديل الاتجاه إذا كان نفس العمود
+    if (_currentSortColumn === column) {
+        _currentSortDirection = _currentSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        _currentSortColumn = column;
+        _currentSortDirection = 'asc';
+    }
+    
+    // نسخ الـ array وترتيبه
+    const sorted = [..._cachedContacts].sort((a, b) => {
+        let valA, valB;
+        
+        switch(column) {
+            case 'name':
+                valA = (a.name || '').toLowerCase();
+                valB = (b.name || '').toLowerCase();
+                break;
+            case 'phone':
+                valA = a.phone || '';
+                valB = b.phone || '';
+                break;
+            case 'email':
+                valA = (a.email || '').toLowerCase();
+                valB = (b.email || '').toLowerCase();
+                break;
+            case 'country':
+                const notesA = a.notes || '';
+                const notesB = b.notes || '';
+                const matchA = notesA.match(/Country:\s*([^|]+)/);
+                const matchB = notesB.match(/Country:\s*([^|]+)/);
+                valA = (matchA ? matchA[1].trim() : '').toLowerCase();
+                valB = (matchB ? matchB[1].trim() : '').toLowerCase();
+                break;
+            case 'balance':
+                const bNotesA = a.notes || '';
+                const bNotesB = b.notes || '';
+                const bMatchA = bNotesA.match(/Balance:\s*(.+)/);
+                const bMatchB = bNotesB.match(/Balance:\s*(.+)/);
+                valA = bMatchA ? parseFloat(bMatchA[1].replace(/[^0-9.-]/g, '')) || 0 : 0;
+                valB = bMatchB ? parseFloat(bMatchB[1].replace(/[^0-9.-]/g, '')) || 0 : 0;
+                break;
+            case 'date':
+                valA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                valB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                break;
+            default:
+                return 0;
+        }
+        
+        if (valA < valB) return _currentSortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return _currentSortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+    
+    // إعادة رسم الجدول
+    const container = document.getElementById('contacts-container');
+    const table = container.querySelector('.contacts-table');
+    if (!table) return;
+    
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
+    sorted.forEach(contact => tbody.appendChild(_renderContactItem(contact)));
+    
+    // تحديث أيقونة السهم
+    table.querySelectorAll('.sort-icon').forEach(icon => {
+        icon.textContent = '⬍';
+        icon.style.opacity = '0.5';
+    });
+    const activeHeader = table.querySelector(`th.sortable[onclick*="${column}"] .sort-icon`);
+    if (activeHeader) {
+        activeHeader.textContent = _currentSortDirection === 'asc' ? '▲' : '▼';
+        activeHeader.style.opacity = '1';
+    }
+}
+
+// ─── Export to Excel (CSV) ────────────────────────────────────────────────────
+function exportContactsToExcel() {
+    if (!_cachedContacts || _cachedContacts.length === 0) {
+        alert('لا توجد جهات اتصال للتصدير');
+        return;
+    }
+    
+    // تحضير البيانات
+    const headers = ['الاسم', 'الموبايل', 'البريد الإلكتروني', 'البلد', 'الرصيد', 'تاريخ الإضافة', 'ملاحظات'];
+    const rows = _cachedContacts.map(contact => {
+        const notes = contact.notes || '';
+        const countryMatch = notes.match(/Country:\s*([^|]+)/);
+        const balanceMatch = notes.match(/Balance:\s*(.+)/);
+        const country = countryMatch ? countryMatch[1].trim() : '';
+        const balance = balanceMatch ? balanceMatch[1].trim() : '';
+        const date = contact.createdAt ? new Date(contact.createdAt).toLocaleDateString('ar-EG') : '';
+        
+        return [
+            contact.name || '',
+            contact.phone || '',
+            contact.email || '',
+            country,
+            balance,
+            date,
+            notes
+        ];
+    });
+    
+    // تحويل إلى CSV
+    const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\\n');
+    
+    // تحميل الملف
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    const companyName = sessionStorage.getItem('companyName') || 'Company';
+    const filename = `contacts_${companyName}_${new Date().toISOString().slice(0,10)}.csv`;
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log('✅ تم تصدير', _cachedContacts.length, 'جهة اتصال إلى', filename);
+}
+
+// ─── Import from Excel ────────────────────────────────────────────────────────
+function importContactsFromExcel() {
+    const input = document.getElementById('excel-import-input');
+    if (!input) return;
+    
+    input.click();
 }
 
 // إضافة جهة اتصال
@@ -3228,6 +3421,102 @@ function showContactError(msg) {
 
 
 // حذف جهة اتصال (soft delete - لا تُمسح من Firestore)
+// تعديل جهة اتصال
+function editContact(contactId) {
+    const contact = _cachedContacts.find(c => (c._id || c.id || c.contactId) === contactId);
+    if (!contact) {
+        alert('لم يتم العثور على جهة الاتصال');
+        return;
+    }
+    
+    // ملء البيانات الحالية في المودال
+    document.getElementById('nc-name').value = contact.name || '';
+    document.getElementById('nc-phone').value = contact.phone || '';
+    document.getElementById('nc-email').value = contact.email || '';
+    document.getElementById('nc-notes').value = contact.notes || '';
+    
+    // تغيير زر الحفظ إلى تحديث
+    const submitBtn = document.getElementById('nc-submit-btn');
+    submitBtn.onclick = () => submitUpdateContact(contactId);
+    document.getElementById('nc-submit-text').textContent = 'تحديث جهة الاتصال';
+    document.getElementById('nc-submit-icon').textContent = '✓';
+    
+    // إظهار المودال
+    document.getElementById('add-contact-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('nc-name').focus(), 80);
+}
+
+// حفظ التعديلات
+async function submitUpdateContact(contactId) {
+    ['nc-name-err','nc-phone-err','nc-error-banner'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+
+    const name  = (document.getElementById('nc-name')?.value  || '').trim();
+    const phone = (document.getElementById('nc-phone')?.value || '').trim();
+    const email = (document.getElementById('nc-email')?.value || '').trim();
+    const notes = (document.getElementById('nc-notes')?.value || '').trim();
+
+    let valid = true;
+    if (!name)  { document.getElementById('nc-name-err').style.display  = 'block'; valid = false; }
+    if (!phone) { document.getElementById('nc-phone-err').style.display = 'block'; valid = false; }
+    if (!valid) return;
+
+    const companyId = sessionStorage.getItem('companyId');
+    const updatedBy = sessionStorage.getItem('username') || 'unknown';
+
+    if (!companyId) {
+        showContactError('لم يتم العثور على معلومات الشركة');
+        return;
+    }
+
+    const btn = document.getElementById('nc-submit-btn');
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    document.getElementById('nc-submit-text').textContent = 'جاري التحديث...';
+    document.getElementById('nc-submit-icon').textContent = '⏳';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/contacts`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                companyId, 
+                contactId, 
+                name, 
+                phone, 
+                email: email || null, 
+                notes: notes || '', 
+                updatedBy 
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            document.getElementById('nc-submit-text').textContent = 'تم التحديث!';
+            document.getElementById('nc-submit-icon').textContent = '✅';
+            setTimeout(() => {
+                closeAddContactModal();
+                loadContacts();
+                // إعادة زر الحفظ للوضع الطبيعي
+                btn.onclick = submitAddContact;
+                document.getElementById('nc-submit-text').textContent = 'حفظ جهة الاتصال';
+            }, 1200);
+        } else {
+            throw new Error(data.error || 'فشل في التحديث');
+        }
+    } catch (error) {
+        console.error('خطأ في تحديث جهة الاتصال:', error);
+        showContactError(error.message || 'فشل في تحديث جهة الاتصال');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        document.getElementById('nc-submit-text').textContent = 'تحديث جهة الاتصال';
+        document.getElementById('nc-submit-icon').textContent = '✓';
+    }
+}
+
 async function deleteContact(contactId, contactName) {
     if (!confirm(`هل تريد حذف ${contactName}؟`)) return;
 
@@ -3286,6 +3575,109 @@ if (addContactBtn) {
     addContactBtn.addEventListener('click', addContact);
 }
 
+// معالجة زر تصدير Excel
+const exportExcelBtn = document.getElementById('export-excel-btn');
+if (exportExcelBtn) {
+    exportExcelBtn.addEventListener('click', exportContactsToExcel);
+}
+
+// معالجة زر استيراد Excel
+const importExcelBtn = document.getElementById('import-excel-btn');
+if (importExcelBtn) {
+    importExcelBtn.addEventListener('click', importContactsFromExcel);
+}
+
+// معالجة ملف Excel المستورد
+const excelImportInput = document.getElementById('excel-import-input');
+if (excelImportInput) {
+    excelImportInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const text = event.target.result;
+                const lines = text.split('\n');
+                const contacts = [];
+                
+                // تخطي الهيدر والبدء من السطر الثاني
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    // فصل بـ tab أو comma
+                    const cells = line.includes('\t') ? line.split('\t') : line.split(',');
+                    if (cells.length < 2) continue;
+                    
+                    const [email, name, lastName, phone, country, balance] = cells.map(c => c.trim().replace(/^"|"$/g, ''));
+                    
+                    if (name && phone) {
+                        contacts.push({
+                            name: lastName ? `${name} ${lastName}` : name,
+                            phone: phone,
+                            email: email || null,
+                            notes: `Country: ${country || '-'} | Balance: ${balance || '0'}`,
+                            tags: [country || 'Unknown', 'Excel Import']
+                        });
+                    }
+                }
+                
+                if (contacts.length === 0) {
+                    alert('لم يتم العثور على جهات اتصال صالحة في الملف');
+                    return;
+                }
+                
+                // تأكيد قبل الاستيراد
+                const confirmed = confirm(`هل تريد استيراد ${contacts.length} جهة اتصال؟`);
+                if (!confirmed) return;
+                
+                // استيراد باستخدام API
+                const companyId = sessionStorage.getItem('companyId');
+                const addedBy = sessionStorage.getItem('username') || 'Excel Import';
+                let successCount = 0;
+                let errorCount = 0;
+                
+                // show loading indicator
+                const container = document.getElementById('contacts-container');
+                container.innerHTML = '<p style="text-align:center;color:#fff;padding:30px">⏳ جاري الاستيراد...</p>';
+                
+                for (const contact of contacts) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/api/contacts`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ...contact, companyId, addedBy, device: 'web' })
+                        });
+                        
+                        if (response.ok) {
+                            successCount++;
+                        } else {
+                            errorCount++;
+                        }
+                        
+                        // تأخير صغير لتجنب الـ rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (err) {
+                        console.error('خطأ في استيراد جهة اتصال:', err);
+                        errorCount++;
+                    }
+                }
+                
+                alert(`تم الاستيراد بنجاح!\n✅ نجح: ${successCount}\n❌ فشل: ${errorCount}`);
+                loadContacts(); // إعادة تحميل القائمة
+                
+            } catch (error) {
+                console.error('خطأ في قراءة الملف:', error);
+                alert('خطأ في قراءة الملف. تأكد من صيغة الملف.');
+            }
+        };
+        
+        reader.readAsText(file);
+        e.target.value = ''; // reset input
+    });
+}
+
 // البحث في جهات الاتصال — يعمل على الـ cache المحلي (بدون طلب API جديد)
 const contactSearch = document.getElementById('contact-search');
 if (contactSearch) {
@@ -3295,22 +3687,55 @@ if (contactSearch) {
 
         if (!searchTerm) {
             // البحث فارغ → أعد عرض الكل
-            container.innerHTML = '';
-            _cachedContacts.forEach(c => container.appendChild(_renderContactItem(c)));
+            loadContacts(); // إعادة رسم الجدول الكامل
             return;
         }
 
-        const filtered = _cachedContacts.filter(c =>
-            (c.name  || '').toLowerCase().includes(searchTerm) ||
-            (c.phone || '').includes(searchTerm)
-        );
+        // البحث في كل الحقول: name, phone, email, country, balance, notes
+        const filtered = _cachedContacts.filter(c => {
+            const notes = c.notes || '';
+            const countryMatch = notes.match(/Country:\s*([^|]+)/);
+            const balanceMatch = notes.match(/Balance:\s*(.+)/);
+            const country = countryMatch ? countryMatch[1].trim().toLowerCase() : '';
+            const balance = balanceMatch ? balanceMatch[1].trim().toLowerCase() : '';
+            
+            return (
+                (c.name  || '').toLowerCase().includes(searchTerm) ||
+                (c.phone || '').includes(searchTerm) ||
+                (c.email || '').toLowerCase().includes(searchTerm) ||
+                country.includes(searchTerm) ||
+                balance.includes(searchTerm) ||
+                notes.toLowerCase().includes(searchTerm)
+            );
+        });
 
         container.innerHTML = '';
         if (filtered.length === 0) {
             container.innerHTML = '<p style="text-align:center;color:#888;padding:30px">لا نتائج للبحث</p>';
             return;
         }
-        filtered.forEach(c => container.appendChild(_renderContactItem(c)));
+        
+        // إنشاء جدول للنتائج المفَلترة
+        const table = document.createElement('table');
+        table.className = 'contacts-table';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th class="col-avatar"></th>
+                    <th class="col-name">الاسم</th>
+                    <th class="col-phone">الموبايل</th>
+                    <th class="col-email">البريد الإلكتروني</th>
+                    <th class="col-country">البلد</th>
+                    <th class="col-balance">الرصيد</th>
+                    <th class="col-date">تاريخ الإضافة</th>
+                    <th class="col-actions">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+        const tbody = table.querySelector('tbody');
+        filtered.forEach(c => tbody.appendChild(_renderContactItem(c)));
+        container.appendChild(table);
     });
 }
 

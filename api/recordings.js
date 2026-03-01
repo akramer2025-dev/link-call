@@ -62,7 +62,7 @@ async function getRecordings(companyId, options = {}) {
         // جلب من قاعدة البيانات المحلية
         if (source === 'local') {
             const recordingsData = readCompanyData(companyId, 'recordings.json');
-            recordings = recordingsData.recordings;
+            recordings = (recordingsData && recordingsData.recordings) ? recordingsData.recordings : [];
         }
         // جلب من Twilio
         else if (source === 'twilio') {
@@ -161,7 +161,7 @@ function getRecordingStatistics(companyId, options = {}) {
         } = options;
         
         const recordingsData = readCompanyData(companyId, 'recordings.json');
-        let recordings = recordingsData.recordings;
+        let recordings = (recordingsData && recordingsData.recordings) ? recordingsData.recordings : [];
         
         // تطبيق الفلاتر
         if (fromDate) {
@@ -233,7 +233,13 @@ module.exports = async (req, res) => {
             }
             
             // التسجيلات
-            const recordings = await getRecordings(companyId, filters);
+            let recordings = [];
+            try {
+                recordings = await getRecordings(companyId, filters);
+            } catch (recErr) {
+                console.error(`⚠️ [${companyId}] فشل جلب التسجيلات، إرجاع مصفوفة فارغة:`, recErr.message);
+                // إرجاع مصفوفة فارغة بدل 500
+            }
             
             console.log(`📋 [${companyId}] جلب ${recordings.length} تسجيل`);
             

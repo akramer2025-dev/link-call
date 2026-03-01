@@ -115,7 +115,7 @@ function stopOnlineTracking() {
     
     if (userId) {
         // إرسال طلب تسجيل الخروج
-        navigator.sendBeacon(`${API_BASE_URL}/track-logout`, JSON.stringify({ userId }));
+        navigator.sendBeacon(`${API_BASE_URL}/track-logout`, new Blob([JSON.stringify({ userId })], { type: 'application/json' }));
     }
 }
 
@@ -3024,7 +3024,9 @@ window.addEventListener('beforeunload', async (e) => {
                 employeeName: employeeName
             });
             
-            navigator.sendBeacon(`${baseUrl}/work-tracking`, data);
+            // استخدام Blob مع application/json حتى يتم parse الـ body صح
+            const blob = new Blob([data], { type: 'application/json' });
+            navigator.sendBeacon(`${baseUrl}/work-tracking`, blob);
         }
     } catch (error) {
         console.error('خطأ في تسجيل وقت الخروج:', error);
@@ -3050,7 +3052,8 @@ document.addEventListener('visibilitychange', async () => {
                     }
                 });
                 
-                navigator.sendBeacon(`${baseUrl}/work-tracking`, data);
+                const blob = new Blob([data], { type: 'application/json' });
+                navigator.sendBeacon(`${baseUrl}/work-tracking`, blob);
             }
         } catch (error) {
             console.error('خطأ في تسجيل إخفاء التطبيق:', error);
@@ -3317,6 +3320,7 @@ if (generateReportBtn) {
 }
 
 // إخفاء زر تقارير العمل عن غير المطورين
+const userRole = sessionStorage.getItem('userRole');
 if (userRole !== 'admin' && workReportsBtn) {
     workReportsBtn.style.display = 'none';
 }

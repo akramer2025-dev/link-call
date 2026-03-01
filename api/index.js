@@ -173,11 +173,11 @@ async function getEmployeesData() {
     if (process.env.VERCEL && redis) {
         try {
             const data = await redis.get('employees_data');
-            if (data && data.employees && data.employees.length > 0) {
+            if (data && Array.isArray(data.employees)) {
                 console.log('✅ تم جلب البيانات من Redis:', data.employees.length, 'موظف');
                 return data;
             }
-            console.log('⚠️ Redis فارغ، استخدام employees.json');
+            console.log('⚠️ Redis فارغ أو بيانات غير صالحة، استخدام employees.json');
         } catch (error) {
             console.error('❌ خطأ في قراءة Redis:', error);
         }
@@ -210,7 +210,12 @@ async function saveEmployeesData(data) {
             
             // التحقق من الحفظ
             const saved = await redis.get('employees_data');
-            console.log('✅ تم التحقق: عدد المديرين المحفوظين:', saved?.employees?.length || 0);
+            const savedCount = saved?.employees?.length || 0;
+            console.log('✅ تم التحقق: عدد المديرين المحفوظين:', savedCount);
+            
+            if (savedCount !== data.employees.length) {
+                console.error('❌ عدد المديرين المحفوظين لا يطابق:', savedCount, '!=', data.employees.length);
+            }
             
             return true;
         } catch (error) {

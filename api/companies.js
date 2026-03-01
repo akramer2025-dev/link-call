@@ -557,6 +557,16 @@ function logActivity(type, companyId, details = {}) {
     }
 }
 
+// Save handlers before module.exports is overwritten
+const _register = module.exports.register;
+const _getAllCompanies = module.exports.getAllCompanies;
+const _getCompany = module.exports.getCompany;
+const _updateCompany = module.exports.updateCompany;
+const _updateStatus = module.exports.updateStatus;
+const _updatePlan = module.exports.updatePlan;
+const _deleteCompany = module.exports.deleteCompany;
+const _login = module.exports.login;
+
 // Main handler for Vercel serverless - Router للطلبات
 module.exports = async (req, res) => {
     // CORS headers
@@ -574,21 +584,21 @@ module.exports = async (req, res) => {
 
         // Route the request based on URL and method
         if (url.includes('/register') && method === 'POST') {
-            return module.exports.register(req, res);
+            return _register(req, res);
         } else if (url.includes('/login') && method === 'POST') {
-            return module.exports.login(req, res);
+            return _login(req, res);
         } else if (method === 'GET' && url.match(/\/\d+$/)) {
-            return module.exports.getCompany(req, res);
+            return _getCompany(req, res);
         } else if (method === 'GET') {
-            return module.exports.getAllCompanies(req, res);
+            return _getAllCompanies(req, res);
         } else if (method === 'PUT' && url.includes('/status')) {
-            return module.exports.updateStatus(req, res);
+            return _updateStatus(req, res);
         } else if (method === 'PUT' && url.includes('/plan')) {
-            return module.exports.updatePlan(req, res);
+            return _updatePlan(req, res);
         } else if (method === 'PUT') {
-            return module.exports.updateCompany(req, res);
+            return _updateCompany(req, res);
         } else if (method === 'DELETE') {
-            return module.exports.deleteCompany(req, res);
+            return _deleteCompany(req, res);
         } else {
             res.status(404).json({ error: 'Route not found' });
         }
@@ -597,3 +607,13 @@ module.exports = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Re-attach named handlers after module.exports was reassigned
+module.exports.register = _register;
+module.exports.getAllCompanies = _getAllCompanies;
+module.exports.getCompany = _getCompany;
+module.exports.updateCompany = _updateCompany;
+module.exports.updateStatus = _updateStatus;
+module.exports.updatePlan = _updatePlan;
+module.exports.deleteCompany = _deleteCompany;
+module.exports.login = _login;

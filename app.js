@@ -3062,7 +3062,7 @@ async function loadCallHistory() {
 // cache للبحث السريع بدون طلب API جديد
 let _cachedContacts = [];
 
-function _renderContactItem(contact) {
+function _renderContactItem(contact, index) {
     const tr = document.createElement('tr');
     tr.className = 'contact-row';
     
@@ -3082,17 +3082,67 @@ function _renderContactItem(contact) {
     const email = contact.email || '-';
     const createdDate = contact.createdAt ? new Date(contact.createdAt).toLocaleDateString('ar-EG') : '-';
     
+    // توليد avatars متعددة بألوان مختلفة
+    const nameWords = (contact.name || 'User').split(' ');
+    const avatarColors = ['avatar-gradient-1', 'avatar-gradient-2', 'avatar-gradient-3', 'avatar-gradient-4'];
+    const avatarsHTML = nameWords.slice(0, 3).map((word, i) => {
+        const letter = word.charAt(0).toUpperCase();
+        const colorClass = avatarColors[i % avatarColors.length];
+        return `<div class="contact-avatar-multi ${colorClass}">${letter}</div>`;
+    }).join('');
+    
+    // تحديد الحالة بناءً على LastCallDate أو tags
+    const isNew = contact.tags?.includes('Excel Import') || !contact.lastCallDate;
+    const isPremium = contact.tags?.includes('VIP') || parseFloat(balance.replace(/[^0-9.-]/g, '')) > 1000;
+    const isActive = contact.totalCalls > 0;
+    
+    let statusBadge = '';
+    if (isPremium) {
+        statusBadge = '<span class="contact-status-badge badge-premium">⭐ مميز</span>';
+    } else if (isNew) {
+        statusBadge = '<span class="contact-status-badge badge-new">🆕 جديد</span>';
+    } else if (isActive) {
+        statusBadge = '<span class="contact-status-badge badge-active">✓ نشط</span>';
+    } else {
+        statusBadge = '<span class="contact-status-badge badge-inactive">○ غير منشط</span>';
+    }
+    
+    // تقييم عشوائي بالنجوم (يمكن تخزينه لاحقاً في الـ database)
+    const rating = contact.rating || Math.floor(Math.random() * 3) + 3; // 3-5 stars
+    const starsHTML = Array(5).fill(0).map((_, i) => 
+        `<span class="star ${i < rating ? '' : 'empty'}">★</span>`
+    ).join('');
+    
     tr.innerHTML = `
+        <td class="col-number">${index + 1}</td>
         <td class="col-avatar">
-            <div class="contact-avatar-small">${initial}</div>
+            <div class="contact-avatars-group">${avatarsHTML}</div>
         </td>
-        <td class="col-name">${contact.name || ''}</td>
-        <td class="col-phone">${contact.phone || ''}</td>
+        <td class="col-name">
+            ${contact.name || ''}
+            <div style="font-size:11px;color:#8892b0;margin-top:2px;">${statusBadge}</div>
+        </td>
+        <td class="col-phone" style="direction:ltr;text-align:right;">${contact.phone || ''}</td>
         <td class="col-email">${email}</td>
         <td class="col-country">${country}</td>
-        <td class="col-balance">${balance}</td>
-        <td class="col-date">${createdDate}</td>
+        <td class="col-balance" style="color:#1dd1a1;font-weight:700;">${balance}</td>
+        <td class="col-rating">
+            <div class="contact-rating">${starsHTML}</div>
+        </td>
+        <td class="col-category">
+            <select class="contact-category-select" onchange="updateContactCategory('${safeId}', this.value)">
+                <option value="">-- اختر --</option>
+                <option value="vip">VIP</option>
+                <option value="regular">عادي</option>
+                <option value="potential">محتمل</option>
+                <option value="inactive">غير نشط</option>
+            </select>
+        </td>
+        <td class="col-date" style="font-size:12px;color:#8892b0;">${createdDate}</td>
         <td class="col-actions">
+            <button class="table-action-btn list-btn" onclick="viewContactDetails('${safeId}')" title="عرض التفاصيل">☰</button>
+            <button class="table-action-btn file-btn" onclick="viewContactFiles('${safeId}')" title="الملفات">📄</button>
+            <button class="table-action-btn whatsapp-btn" onclick="openWhatsApp('${safePhone}')" title="واتساب">💬</button>
             <button class="table-action-btn call-btn" onclick="callContact('${safePhone}')" title="اتصال">📞</button>
             <button class="table-action-btn edit-btn" onclick="editContact('${safeId}')" title="تعديل">✏️</button>
             <button class="table-action-btn delete-btn" onclick="deleteContact('${safeId}', '${safeName}')" title="حذف">🗑️</button>
@@ -3136,7 +3186,8 @@ async function loadContacts() {
         table.innerHTML = `
             <thead>
                 <tr>
-                    <th class="col-avatar"></th>
+                    <th class="col-number">#</th>
+                    <th class="col-avatar">الصورة</th>
                     <th class="col-name sortable" onclick="sortContactsBy('name')">
                         الاسم <span class="sort-icon">⬍</span>
                     </th>
@@ -3152,17 +3203,19 @@ async function loadContacts() {
                     <th class="col-balance sortable" onclick="sortContactsBy('balance')">
                         الرصيد <span class="sort-icon">⬍</span>
                     </th>
+                    <th class="col-rating">التقييم</th>
+                    <th class="col-category">التصنيف</th>
                     <th class="col-date sortable" onclick="sortContactsBy('date')">
                         تاريخ الإضافة <span class="sort-icon">⬍</span>
                     </th>
-                    <th class="col-actions">إجراءات</th>
+                    <th class="col-actions">الإجراءات</th>
                 </tr>
             </thead>
             <tbody></tbody>
         `;
         
         const tbody = table.querySelector('tbody');
-        contacts.forEach(contact => tbody.appendChild(_renderContactItem(contact)));
+        contacts.forEach((contact, index) => tbody.appendChild(_renderContactItem(contact, index)));
         
         container.appendChild(table);
         
@@ -3241,7 +3294,7 @@ function sortContactsBy(column) {
     
     const tbody = table.querySelector('tbody');
     tbody.innerHTML = '';
-    sorted.forEach(contact => tbody.appendChild(_renderContactItem(contact)));
+    sorted.forEach((contact, index) => tbody.appendChild(_renderContactItem(contact, index)));
     
     // تحديث أيقونة السهم
     table.querySelectorAll('.sort-icon').forEach(icon => {
@@ -3252,6 +3305,96 @@ function sortContactsBy(column) {
     if (activeHeader) {
         activeHeader.textContent = _currentSortDirection === 'asc' ? '▲' : '▼';
         activeHeader.style.opacity = '1';
+    }
+}
+
+// ─── Premium CRM Functions ────────────────────────────────────────────────────
+// عرض تفاصيل جهة الاتصال
+function viewContactDetails(contactId) {
+    const contact = _cachedContacts.find(c => (c._id || c.id || c.contactId) === contactId);
+    if (!contact) {
+        alert('لم يتم العثور على جهة الاتصال');
+        return;
+    }
+    
+    const notes = contact.notes || '';
+    const countryMatch = notes.match(/Country:\s*([^|]+)/);
+    const balanceMatch = notes.match(/Balance:\s*(.+)/);
+    const country = countryMatch ? countryMatch[1].trim() : '-';
+    const balance = balanceMatch ? balanceMatch[1].trim() : '-';
+    
+    const detailsHTML = `
+        <strong>📋 تفاصيل جهة الاتصال</strong><br><br>
+        <strong>الاسم:</strong> ${contact.name || '-'}<br>
+        <strong>الموبايل:</strong> ${contact.phone || '-'}<br>
+        <strong>البريد:</strong> ${contact.email || '-'}<br>
+        <strong>البلد:</strong> ${country}<br>
+        <strong>الرصيد:</strong> ${balance}<br>
+        <strong>عدد المكالمات:</strong> ${contact.totalCalls || 0}<br>
+        <strong>آخر مكالمة:</strong> ${contact.lastCallDate ? new Date(contact.lastCallDate).toLocaleDateString('ar-EG') : 'لا توجد'}<br>
+        <strong>ملاحظات:</strong> ${notes}<br>
+    `;
+    
+    alert(detailsHTML.replace(/<br>/g, '\n').replace(/<strong>|<\/strong>/g, ''));
+}
+
+// عرض ملفات جهة الاتصال (placeholder)
+function viewContactFiles(contactId) {
+    alert('🗂️ قريباً: عرض ملفات جهة الاتصال\n\nهذه الميزة قيد التطوير');
+}
+
+// فتح واتساب
+function openWhatsApp(phone) {
+    if (!phone) {
+        alert('رقم الهاتف غير متوفر');
+        return;
+    }
+    
+    // تنظيف رقم الهاتف من الرموز غير الرقمية
+    const cleanPhone = phone.replace(/[^0-9+]/g, '');
+    const whatsappURL = `https://wa.me/${cleanPhone}`;
+    
+    window.open(whatsappURL, '_blank');
+    console.log('📱 فتح واتساب:', cleanPhone);
+}
+
+// تحديث تصنيف جهة الاتصال
+async function updateContactCategory(contactId, category) {
+    if (!category) return;
+    
+    const contact = _cachedContacts.find(c => (c._id || c.id || c.contactId) === contactId);
+    if (!contact) return;
+    
+    try {
+        const companyId = sessionStorage.getItem('companyId');
+        const updatedBy = sessionStorage.getItem('username') || 'unknown';
+        
+        // إضافة التصنيف للـ tags
+        const tags = contact.tags || [];
+        if (!tags.includes(category)) {
+            tags.push(category);
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/contacts`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                companyId, 
+                contactId, 
+                tags,
+                updatedBy 
+            })
+        });
+        
+        if (response.ok) {
+            console.log('✅ تم تحديث التصنيف:', category);
+            // تحديث الـ cache
+            contact.tags = tags;
+        } else {
+            console.error('❌ فشل تحديث التصنيف');
+        }
+    } catch (error) {
+        console.error('خطأ في تحديث التصنيف:', error);
     }
 }
 
@@ -3721,20 +3864,23 @@ if (contactSearch) {
         table.innerHTML = `
             <thead>
                 <tr>
-                    <th class="col-avatar"></th>
+                    <th class="col-number">#</th>
+                    <th class="col-avatar">الصورة</th>
                     <th class="col-name">الاسم</th>
                     <th class="col-phone">الموبايل</th>
                     <th class="col-email">البريد الإلكتروني</th>
                     <th class="col-country">البلد</th>
                     <th class="col-balance">الرصيد</th>
+                    <th class="col-rating">التقييم</th>
+                    <th class="col-category">التصنيف</th>
                     <th class="col-date">تاريخ الإضافة</th>
-                    <th class="col-actions">إجراءات</th>
+                    <th class="col-actions">الإجراءات</th>
                 </tr>
             </thead>
             <tbody></tbody>
         `;
         const tbody = table.querySelector('tbody');
-        filtered.forEach(c => tbody.appendChild(_renderContactItem(c)));
+        filtered.forEach((c, index) => tbody.appendChild(_renderContactItem(c, index)));
         container.appendChild(table);
     });
 }

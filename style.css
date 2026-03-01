@@ -1422,12 +1422,20 @@ body::after {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: #1e2433;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .contacts-header h2 {
-    color: #fff;
+    color: #ccd6f6;
     margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 .add-contact-btn {
@@ -1454,17 +1462,24 @@ body::after {
 
 .search-box input {
     width: 100%;
-    padding: 12px 40px 12px 15px;
-    border: 2px solid #e0e0e0;
+    padding: 14px 45px 14px 18px;
+    background: #1e2433;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     font-size: 14px;
+    color: #ccd6f6;
     transition: all 0.3s;
+}
+
+.search-box input::placeholder {
+    color: rgba(168, 178, 209, 0.5);
 }
 
 .search-box input:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: rgba(102, 126, 234, 0.6);
+    background: #252b3d;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
 }
 
 .search-icon {
@@ -1597,29 +1612,33 @@ body::after {
 /* جدول جهات الاتصال الاحترافي */
 .contacts-table {
     width: 100%;
-    border-collapse: collapse;
-    background: rgba(255, 255, 255, 0.05);
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #1a1f2e;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .contacts-table thead {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+    background: #252b3d;
     position: sticky;
     top: 0;
     z-index: 10;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.3);
 }
 
 .contacts-table th {
-    padding: 14px 12px;
+    padding: 16px 12px;
     text-align: right;
-    font-weight: 600;
-    font-size: 13px;
-    color: #ffffff;
+    font-weight: 700;
+    font-size: 12px;
+    color: #a8b2d1;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    letter-spacing: 1px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .contacts-table th.sortable {
@@ -1641,24 +1660,26 @@ body::after {
 }
 
 .contacts-table tbody tr {
-    transition: all 0.2s;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.25s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: #1e2433;
 }
 
 .contacts-table tbody tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.02);
+    background: #1a1f2e;
 }
 
 .contacts-table tbody tr:hover {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(240, 147, 251, 0.08));
-    transform: scale(1.01);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: #252b3d;
+    box-shadow: inset 0 0 0 1px rgba(102, 126, 234, 0.3);
 }
 
 .contacts-table td {
-    padding: 12px;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.9);
+    padding: 14px 12px;
+    font-size: 13px;
+    color: #ccd6f6;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
 }
 
 .col-avatar {
@@ -1704,6 +1725,16 @@ body::after {
     min-width: 100px;
     font-weight: 600;
     color: #1dd1a1;
+}
+
+.col-rating {
+    min-width: 110px;
+    text-align: center;
+}
+
+.col-category {
+    min-width: 130px;
+    text-align: center;
 }
 
 .col-date {
@@ -1758,6 +1789,197 @@ body::after {
     box-shadow: 0 3px 10px rgba(250, 112, 154, 0.4);
 }
 
+/* ─── Premium CRM Enhancements ─────────────────────────────────────────────── */
+/* Multi-colored Avatars */
+.contact-avatars-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.contact-avatar-multi {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    border: 2px solid #1a1f2e;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-gradient-1 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.avatar-gradient-2 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.avatar-gradient-3 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.avatar-gradient-4 { background: linear-gradient(135deg, #fa709a, #fee140); }
+.avatar-gradient-5 { background: linear-gradient(135deg, #30cfd0, #330867); }
+.avatar-gradient-6 { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+.avatar-gradient-7 { background: linear-gradient(135deg, #ff9a56, #ff6a88); }
+.avatar-gradient-8 { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+/* Status Badges */
+.contact-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-active {
+    background: rgba(67, 233, 123, 0.15);
+    color: #43e97b;
+    border: 1px solid rgba(67, 233, 123, 0.3);
+}
+
+.badge-inactive {
+    background: rgba(160, 170, 180, 0.15);
+    color: #a0aab4;
+    border: 1px solid rgba(160, 170, 180, 0.3);
+}
+
+.badge-premium {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.badge-new {
+    background: rgba(79, 172, 254, 0.15);
+    color: #4facfe;
+    border: 1px solid rgba(79, 172, 254, 0.3);
+}
+
+.badge-vip {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.2), rgba(233, 30, 99, 0.2));
+    color: #e91e63;
+    border: 1px solid rgba(233, 30, 99, 0.4);
+}
+
+/* Category Dropdown Style */
+.contact-category-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #ccd6f6;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.contact-category-select:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(102, 126, 234, 0.4);
+}
+
+.contact-category-select option {
+    background: #252b3d;
+    color: #ccd6f6;
+}
+
+/* Enhanced Action Buttons */
+.col-actions {
+    min-width: 200px;
+    text-align: center;
+}
+
+.table-action-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.25s;
+    margin: 0 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-action-btn.list-btn {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.table-action-btn.list-btn:hover {
+    background: rgba(102, 126, 234, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.table-action-btn.file-btn {
+    background: rgba(156, 39, 176, 0.15);
+    color: #9c27b0;
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+.table-action-btn.file-btn:hover {
+    background: rgba(156, 39, 176, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+}
+
+.table-action-btn.whatsapp-btn {
+    background: rgba(37, 211, 102, 0.15);
+    color: #25d366;
+    border: 1px solid rgba(37, 211, 102, 0.3);
+}
+
+.table-action-btn.whatsapp-btn:hover {
+    background: rgba(37, 211, 102, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+.table-action-btn.notes-btn {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.table-action-btn.notes-btn:hover {
+    background: rgba(255, 152, 0, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+/* Row Number Column */
+.col-number {
+    width: 50px;
+    text-align: center;
+    font-weight: 700;
+    color: #667eea;
+    font-size: 14px;
+}
+
+/* Rating Stars */
+.contact-rating {
+    display: inline-flex;
+    gap: 2px;
+    font-size: 14px;
+}
+
+.contact-rating .star {
+    color: #ffc107;
+}
+
+.contact-rating .star.empty {
+    color: rgba(255, 255, 255, 0.15);
+}
+
+/* ─── End Premium CRM Enhancements ──────────────────────────────────────────── */
+
 /* Responsive للجدول */
 @media (max-width: 1024px) {
     .contacts-table {
@@ -1770,8 +1992,15 @@ body::after {
     }
     
     .col-email,
-    .col-date {
+    .col-date,
+    .col-rating,
+    .col-category {
         display: none; /* إخفاء أعمدة أقل أهمية على الشاشات الصغيرة */
+    }
+    
+    .table-action-btn.file-btn,
+    .table-action-btn.notes-btn {
+        display: none; /* إخفاء بعض الأزرار */
     }
 }
 

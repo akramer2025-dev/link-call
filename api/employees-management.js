@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// استخدام نفس Redis configuration من companies.js
+// استخدام نفس Redis setup الموجود في companies.js
 let redis;
 let redisAvailable = false;
 try {
@@ -15,13 +15,17 @@ try {
             token: redisToken,
         });
         redisAvailable = true;
-        console.log('✅ Employees Management: Redis initialized');
+        console.log('✅ Employees API: Redis initialized');
     } else {
-        console.log('⚠️ Employees Management: Redis credentials not available, using file storage');
+        console.log('⚠️ Employees API: Redis not available, using local file storage');
     }
 } catch (error) {
-    console.log('⚠️ Employees Management: Redis initialization error:', error.message);
+    console.log('⚠️ Employees API: Redis initialization failed:', error.message);
 }
+
+// Database files
+const companiesFile = path.join(__dirname, '../companies.json');
+const employeesFile = path.join(__dirname, '../employees.json');
 
 // قائمة الصلاحيات المتاحة
 const availablePermissions = [
@@ -60,7 +64,7 @@ const availablePermissions = [
     { id: 'view_work_schedule', name: 'عرض جدول العمل', category: 'general' }
 ];
 
-// دوال مساعدة للتعامل مع Data Storage
+// دوال مساعدة للتعامل مع Data Storage - نفس الطريقة في companies.js
 async function getEmployeesData() {
     // Try Redis first (Vercel production)
     if (redisAvailable && redis && process.env.VERCEL) {
@@ -70,31 +74,23 @@ async function getEmployeesData() {
                 console.log(`✅ Read ${data.employees.length} employees from Redis`);
                 return data;
             } else {
-                // Redis is empty, try to initialize from file
-                console.log('⚠️ Redis is empty, attempting auto-initialization from file...');
-                try {
-                    const employeesFile = path.join(__dirname, '..', 'employees.json');
-                    if (fs.existsSync(employeesFile)) {
-                        const raw = fs.readFileSync(employeesFile, 'utf8');
-                        const fileData = JSON.parse(raw);
-                        
-                        // Save to Redis
-                        await redis.set('employees_data', fileData);
-                        console.log(`✅ Auto-initialized Redis with ${fileData.employees.length} employees from file`);
-                        return fileData;
-                    }
-                } catch (initError) {
-                    console.error('❌ Auto-initialization failed:', initError);
+                // Redis is empty - initialize from file on first access
+                console.log('⚠️ Redis empty, initializing from file...');
+                if (fs.existsSync(employeesFile)) {
+                    const raw = fs.readFileSync(employeesFile, 'utf8');
+                    const fileData = JSON.parse(raw);
+                    await redis.set('employees_data', fileData);
+                    console.log(`✅ Initialized Redis with ${fileData.employees.length} employees`);
+                    return fileData;
                 }
             }
         } catch (e) {
-            console.error('❌ Redis read error:', e);
+            console.error('❌ Redis read error in employees:', e);
         }
     }
     
     // Fallback: local file
     try {
-        const employeesFile = path.join(__dirname, '..', 'employees.json');
         if (fs.existsSync(employeesFile)) {
             const raw = fs.readFileSync(employeesFile, 'utf8');
             const data = JSON.parse(raw);
@@ -113,19 +109,18 @@ async function saveEmployeesData(data) {
     if (redisAvailable && redis && process.env.VERCEL) {
         try {
             await redis.set('employees_data', data);
-            console.log('✅ Saved employees data to Redis');
+            console.log('✅ Saved employees to Redis');
             return true;
         } catch (e) {
-            console.error('❌ Redis write error:', e);
+            console.error('❌ Redis write error in employees:', e);
             return false;
         }
     }
     
     // Save to file locally
     try {
-        const employeesFile = path.join(__dirname, '..', 'employees.json');
         fs.writeFileSync(employeesFile, JSON.stringify(data, null, 2), 'utf8');
-        console.log('✅ Saved employees data to file');
+        console.log('✅ Saved employees to file');
         return true;
     } catch (error) {
         console.error('❌ Error saving employees file:', error);
@@ -376,57 +371,7 @@ async function deleteEmployee(req, res) {
     }
 }
 
-// Helper function to parse request body (required for Vercel serverless)
-async function parseBody(req) {
-    return new Promise((resolve, reject) => {
-        let body = '';
-        req.on('data', chunk => {
-            body += chunk.toString();
-        });
-        req.on('end', () => {
-            try {
-                resolve(body ? JSON.parse(body) : {});
-            } catch (e) {
-                reject(e);
-            }
-        });
-        req.on('error', reject);
-    });
-}
-
-// Initialize Redis from local file (one-time setup)
-async function initializeFromFile(req, res) {
-    try {
-        if (!redisAvailable || !redis) {
-            return res.status(500).json({
-                success: false,
-                message: 'Redis not available'
-            });
-        }
-        
-        // Read from local file
-        const employeesFile = path.join(__dirname, '..', 'employees.json');
-        const raw = fs.readFileSync(employeesFile, 'utf8');
-        const data = JSON.parse(raw);
-        
-        // Save to Redis
-        await redis.set('employees_data', data);
-        
-        console.log(`✅ Initialized Redis with ${data.employees.length} employees`);
-        res.json({
-            success: true,
-            message: `Initialized with ${data.employees.length} employees`
-        });
-    } catch (error) {
-        console.error('❌ Initialization error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-}
-
-// Router رئيسي
+// Router رئيسي - نفس الطريقة في companies.js
 module.exports = async (req, res) => {
     const { method } = req;
     const url = req.url || '';
@@ -442,37 +387,13 @@ module.exports = async (req, res) => {
     }
     
     try {
-        // Parse body for POST/PUT requests (Vercel serverless compatibility)
-        if (method === 'POST' || method === 'PUT') {
-            if (!req.body || Object.keys(req.body).length === 0) {
-                console.log('⚠️ Body empty or not parsed, attempting manual parse...');
-                try {
-                    req.body = await parseBody(req);
-                    console.log('📦 Manually parsed request body');
-                } catch (parseError) {
-                    console.error('❌ Body parse error:', parseError);
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Invalid request body - must be valid JSON'
-                    });
-                }
-            } else {
-                console.log('✅ Body already parsed by Vercel runtime');
-            }
-        }
-        
-        // GET /api/employees-management/init - Initialize Redis from file
-        if (method === 'GET' && url.includes('/init')) {
-            return await initializeFromFile(req, res);
-        }
-        
         // GET /api/employees-management/permissions
         if (method === 'GET' && url.includes('/permissions')) {
             return await getPermissions(req, res);
         }
         
         // GET /api/employees-management?companyId=x
-        if (method === 'GET' && !url.includes('/permissions') && !url.includes('/init')) {
+        if (method === 'GET' && !url.includes('/permissions')) {
             return await getEmployees(req, res);
         }
         
@@ -483,7 +404,6 @@ module.exports = async (req, res) => {
         
         // PUT /api/employees-management/:id
         if (method === 'PUT') {
-            // استخراج ID من الـ URL
             const match = url.match(/\/api\/employees-management\/(\d+)/);
             if (match) {
                 req.params = { id: match[1] };
@@ -493,7 +413,6 @@ module.exports = async (req, res) => {
         
         // DELETE /api/employees-management/:id
         if (method === 'DELETE') {
-            // استخراج ID من الـ URL
             const match = url.match(/\/api\/employees-management\/(\d+)/);
             if (match) {
                 req.params = { id: match[1] };
@@ -506,18 +425,16 @@ module.exports = async (req, res) => {
             message: 'Endpoint not found'
         });
     } catch (error) {
-        console.error('❌ خطأ في employees-management API:', error);
-        console.error('Stack trace:', error.stack);
+        console.error('❌ Fatal error in employees API:', error);
+        console.error('Stack:', error.stack);
         res.status(500).json({
             success: false,
-            message: error.message,
-            error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            message: error.message
         });
     }
 };
 
 // تصدير الدوال للاستخدام المباشر
-module.exports.initializeFromFile = initializeFromFile;
 module.exports.getPermissions = getPermissions;
 module.exports.getEmployees = getEmployees;
 module.exports.addEmployee = addEmployee;

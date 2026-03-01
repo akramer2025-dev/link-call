@@ -2999,48 +2999,110 @@ async function loadContacts() {
 }
 
 // إضافة جهة اتصال
-async function addContact() {
-    const name = prompt('أدخل اسم جهة الاتصال:');
-    if (!name || !name.trim()) return;
+// ─── مودال إضافة جهة اتصال ───────────────────────────────────────────────────
+function addContact() {
+    // مسح القيم والأخطاء
+    ['nc-name','nc-phone','nc-email','nc-notes'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    ['nc-name-err','nc-phone-err','nc-error-banner'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    const btn = document.getElementById('nc-submit-btn');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    document.getElementById('nc-submit-text').textContent = 'حفظ جهة الاتصال';
+    document.getElementById('nc-submit-icon').textContent = '✓';
 
-    const phone = prompt('أدخل رقم الهاتف:');
-    if (!phone || !phone.trim()) return;
+    // إظهار المودال
+    const modal = document.getElementById('add-contact-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => { const el = document.getElementById('nc-name'); if (el) el.focus(); }, 80);
+}
+
+function closeAddContactModal() {
+    const modal = document.getElementById('add-contact-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+// إغلاق عند النقر خارج المودال
+document.getElementById('add-contact-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddContactModal();
+});
+
+async function submitAddContact() {
+    // تنظيف سابق
+    ['nc-name-err','nc-phone-err','nc-error-banner'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+
+    const name  = (document.getElementById('nc-name')?.value  || '').trim();
+    const phone = (document.getElementById('nc-phone')?.value || '').trim();
+    const email = (document.getElementById('nc-email')?.value || '').trim();
+    const notes = (document.getElementById('nc-notes')?.value || '').trim();
+
+    let valid = true;
+    if (!name)  { document.getElementById('nc-name-err').style.display  = 'block'; valid = false; }
+    if (!phone) { document.getElementById('nc-phone-err').style.display = 'block'; valid = false; }
+    if (!valid) return;
 
     const companyId = sessionStorage.getItem('companyId');
     const addedBy   = sessionStorage.getItem('username') || 'unknown';
 
     if (!companyId) {
-        alert('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً');
+        showContactError('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً');
         return;
     }
 
+    // حالة التحميل
+    const btn = document.getElementById('nc-submit-btn');
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    document.getElementById('nc-submit-text').textContent = 'جاري الحفظ...';
+    document.getElementById('nc-submit-icon').textContent = '⏳';
+
     try {
-        const baseUrl = API_BASE_URL;
-        const response = await fetch(`${baseUrl}/api/contacts`, {
+        const response = await fetch(`${API_BASE_URL}/api/contacts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                companyId,
-                name: name.trim(),
-                phone: phone.trim(),
-                addedBy,
-                device: 'web'
-            })
+            body: JSON.stringify({ companyId, name, phone, email: email || null, notes: notes || '', addedBy, device: 'web' })
         });
 
         const data = await response.json();
 
         if (response.ok && data.success) {
-            console.log('✅ تمت إضافة جهة الاتصال إلى Firestore');
-            loadContacts();
+            document.getElementById('nc-submit-text').textContent = 'تمت الإضافة!';
+            document.getElementById('nc-submit-icon').textContent = '✅';
+            btn.style.background = 'linear-gradient(135deg,#43e97b,#38f9d7)';
+            btn.style.opacity = '1';
+            setTimeout(() => {
+                closeAddContactModal();
+                loadContacts();
+            }, 900);
         } else {
-            throw new Error(data.error || 'فشل في إضافة جهة الاتصال');
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            document.getElementById('nc-submit-text').textContent = 'حفظ جهة الاتصال';
+            document.getElementById('nc-submit-icon').textContent = '✓';
+            showContactError(data.error || 'فشل في إضافة جهة الاتصال');
         }
     } catch (error) {
-        console.error('خطأ في إضافة جهة الاتصال:', error);
-        alert('فشل في إضافة جهة الاتصال: ' + error.message);
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        document.getElementById('nc-submit-text').textContent = 'حفظ جهة الاتصال';
+        document.getElementById('nc-submit-icon').textContent = '✓';
+        showContactError('خطأ في الاتصال بالخادم: ' + error.message);
     }
 }
+
+function showContactError(msg) {
+    const el = document.getElementById('nc-error-banner');
+    if (el) { el.textContent = '⚠ ' + msg; el.style.display = 'block'; }
+}
+
+
 
 // حذف جهة اتصال (soft delete - لا تُمسح من Firestore)
 async function deleteContact(contactId, contactName) {

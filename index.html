@@ -793,7 +793,7 @@
     </script>
     <!-- App Script - REST API Mode -->
     <script src="js/i18n.js"></script>
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=11"></script>
     
     <script>
         // إنشاء النجوم المتحركة
@@ -852,5 +852,79 @@
         // تغيير الصورة كل 6 ثواني
         setInterval(nextSlide, 6000);
     </script>
+
+    <!-- ════════ مودال إضافة جهة اتصال ════════ -->
+    <div id="add-contact-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#1e2433; border-radius:18px; padding:28px 28px 24px; width:min(420px,94vw); box-shadow:0 20px 60px rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.08); font-family:inherit; direction:rtl;">
+            <!-- Header -->
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; font-size:18px;">👤</div>
+                    <div>
+                        <div style="color:#fff; font-size:16px; font-weight:700;">إضافة جهة اتصال</div>
+                        <div style="color:#8892a4; font-size:12px;">أدخل بيانات جهة الاتصال الجديدة</div>
+                    </div>
+                </div>
+                <button onclick="closeAddContactModal()" style="background:rgba(255,255,255,.08); border:none; color:#8892a4; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+
+            <!-- Form -->
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <!-- الاسم -->
+                <div>
+                    <label style="color:#a0aab8; font-size:13px; font-weight:600; display:block; margin-bottom:6px;">الاسم <span style="color:#ef5350;">*</span></label>
+                    <input id="nc-name" type="text" placeholder="مثال: أحمد محمد" autocomplete="off"
+                        style="width:100%; box-sizing:border-box; background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.1); border-radius:10px; padding:11px 14px; color:#fff; font-size:14px; outline:none; transition:.2s;"
+                        onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+                    <div id="nc-name-err" style="color:#ef5350; font-size:11px; margin-top:4px; display:none;">⚠ هذا الحقل مطلوب</div>
+                </div>
+
+                <!-- رقم الهاتف -->
+                <div>
+                    <label style="color:#a0aab8; font-size:13px; font-weight:600; display:block; margin-bottom:6px;">رقم الهاتف <span style="color:#ef5350;">*</span></label>
+                    <input id="nc-phone" type="tel" placeholder="مثال: +966501234567" autocomplete="off" dir="ltr"
+                        style="width:100%; box-sizing:border-box; background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.1); border-radius:10px; padding:11px 14px; color:#fff; font-size:14px; outline:none; transition:.2s; text-align:right;"
+                        onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+                    <div id="nc-phone-err" style="color:#ef5350; font-size:11px; margin-top:4px; display:none;">⚠ هذا الحقل مطلوب</div>
+                </div>
+
+                <!-- البريد الإلكتروني -->
+                <div>
+                    <label style="color:#a0aab8; font-size:13px; font-weight:600; display:block; margin-bottom:6px;">البريد الإلكتروني <span style="color:#8892a4; font-weight:400;">(اختياري)</span></label>
+                    <input id="nc-email" type="email" placeholder="example@domain.com" autocomplete="off" dir="ltr"
+                        style="width:100%; box-sizing:border-box; background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.1); border-radius:10px; padding:11px 14px; color:#fff; font-size:14px; outline:none; transition:.2s; text-align:right;"
+                        onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+                </div>
+
+                <!-- ملاحظات -->
+                <div>
+                    <label style="color:#a0aab8; font-size:13px; font-weight:600; display:block; margin-bottom:6px;">ملاحظات <span style="color:#8892a4; font-weight:400;">(اختياري)</span></label>
+                    <textarea id="nc-notes" rows="3" placeholder="أي معلومات إضافية عن جهة الاتصال..."
+                        style="width:100%; box-sizing:border-box; background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.1); border-radius:10px; padding:11px 14px; color:#fff; font-size:14px; outline:none; resize:vertical; transition:.2s; min-height:72px;"
+                        onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"></textarea>
+                </div>
+            </div>
+
+            <!-- Error Banner -->
+            <div id="nc-error-banner" style="display:none; background:rgba(239,83,80,.12); border:1px solid rgba(239,83,80,.35); border-radius:10px; padding:10px 14px; color:#ef9a9a; font-size:13px; margin-top:14px;"></div>
+
+            <!-- Buttons -->
+            <div style="display:flex; gap:10px; margin-top:22px;">
+                <button onclick="closeAddContactModal()"
+                    style="flex:1; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:11px; color:#a0aab8; font-size:14px; cursor:pointer; transition:.2s;"
+                    onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
+                    إلغاء
+                </button>
+                <button id="nc-submit-btn" onclick="submitAddContact()"
+                    style="flex:2; background:linear-gradient(135deg,#667eea,#764ba2); border:none; border-radius:10px; padding:11px; color:#fff; font-size:14px; font-weight:700; cursor:pointer; transition:.2s; display:flex; align-items:center; justify-content:center; gap:7px;">
+                    <span id="nc-submit-icon">✓</span>
+                    <span id="nc-submit-text">حفظ جهة الاتصال</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ════════════════════════════════════════ -->
+
 </body>
 </html>
+

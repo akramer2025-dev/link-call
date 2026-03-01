@@ -1920,20 +1920,62 @@ function applyRoleBasedVisibility() {
             loadEmployeeProfile();
         }
     } else {
-        // المدير العادي يرى فقط تعديل ملفه الشخصي
-        if (employeesSection) employeesSection.style.display = 'none';
-        if (adminAccountSection) adminAccountSection.style.display = 'none';
-        if (adminAudioSection) adminAudioSection.style.display = 'none';
-        if (pricingSection) pricingSection.style.display = 'none';
-        if (adminPanelSection) adminPanelSection.style.display = 'none';
-        if (adminDashboardSection) adminDashboardSection.style.display = 'none';
-        if (companyAdminSection) companyAdminSection.style.display = 'none';
-        if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'none';
-        if (companyReportsNavBtn) companyReportsNavBtn.style.display = 'none';
-        if (companyCrmNavBtn) companyCrmNavBtn.style.display = 'none';
-        if (balanceHeader) balanceHeader.style.display = 'none';
-        if (balanceSection) balanceSection.style.display = 'none';
-        if (mobileBalance) mobileBalance.style.display = 'none';
+        // ─── موظف الشركة ─── الصلاحيات تحدد ما يراه
+        const permsRaw = sessionStorage.getItem('permissions');
+        let perms = [];
+        try {
+            const parsed = JSON.parse(permsRaw || '[]');
+            perms = Array.isArray(parsed) ? parsed : [];
+        } catch(e) { perms = []; }
+
+        const canMakeCalls      = perms.includes('make_calls');
+        const canViewContacts   = perms.includes('view_contacts');
+        const canViewCalls      = perms.includes('view_calls');
+        const canViewRecordings = perms.includes('listen_recordings');
+        const canViewReports    = perms.includes('view_reports');
+        const canManageEmployees= perms.includes('manage_employees');
+
+        console.log('👤 موظف الشركة - الصلاحيات:', perms);
+
+        // إخفاء كل أقسام إدارة المطور / مدير الشركة
+        if (employeesSection)       employeesSection.style.display       = 'none';
+        if (adminAccountSection)    adminAccountSection.style.display    = 'none';
+        if (adminAudioSection)      adminAudioSection.style.display      = 'none';
+        if (pricingSection)         pricingSection.style.display         = 'none';
+        if (adminPanelSection)      adminPanelSection.style.display      = 'none';
+        if (adminDashboardSection)  adminDashboardSection.style.display  = 'none';
+        if (companyAdminSection)    companyAdminSection.style.display    = 'none';
+        if (balanceHeader)          balanceHeader.style.display          = 'none';
+        if (balanceSection)         balanceSection.style.display         = 'none';
+        if (mobileBalance)          mobileBalance.style.display          = 'none';
+
+        // ── أزرار التنقل الجانبية ─ حسب الصلاحيات فقط ──
+        if (manageEmployeesNavBtn)
+            manageEmployeesNavBtn.style.display = canManageEmployees ? 'flex' : 'none';
+        if (companyReportsNavBtn)
+            companyReportsNavBtn.style.display  = canViewReports    ? 'flex' : 'none';
+        if (companyCrmNavBtn)
+            companyCrmNavBtn.style.display      = canViewContacts   ? 'flex' : 'none';
+
+        // ── أزرار القائمة الرئيسية ─ حسب الصلاحيات ──
+        const contactsBtn    = document.getElementById('contacts-btn');
+        const callHistoryBtn = document.getElementById('call-history-btn');
+        const recordingsBtn  = document.getElementById('recordings-btn');
+
+        if (contactsBtn)    contactsBtn.style.display    = canViewContacts   ? 'flex' : 'none';
+        if (callHistoryBtn) callHistoryBtn.style.display = canViewCalls      ? 'flex' : 'none';
+        if (recordingsBtn)  recordingsBtn.style.display  = canViewRecordings ? 'flex' : 'none';
+
+        // ── الديالر: اخفِه إن لم يكن لديه صلاحية الاتصال ──
+        const dialpadEl = document.getElementById('dialpad');
+        if (dialpadEl) dialpadEl.style.display = canMakeCalls ? 'flex' : 'none';
+
+        // ── رسالة ترحيب إن لم يكن لديه أي صلاحية ──
+        if (!canMakeCalls && perms.length === 0) {
+            console.warn('⚠️ الموظف ليس لديه أي صلاحيات مضافة بعد');
+        }
+
+        // ── الملف الشخصي دائماً ظاهر ──
         if (employeeProfileSection) {
             employeeProfileSection.style.display = 'block';
             loadEmployeeProfile();

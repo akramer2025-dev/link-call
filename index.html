@@ -409,7 +409,7 @@
                     </div>
 
                     <!-- قسم لوحة التحكم (للمطور فقط) -->
-                    <div class="settings-section" id="admin-panel-section">
+                    <div class="settings-section" id="admin-panel-section" style="display: none;">
                         <h4>🛠️ لوحة تحكم المطور</h4>
                         <div class="setting-item" style="flex-direction: column; gap: 10px;">
                             <a href="admin.html" style="display: inline-block; width: 100%; padding: 12px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; border-radius: 10px; text-decoration: none; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'">
@@ -417,6 +417,17 @@
                             </a>
                             <a href="manage-employees.html" style="display: inline-block; width: 100%; padding: 12px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center; border-radius: 10px; text-decoration: none; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(245, 87, 108, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(245, 87, 108, 0.4)'">
                                 👥 إدارة الموظفين
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- قسم إدارة الموظفين (لمدير الشركة فقط) -->
+                    <div class="settings-section" id="company-admin-section" style="display: none;">
+                        <h4>👥 إدارة الموظفين</h4>
+                        <p style="color: #888; font-size: 13px; margin-bottom: 15px;">إضافة وإدارة موظفين الشركة</p>
+                        <div class="setting-item" style="flex-direction: column; gap: 10px;">
+                            <a href="manage-employees.html" style="display: inline-block; width: 100%; padding: 12px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-align: center; border-radius: 10px; text-decoration: none; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(16, 185, 129, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(16, 185, 129, 0.4)'">
+                                ✅ إدارة موظفين شركتك
                             </a>
                         </div>
                     </div>
@@ -577,8 +588,8 @@
                         </div>
                     </div>
 
-                    <!-- زر لوحة التحكم (للمديرين فقط) -->
-                    <div class="settings-section admin-control-section" id="admin-dashboard-section">
+                    <!-- زر لوحة التحكم (للمطور فقط) -->
+                    <div class="settings-section admin-control-section" id="admin-dashboard-section" style="display: none;">
                         <h4>🛠️ لوحة التحكم</h4>
                         <p style="color: #888; font-size: 13px; margin-bottom: 15px;">إدارة الموظفين والتقارير والإحصائيات</p>
                         <a href="admin.html" class="btn-admin-dashboard" id="go-admin-btn">

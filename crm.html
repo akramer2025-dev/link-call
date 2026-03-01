@@ -627,6 +627,29 @@
         </div>
     </div>
     
+    <!-- Edit Contact Modal -->
+    <div id="edit-contact-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#1a1f2e;padding:30px;border-radius:12px;width:90%;max-width:500px;border:1px solid rgba(255,255,255,0.1);">
+            <h2 style="color:#ccd6f6;margin-bottom:20px;">✏️ تعديل العميل</h2>
+            <input type="hidden" id="edit-contact-id">
+            <div style="display:flex;flex-direction:column;gap:15px;">
+                <input type="text" id="edit-contact-name" placeholder="الاسم *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="text" id="edit-contact-phone" placeholder="رقم الموبايل *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="email" id="edit-contact-email" placeholder="البريد الإلكتروني" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="text" id="edit-contact-country" placeholder="البلد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="text" id="edit-contact-balance" placeholder="الرصيد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <button onclick="updateContact()" style="flex:1;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:white;font-weight:700;cursor:pointer;">
+                        ✓ حفظ التعديلات
+                    </button>
+                    <button onclick="hideEditContactModal()" style="flex:1;padding:12px;border:none;border-radius:8px;background:#1e2433;color:#a8b2d1;font-weight:700;cursor:pointer;">
+                        ✕ إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Progress Modal -->
     <div id="progress-modal" class="progress-modal">
         <div class="progress-content">
@@ -1099,11 +1122,99 @@
         }
         
         function openCallPage(phone) {
-            window.location.href = `index.html?call=${encodeURIComponent(phone)}`;
+            // Navigate to main page with call parameter
+            window.location.href = `index.html#dialpad?call=${encodeURIComponent(phone)}`;
         }
         
         function editContact(contactId) {
-            alert('تعديل العميل: ' + contactId + '\n\nهذه الميزة قيد التطوير');
+            // Find contact in cached array
+            const contact = _allContacts.find(c => 
+                (c._id || c.id || c.contactId || '').toString() === contactId.toString()
+            );
+            
+            if (!contact) {
+                alert('⚠️ لم يتم العثور على جهة الاتصال');
+                return;
+            }
+            
+            // Extract country and balance from notes
+            const notes = contact.notes || '';
+            const countryMatch = notes.match(/Country:\s*([^|]+)/);
+            const balanceMatch = notes.match(/Balance:\s*([^|]+)/);
+            const country = countryMatch ? countryMatch[1].trim().replace(' | Source', '') : '';
+            const balance = balanceMatch ? balanceMatch[1].trim().replace(/\s*\|.*$/, '') : '';
+            
+            // Fill edit modal
+            document.getElementById('edit-contact-id').value = contactId;
+            document.getElementById('edit-contact-name').value = contact.name || '';
+            document.getElementById('edit-contact-phone').value = contact.phone || '';
+            document.getElementById('edit-contact-email').value = contact.email || '';
+            document.getElementById('edit-contact-country').value = country;
+            document.getElementById('edit-contact-balance').value = balance;
+            
+            // Show modal
+            document.getElementById('edit-contact-modal').style.display = 'flex';
+        }
+        
+        function hideEditContactModal() {
+            document.getElementById('edit-contact-modal').style.display = 'none';
+        }
+        
+        async function updateContact() {
+            const contactId = document.getElementById('edit-contact-id').value;
+            const name = document.getElementById('edit-contact-name').value.trim();
+            const phone = document.getElementById('edit-contact-phone').value.trim();
+            const email = document.getElementById('edit-contact-email').value.trim();
+            const country = document.getElementById('edit-contact-country').value.trim();
+            const balance = document.getElementById('edit-contact-balance').value.trim();
+            
+            if (!name || !phone) {
+                alert('⚠️ الاسم ورقم الموبايل مطلوبان!');
+                return;
+            }
+            
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            if (!companyId) {
+                alert('⚠️ خطأ في جلب معرف الشركة');
+                return;
+            }
+            
+            // Build notes with preserved source info
+            const oldContact = _allContacts.find(c => 
+                (c._id || c.id || c.contactId || '').toString() === contactId.toString()
+            );
+            const oldNotes = oldContact?.notes || '';
+            const sourceMatch = oldNotes.match(/Source:\s*(.+)/);
+            const source = sourceMatch ? sourceMatch[1].trim() : 'Manual';
+            
+            const notes = `Country: ${country || '-'} | Balance: ${balance || '0'} | Source: ${source}`;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/contacts`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        companyId,
+                        contactId,
+                        name,
+                        phone,
+                        email,
+                        notes
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('✅ تم تحديث العميل بنجاح!');
+                    hideEditContactModal();
+                    loadCRMContacts(); // Reload contacts
+                } else {
+                    const error = await response.json();
+                    alert('❌ خطأ في التحديث: ' + (error.message || 'حاول مرة أخرى'));
+                }
+            } catch (error) {
+                console.error('خطأ في تحديث العميل:', error);
+                alert('❌ خطأ في الاتصال بالسيرفر');
+            }
         }
         
         function deleteContact(contactId, name) {

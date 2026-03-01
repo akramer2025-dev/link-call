@@ -862,6 +862,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(() => {});
         }
     }, 1500);
+    
+    // معالجة الاتصال من CRM أو روابط خارجية
+    setTimeout(() => {
+        // Check URL search params (?call=)
+        const searchParams = new URLSearchParams(window.location.search);
+        const callParam = searchParams.get('call');
+        
+        // Check hash (#dialpad?call=)
+        const hash = window.location.hash;
+        const hashMatch = hash.match(/[?&]call=([^&]+)/);
+        const hashCallParam = hashMatch ? decodeURIComponent(hashMatch[1]) : null;
+        
+        const phoneToCall = callParam || hashCallParam;
+        
+        if (phoneToCall) {
+            console.log('📞 طلب اتصال من CRM:', phoneToCall);
+            
+            // فتح dialpad
+            hideAllSections();
+            removeAllActiveStates();
+            dialpad.classList.remove('hidden');
+            dialpadBtn.classList.add('active');
+            
+            // ملء رقم الهاتف
+            phoneNumber = phoneToCall;
+            displayNumber.textContent = phoneToCall;
+            
+            // اختياري: بدء المكالمة تلقائياً بعد ثانية
+            setTimeout(() => {
+                if (confirm(`هل تريد الاتصال بـ ${phoneToCall}؟`)) {
+                    makeCall();
+                }
+            }, 500);
+            
+            // تنظيف URL
+            if (callParam) {
+                window.history.replaceState({}, '', window.location.pathname + window.location.hash.split('?')[0]);
+            }
+        }
+    }, 1000);
 });
 
 // تصفية خيارات رقم المتصل بناءً على الصلاحيات

@@ -46,6 +46,10 @@
       "continue": true
     },
     {
+      "src": "/api/migrate-to-firestore",
+      "dest": "/api/migrate-to-firestore.js"
+    },
+    {
       "src": "/api/companies/register",
       "dest": "/api/companies.js"
     },

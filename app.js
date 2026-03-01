@@ -1315,7 +1315,27 @@ async function loadRecordings() {
             });
         }
         console.log('👥 تم تحميل بيانات', Object.keys(window.employeesMap).length, 'مدير');
-        
+
+        // ─── تعبئة فلتر الموظف + إظهاره للمدير ───
+        const isAdminOrManager = (userRole === 'admin') || (sessionStorage.getItem('isCompanyAdmin') === 'true');
+        const filterBar = document.getElementById('recordings-filter-bar');
+        if (isAdminOrManager && filterBar) {
+            filterBar.style.display = 'flex';
+            const sel = document.getElementById('rec-emp-filter');
+            if (sel) {
+                sel.innerHTML = '<option value="">كل الموظفين</option>';
+                // جمع الموظفين الموجودين فعلاً في التسجيلات
+                const empIds = [...new Set(recordings.map(r => r.employeeId).filter(Boolean))];
+                empIds.forEach(eid => {
+                    const name = window.employeesMap[eid] || window.employeesMap[String(eid)] || eid;
+                    const opt = document.createElement('option');
+                    opt.value = eid;
+                    opt.textContent = name;
+                    sel.appendChild(opt);
+                });
+            }
+        }
+
         displayRecordings();
         updateRecordingsBadge(recordings.length);
         
@@ -1337,19 +1357,32 @@ function updateRecordingsBadge(count) {
     }
 }
 
+// فلتر التسجيلات بالموظف المختار
+function applyRecordingsFilter() {
+    displayRecordings();
+}
+
 // عرض التسجيلات
 function displayRecordings() {
     recordingsContainer.innerHTML = '';
-    
-    if (recordings.length === 0) {
-        recordingsContainer.innerHTML = '<p style="text-align: center; color: #666;">لا توجد تسجيلات</p>';
+
+    // فلترة الموظف
+    const sel = document.getElementById('rec-emp-filter');
+    const filterEmpId = sel ? sel.value : '';
+    let list = recordings;
+    if (filterEmpId) {
+        list = recordings.filter(r => String(r.employeeId) === String(filterEmpId));
+    }
+
+    if (list.length === 0) {
+        recordingsContainer.innerHTML = '<p style="text-align:center;color:#666;padding:20px">لا توجد تسجيلات</p>';
         return;
     }
-    
+
     // الحصول على اسم المستخدم الحالي
     const currentUser = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'غير معروف';
-    
-    recordings.forEach((recording, index) => {
+
+    list.forEach((recording, index) => {
         const item = document.createElement('div');
         item.className = 'recording-item';
         
@@ -2817,22 +2850,47 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// حفظ المكالمة في السجل المحلي
+// حفظ المكالمة في السجل المحلي + Firestore
 function saveCallToHistory(call) {
     try {
+        // 1) حفظ محلي فوري
         const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
-        calls.unshift(call); // إضافة في البداية
-        
-        // الاحتفاظ بآخر 100 مكالمة فقط
-        if (calls.length > 100) {
-            calls.splice(100);
-        }
-        
+        calls.unshift(call);
+        if (calls.length > 100) calls.splice(100);
         localStorage.setItem('callHistory', JSON.stringify(calls));
-        console.log('✅ تم حفظ المكالمة في السجل');
-        
-        // تحديث الـ badge
         updateCallHistoryBadge();
+
+        // 2) حفظ في Firestore عبر API (للمزامنة بين الأجهزة)
+        const companyId = sessionStorage.getItem('companyId');
+        const employeeId = localStorage.getItem('employeeId') || sessionStorage.getItem('username') || 'unknown';
+        const employeeName = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'unknown';
+        if (companyId) {
+            // البحث عن اسم جهة الاتصال من الكاش
+            let contactName = null;
+            if (_cachedContacts && _cachedContacts.length > 0) {
+                const cleanTo = (call.to || '').replace(/[\s\-+]/g, '');
+                const found = _cachedContacts.find(c => {
+                    const cp = (c.phone || '').replace(/[\s\-+]/g, '');
+                    return cp.includes(cleanTo) || cleanTo.includes(cp);
+                });
+                if (found) contactName = found.name;
+            }
+            fetch(`${API_BASE_URL}/api/call-history`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    companyId,
+                    callData: {
+                        ...call,
+                        employeeId,
+                        employeeName,
+                        contactName: contactName || null,
+                        sid: `call_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+                    }
+                })
+            }).catch(err => console.warn('⚠️ تعذر حفظ المكالمة في Firestore:', err.message));
+        }
+        console.log('✅ تم حفظ المكالمة في السجل');
     } catch (error) {
         console.error('خطأ في حفظ المكالمة:', error);
     }
@@ -2861,79 +2919,110 @@ function updateCallHistoryBadge() {
 // استدعاء تحديث الـ badge عند تحميل الصفحة
 setTimeout(updateCallHistoryBadge, 500);
 
-// تحميل سجل المكالمات
+// تحميل سجل المكالمات من Firestore (للمزامنة بين الأجهزة)
 async function loadCallHistory() {
+    const container = document.getElementById('call-history-container');
+    if (!container) return;
+    container.innerHTML = '<p style="text-align:center;color:#aaa;padding:20px">⏳ جاري التحميل...</p>';
     try {
-        // تحميل المكالمات من localStorage بدلاً من السيرفر
-        const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
-        
-        // تحميل جهات الاتصال لعرض الأسماء
-        const baseUrl = API_BASE_URL;
-        let contacts = [];
-        try {
-            const contactsResponse = await fetch(`${baseUrl}/api/contacts`);
-            const contactsData = await contactsResponse.json();
-            contacts = contactsData.contacts || [];
-        } catch (err) {
-            console.log('لم يتم تحميل جهات الاتصال');
+        const companyId = sessionStorage.getItem('companyId');
+        const userRole   = sessionStorage.getItem('userRole');
+        const isAdmin    = sessionStorage.getItem('isCompanyAdmin') === 'true' || userRole === 'admin';
+        const employeeId = localStorage.getItem('employeeId');
+
+        // ─── جلب المكالمات من Firestore ───
+        let calls = [];
+        if (companyId) {
+            const params = new URLSearchParams({ companyId });
+            if (!isAdmin && employeeId) params.append('employeeId', employeeId);
+            const resp = await fetch(`${API_BASE_URL}/api/call-history?${params}`);
+            const data = await resp.json();
+            calls = data.calls || [];
+            console.log(`📞 سجل المكالمات: ${calls.length} مكالمة من Firestore`);
         }
-        
-        const container = document.getElementById('call-history-container');
-        container.innerHTML = '';
-        
+
+        // ─── fallback: localStorage إذا كانت Firestore فارغة ───
         if (calls.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">📞</div>
-                    <p>لا توجد مكالمات حتى الآن</p>
-                </div>
-            `;
+            calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
+        }
+
+        // ─── جهات الاتصال لعرض الأسماء ───
+        let contacts = _cachedContacts || [];
+        if (contacts.length === 0 && companyId) {
+            try {
+                const cr = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
+                const cd = await cr.json();
+                contacts = cd.contacts || [];
+            } catch (_) {}
+        }
+
+        container.innerHTML = '';
+        if (calls.length === 0) {
+            container.innerHTML = `<div class="empty-state"><div class="empty-icon">📞</div><p>لا توجد مكالمات حتى الآن</p></div>`;
             return;
         }
-        
-        // ترتيب المكالمات من الأحدث للأقدم
-        calls.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-        
+
+        calls.sort((a, b) => new Date(b.startTime || b.createdAt || 0) - new Date(a.startTime || a.createdAt || 0));
+
         calls.forEach(call => {
-            const date = new Date(call.startTime);
-            const formattedDate = date.toLocaleString('ar-EG');
-            const duration = call.duration ? `${call.duration} ثانية` : 'لم تكتمل';
-            
-            const callType = call.direction === 'inbound' ? '📥 واردة' : '📤 صادرة';
-            const statusColor = call.status === 'completed' ? '#4ECDC4' : '#FF6B6B';
-            
-            // البحث عن اسم جهة الاتصال
-            let displayName = call.to;
-            const contact = contacts.find(c => {
-                const cleanContactPhone = c.phone.replace(/[\s-+]/g, '');
-                const cleanCallPhone = call.to.replace(/[\s-+]/g, '');
-                return cleanContactPhone.includes(cleanCallPhone) || cleanCallPhone.includes(cleanContactPhone);
-            });
-            
-            if (contact) {
-                displayName = `👤 ${contact.name}`;
+            const dateStr = call.startTime || call.createdAt;
+            const formattedDate = dateStr ? new Date(dateStr).toLocaleString('ar-EG') : '—';
+            const durationRaw = call.duration;
+            let durationText = 'لم تكتمل';
+            if (durationRaw) {
+                const sec = parseInt(durationRaw);
+                if (!isNaN(sec) && sec > 0) {
+                    const m = Math.floor(sec / 60), s = sec % 60;
+                    durationText = m > 0 ? `${m} د ${s} ث` : `${s} ث`;
+                } else if (durationRaw.includes(':')) {
+                    durationText = durationRaw;
+                }
             }
-            
+
+            const callType   = call.direction === 'inbound' ? '📥 واردة' : '📤 صادرة';
+            const statusColor = call.status === 'completed' ? '#4ECDC4' : '#FF6B6B';
+            const toNum = call.to || '';
+
+            // اسم جهة الاتصال — يُعطى الأولوية لـ contactName المحفوظ في Firestore
+            let displayName = toNum;
+            let isContact   = false;
+            if (call.contactName) {
+                displayName = `👤 ${call.contactName}`;
+                isContact = true;
+            } else if (contacts.length > 0) {
+                const cleanTo = toNum.replace(/[\s\-+]/g, '');
+                const found = contacts.find(c => {
+                    const cp = (c.phone || '').replace(/[\s\-+]/g, '');
+                    return cp.includes(cleanTo) || cleanTo.includes(cp);
+                });
+                if (found) { displayName = `👤 ${found.name}`; isContact = true; }
+            }
+
+            // اسم الموظف
+            const empName = call.employeeName || (window.employeesMap && call.employeeId ? window.employeesMap[call.employeeId] : null) || '';
+
             const item = document.createElement('div');
             item.className = 'call-item';
             item.innerHTML = `
                 <div class="call-item-info">
-                    <div class="call-item-number" style="${contact ? 'color: #5ec4d4; font-weight: 600;' : ''}">${displayName}</div>
-                    ${!contact ? `<div style="font-size: 12px; color: #999;">${call.to}</div>` : ''}
+                    <div class="call-item-number" style="${isContact ? 'color:#5ec4d4;font-weight:600;' : ''}">${displayName}</div>
+                    ${isContact ? `<div style="font-size:12px;color:#999">${toNum}</div>` : ''}
+                    ${empName ? `<div style="font-size:12px;color:#a0aab4">👤 ${empName}</div>` : ''}
                     <div class="call-item-details">
                         <span class="call-item-type">${callType}</span>
                         <span>${formattedDate}</span>
-                        <span style="color: ${statusColor}">${duration}</span>
+                        <span style="color:${statusColor}">${durationText}</span>
                     </div>
                 </div>
                 <div class="call-item-actions">
-                    <button class="play-btn" onclick="dialNumber('${call.to}')">📞 اتصال</button>
+                    <button class="play-btn" onclick="dialNumber('${toNum}')">📞 اتصال</button>
                 </div>
             `;
             container.appendChild(item);
         });
     } catch (error) {
         console.error('خطأ في تحميل سجل المكالمات:', error);
+        container.innerHTML = '<p style="text-align:center;color:#f44336;padding:20px">⚠ خطأ في تحميل السجل</p>';
     }
 }
 

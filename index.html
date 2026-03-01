@@ -391,7 +391,17 @@
 
             <!-- قائمة التسجيلات -->
             <div class="recordings-list hidden" id="recordings-list">
-                <h2 data-i18n="nav_recordings">التسجيلات المحفوظة</h2>
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+                    <h2 data-i18n="nav_recordings" style="margin:0;">التسجيلات المحفوظة</h2>
+                    <!-- فلتر بالموظف - يظهر للمدير فقط -->
+                    <div id="recordings-filter-bar" style="display:none;align-items:center;gap:8px;">
+                        <label style="font-size:13px;color:#a0aab4;">فلتر بالموظف:</label>
+                        <select id="rec-emp-filter" onchange="applyRecordingsFilter()" style="background:#1e2433;border:1.5px solid rgba(255,255,255,.12);border-radius:8px;padding:6px 10px;color:#fff;font-size:13px;outline:none;cursor:pointer;">
+                            <option value="">كل الموظفين</option>
+                        </select>
+                        <button onclick="loadRecordings()" style="background:linear-gradient(135deg,#667eea,#764ba2);border:none;border-radius:8px;padding:6px 14px;color:#fff;font-size:13px;cursor:pointer;">🔄 تحديث</button>
+                    </div>
+                </div>
                 <div id="recordings-container"></div>
             </div>
 
@@ -793,7 +803,7 @@
     </script>
     <!-- App Script - REST API Mode -->
     <script src="js/i18n.js"></script>
-    <script src="app.js?v=12"></script>
+    <script src="app.js?v=13"></script>
     
     <script>
         // إنشاء النجوم المتحركة

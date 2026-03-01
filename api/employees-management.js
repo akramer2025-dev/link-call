@@ -1,17 +1,26 @@
-const { Redis } = require('@upstash/redis');
 const fs = require('fs');
 const path = require('path');
 
-// Upstash Redis للتخزين السحابي
+// استخدام نفس Redis configuration من companies.js
 let redis;
+let redisAvailable = false;
 try {
-    redis = new Redis({
-        url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
-    console.log('✅ Employees Management: Upstash Redis متصل');
+    const { Redis } = require('@upstash/redis');
+    const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+    
+    if (redisUrl && redisToken && redisUrl.startsWith('http')) {
+        redis = new Redis({
+            url: redisUrl,
+            token: redisToken,
+        });
+        redisAvailable = true;
+        console.log('✅ Employees Management: Redis initialized');
+    } else {
+        console.log('⚠️ Employees Management: Redis credentials not available, using file storage');
+    }
 } catch (error) {
-    console.log('⚠️ Employees Management: Upstash Redis غير متاح');
+    console.log('⚠️ Employees Management: Redis initialization error:', error.message);
 }
 
 // قائمة الصلاحيات المتاحة
@@ -51,49 +60,58 @@ const availablePermissions = [
     { id: 'view_work_schedule', name: 'عرض جدول العمل', category: 'general' }
 ];
 
-// دوال مساعدة للتعامل مع Redis
+// دوال مساعدة للتعامل مع Data Storage
 async function getEmployeesData() {
-    if (redis) {
+    // Try Redis first (Vercel production)
+    if (redisAvailable && redis && process.env.VERCEL) {
         try {
             const data = await redis.get('employees_data');
             if (data && data.employees) {
+                console.log(`✅ Read ${data.employees.length} employees from Redis`);
                 return data;
             }
-        } catch (error) {
-            console.error('❌ خطأ في قراءة Redis:', error);
+        } catch (e) {
+            console.error('❌ Redis read error:', e);
         }
     }
     
-    // قراءة من الملف كـ fallback
+    // Fallback: local file
     try {
-        const raw = fs.readFileSync(path.join(__dirname, '..', 'employees.json'), 'utf8');
-        return JSON.parse(raw);
-    } catch (e) {
-        return { employees: [], departments: {} };
+        const employeesFile = path.join(__dirname, '..', 'employees.json');
+        if (fs.existsSync(employeesFile)) {
+            const raw = fs.readFileSync(employeesFile, 'utf8');
+            const data = JSON.parse(raw);
+            console.log(`✅ Read ${data.employees.length} employees from file`);
+            return data;
+        }
+    } catch (error) {
+        console.error('❌ Error reading employees file:', error);
     }
+    
+    return { employees: [], departments: {} };
 }
 
 async function saveEmployeesData(data) {
-    if (redis) {
+    // Save to Redis in production
+    if (redisAvailable && redis && process.env.VERCEL) {
         try {
             await redis.set('employees_data', data);
-            console.log('✅ تم حفظ بيانات الموظفين في Redis');
+            console.log('✅ Saved employees data to Redis');
             return true;
-        } catch (error) {
-            console.error('❌ خطأ في حفظ Redis:', error);
+        } catch (e) {
+            console.error('❌ Redis write error:', e);
+            return false;
         }
     }
     
-    // حفظ في الملف كـ fallback
+    // Save to file locally
     try {
-        fs.writeFileSync(
-            path.join(__dirname, '..', 'employees.json'),
-            JSON.stringify(data, null, 2),
-            'utf8'
-        );
+        const employeesFile = path.join(__dirname, '..', 'employees.json');
+        fs.writeFileSync(employeesFile, JSON.stringify(data, null, 2), 'utf8');
+        console.log('✅ Saved employees data to file');
         return true;
     } catch (error) {
-        console.error('❌ خطأ في حفظ الملف:', error);
+        console.error('❌ Error saving employees file:', error);
         return false;
     }
 }
@@ -336,6 +354,38 @@ async function deleteEmployee(req, res) {
     }
 }
 
+// Initialize Redis from local file (one-time setup)
+async function initializeFromFile(req, res) {
+    try {
+        if (!redisAvailable || !redis) {
+            return res.status(500).json({
+                success: false,
+                message: 'Redis not available'
+            });
+        }
+        
+        // Read from local file
+        const employeesFile = path.join(__dirname, '..', 'employees.json');
+        const raw = fs.readFileSync(employeesFile, 'utf8');
+        const data = JSON.parse(raw);
+        
+        // Save to Redis
+        await redis.set('employees_data', data);
+        
+        console.log(`✅ Initialized Redis with ${data.employees.length} employees`);
+        res.json({
+            success: true,
+            message: `Initialized with ${data.employees.length} employees`
+        });
+    } catch (error) {
+        console.error('❌ Initialization error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
 // Router رئيسي
 module.exports = async (req, res) => {
     const { method } = req;
@@ -352,13 +402,18 @@ module.exports = async (req, res) => {
     }
     
     try {
+        // GET /api/employees-management/init - Initialize Redis from file
+        if (method === 'GET' && url.includes('/init')) {
+            return await initializeFromFile(req, res);
+        }
+        
         // GET /api/employees-management/permissions
         if (method === 'GET' && url.includes('/permissions')) {
             return await getPermissions(req, res);
         }
         
         // GET /api/employees-management?companyId=x
-        if (method === 'GET' && !url.includes('/permissions')) {
+        if (method === 'GET' && !url.includes('/permissions') && !url.includes('/init')) {
             return await getEmployees(req, res);
         }
         
@@ -403,6 +458,7 @@ module.exports = async (req, res) => {
 };
 
 // تصدير الدوال للاستخدام المباشر
+module.exports.initializeFromFile = initializeFromFile;
 module.exports.getPermissions = getPermissions;
 module.exports.getEmployees = getEmployees;
 module.exports.addEmployee = addEmployee;

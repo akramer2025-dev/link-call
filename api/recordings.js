@@ -49,7 +49,7 @@ function saveRecordingToCompanyDatabase(companyId, recordingData) {
 async function getRecordings(companyId, options = {}) {
     try {
         const {
-            source = 'local', // local أو twilio
+            source = 'firestore', // firestore أو twilio
             fromDate = null,
             toDate = null,
             employeeId = null,
@@ -59,10 +59,22 @@ async function getRecordings(companyId, options = {}) {
         
         let recordings = [];
         
-        // جلب من قاعدة البيانات المحلية
-        if (source === 'local') {
-            const recordingsData = readCompanyData(companyId, 'recordings.json');
-            recordings = (recordingsData && recordingsData.recordings) ? recordingsData.recordings : [];
+        // جلب من Firestore (المصدر الافتراضي)
+        if (source === 'local' || source === 'firestore') {
+            try {
+                const { getDb } = require('../utils/firebase');
+                const { collection, getDocs, query, orderBy, limit: fsLimit } = require('firebase/firestore');
+                const db = getDb();
+                const colRef = collection(db, 'companies', companyId, 'recordings');
+                const q = query(colRef, orderBy('createdAt', 'desc'), fsLimit(Number(limit) || 50));
+                const snap = await getDocs(q);
+                recordings = snap.docs.map(d => d.data());
+                console.log(`🔥 [Firestore] جلب ${recordings.length} تسجيل للشركة ${companyId}`);
+            } catch (fsErr) {
+                console.error('⚠️ فشل Firestore، محاولة الملف المحلي:', fsErr.message);
+                const recordingsData = readCompanyData(companyId, 'recordings.json');
+                recordings = (recordingsData && recordingsData.recordings) ? recordingsData.recordings : [];
+            }
         }
         // جلب من Twilio
         else if (source === 'twilio') {

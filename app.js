@@ -2448,16 +2448,20 @@ function displayUserInfo() {
     
     // تحديد النص بناءً على نوع الحساب
     const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
-    const t = (typeof i18n !== 'undefined') ? (k) => i18n.t(k) : (k) => ({
-        role_company_admin: 'مدير شركة', role_developer: 'مطور', role_manager: 'مدير'
-    }[k] || k);
+    const ROLE_NAMES_AR = {
+        'agent':      '👤 موظف',
+        'supervisor': '👔 مشرف',
+        'viewer':     '👁️ مراقب',
+        'manager':    '👨‍💼 مدير'
+    };
     let roleText;
     if (role === 'company-admin' || isCompanyAdmin) {
-        roleText = '🏢 ' + t('role_company_admin');
+        roleText = '🏢 مدير شركة';
     } else if (role === 'admin') {
-        roleText = '👑 ' + t('role_developer');
+        roleText = '👑 مطور';
     } else {
-        roleText = '👨‍💼 ' + t('role_manager');
+        // الموظف — نعرض اسم دوره بالعربي
+        roleText = ROLE_NAMES_AR[role] || ('👤 ' + (role || 'موظف'));
     }
     
     if (headerRole) {

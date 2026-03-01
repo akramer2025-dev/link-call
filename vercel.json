@@ -58,6 +58,14 @@
       "dest": "/api/companies.js"
     },
     {
+      "src": "/api/employees-management/(.*)",
+      "dest": "/api/employees-management.js"
+    },
+    {
+      "src": "/api/employees-management",
+      "dest": "/api/employees-management.js"
+    },
+    {
       "src": "/api/employees/(.*)",
       "dest": "/api/index.js"
     },

@@ -2363,7 +2363,16 @@ function displayUserInfo() {
         sidebarUsername.textContent = displayName;
     }
     
-    const roleText = role === 'admin' ? '👑 مطور' : '👨‍💼 مدير';
+    // تحديد النص بناءً على نوع الحساب
+    const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
+    let roleText;
+    if (role === 'company-admin' || isCompanyAdmin) {
+        roleText = '🏢 مدير شركة';
+    } else if (role === 'admin') {
+        roleText = '👑 مطور';
+    } else {
+        roleText = '👨‍💼 مدير';
+    }
     
     if (headerRole) {
         headerRole.textContent = roleText;
@@ -2375,7 +2384,6 @@ function displayUserInfo() {
     
     // إظهار زر لوحة التحكم للمطور فقط (وليس مدير الشركة)
     const adminLinkBtn = document.getElementById('admin-link-btn');
-    const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
     if (adminLinkBtn) {
         if ((role === 'admin' && !isCompanyAdmin) || username === 'akram') {
             adminLinkBtn.style.display = 'flex';

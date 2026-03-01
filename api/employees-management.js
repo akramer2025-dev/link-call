@@ -1,75 +1,32 @@
-﻿const fs = require('fs');
-const path = require('path');
-
-// Database file (local fallback)
-const companiesFile = path.join(__dirname, '../companies.json');
-
-// Lazy Redis init - يتم تشغيله عند أول طلب وليس عند تحميل الموديول
-let _redis = null;
-function getRedis() {
-    if (_redis) return _redis;
-    try {
-        const { Redis } = require('@upstash/redis');
-        const redisUrl   = process.env.KV_REST_API_URL   || process.env.UPSTASH_REDIS_REST_URL;
-        const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-        if (redisUrl && redisToken && redisUrl.startsWith('http')) {
-            _redis = new Redis({ url: redisUrl, token: redisToken });
-            console.log('✅ [employees-management] Redis initialized. URL:', redisUrl.substring(0, 30));
-        } else {
-            console.warn('⚠️ [employees-management] Redis env vars missing. URL:', redisUrl ? redisUrl.substring(0, 20) : 'MISSING');
-        }
-    } catch (e) {
-        console.error('❌ [employees-management] Redis init error:', e.message);
-    }
-    return _redis;
-}
-
-
-// جلب بيانات الشركات
+﻿// Firestore helpers
 async function getCompaniesData() {
-    const redis = getRedis();
-    if (redis) {
-        try {
-            const data = await redis.get('companies_data');
-            if (data) {
-                const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-                if (parsed && parsed.companies) {
-                    console.log('[employees-management] ✅ جلب بيانات من Redis:', parsed.companies.length, 'شركة');
-                    return parsed;
-                }
-            }
-        } catch (e) {
-            console.error('[employees-management] ❌ Redis read error:', e.message);
-        }
-    }
-    // Fallback: local file
     try {
-        if (fs.existsSync(companiesFile)) {
-            return JSON.parse(fs.readFileSync(companiesFile, 'utf8'));
-        }
+        const { getDb } = require('../utils/firebase');
+        const { collection, getDocs } = require('firebase/firestore');
+        const db = getDb();
+        const snapshot = await getDocs(collection(db, 'companies'));
+        const companies = [];
+        snapshot.forEach(docSnap => companies.push(docSnap.data()));
+        console.log('[employees-management] ✅ Firestore:', companies.length, 'شركة');
+        return { companies };
     } catch (error) {
-        console.error('[employees-management] ❌ file read error:', error.message);
+        console.error('[employees-management] ❌ Firestore read error:', error.message);
+        return { companies: [] };
     }
-    return { companies: [] };
 }
 
 async function saveCompaniesData(data) {
-    const redis = getRedis();
-    if (redis) {
-        try {
-            await redis.set('companies_data', data);
-            console.log('[employees-management] ✅ حفظ في Redis بنجاح');
-            return true;
-        } catch (e) {
-            console.error('[employees-management] ❌ Redis write error:', e.message);
-        }
-    }
-    // Fallback: local file
     try {
-        fs.writeFileSync(companiesFile, JSON.stringify(data, null, 2));
+        const { getDb } = require('../utils/firebase');
+        const { doc, setDoc } = require('firebase/firestore');
+        const db = getDb();
+        for (const company of data.companies) {
+            await setDoc(doc(db, 'companies', company.id), company);
+        }
+        console.log('[employees-management] ✅ Firestore saved');
         return true;
     } catch (error) {
-        console.error('[employees-management] ❌ file write error:', error.message);
+        console.error('[employees-management] ❌ Firestore write error:', error.message);
         return false;
     }
 }
@@ -137,8 +94,8 @@ async function addEmployee(req, res) {
         company.employeesCount = company.employees.length;
         const saved = await saveCompaniesData(data);
         if (!saved) {
-            console.error('❌ فشل الحفظ - Redis:', !!getRedis(), 'VERCEL:', !!process.env.VERCEL);
-            return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات. Redis متاح: ' + !!getRedis() });
+            console.error('❌ فشل الحفظ في Firestore');
+            return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات في قاعدة البيانات' });
         }
         res.json({ success: true, employee: newEmployee });
     } catch (error) {

@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
             }
             
             // قراءة جهات الاتصال من قاعدة بيانات الشركة
-            const contactsData = readCompanyData(companyId, 'contacts.json');
+            const contactsData = await readCompanyData(companyId, 'contacts.json');
             
             console.log(`📋 [${companyId}] جلب ${contactsData.contacts.length} جهة اتصال`);
             
@@ -73,7 +73,7 @@ module.exports = async (req, res) => {
             }
             
             // قراءة جهات الاتصال الحالية
-            const contactsData = readCompanyData(companyId, 'contacts.json');
+            const contactsData = await readCompanyData(companyId, 'contacts.json');
             
             // التحقق من عدم تكرار رقم الهاتف
             const existingContact = contactsData.contacts.find(c => c.phone === phone);
@@ -111,7 +111,7 @@ module.exports = async (req, res) => {
             contactsData.contacts.push(newContact);
             
             // حفظ في قاعدة بيانات الشركة
-            const success = writeCompanyData(companyId, 'contacts.json', contactsData);
+            const success = await writeCompanyData(companyId, 'contacts.json', contactsData);
             
             if (success) {
                 // تسجيل النشاط
@@ -150,7 +150,7 @@ module.exports = async (req, res) => {
             }
             
             // قراءة جهات الاتصال
-            const contactsData = readCompanyData(companyId, 'contacts.json');
+            const contactsData = await readCompanyData(companyId, 'contacts.json');
             
             // البحث عن جهة الاتصال
             const contactIndex = contactsData.contacts.findIndex(c => c.id === contactId);
@@ -190,7 +190,7 @@ module.exports = async (req, res) => {
             contactsData.contacts[contactIndex].lastModified = new Date().toISOString();
             
             // حفظ في قاعدة بيانات الشركة
-            const success = writeCompanyData(companyId, 'contacts.json', contactsData);
+            const success = await writeCompanyData(companyId, 'contacts.json', contactsData);
             
             if (success) {
                 // تسجيل النشاط
@@ -233,7 +233,7 @@ module.exports = async (req, res) => {
             }
             
             // قراءة جهات الاتصال
-            const contactsData = readCompanyData(companyId, 'contacts.json');
+            const contactsData = await readCompanyData(companyId, 'contacts.json');
             
             // البحث عن جهة الاتصال
             const contactIndex = contactsData.contacts.findIndex(c => c.id === contactId);
@@ -252,7 +252,7 @@ module.exports = async (req, res) => {
             contactsData.contacts.splice(contactIndex, 1);
             
             // حفظ في قاعدة بيانات الشركة
-            const success = writeCompanyData(companyId, 'contacts.json', contactsData);
+            const success = await writeCompanyData(companyId, 'contacts.json', contactsData);
             
             if (success) {
                 // تسجيل النشاط

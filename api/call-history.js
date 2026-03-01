@@ -18,9 +18,10 @@ const { readCompanyData, writeCompanyData, logCompanyActivity } = require('../ut
 /**
  * حفظ مكالمة في قاعدة بيانات الشركة
  */
-function saveCallToCompanyDatabase(companyId, callData) {
+async function saveCallToCompanyDatabase(companyId, callData) {
     try {
-        const callHistory = readCompanyData(companyId, 'call-history.json');
+        const callHistory = await readCompanyData(companyId, 'call-history.json');
+        callHistory.calls = callHistory.calls || [];
         
         // التحقق من عدم تكرار المكالمة
         const existingCall = callHistory.calls.find(c => c.sid === callData.sid);
@@ -34,7 +35,7 @@ function saveCallToCompanyDatabase(companyId, callData) {
         }
         
         // حفظ البيانات
-        const success = writeCompanyData(companyId, 'call-history.json', callHistory);
+        const success = await writeCompanyData(companyId, 'call-history.json', callHistory);
         
         if (success) {
             console.log(`📞 [${companyId}] تم حفظ مكالمة: ${callData.sid}`);
@@ -67,7 +68,7 @@ async function getCallHistory(companyId, options = {}) {
         
         // جلب من قاعدة البيانات المحلية
         if (source === 'local') {
-            const callHistory = readCompanyData(companyId, 'call-history.json');
+            const callHistory = await readCompanyData(companyId, 'call-history.json');
             calls = callHistory.calls;
         }
         // جلب من Twilio
@@ -107,7 +108,6 @@ async function getCallHistory(companyId, options = {}) {
                 createdAt: call.dateCreated
             }));
             
-            // حفظ المكالمات من Twilio في قاعدة البيانات المحلية
             calls.forEach(call => saveCallToCompanyDatabase(companyId, call));
         }
         
@@ -158,16 +158,14 @@ async function getCallHistory(companyId, options = {}) {
 /**
  * الحصول على إحصائيات المكالمات
  */
-function getCallStatistics(companyId, options = {}) {
+async function getCallStatistics(companyId, options = {}) {
     try {
-        const {
-            fromDate = null,
-            toDate = null,
-            employeeId = null
-        } = options;
-        
-        const callHistory = readCompanyData(companyId, 'call-history.json');
-        let calls = callHistory.calls;
+        const fromDate = options.fromDate || null;
+        const toDate   = options.toDate   || null;
+        const employeeId = options.employeeId || null;
+
+        const callHistory = await readCompanyData(companyId, 'call-history.json');
+        let calls = callHistory.calls || [];
         
         // تطبيق الفلاتر
         if (fromDate) {
@@ -239,7 +237,7 @@ module.exports = async (req, res) => {
             
             // إحصائيات المكالمات
             if (action === 'statistics') {
-                const stats = getCallStatistics(companyId, filters);
+                const stats = await getCallStatistics(companyId, filters);
                 
                 console.log(`📊 [${companyId}] جلب إحصائيات المكالمات`);
                 
@@ -310,7 +308,7 @@ module.exports = async (req, res) => {
             }
             
             // قراءة سجل المكالمات
-            const callHistory = readCompanyData(companyId, 'call-history.json');
+            const callHistory = await readCompanyData(companyId, 'call-history.json');
             
             // البحث عن المكالمة
             const callIndex = callHistory.calls.findIndex(c => c.sid === callSid);
@@ -330,7 +328,7 @@ module.exports = async (req, res) => {
             callHistory.calls[callIndex].lastModified = new Date().toISOString();
             
             // حفظ البيانات
-            const success = writeCompanyData(companyId, 'call-history.json', callHistory);
+            const success = await writeCompanyData(companyId, 'call-history.json', callHistory);
             
             if (success) {
                 // تسجيل النشاط
@@ -366,7 +364,7 @@ module.exports = async (req, res) => {
             }
             
             // قراءة سجل المكالمات
-            const callHistory = readCompanyData(companyId, 'call-history.json');
+            const callHistory = await readCompanyData(companyId, 'call-history.json');
             
             // البحث عن المكالمة
             const callIndex = callHistory.calls.findIndex(c => c.sid === callSid);
@@ -385,7 +383,7 @@ module.exports = async (req, res) => {
             callHistory.calls.splice(callIndex, 1);
             
             // حفظ البيانات
-            const success = writeCompanyData(companyId, 'call-history.json', callHistory);
+            const success = await writeCompanyData(companyId, 'call-history.json', callHistory);
             
             if (success) {
                 // تسجيل النشاط

@@ -1,77 +1,37 @@
 // API للتعامل مع تسجيل وإدارة الشركات
 // يتم استدعاؤه من register-company.html و super-admin.html
 
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
 
-// Upstash Redis للتخزين السحابي
-let redis;
-let redisAvailable = false;
-try {
-    const { Redis } = require('@upstash/redis');
-    const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-    const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-    
-    if (redisUrl && redisToken && redisUrl.startsWith('http')) {
-        redis = new Redis({
-            url: redisUrl,
-            token: redisToken,
-        });
-        redisAvailable = true;
-        console.log('✅ Redis initialized in companies.js');
-    } else {
-        console.log('⚠️ Redis URL/Token غير متاح في companies.js');
-    }
-} catch (e) {
-    console.log('⚠️ Redis غير متاح في companies.js:', e.message);
-}
-
-// Database file for companies (local fallback)
-const companiesFile = path.join(__dirname, '../companies.json');
-
-// Helper functions for data management
+// Firestore helpers
 async function getCompaniesData() {
-    // Try Redis first (Vercel production)
-    if (redisAvailable && redis && process.env.VERCEL) {
-        try {
-            const data = await redis.get('companies_data');
-            if (data && data.companies) {
-                return data;
-            }
-        } catch (e) {
-            console.error('Redis read error in companies:', e);
-        }
-    }
-    // Fallback: local file
     try {
-        if (fs.existsSync(companiesFile)) {
-            const data = fs.readFileSync(companiesFile, 'utf8');
-            return JSON.parse(data);
-        }
+        const { getDb } = require('../utils/firebase');
+        const { collection, getDocs } = require('firebase/firestore');
+        const db = getDb();
+        const snapshot = await getDocs(collection(db, 'companies'));
+        const companies = [];
+        snapshot.forEach(docSnap => companies.push(docSnap.data()));
+        console.log('✅ [companies] Firestore:', companies.length, 'شركة');
+        return { companies };
     } catch (error) {
-        console.error('Error reading companies file:', error);
+        console.error('❌ Firestore getCompaniesData error:', error.message);
+        return { companies: [] };
     }
-    return { companies: [] };
 }
 
 async function saveCompaniesData(data) {
-    // Save to Redis in production
-    if (redisAvailable && redis && process.env.VERCEL) {
-        try {
-            await redis.set('companies_data', data);
-            return true;
-        } catch (e) {
-            console.error('Redis write error in companies:', e);
-            return false;
-        }
-    }
-    // Save to file locally
     try {
-        fs.writeFileSync(companiesFile, JSON.stringify(data, null, 2));
+        const { getDb } = require('../utils/firebase');
+        const { doc, setDoc } = require('firebase/firestore');
+        const db = getDb();
+        for (const company of data.companies) {
+            await setDoc(doc(db, 'companies', company.id), company);
+        }
+        console.log('✅ [companies] Firestore حفظ:', data.companies.length, 'شركة');
         return true;
     } catch (error) {
-        console.error('Error saving companies file:', error);
+        console.error('❌ Firestore saveCompaniesData error:', error.message);
         return false;
     }
 }
@@ -579,72 +539,23 @@ function logActivity(type, companyId, details = {}) {
     }
 }
 
-// GET /api/companies/init - Initialize Redis from companies.json
+// GET /api/companies/init - Show Firestore status
 module.exports.initFromFile = async (req, res) => {
     try {
-        // التحقق من توفر Redis
-        if (!redisAvailable || !redis) {
-            return res.json({
-                success: false,
-                message: 'Redis غير متاح أو غير مهيأ بشكل صحيح',
-                details: {
-                    redisAvailable: redisAvailable,
-                    hasRedisObject: !!redis,
-                    isVercel: !!process.env.VERCEL,
-                    hasUrl: !!(process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL)
-                }
-            });
-        }
-
-        // قراءة من companies.json
-        if (!fs.existsSync(companiesFile)) {
-            return res.status(404).json({
-                success: false,
-                message: 'ملف companies.json غير موجود'
-            });
-        }
-
-        const fileData = JSON.parse(fs.readFileSync(companiesFile, 'utf8'));
-        
-        if (!fileData.companies || fileData.companies.length === 0) {
-            return res.json({
-                success: false,
-                message: 'ملف companies.json فارغ'
-            });
-        }
-
-        // اختبار الاتصال بـ Redis أولاً
-        try {
-            await redis.ping();
-        } catch (pingError) {
-            return res.status(500).json({
-                success: false,
-                message: 'فشل الاتصال بـ Redis',
-                error: pingError.message
-            });
-        }
-
-        // حفظ في Redis
-        await redis.set('companies_data', fileData);
-
-        console.log('✅ تم تهيئة Redis من companies.json -', fileData.companies.length, 'شركة');
-
+        const companiesData = await getCompaniesData();
         res.json({
             success: true,
-            message: `تم تحميل ${fileData.companies.length} شركة إلى Redis بنجاح`,
-            companies: fileData.companies.map(c => ({
+            message: `Firestore يعمل - ${companiesData.companies.length} شركة مسجلة`,
+            database: 'Firestore - akramplatform-2c6be',
+            companies: companiesData.companies.map(c => ({
                 id: c.id,
                 companyName: c.companyName,
                 username: c.username,
-                plan: c.selectedPlan
+                plan: c.plan
             }))
         });
     } catch (error) {
-        console.error('خطأ في تهيئة Redis:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
+        res.status(500).json({ success: false, error: error.message });
     }
 };
 

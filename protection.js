@@ -19,13 +19,13 @@
     // ==================== إعدادات الحماية ====================
     const PROTECTION_CONFIG = {
         disableDevTools: false,
-        disableRightClick: true,
-        disableTextSelection: true,
+        disableRightClick: false,
+        disableTextSelection: false,
         disableConsole: false,
         detectDebugger: false,
-        protectCode: true,
+        protectCode: false,
         watermark: true,
-        antiCopy: true
+        antiCopy: false
     };
 
     // ==================== منع فتح DevTools ====================

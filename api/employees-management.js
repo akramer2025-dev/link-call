@@ -73,6 +73,8 @@ async function saveCompaniesData(data) {
         return false;
     }
 }
+
+const availablePermissions = [
     { id: 'view_calls', name: 'عرض المكالمات', category: 'calls' },
     { id: 'make_calls', name: 'إجراء المكالمات', category: 'calls' },
     { id: 'listen_recordings', name: 'الاستماع للتسجيلات', category: 'calls' },

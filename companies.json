@@ -1,3 +1,36 @@
 {
-  "companies": []
+  "companies": [
+    {
+      "id": "COMP-1709251200000-JAMJOUM",
+      "companyName": "Jamjoum Group",
+      "commercialNumber": "JG-2026-001",
+      "businessType": "تجارة وخدمات",
+      "country": "مصر",
+      "city": "القاهرة",
+      "address": "القاهرة",
+      "companyPhone": "01210505010",
+      "companyEmail": "Jimmmy@jamjoumgroup.com",
+      "adminName": "Jimmy",
+      "adminTitle": "مدير عام",
+      "adminPhone": "01210505010",
+      "adminEmail": "Jimmmy@jamjoumgroup.com",
+      "username": "jimmmy@jamjoumgroup.com",
+      "password": "32143c9bf3ef8958b50b694e24f0f3ac7e5e26d61dc56b1fb537f9bbaa3b880f",
+      "plan": "enterprise",
+      "status": "active",
+      "isActive": true,
+      "employeesCount": 0,
+      "callsCount": 0,
+      "totalMinutes": 0,
+      "limits": {
+        "employees": 999999,
+        "minutesPerMonth": 999999,
+        "concurrentCalls": 999999
+      },
+      "createdAt": "2026-03-01T12:00:00.000Z",
+      "lastLoginAt": null,
+      "isVerified": true,
+      "notes": "عميل مدفوع - Enterprise - محمي من الحذف"
+    }
+  ]
 }

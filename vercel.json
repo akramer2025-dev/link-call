@@ -1,18 +1,29 @@
 {
   "version": 2,
-  "name": "link-call",
   "routes": [
     {
-      "src": "/(.*\\.(css|js|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webmanifest))",
+      "src": "/(.*)",
       "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      },
+      "continue": true
     },
     {
-      "src": "/(platform|login|admin|register-company|super-admin|direct-call|test-crm-integration)\\.html",
+      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webmanifest))",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      },
+      "continue": true
+    },
+    {
+      "src": "/(.*\\.json)",
       "headers": {
         "Cache-Control": "public, max-age=0, must-revalidate"
-      }
+      },
+      "continue": true
     },
     {
       "src": "/api/companies/register",
@@ -191,29 +202,6 @@
     {
       "src": "/(.*)",
       "dest": "/$1"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
-      ]
     }
   ],
   "env": {

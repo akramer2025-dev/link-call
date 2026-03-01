@@ -87,6 +87,121 @@
             box-shadow: 0 5px 15px rgba(94, 196, 212, 0.4);
         }
         
+        .btn-add {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: white;
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 233, 123, 0.4);
+        }
+        
+        .btn-import {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-import:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+        }
+        
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(251, 191, 36, 0.4);
+        }
+        
+        /* Statistics Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .stat-icon.blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .stat-icon.green { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .stat-icon.orange { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .stat-icon.red { background: linear-gradient(135deg, #f56565, #c53030); }
+        
+        .stat-info h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        /* Filters Section */
+        .filters-section {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.6);
+        }
+        
         .search-section {
             background: var(--bg-card);
             padding: 15px 20px;
@@ -262,6 +377,55 @@
             margin-bottom: 20px;
             opacity: 0.5;
         }
+        
+        /* Sortable columns */
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        
+        .sortable:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .sort-indicator {
+            margin-right: 5px;
+            font-size: 10px;
+            color: #667eea;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .crm-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .crm-actions {
+                width: 100%;
+            }
+            
+            .crm-btn {
+                flex: 1;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filters-section {
+                flex-direction: column;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            .contacts-table {
+                min-width: 1200px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -272,7 +436,74 @@
                 <a href="index.html" class="crm-btn btn-back">
                     ← العودة للصفحة الرئيسية
                 </a>
+                <button class="crm-btn btn-export" onclick="exportToExcel()">
+                    📊 تصدير Excel
+                </button>
+                <button class="crm-btn btn-import" onclick="document.getElementById('excel-import-input').click()">
+                    📥 استيراد Excel
+                </button>
+                <button class="crm-btn btn-add" onclick="showAddContactModal()">
+                    + إضافة عميل جديد
+                </button>
             </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">👥</div>
+                <div class="stat-info">
+                    <h3 id="stat-total">0</h3>
+                    <p>إجمالي العملاء</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">🆕</div>
+                <div class="stat-info">
+                    <h3 id="stat-new">0</h3>
+                    <p>عملاء جدد</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">⭐</div>
+                <div class="stat-info">
+                    <h3 id="stat-premium">0</h3>
+                    <p>عملاء مميزين</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red">📞</div>
+                <div class="stat-info">
+                    <h3 id="stat-calls">0</h3>
+                    <p>إجمالي المكالمات</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filters-section">
+            <span class="filter-label">فلترة حسب:</span>
+            <select class="filter-select" id="filter-status" onchange="applyFilters()">
+                <option value="">الحالة: الكل</option>
+                <option value="premium">⭐ مميز</option>
+                <option value="new">🆕 جديد</option>
+                <option value="active">✓ نشط</option>
+                <option value="inactive">○ غير نشط</option>
+            </select>
+            <select class="filter-select" id="filter-country" onchange="applyFilters()">
+                <option value="">البلد: الكل</option>
+            </select>
+            <select class="filter-select" id="filter-rating" onchange="applyFilters()">
+                <option value="">التقييم: الكل</option>
+                <option value="5">5 نجوم</option>
+                <option value="4">4 نجوم</option>
+                <option value="3">3 نجوم</option>
+                <option value="2">2 نجوم</option>
+                <option value="1">1 نجمة</option>
+            </select>
+            <button class="crm-btn" onclick="resetFilters()" style="background:#1e2433;color:#a8b2d1;margin-right:auto;">
+                🔄 إعادة تعيين
+            </button>
         </div>
         
         <div class="search-section">
@@ -290,9 +521,293 @@
         </div>
     </div>
     
+    <!-- Hidden File Input -->
+    <input type="file" id="excel-import-input" accept=".xlsx,.xls,.csv" style="display:none;">
+    
+    <!-- Add Contact Modal -->
+    <div id="add-contact-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#1a1f2e;padding:30px;border-radius:12px;width:90%;max-width:500px;border:1px solid rgba(255,255,255,0.1);">
+            <h2 style="color:#ccd6f6;margin-bottom:20px;">➕ إضافة عميل جديد</h2>
+            <div style="display:flex;flex-direction:column;gap:15px;">
+                <input type="text" id="new-contact-name" placeholder="الاسم *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="text" id="new-contact-phone" placeholder="رقم الموبايل *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="email" id="new-contact-email" placeholder="البريد الإلكتروني" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="text" id="new-contact-country" placeholder="البلد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="text" id="new-contact-balance" placeholder="الرصيد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <button onclick="saveNewContact()" style="flex:1;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,#43e97b,#38f9d7);color:white;font-weight:700;cursor:pointer;">
+                        ✓ حفظ
+                    </button>
+                    <button onclick="hideAddContactModal()" style="flex:1;padding:12px;border:none;border-radius:8px;background:#1e2433;color:#a8b2d1;font-weight:700;cursor:pointer;">
+                        ✕ إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script>
         const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://linkcall.akrammostafa.com';
         let _cachedContacts = [];
+        let _allContacts = []; // For filtering
+        let _currentSort = { column: null, direction: 'asc' };
+        
+        // Sort Table
+        function sortTable(column) {
+            if (_currentSort.column === column) {
+                _currentSort.direction = _currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                _currentSort.column = column;
+                _currentSort.direction = 'asc';
+            }
+            
+            const sorted = [..._cachedContacts].sort((a, b) => {
+                let valA, valB;
+                
+                switch(column) {
+                    case 'name':
+                        valA = (a.name || '').toLowerCase();
+                        valB = (b.name || '').toLowerCase();
+                        break;
+                    case 'phone':
+                        valA = a.phone || '';
+                        valB = b.phone || '';
+                        break;
+                    case 'email':
+                        valA = (a.email || '').toLowerCase();
+                        valB = (b.email || '').toLowerCase();
+                        break;
+                    case 'country':
+                        const notesA = a.notes || '';
+                        const notesB = b.notes || '';
+                        const countryA = notesA.match(/Country:\s*([^|]+)/);
+                        const countryB = notesB.match(/Country:\s*([^|]+)/);
+                        valA = countryA ? countryA[1].trim() : '';
+                        valB = countryB ? countryB[1].trim() : '';
+                        break;
+                    case 'balance':
+                        const balanceA = (a.notes || '').match(/Balance:\s*(.+)/);
+                        const balanceB = (b.notes || '').match(/Balance:\s*(.+)/);
+                        valA = balanceA ? parseFloat(balanceA[1].replace(/[^0-9.-]/g, '')) : 0;
+                        valB = balanceB ? parseFloat(balanceB[1].replace(/[^0-9.-]/g, '')) : 0;
+                        break;
+                    case 'date':
+                        valA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                        valB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                        break;
+                    default:
+                        return 0;
+                }
+                
+                if (valA < valB) return _currentSort.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return _currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            _cachedContacts = sorted;
+            renderTable(sorted);
+        }
+        
+        // Update Statistics
+        function updateStatistics() {
+            const total = _allContacts.length;
+            const newContacts = _allContacts.filter(c => c.tags?.includes('Excel Import') || !c.lastCallDate).length;
+            const premium = _allContacts.filter(c => {
+                const notes = c.notes || '';
+                const balanceMatch = notes.match(/Balance:\s*(.+)/);
+                const balance = balanceMatch ? parseFloat(balanceMatch[1].replace(/[^0-9.-]/g, '')) : 0;
+                return c.tags?.includes('VIP') || balance > 1000;
+            }).length;
+            const totalCalls = _allContacts.reduce((sum, c) => sum + (c.totalCalls || 0), 0);
+            
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-new').textContent = newContacts;
+            document.getElementById('stat-premium').textContent = premium;
+            document.getElementById('stat-calls').textContent = totalCalls;
+        }
+        
+        // Populate Country Filter
+        function populateCountryFilter() {
+            const countries = new Set();
+            _allContacts.forEach(c => {
+                const notes = c.notes || '';
+                const countryMatch = notes.match(/Country:\s*([^|]+)/);
+                if (countryMatch) {
+                    countries.add(countryMatch[1].trim());
+                }
+            });
+            
+            const select = document.getElementById('filter-country');
+            select.innerHTML = '<option value="">البلد: الكل</option>';
+            [...countries].sort().forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                select.appendChild(option);
+            });
+        }
+        
+        // Apply Filters
+        function applyFilters() {
+            const statusFilter = document.getElementById('filter-status').value;
+            const countryFilter = document.getElementById('filter-country').value;
+            const ratingFilter = document.getElementById('filter-rating').value;
+            
+            let filtered = [..._allContacts];
+            
+            // Status filter
+            if (statusFilter) {
+                filtered = filtered.filter(c => {
+                    const notes = c.notes || '';
+                    const balanceMatch = notes.match(/Balance:\s*(.+)/);
+                    const balance = balanceMatch ? parseFloat(balanceMatch[1].replace(/[^0-9.-]/g, '')) : 0;
+                    
+                    const isNew = c.tags?.includes('Excel Import') || !c.lastCallDate;
+                    const isPremium = c.tags?.includes('VIP') || balance > 1000;
+                    const isActive = c.totalCalls > 0;
+                    
+                    if (statusFilter === 'premium') return isPremium;
+                    if (statusFilter === 'new') return isNew;
+                    if (statusFilter === 'active') return isActive;
+                    if (statusFilter === 'inactive') return !isActive;
+                    return true;
+                });
+            }
+            
+            // Country filter
+            if (countryFilter) {
+                filtered = filtered.filter(c => {
+                    const notes = c.notes || '';
+                    const countryMatch = notes.match(/Country:\s*([^|]+)/);
+                    const country = countryMatch ? countryMatch[1].trim() : '';
+                    return country === countryFilter;
+                });
+            }
+            
+            // Rating filter
+            if (ratingFilter) {
+                const targetRating = parseInt(ratingFilter);
+                filtered = filtered.filter(c => {
+                    const rating = c.rating || Math.floor(Math.random() * 3) + 3;
+                    return rating >= targetRating;
+                });
+            }
+            
+            _cachedContacts = filtered;
+            renderTable(filtered);
+        }
+        
+        // Reset Filters
+        function resetFilters() {
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-country').value = '';
+            document.getElementById('filter-rating').value = '';
+            document.getElementById('crm-search').value = '';
+            _cachedContacts = [..._allContacts];
+            renderTable(_allContacts);
+        }
+        
+        // Show/Hide Add Contact Modal
+        function showAddContactModal() {
+            document.getElementById('add-contact-modal').style.display = 'flex';
+        }
+        
+        function hideAddContactModal() {
+            document.getElementById('add-contact-modal').style.display = 'none';
+            document.getElementById('new-contact-name').value = '';
+            document.getElementById('new-contact-phone').value = '';
+            document.getElementById('new-contact-email').value = '';
+            document.getElementById('new-contact-country').value = '';
+            document.getElementById('new-contact-balance').value = '';
+        }
+        
+        // Save New Contact
+        async function saveNewContact() {
+            const name = document.getElementById('new-contact-name').value.trim();
+            const phone = document.getElementById('new-contact-phone').value.trim();
+            const email = document.getElementById('new-contact-email').value.trim();
+            const country = document.getElementById('new-contact-country').value.trim();
+            const balance = document.getElementById('new-contact-balance').value.trim();
+            
+            if (!name || !phone) {
+                alert('⚠️ الاسم ورقم الموبايل مطلوبان!');
+                return;
+            }
+            
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            if (!companyId) {
+                alert('⚠️ يجب تسجيل الدخول أولاً!');
+                return;
+            }
+            
+            const notes = `Country: ${country || '-'} | Balance: ${balance || '0'}`;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/contacts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ companyId, name, phone, email, notes })
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    alert('✅ تم إضافة العميل بنجاح!');
+                    hideAddContactModal();
+                    loadCRMContacts();
+                } else {
+                    alert('❌ خطأ: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error adding contact:', error);
+                alert('❌ حدث خطأ في إضافة العميل');
+            }
+        }
+        
+        // Export to Excel
+        function exportToExcel() {
+            if (_allContacts.length === 0) {
+                alert('⚠️ لا توجد بيانات للتصدير!');
+                return;
+            }
+            
+            const data = _allContacts.map(c => {
+                const notes = c.notes || '';
+                const countryMatch = notes.match(/Country:\s*([^|]+)/);
+                const balanceMatch = notes.match(/Balance:\s*(.+)/);
+                
+                return {
+                    'الاسم': c.name || '',
+                    'الموبايل': c.phone || '',
+                    'البريد': c.email || '',
+                    'البلد': countryMatch ? countryMatch[1].trim() : '',
+                    'الرصيد': balanceMatch ? balanceMatch[1].trim() : '',
+                    'عدد المكالمات': c.totalCalls || 0,
+                    'تاريخ الإضافة': c.createdAt ? new Date(c.createdAt).toLocaleDateString('ar-EG') : ''
+                };
+            });
+            
+            const csv = [
+                Object.keys(data[0]).join(','),
+                ...data.map(row => Object.values(row).join(','))
+            ].join('\n');
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `CRM_Contacts_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            alert('✅ تم تصدير ' + _allContacts.length + ' عميل إلى Excel!');
+        }
+        
+        // Import from Excel Handler
+        document.getElementById('excel-import-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            alert('📥 ميزة استيراد Excel قيد التطوير\n\nحالياً يمكنك استخدام صفحة Contacts الرئيسية للاستيراد');
+            e.target.value = '';
+        });
         
         // Premium CRM Contact Rendering
         function _renderContactItemCRM(contact, index) {
@@ -369,6 +884,62 @@
             return tr;
         }
         
+        // Render Table
+        function renderTable(contacts) {
+            const container = document.getElementById('crm-table-container');
+            
+            if (contacts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p>لا توجد نتائج</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const getSortIcon = (column) => {
+                if (_currentSort.column !== column) return '⬍';
+                return _currentSort.direction === 'asc' ? '▲' : '▼';
+            };
+            
+            const table = document.createElement('table');
+            table.className = 'contacts-table';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th style="width:50px;">#</th>
+                        <th style="width:120px;">الصورة</th>
+                        <th class="sortable" onclick="sortTable('name')">
+                            الاسم <span class="sort-indicator">${getSortIcon('name')}</span>
+                        </th>
+                        <th style="width:140px;">الموبايل</th>
+                        <th class="sortable" onclick="sortTable('email')" style="width:180px;">
+                            البريد <span class="sort-indicator">${getSortIcon('email')}</span>
+                        </th>
+                        <th class="sortable" onclick="sortTable('country')" style="width:100px;">
+                            البلد <span class="sort-indicator">${getSortIcon('country')}</span>
+                        </th>
+                        <th class="sortable" onclick="sortTable('balance')" style="width:100px;">
+                            الرصيد <span class="sort-indicator">${getSortIcon('balance')}</span>
+                        </th>
+                        <th style="width:120px;">التقييم</th>
+                        <th class="sortable" onclick="sortTable('date')" style="width:120px;">
+                            التاريخ <span class="sort-indicator">${getSortIcon('date')}</span>
+                        </th>
+                        <th style="width:180px;">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+            
+            const tbody = table.querySelector('tbody');
+            contacts.forEach((contact, index) => tbody.appendChild(_renderContactItemCRM(contact, index)));
+            
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+        
         async function loadCRMContacts() {
             const container = document.getElementById('crm-table-container');
             const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
@@ -388,43 +959,30 @@
                 const response = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
                 const data = await response.json();
                 const contacts = data.contacts || [];
+                
+                _allContacts = contacts;
                 _cachedContacts = contacts;
+                
+                // Update statistics
+                updateStatistics();
+                
+                // Populate filters
+                populateCountryFilter();
                 
                 if (contacts.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-icon">👥</div>
                             <p>لا توجد جهات اتصال</p>
+                            <button class="crm-btn btn-add" onclick="showAddContactModal()" style="margin-top:20px;">
+                                + إضافة عميل جديد
+                            </button>
                         </div>
                     `;
                     return;
                 }
                 
-                const table = document.createElement('table');
-                table.className = 'contacts-table';
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th style="width:50px;">#</th>
-                            <th style="width:120px;">الصورة</th>
-                            <th>الاسم</th>
-                            <th style="width:140px;">الموبايل</th>
-                            <th style="width:180px;">البريد</th>
-                            <th style="width:100px;">البلد</th>
-                            <th style="width:100px;">الرصيد</th>
-                            <th style="width:120px;">التقييم</th>
-                            <th style="width:120px;">التاريخ</th>
-                            <th style="width:180px;">الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                `;
-                
-                const tbody = table.querySelector('tbody');
-                contacts.forEach((contact, index) => tbody.appendChild(_renderContactItemCRM(contact, index)));
-                
-                container.innerHTML = '';
-                container.appendChild(table);
+                renderTable(contacts);
                 
                 console.log('✅ تم تحميل', contacts.length, 'عميل في CRM');
             } catch (error) {
@@ -461,7 +1019,7 @@
         document.getElementById('crm-search').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
             if (!query) {
-                loadCRMContacts();
+                applyFilters(); // Reapply existing filters
                 return;
             }
             
@@ -472,42 +1030,7 @@
                 (c.notes || '').toLowerCase().includes(query)
             );
             
-            const container = document.getElementById('crm-table-container');
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">🔍</div>
-                        <p>لا توجد نتائج للبحث</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const table = document.createElement('table');
-            table.className = 'contacts-table';
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th style="width:50px;">#</th>
-                        <th style="width:120px;">الصورة</th>
-                        <th>الاسم</th>
-                        <th style="width:140px;">الموبايل</th>
-                        <th style="width:180px;">البريد</th>
-                        <th style="width:100px;">البلد</th>
-                        <th style="width:100px;">الرصيد</th>
-                        <th style="width:120px;">التقييم</th>
-                        <th style="width:120px;">التاريخ</th>
-                        <th style="width:180px;">الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            `;
-            
-            const tbody = table.querySelector('tbody');
-            filtered.forEach((contact, index) => tbody.appendChild(_renderContactItemCRM(contact, index)));
-            
-            container.innerHTML = '';
-            container.appendChild(table);
+            renderTable(filtered);
         });
         
         // Load contacts on page load

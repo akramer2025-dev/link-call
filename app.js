@@ -1746,6 +1746,7 @@ if (dialpadBtn) {
         removeAllActiveStates();
         dialpad.classList.remove('hidden');
         dialpadBtn.classList.add('active');
+        applyRoleBasedVisibility();
     });
 }
 
@@ -1756,6 +1757,7 @@ if (callHistoryBtn) {
         removeAllActiveStates();
         callHistoryList.classList.remove('hidden');
         callHistoryBtn.classList.add('active');
+        applyRoleBasedVisibility();
         loadCallHistory();
     });
 }
@@ -1767,6 +1769,7 @@ if (contactsBtn) {
         removeAllActiveStates();
         contactsList.classList.remove('hidden');
         contactsBtn.classList.add('active');
+        applyRoleBasedVisibility();
         loadContacts();
     });
 }
@@ -1778,6 +1781,7 @@ if (recordingsBtn) {
         removeAllActiveStates();
         recordingsList.classList.remove('hidden');
         recordingsBtn.classList.add('active');
+        applyRoleBasedVisibility();
         loadRecordings();
     });
 }

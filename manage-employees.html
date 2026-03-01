@@ -1053,8 +1053,8 @@
         // تحديث الإحصائيات
         function updateStats() {
             const active = allEmployees.filter(e => e.active).length;
-            const totalMinutes = allEmployees.reduce((sum, e) => sum + (e.minutesUsage?.minutesAllocated || 0), 0);
-            const usedMinutes = allEmployees.reduce((sum, e) => sum + (e.minutesUsage?.minutesUsed || 0), 0);
+            const totalMinutes = allEmployees.reduce((sum, e) => sum + (e.minutesAllocated || 0), 0);
+            const usedMinutes = allEmployees.reduce((sum, e) => sum + (e.minutesUsed || 0), 0);
 
             document.getElementById('totalEmployees').textContent = allEmployees.length;
             document.getElementById('activeEmployees').textContent = active;

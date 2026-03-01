@@ -178,7 +178,17 @@ const i18n = {
             reg_btn_register: '✅ تأكيد التسجيل',
             reg_success: 'تم إنشاء الحساب بنجاح!',
             reg_have_account: 'لديك حساب بالفعل؟',
-            reg_login_link: 'تسجيل الدخول'
+            reg_login_link: 'تسجيل الدخول',
+
+            // Main App Navigation
+            nav_dialpad: 'لوحة المفاتيح',
+            nav_contacts: 'جهات الاتصال',
+            nav_call_history: 'سجل المكالمات',
+            nav_recordings: 'المحفوظات',
+            nav_settings: 'الإعدادات',
+            nav_manage_employees: 'إدارة الموظفين',
+            nav_admin_panel: 'لوحة التحكم',
+            nav_logout: 'تسجيل الخروج'
         },
 
         en: {
@@ -353,7 +363,17 @@ const i18n = {
             reg_btn_register: '✅ Confirm Registration',
             reg_success: 'Account created successfully!',
             reg_have_account: 'Already have an account?',
-            reg_login_link: 'Sign In'
+            reg_login_link: 'Sign In',
+
+            // Main App Navigation
+            nav_dialpad: 'Dialpad',
+            nav_contacts: 'Contacts',
+            nav_call_history: 'Call History',
+            nav_recordings: 'Recordings',
+            nav_settings: 'Settings',
+            nav_manage_employees: 'Manage Employees',
+            nav_admin_panel: 'Admin Panel',
+            nav_logout: 'Logout'
         }
     },
 

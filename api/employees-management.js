@@ -154,6 +154,9 @@ async function getEmployees(req, res) {
 // إضافة موظف جديد
 async function addEmployee(req, res) {
     try {
+        console.log('📝 طلب إضافة موظف جديد');
+        console.log('Request body:', JSON.stringify(req.body, null, 2));
+        
         const {
             companyId,
             name,
@@ -168,7 +171,10 @@ async function addEmployee(req, res) {
             active
         } = req.body;
         
+        console.log('🔍 البيانات المستخرجة:', { companyId, name, username, role });
+        
         if (!companyId || !name || !username) {
+            console.log('❌ بيانات ناقصة:', { companyId, name, username });
             return res.status(400).json({
                 success: false,
                 message: 'companyId و name و username مطلوبة'
@@ -386,10 +392,12 @@ module.exports = async (req, res) => {
             message: 'Endpoint not found'
         });
     } catch (error) {
-        console.error('خطأ في employees-management API:', error);
+        console.error('❌ خطأ في employees-management API:', error);
+        console.error('Stack trace:', error.stack);
         res.status(500).json({
             success: false,
-            message: error.message
+            message: error.message,
+            error: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };

@@ -305,6 +305,57 @@ body {
     }
 }
 
+/* ========== تذكّر بياناتي ========== */
+.remember-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.remember-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.92em;
+    color: rgba(255,255,255,0.75);
+    user-select: none;
+}
+
+.remember-label input[type="checkbox"] {
+    display: none;
+}
+
+.remember-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid rgba(94, 196, 212, 0.5);
+    background: rgba(255,255,255,0.07);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.remember-label input[type="checkbox"]:checked + .remember-check {
+    background: linear-gradient(135deg, #5ec4d4, #3a9ca8);
+    border-color: #5ec4d4;
+}
+
+.remember-label input[type="checkbox"]:checked + .remember-check::after {
+    content: '✓';
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.remember-label:hover .remember-check {
+    border-color: #5ec4d4;
+    background: rgba(94, 196, 212, 0.15);
+}
+
 /* ========== زر تسجيل الدخول ========== */
 .login-btn {
     width: 100%;

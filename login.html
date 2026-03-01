@@ -88,6 +88,14 @@
                         </div>
                     </div>
                     
+                    <div class="remember-row">
+                        <label class="remember-label">
+                            <input type="checkbox" id="remember-me">
+                            <span class="remember-check"></span>
+                            <span>تذكّر بياناتي</span>
+                        </label>
+                    </div>
+
                     <div class="error-message hidden" id="error-message">
                         ⚠️ اسم المستخدم أو كلمة المرور غير صحيحة
                     </div>
@@ -131,6 +139,38 @@
         const adminUsername = 'akram';
         const adminPassword = 'Aazxc';
         
+        // ===== تذكّر بياناتي =====
+        const rememberMe = document.getElementById('remember-me');
+        const usernameInput = document.getElementById('username');
+
+        // تحميل البيانات المحفوظة عند فتح الصفحة
+        (function loadSaved() {
+            const saved = localStorage.getItem('lc_remember');
+            if (saved) {
+                try {
+                    const { u, p } = JSON.parse(saved);
+                    usernameInput.value = u || '';
+                    passwordInput.value = p || '';
+                    rememberMe.checked = true;
+                } catch(e) {}
+            }
+        })();
+
+        // حفظ / حذف البيانات عند الضغط على الـ checkbox
+        rememberMe.addEventListener('change', () => {
+            if (!rememberMe.checked) {
+                localStorage.removeItem('lc_remember');
+            }
+        });
+
+        function saveRemember(u, p) {
+            if (rememberMe.checked) {
+                localStorage.setItem('lc_remember', JSON.stringify({ u, p }));
+            } else {
+                localStorage.removeItem('lc_remember');
+            }
+        }
+
         // إظهار/إخفاء كلمة المرور
         togglePassword.addEventListener('click', () => {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -161,6 +201,7 @@
             
             // تحديد المطور الرئيسي
             if (username === adminUsername && password === adminPassword) {
+                saveRemember(username, password);
                 // حفظ بيانات المطور
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('username', username);
@@ -245,6 +286,7 @@
                     });
                     
                     loginBtn.classList.add('success');
+                    saveRemember(username, password);
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 500);
@@ -283,6 +325,7 @@
                                 callFromUSA: true
                             }));
                             loginBtn.classList.add('success');
+                            saveRemember(username, password);
                             setTimeout(() => { window.location.href = 'index.html'; }, 500);
                             return;
                         }

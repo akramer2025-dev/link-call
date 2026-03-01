@@ -767,22 +767,22 @@
                             <span style="color: #e17055;">🎭</span> الدور الوظيفي
                         </label>
                         <div class="role-selector" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
-                            <div class="role-card" onclick="selectRole('admin')" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                            <div class="role-card" onclick="selectRole('admin', this)" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
                                 <h5 style="margin: 0 0 5px; font-size: 24px;">🔑</h5>
                                 <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">مدير</div>
                                 <p style="margin: 0; font-size: 11px; color: #636e72;">صلاحيات كاملة</p>
                             </div>
-                            <div class="role-card" onclick="selectRole('supervisor')" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                            <div class="role-card" onclick="selectRole('supervisor', this)" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
                                 <h5 style="margin: 0 0 5px; font-size: 24px;">👔</h5>
                                 <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">مشرف</div>
                                 <p style="margin: 0; font-size: 11px; color: #636e72;">صلاحيات إشرافية</p>
                             </div>
-                            <div class="role-card selected" onclick="selectRole('agent')" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); border: 3px solid #10b981; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+                            <div class="role-card selected" onclick="selectRole('agent', this)" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); border: 3px solid #10b981; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
                                 <h5 style="margin: 0 0 5px; font-size: 24px;">👤</h5>
                                 <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">موظف</div>
                                 <p style="margin: 0; font-size: 11px; color: #636e72;">صلاحيات أساسية</p>
                             </div>
-                            <div class="role-card" onclick="selectRole('viewer')" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                            <div class="role-card" onclick="selectRole('viewer', this)" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
                                 <h5 style="margin: 0 0 5px; font-size: 24px;">👁️</h5>
                                 <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">مراقب</div>
                                 <p style="margin: 0; font-size: 11px; color: #636e72;">عرض فقط</p>
@@ -952,14 +952,16 @@
         }
 
         // تحديد الدور
-        function selectRole(role) {
+        function selectRole(role, element) {
             document.getElementById('empRole').value = role;
             
             // تحديث UI
             document.querySelectorAll('.role-card').forEach(card => {
                 card.classList.remove('selected');
             });
-            event.target.closest('.role-card').classList.add('selected');
+            if (element) {
+                element.classList.add('selected');
+            }
 
             // تحديث الصلاحيات تلقائياً بناءً على الدور
             updatePermissionsByRole(role);
@@ -1154,7 +1156,8 @@
             document.getElementById('empPassword').required = true;
             
             // تحديد الدور الافتراضي
-            selectRole('agent');
+            const agentCard = document.querySelector('.role-card[onclick*="agent"]');
+            selectRole('agent', agentCard);
             
             document.getElementById('employeeModal').classList.add('active');
         }
@@ -1178,7 +1181,8 @@
             document.getElementById('empPassword').value = '';
 
             // تحديد الدور
-            selectRole(employee.role || 'agent');
+            const roleCard = document.querySelector(`.role-card[onclick*="${employee.role || 'agent'}"]`);
+            selectRole(employee.role || 'agent', roleCard);
 
             // تحديد الصلاحيات
             document.querySelectorAll('.permission-item input[type="checkbox"]').forEach(cb => {

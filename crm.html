@@ -920,15 +920,6 @@
             alert('✅ تم تصدير ' + _allContacts.length + ' عميل إلى Excel!');
         }
         
-        // Import from Excel Handler
-        document.getElementById('excel-import-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            alert('📥 ميزة استيراد Excel قيد التطوير\n\nحالياً يمكنك استخدام صفحة Contacts الرئيسية للاستيراد');
-            e.target.value = '';
-        });
-        
         // Premium CRM Contact Rendering
         function _renderContactItemCRM(contact, index) {
             const tr = document.createElement('tr');

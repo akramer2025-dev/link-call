@@ -22,22 +22,28 @@ module.exports = async (req, res) => {
             });
         }
 
-        // تحويل REDIS_URL (redis://default:TOKEN@HOST:PORT) إلى Upstash REST API
-        let upstashUrl, upstashToken;
-        if (redisUrl.startsWith('redis')) {
-            const match = redisUrl.match(/redis[s]?:\/\/[^:]*:([^@]+)@([^:]+)/);
-            if (!match) throw new Error('Cannot parse REDIS_URL format: ' + redisUrl.substring(0, 40));
-            upstashToken = match[1];
-            upstashUrl   = `https://${match[2]}`;
-        } else {
-            upstashUrl   = redisUrl;
-            upstashToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-        }
+        // Redis Labs يحتاج ioredis مع TLS
+        const IORedis = require('ioredis');
+        // تحليل URL
+        const urlMatch = redisUrl.match(/redis[s]?:\/\/([^:]*):([^@]+)@([^:]+):(\d+)/);
+        if (!urlMatch) throw new Error('Cannot parse REDIS_URL: ' + redisUrl.substring(0, 30));
+        const [, , pass, host, port] = urlMatch;
 
-        console.log('Connecting to:', upstashUrl);
-        const { Redis } = require('@upstash/redis');
-        const redis = new Redis({ url: upstashUrl, token: upstashToken });
-        const rawData = await redis.get('companies_data');
+        const redisClient = new IORedis({
+            host,
+            port: parseInt(port),
+            password: pass,
+            tls: {},               // Redis Labs يستخدم TLS
+            connectTimeout: 20000,
+            commandTimeout: 15000,
+            retryStrategy: () => null,  // لا تعيد المحاولة
+            enableOfflineQueue: false,
+            lazyConnect: true
+        });
+
+        await redisClient.connect();
+        const rawData = await redisClient.get('companies_data');
+        redisClient.disconnect();
         const redisData = rawData;
 
         if (!redisData) {

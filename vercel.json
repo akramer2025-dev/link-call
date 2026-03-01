@@ -46,6 +46,10 @@
       "continue": true
     },
     {
+      "src": "/api/add-company-manual",
+      "dest": "/api/add-company-manual.js"
+    },
+    {
       "src": "/api/check-env",
       "dest": "/api/check-env.js"
     },

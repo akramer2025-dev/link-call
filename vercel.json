@@ -113,11 +113,11 @@
     },
     {
       "src": "/account/balance",
-      "dest": "/api/balance.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/balance",
-      "dest": "/api/balance.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/account/(.*)",
@@ -125,11 +125,11 @@
     },
     {
       "src": "/heartbeat",
-      "dest": "/api/heartbeat.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/track-login",
-      "dest": "/api/track-login.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/track-logout",

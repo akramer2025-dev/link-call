@@ -276,6 +276,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Vercel path fix: when routes rewrite /token → /api/index/token,
+// Express receives /api/index/token but routes are defined as /token
+app.use((req, res, next) => {
+    if (req.url.startsWith('/api/index/')) {
+        req.url = req.url.replace('/api/index', '');
+    } else if (req.url === '/api/index') {
+        req.url = '/';
+    }
+    next();
+});
+
 // Routes للصفحات الرئيسية
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'login.html'));

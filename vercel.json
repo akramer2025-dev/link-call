@@ -28,148 +28,148 @@
       }
     },
     {
-      "src": "/login",
-      "dest": "/api/index"
+      "src": "/login(.*)",
+      "dest": "/api/index/login$1"
     },
     {
-      "src": "/employees",
-      "dest": "/api/index"
+      "src": "/employees(.*)",
+      "dest": "/api/index/employees$1"
     },
     {
       "src": "/employees/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/employees/$1"
     },
     {
-      "src": "/work-tracking",
-      "dest": "/api/index"
+      "src": "/work-tracking(.*)",
+      "dest": "/api/index/work-tracking$1"
     },
     {
-      "src": "/token",
-      "dest": "/api/index"
+      "src": "/token(.*)",
+      "dest": "/api/index/token$1"
     },
     {
-      "src": "/voice",
-      "dest": "/api/index"
+      "src": "/voice(.*)",
+      "dest": "/api/index/voice$1"
     },
     {
-      "src": "/recordings",
-      "dest": "/api/index"
+      "src": "/recordings(.*)",
+      "dest": "/api/index/recordings$1"
     },
     {
       "src": "/recordings/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/recordings/$1"
     },
     {
-      "src": "/contacts",
-      "dest": "/api/index"
+      "src": "/contacts(.*)",
+      "dest": "/api/index/contacts$1"
     },
     {
       "src": "/contacts/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/contacts/$1"
     },
     {
-      "src": "/call-history",
-      "dest": "/api/index"
+      "src": "/call-history(.*)",
+      "dest": "/api/index/call-history$1"
     },
     {
-      "src": "/track-login",
-      "dest": "/api/index"
+      "src": "/track-login(.*)",
+      "dest": "/api/index/track-login$1"
     },
     {
-      "src": "/track-logout",
-      "dest": "/api/index"
+      "src": "/track-logout(.*)",
+      "dest": "/api/index/track-logout$1"
     },
     {
-      "src": "/heartbeat",
-      "dest": "/api/index"
+      "src": "/heartbeat(.*)",
+      "dest": "/api/index/heartbeat$1"
     },
     {
-      "src": "/online-users",
-      "dest": "/api/index"
+      "src": "/online-users(.*)",
+      "dest": "/api/index/online-users$1"
     },
     {
-      "src": "/settings",
-      "dest": "/api/index"
+      "src": "/settings(.*)",
+      "dest": "/api/index/settings$1"
     },
     {
       "src": "/account/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/account/$1"
     },
     {
       "src": "/admin/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/admin/$1"
     },
     {
-      "src": "/companies",
-      "dest": "/api/index"
+      "src": "/companies(.*)",
+      "dest": "/api/index/companies$1"
     },
     {
       "src": "/companies/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/companies/$1"
     },
     {
-      "src": "/update-profile",
-      "dest": "/api/index"
+      "src": "/update-profile(.*)",
+      "dest": "/api/index/update-profile$1"
     },
     {
-      "src": "/api/contacts",
-      "dest": "/api/index"
+      "src": "/api/contacts(.*)",
+      "dest": "/api/index/api/contacts$1"
     },
     {
       "src": "/api/contacts/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/api/contacts/$1"
     },
     {
-      "src": "/init-kv",
-      "dest": "/api/index"
+      "src": "/init-kv(.*)",
+      "dest": "/api/index/init-kv$1"
     },
     {
       "src": "/debug/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/debug/$1"
     },
     {
-      "src": "/make-direct-call",
-      "dest": "/api/index"
+      "src": "/make-direct-call(.*)",
+      "dest": "/api/index/make-direct-call$1"
     },
     {
-      "src": "/outgoing-call",
-      "dest": "/api/index"
+      "src": "/outgoing-call(.*)",
+      "dest": "/api/index/outgoing-call$1"
     },
     {
-      "src": "/end-call",
-      "dest": "/api/index"
+      "src": "/end-call(.*)",
+      "dest": "/api/index/end-call$1"
     },
     {
-      "src": "/start-recording",
-      "dest": "/api/index"
+      "src": "/start-recording(.*)",
+      "dest": "/api/index/start-recording$1"
     },
     {
-      "src": "/stop-recording",
-      "dest": "/api/index"
+      "src": "/stop-recording(.*)",
+      "dest": "/api/index/stop-recording$1"
     },
     {
       "src": "/recording/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/recording/$1"
     },
     {
       "src": "/delete-recording/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/delete-recording/$1"
     },
     {
       "src": "/call-status/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/call-status/$1"
     },
     {
-      "src": "/my-company",
-      "dest": "/api/index"
+      "src": "/my-company(.*)",
+      "dest": "/api/index/my-company$1"
     },
     {
       "src": "/plivo-(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/plivo-$1"
     },
     {
       "src": "/zadarma-(.*)",
-      "dest": "/api/index"
+      "dest": "/api/index/zadarma-$1"
     },
     {
       "src": "/(.*)",

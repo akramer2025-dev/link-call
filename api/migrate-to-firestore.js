@@ -22,12 +22,22 @@ module.exports = async (req, res) => {
             });
         }
 
-        // استخدام ioredis مع الـ standard Redis URL
-        const Redis = require('ioredis');
-        const redis = new Redis(redisUrl, { tls: redisUrl.startsWith('rediss://') ? {} : undefined, connectTimeout: 15000, lazyConnect: true });
-        await redis.connect();
+        // تحويل REDIS_URL (redis://default:TOKEN@HOST:PORT) إلى Upstash REST API
+        let upstashUrl, upstashToken;
+        if (redisUrl.startsWith('redis')) {
+            const match = redisUrl.match(/redis[s]?:\/\/[^:]*:([^@]+)@([^:]+)/);
+            if (!match) throw new Error('Cannot parse REDIS_URL format: ' + redisUrl.substring(0, 40));
+            upstashToken = match[1];
+            upstashUrl   = `https://${match[2]}`;
+        } else {
+            upstashUrl   = redisUrl;
+            upstashToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+        }
+
+        console.log('Connecting to:', upstashUrl);
+        const { Redis } = require('@upstash/redis');
+        const redis = new Redis({ url: upstashUrl, token: upstashToken });
         const rawData = await redis.get('companies_data');
-        redis.disconnect();
         const redisData = rawData;
 
         if (!redisData) {

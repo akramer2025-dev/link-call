@@ -110,16 +110,8 @@
     <script>
         // تحويل تلقائي بعد ثانية واحدة
         setTimeout(() => {
-            // الحصول على بيانات الجلسة من localStorage أو sessionStorage
-            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
-            
-            if (companyId) {
-                // التحويل مع فتح قسم جهات الاتصال مباشرة
-                window.location.href = '/index.html#contacts';
-            } else {
-                // إذا لم يكن هناك بيانات تسجيل دخول، العودة للصفحة الرئيسية
-                window.location.href = '/index.html';
-            }
+            // التحويل مباشرة لصفحة Contacts - سوف تتحقق index.html من تسجيل الدخول تلقائياً
+            window.location.href = '/index.html#contacts';
         }, 1000);
     </script>
 </body>

@@ -3062,9 +3062,10 @@ async function loadCallHistory() {
 // cache للبحث السريع بدون طلب API جديد
 let _cachedContacts = [];
 
-function _renderContactItem(contact, index) {
-    const tr = document.createElement('tr');
-    tr.className = 'contact-row';
+// Simple Mobile-Style Contact Rendering
+function _renderContactItem(contact) {
+    const item = document.createElement('div');
+    item.className = 'contact-item';
     
     const initial = (contact.name || '?').charAt(0).toUpperCase();
     const cid = contact._id || contact.id || contact.contactId || '';
@@ -3072,83 +3073,24 @@ function _renderContactItem(contact, index) {
     const safeName = (contact.name || '').replace(/'/g, '&#39;');
     const safePhone = (contact.phone || '').replace(/'/g, '');
     
-    // استخراج Country و Balance من notes
-    const notes = contact.notes || '';
-    const countryMatch = notes.match(/Country:\s*([^|]+)/);
-    const balanceMatch = notes.match(/Balance:\s*(.+)/);
-    const country = countryMatch ? countryMatch[1].trim() : '-';
-    const balance = balanceMatch ? balanceMatch[1].trim() : '-';
+    // تحديد لون الـ avatar بناءً على أول حرف
+    const colors = ['#667eea', '#764ba2', '#5ec4d4', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140'];
+    const colorIndex = initial.charCodeAt(0) % colors.length;
+    const avatarColor = colors[colorIndex];
     
-    const email = contact.email || '-';
-    const createdDate = contact.createdAt ? new Date(contact.createdAt).toLocaleDateString('ar-EG') : '-';
-    
-    // توليد avatars متعددة بألوان مختلفة
-    const nameWords = (contact.name || 'User').split(' ');
-    const avatarColors = ['avatar-gradient-1', 'avatar-gradient-2', 'avatar-gradient-3', 'avatar-gradient-4'];
-    const avatarsHTML = nameWords.slice(0, 3).map((word, i) => {
-        const letter = word.charAt(0).toUpperCase();
-        const colorClass = avatarColors[i % avatarColors.length];
-        return `<div class="contact-avatar-multi ${colorClass}">${letter}</div>`;
-    }).join('');
-    
-    // تحديد الحالة بناءً على LastCallDate أو tags
-    const isNew = contact.tags?.includes('Excel Import') || !contact.lastCallDate;
-    const isPremium = contact.tags?.includes('VIP') || parseFloat(balance.replace(/[^0-9.-]/g, '')) > 1000;
-    const isActive = contact.totalCalls > 0;
-    
-    let statusBadge = '';
-    if (isPremium) {
-        statusBadge = '<span class="contact-status-badge badge-premium">⭐ مميز</span>';
-    } else if (isNew) {
-        statusBadge = '<span class="contact-status-badge badge-new">🆕 جديد</span>';
-    } else if (isActive) {
-        statusBadge = '<span class="contact-status-badge badge-active">✓ نشط</span>';
-    } else {
-        statusBadge = '<span class="contact-status-badge badge-inactive">○ غير منشط</span>';
-    }
-    
-    // تقييم عشوائي بالنجوم (يمكن تخزينه لاحقاً في الـ database)
-    const rating = contact.rating || Math.floor(Math.random() * 3) + 3; // 3-5 stars
-    const starsHTML = Array(5).fill(0).map((_, i) => 
-        `<span class="star ${i < rating ? '' : 'empty'}">★</span>`
-    ).join('');
-    
-    tr.innerHTML = `
-        <td class="col-number">${index + 1}</td>
-        <td class="col-avatar">
-            <div class="contact-avatars-group">${avatarsHTML}</div>
-        </td>
-        <td class="col-name">
-            ${contact.name || ''}
-            <div style="font-size:11px;color:#8892b0;margin-top:2px;">${statusBadge}</div>
-        </td>
-        <td class="col-phone" style="direction:ltr;text-align:right;">${contact.phone || ''}</td>
-        <td class="col-email">${email}</td>
-        <td class="col-country">${country}</td>
-        <td class="col-balance" style="color:#1dd1a1;font-weight:700;">${balance}</td>
-        <td class="col-rating">
-            <div class="contact-rating">${starsHTML}</div>
-        </td>
-        <td class="col-category">
-            <select class="contact-category-select" onchange="updateContactCategory('${safeId}', this.value)">
-                <option value="">-- اختر --</option>
-                <option value="vip">VIP</option>
-                <option value="regular">عادي</option>
-                <option value="potential">محتمل</option>
-                <option value="inactive">غير نشط</option>
-            </select>
-        </td>
-        <td class="col-date" style="font-size:12px;color:#8892b0;">${createdDate}</td>
-        <td class="col-actions">
-            <button class="table-action-btn list-btn" onclick="viewContactDetails('${safeId}')" title="عرض التفاصيل">☰</button>
-            <button class="table-action-btn file-btn" onclick="viewContactFiles('${safeId}')" title="الملفات">📄</button>
-            <button class="table-action-btn whatsapp-btn" onclick="openWhatsApp('${safePhone}')" title="واتساب">💬</button>
-            <button class="table-action-btn call-btn" onclick="callContact('${safePhone}')" title="اتصال">📞</button>
-            <button class="table-action-btn edit-btn" onclick="editContact('${safeId}')" title="تعديل">✏️</button>
-            <button class="table-action-btn delete-btn" onclick="deleteContact('${safeId}', '${safeName}')" title="حذف">🗑️</button>
-        </td>
+    item.innerHTML = `
+        <div class="contact-avatar" style="background: ${avatarColor};">${initial}</div>
+        <div class="contact-info">
+            <div class="contact-name">${contact.name || 'بدون اسم'}</div>
+            <div class="contact-phone">${contact.phone || '-'}</div>
+        </div>
+        <div class="contact-actions">
+            <button class="contact-action-btn edit-btn" onclick="editContact('${safeId}')" title="تعديل">✏️</button>
+            <button class="contact-action-btn call-btn" onclick="callContact('${safePhone}')" title="اتصال">📞</button>
+        </div>
     `;
-    return tr;
+    
+    return item;
 }
 
 async function loadContacts() {
@@ -3180,44 +3122,10 @@ async function loadContacts() {
             return;
         }
 
-        // إنشاء جدول احترافي
-        const table = document.createElement('table');
-        table.className = 'contacts-table';
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th class="col-number">#</th>
-                    <th class="col-avatar">الصورة</th>
-                    <th class="col-name sortable" onclick="sortContactsBy('name')">
-                        الاسم <span class="sort-icon">⬍</span>
-                    </th>
-                    <th class="col-phone sortable" onclick="sortContactsBy('phone')">
-                        الموبايل <span class="sort-icon">⬍</span>
-                    </th>
-                    <th class="col-email sortable" onclick="sortContactsBy('email')">
-                        البريد الإلكتروني <span class="sort-icon">⬍</span>
-                    </th>
-                    <th class="col-country sortable" onclick="sortContactsBy('country')">
-                        البلد <span class="sort-icon">⬍</span>
-                    </th>
-                    <th class="col-balance sortable" onclick="sortContactsBy('balance')">
-                        الرصيد <span class="sort-icon">⬍</span>
-                    </th>
-                    <th class="col-rating">التقييم</th>
-                    <th class="col-category">التصنيف</th>
-                    <th class="col-date sortable" onclick="sortContactsBy('date')">
-                        تاريخ الإضافة <span class="sort-icon">⬍</span>
-                    </th>
-                    <th class="col-actions">الإجراءات</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        `;
-        
-        const tbody = table.querySelector('tbody');
-        contacts.forEach((contact, index) => tbody.appendChild(_renderContactItem(contact, index)));
-        
-        container.appendChild(table);
+        // عرض جهات الاتصال بتصميم موبايل بسيط
+        contacts.forEach(contact => {
+            container.appendChild(_renderContactItem(contact));
+        });
         
         console.log('✅ تم تحميل', contacts.length, 'جهة اتصال للشركة', companyId);
     } catch (error) {

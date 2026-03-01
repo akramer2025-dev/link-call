@@ -1546,7 +1546,7 @@ body::after {
     gap: 10px;
 }
 
-.contact-actions button {
+.contact-action-btn {
     width: 35px;
     height: 35px;
     border: none;
@@ -1554,16 +1554,29 @@ body::after {
     cursor: pointer;
     font-size: 16px;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.contact-call-btn {
-    background: linear-gradient(135deg, var(--success-color), #00c6ff);
+.contact-action-btn.call-btn {
+    background: linear-gradient(135deg, #4facfe, #00c6ff);
     color: white;
 }
 
-.contact-call-btn:hover {
+.contact-action-btn.call-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+.contact-action-btn.edit-btn {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+}
+
+.contact-action-btn.edit-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
 }
 
 /* ─── Excel-like CRM Table Styles ───────────────────────────────────────────── */

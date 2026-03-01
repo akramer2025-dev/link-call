@@ -24,12 +24,24 @@ module.exports = async (req, res) => {
         
         const AccessToken = twilio.jwt.AccessToken;
         const VoiceGrant = AccessToken.VoiceGrant;
-        
-        // استخدام Auth Token مباشرة كـ signing key
+
+        // يجب استخدام API Key + API Secret (وليس Account SID + Auth Token)
+        const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
+        const TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
+
+        if (!TWILIO_API_KEY || !TWILIO_API_SECRET) {
+            console.error('❌ مطلوب TWILIO_API_KEY و TWILIO_API_SECRET');
+            console.error('   أنشئهم من: console.twilio.com > Account > API Keys');
+            return res.status(500).json({ 
+                error: 'Missing API Key credentials',
+                hint: 'Create API Key at console.twilio.com > Account > API Keys & Tokens'
+            });
+        }
+
         const token = new AccessToken(
             TWILIO_ACCOUNT_SID,
-            TWILIO_ACCOUNT_SID,
-            TWILIO_AUTH_TOKEN,
+            TWILIO_API_KEY,
+            TWILIO_API_SECRET,
             { 
                 identity: identity,
                 ttl: 3600

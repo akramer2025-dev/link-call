@@ -356,9 +356,26 @@
 
     // ==================== حماية من Scraping ====================
     const originalOpen = XMLHttpRequest.prototype.open;
+    const originalSend = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.open = function(method, url) {
-        this.setRequestHeader('X-Protection-Token', generateProtectionToken());
+        this._protectionUrl = url;
         return originalOpen.apply(this, arguments);
+    };
+    XMLHttpRequest.prototype.send = function() {
+        // أضف الـ header فقط للطلبات الداخلية وليس Twilio
+        try {
+            const url = this._protectionUrl || '';
+            const isTwilio = typeof url === 'string' && (
+                url.includes('twilio.com') || 
+                url.includes('twil.io') ||
+                url.includes('chunder.twilio') ||
+                url.includes('media.')
+            );
+            if (!isTwilio && url) {
+                this.setRequestHeader('X-Protection-Token', generateProtectionToken());
+            }
+        } catch(e) {}
+        return originalSend.apply(this, arguments);
     };
 
     // ==================== منع Print Screen ====================

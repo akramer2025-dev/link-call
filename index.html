@@ -192,8 +192,12 @@
         
         <div class="sidebar-divider"></div>
         
-        <!-- زر تسجيل الخروج -->
+        <!-- زر تسجيل الخروج + تبديل اللغة -->
         <div class="sidebar-footer">
+            <div class="lang-switcher-sidebar">
+                <button class="lang-btn active" data-lang="ar" onclick="i18n.setLang('ar')">ع</button>
+                <button class="lang-btn" data-lang="en" onclick="i18n.setLang('en')">EN</button>
+            </div>
             <button class="sidebar-logout-btn" id="sidebar-logout-btn">
                 <span class="logout-icon">🚪</span>
                 <span class="logout-text">تسجيل الخروج</span>
@@ -837,5 +841,6 @@
         // تغيير الصورة كل 6 ثواني
         setInterval(nextSlide, 6000);
     </script>
+    <script src="js/i18n.js"></script>
 </body>
 </html>

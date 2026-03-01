@@ -1,77 +1,78 @@
 ﻿const fs = require('fs');
 const path = require('path');
 
-// Upstash Redis للتخزين السحابي - نفس إعداد companies.js
-let redis;
-let redisAvailable = false;
-try {
-    const { Redis } = require('@upstash/redis');
-    const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-    const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-    if (redisUrl && redisToken && redisUrl.startsWith('http')) {
-        redis = new Redis({ url: redisUrl, token: redisToken });
-        redisAvailable = true;
-        console.log('✅ Redis initialized in employees-management.js');
-    } else {
-        console.log('⚠️ Redis URL/Token غير متاح في employees-management.js');
-    }
-} catch (e) {
-    console.log('⚠️ Redis غير متاح في employees-management.js:', e.message);
-}
-
-// Database file (local fallback - نفس companies.js)
+// Database file (local fallback)
 const companiesFile = path.join(__dirname, '../companies.json');
 
-// نفس functions الـ companies.js لضمان تزامن البيانات
+// Lazy Redis init - يتم تشغيله عند أول طلب وليس عند تحميل الموديول
+let _redis = null;
+function getRedis() {
+    if (_redis) return _redis;
+    try {
+        const { Redis } = require('@upstash/redis');
+        const redisUrl   = process.env.KV_REST_API_URL   || process.env.UPSTASH_REDIS_REST_URL;
+        const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+        if (redisUrl && redisToken && redisUrl.startsWith('http')) {
+            _redis = new Redis({ url: redisUrl, token: redisToken });
+            console.log('✅ [employees-management] Redis initialized. URL:', redisUrl.substring(0, 30));
+        } else {
+            console.warn('⚠️ [employees-management] Redis env vars missing. URL:', redisUrl ? redisUrl.substring(0, 20) : 'MISSING');
+        }
+    } catch (e) {
+        console.error('❌ [employees-management] Redis init error:', e.message);
+    }
+    return _redis;
+}
+
+
+// جلب بيانات الشركات
 async function getCompaniesData() {
-    // Try Redis first (whenever available)
-    if (redisAvailable && redis) {
+    const redis = getRedis();
+    if (redis) {
         try {
             const data = await redis.get('companies_data');
             if (data) {
-                // handle both object and JSON string
                 const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-                if (parsed && parsed.companies) return parsed;
+                if (parsed && parsed.companies) {
+                    console.log('[employees-management] ✅ جلب بيانات من Redis:', parsed.companies.length, 'شركة');
+                    return parsed;
+                }
             }
         } catch (e) {
-            console.error('Redis read error in employees-management:', e.message);
+            console.error('[employees-management] ❌ Redis read error:', e.message);
         }
     }
     // Fallback: local file
     try {
         if (fs.existsSync(companiesFile)) {
-            const data = fs.readFileSync(companiesFile, 'utf8');
-            return JSON.parse(data);
+            return JSON.parse(fs.readFileSync(companiesFile, 'utf8'));
         }
     } catch (error) {
-        console.error('Error reading companies file:', error);
+        console.error('[employees-management] ❌ file read error:', error.message);
     }
     return { companies: [] };
 }
 
 async function saveCompaniesData(data) {
-    // Save to Redis whenever available
-    if (redisAvailable && redis) {
+    const redis = getRedis();
+    if (redis) {
         try {
             await redis.set('companies_data', data);
-            console.log('✅ employees-management: تم حفظ بيانات الشركات في Redis');
+            console.log('[employees-management] ✅ حفظ في Redis بنجاح');
             return true;
         } catch (e) {
-            console.error('❌ Redis write error in employees-management:', e.message);
-            // don't return false yet - try file fallback below
+            console.error('[employees-management] ❌ Redis write error:', e.message);
         }
     }
-    // Fallback: local file (only works locally)
+    // Fallback: local file
     try {
         fs.writeFileSync(companiesFile, JSON.stringify(data, null, 2));
         return true;
     } catch (error) {
-        console.error('❌ Error saving companies file:', error.message);
+        console.error('[employees-management] ❌ file write error:', error.message);
         return false;
     }
 }
-
-const availablePermissions = [
     { id: 'view_calls', name: 'عرض المكالمات', category: 'calls' },
     { id: 'make_calls', name: 'إجراء المكالمات', category: 'calls' },
     { id: 'listen_recordings', name: 'الاستماع للتسجيلات', category: 'calls' },

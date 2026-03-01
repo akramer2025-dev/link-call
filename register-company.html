@@ -405,7 +405,7 @@
             </div>
 
             <!-- Registration Form -->
-            <form id="registration-form">
+            <form id="registration-form" novalidate>
                 <!-- Step 1: Company Info -->
                 <div class="form-step active" data-step="1">
                     <h2 style="margin-bottom: 20px; color: var(--primary);">معلومات الشركة</h2>
@@ -513,8 +513,8 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>اسم المستخدم <span>*</span></label>
-                            <input type="text" name="username" required placeholder="admin" pattern="[a-zA-Z0-9_]{3,20}">
-                            <div class="error-message">اسم المستخدم يجب أن يكون 3-20 حرف (حروف وأرقام فقط)</div>
+                            <input type="text" name="username" required placeholder="admin أو email@company.com">
+                            <div class="error-message">اسم المستخدم مطلوب (يمكن استخدام الإيميل)</div>
                         </div>
 
                         <div class="form-group">

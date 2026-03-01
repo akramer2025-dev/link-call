@@ -52,19 +52,19 @@
             </div>
             
             <div class="incoming-call-info">
-                <h2 class="incoming-title">مكالمة واردة</h2>
+                <h2 class="incoming-title" data-i18n="incoming_call_title">مكالمة واردة</h2>
                 <div class="caller-number" id="incoming-caller-number">+20123456789</div>
-                <div class="caller-name" id="incoming-caller-name">جهة اتصال غير معروفة</div>
+                <div class="caller-name" id="incoming-caller-name" data-i18n="incoming_unknown">جهة اتصال غير معروفة</div>
             </div>
             
             <div class="incoming-call-actions">
                 <button class="incoming-btn reject-btn" id="reject-call-btn">
                     <span class="btn-icon">✖</span>
-                    <span class="btn-text">رفض</span>
+                    <span class="btn-text" data-i18n="incoming_reject">رفض</span>
                 </button>
                 <button class="incoming-btn accept-btn" id="accept-call-btn">
                     <span class="btn-icon">📞</span>
-                    <span class="btn-text">رد</span>
+                    <span class="btn-text" data-i18n="incoming_accept">رد</span>
                 </button>
             </div>
         </div>
@@ -185,7 +185,7 @@
             <!-- زر تثبيت التطبيق -->
             <div class="menu-item install-menu-item" id="install-app-btn" style="display: none;">
                 <div class="menu-icon">📲</div>
-                <div class="menu-label">تثبيت التطبيق</div>
+                <div class="menu-label" data-i18n="nav_install_app">تثبيت التطبيق</div>
                 <div class="menu-arrow">←</div>
             </div>
         </nav>
@@ -230,11 +230,11 @@
                         </div>
                         <a href="admin.html" class="admin-link-btn" id="admin-link-btn" title="لوحة التحكم" style="display: none;">
                             <span class="admin-icon">⚙️</span>
-                            <span class="admin-text">لوحة التحكم</span>
+                            <span class="admin-text" data-i18n="nav_admin_panel">لوحة التحكم</span>
                         </a>
                         <button class="logout-header-btn" id="logout-header-btn" title="تسجيل خروج">
                             <span class="logout-icon">🚪</span>
-                            <span class="logout-text">خروج</span>
+                            <span class="logout-text" data-i18n="settings_logout_short">خروج</span>
                         </button>
                     </div>
                 </div>
@@ -299,61 +299,61 @@
 
                 <!-- اختيار رقم الاتصال -->
                 <div class="caller-id-selector hidden" id="caller-id-selector">
-                    <label for="caller-id-select">اتصال من:</label>
+                    <label for="caller-id-select" data-i18n="dialpad_call_from">اتصال من:</label>
                     <select id="caller-id-select" class="caller-id-dropdown">
                         <option value="default">🇺🇸 Twilio أمريكا</option>
                         <option value="zadarma-egypt">🇪🇬 Zadarma مصر ⭐</option>
                         <option value="zadarma-saudi">🇸🇦 Zadarma السعودية</option>
                     </select>
-                    <button class="confirm-call-btn" id="confirm-call-btn">اتصل الآن</button>
+                    <button class="confirm-call-btn" id="confirm-call-btn" data-i18n="dialpad_call_now">اتصل الآن</button>
                 </div>
 
                 <button class="call-btn" id="call-btn">
                     📞
                 </button>
 
-                <div class="quick-dial">اتصال سريع</div>
+                <div class="quick-dial" data-i18n="dialpad_quick_dial">اتصال سريع</div>
             </div>
 
             <!-- شاشة المكالمة -->
             <div class="call-screen hidden" id="call-screen">
                 <div class="call-info">
-                    <div class="call-status" id="call-status">جاري الاتصال...</div>
+                    <div class="call-status" id="call-status" data-i18n="call_status_calling">جاري الاتصال...</div>
                     <div class="call-employee-name" id="call-employee-name"></div>
                     <div class="call-number" id="call-number"></div>
                     <div class="call-duration" id="call-duration">00:00</div>
                     <div class="recording-status hidden" id="recording-status">
-                        🔴 جاري التسجيل
+                        🔴 <span data-i18n="call_recording">جاري التسجيل</span>
                     </div>
                 </div>
                 
                 <div class="call-controls">
                     <button class="control-btn" id="mute-btn">
                         <span class="icon">🔇</span>
-                        <span class="label">كتم الصوت</span>
+                        <span class="label" data-i18n="call_mute">كتم الصوت</span>
                     </button>
                     <button class="control-btn" id="speaker-btn">
                         <span class="icon">🔊</span>
-                        <span class="label">السبيكر</span>
+                        <span class="label" data-i18n="call_speaker">السبيكر</span>
                     </button>
                     <button class="control-btn" id="hold-btn">
                         <span class="icon">⏸️</span>
-                        <span class="label">إيقاف مؤقت</span>
+                        <span class="label" data-i18n="call_hold">إيقاف مؤقت</span>
                     </button>
                     <button class="control-btn end-call" id="end-call-btn">
                         <span class="icon">📞</span>
-                        <span class="label">إنهاء</span>
+                        <span class="label" data-i18n="call_end">إنهاء</span>
                     </button>
                 </div>
             </div>
 
             <!-- سجل المكالمات -->
             <div class="call-history-list hidden" id="call-history-list">
-                <h2>سجل المكالمات</h2>
+                <h2 data-i18n="nav_call_history">سجل المكالمات</h2>
                 <div id="call-history-container">
                     <div class="empty-state">
                         <div class="empty-icon">📞</div>
-                        <p>لا توجد مكالمات حتى الآن</p>
+                        <p data-i18n="history_empty">لا توجد مكالمات حتى الآن</p>
                     </div>
                 </div>
             </div>
@@ -361,33 +361,33 @@
             <!-- جهات الاتصال -->
             <div class="contacts-list hidden" id="contacts-list">
                 <div class="contacts-header">
-                    <h2>جهات الاتصال</h2>
+                    <h2 data-i18n="nav_contacts">جهات الاتصال</h2>
                     <button class="add-contact-btn" id="add-contact-btn">
-                        <span>+</span> إضافة جهة اتصال
+                        <span>+</span> <span data-i18n="contacts_add">إضافة جهة اتصال</span>
                     </button>
                 </div>
                 <div class="search-box">
-                    <input type="text" id="contact-search" placeholder="ابحت عن جهة اتصال...">
+                    <input type="text" id="contact-search" data-i18n-placeholder="contacts_search_placeholder" placeholder="ابحث عن جهة اتصال...">
                     <span class="search-icon">🔍</span>
                 </div>
                 <div id="contacts-container">
                     <div class="empty-state">
                         <div class="empty-icon">👥</div>
-                        <p>لا توجد جهات اتصال</p>
-                        <button class="add-contact-btn-empty">إضافة جهة اتصال</button>
+                        <p data-i18n="contacts_empty">لا توجد جهات اتصال</p>
+                        <button class="add-contact-btn-empty" data-i18n="contacts_add">إضافة جهة اتصال</button>
                     </div>
                 </div>
             </div>
 
             <!-- قائمة التسجيلات -->
             <div class="recordings-list hidden" id="recordings-list">
-                <h2>التسجيلات المحفوظة</h2>
+                <h2 data-i18n="nav_recordings">التسجيلات المحفوظة</h2>
                 <div id="recordings-container"></div>
             </div>
 
             <!-- الإعدادات -->
             <div class="settings-panel hidden" id="settings-panel">
-                <h2>الإعدادات</h2>
+                <h2 data-i18n="nav_settings">الإعدادات</h2>
                 <div class="settings-content">
                     <div class="settings-section">
                         <div class="settings-header">
@@ -396,78 +396,78 @@
                             </div>
                             <div class="app-info">
                                 <h3>Link Call</h3>
-                                <p class="version">الإصدار 1.0.0</p>
-                                <p class="build-date">بناء December 7, 2025</p>
+                                <p class="version" data-i18n="settings_version">الإصدار 1.0.0</p>
+                                <p class="build-date" data-i18n="settings_build">بناء December 7, 2025</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- قسم معلومات الحساب (للمطور فقط) -->
                     <div class="settings-section" id="admin-account-section" style="display: none;">
-                        <h4>معلومات الحساب</h4>
+                        <h4 data-i18n="settings_account_title">معلومات الحساب</h4>
                         <div class="setting-item">
-                            <span class="setting-label">رقمك الشخصي</span>
+                            <span class="setting-label" data-i18n="settings_your_number">رقمك الشخصي</span>
                             <input type="tel" id="user-phone-number" class="setting-input" placeholder="+966559902557" value="">
                         </div>
                         <div class="setting-item">
-                            <span class="setting-label">رقم Twilio</span>
+                            <span class="setting-label" data-i18n="settings_twilio_number">رقم Twilio</span>
                             <span class="setting-value">+1 320 433 6644</span>
                         </div>
                         <div class="setting-item">
-                            <span class="setting-label">حالة الاتصال</span>
-                            <span class="setting-value status-online">متصل</span>
+                            <span class="setting-label" data-i18n="settings_connection_status">حالة الاتصال</span>
+                            <span class="setting-value status-online" data-i18n="settings_connected">متصل</span>
                         </div>
                     </div>
 
                     <!-- قسم لوحة التحكم (للمطور فقط) -->
                     <div class="settings-section" id="admin-panel-section" style="display: none;">
-                        <h4>🛠️ لوحة تحكم المطور</h4>
+                        <h4>🛠️ <span data-i18n="settings_dev_panel">لوحة تحكم المطور</span></h4>
                         <div class="setting-item" style="flex-direction: column; gap: 10px;">
                             <a href="admin.html" style="display: inline-block; width: 100%; padding: 12px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; border-radius: 10px; text-decoration: none; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'">
-                                📊 فتح لوحة تحكم المطور
+                                📊 <span data-i18n="settings_open_dev_panel">فتح لوحة تحكم المطور</span>
                             </a>
                             <a href="manage-employees.html" style="display: inline-block; width: 100%; padding: 12px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center; border-radius: 10px; text-decoration: none; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(245, 87, 108, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(245, 87, 108, 0.4)'">
-                                👥 إدارة الموظفين
+                                👥 <span data-i18n="nav_manage_employees">إدارة الموظفين</span>
                             </a>
                         </div>
                     </div>
 
                     <!-- قسم إدارة الموظفين (لمدير الشركة فقط) -->
                     <div class="settings-section" id="company-admin-section" style="display: none;">
-                        <h4>👥 إدارة الموظفين</h4>
-                        <p style="color: #888; font-size: 13px; margin-bottom: 15px;">إضافة وإدارة موظفين الشركة</p>
+                        <h4>👥 <span data-i18n="nav_manage_employees">إدارة الموظفين</span></h4>
+                        <p style="color: #888; font-size: 13px; margin-bottom: 15px;" data-i18n="company_admin_desc">إضافة وإدارة موظفين الشركة</p>
                         <div class="setting-item" style="flex-direction: column; gap: 12px;">
                             <a href="manage-employees.html" style="display: inline-block; width: 100%; padding: 12px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-align: center; border-radius: 10px; text-decoration: none; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(16, 185, 129, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(16, 185, 129, 0.4)'">
-                                ✅ إدارة موظفين شركتك
+                                ✅ <span data-i18n="company_btn_manage">إدارة موظفين شركتك</span>
                             </a>
                             <a href="company-reports.html" style="display: inline-block; width: 100%; padding: 12px 20px; background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%); color: white; text-align: center; border-radius: 10px; text-decoration: none; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(94, 196, 212, 0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(94, 196, 212, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(94, 196, 212, 0.4)'">
-                                📊 تقارير وتحليلات الموظفين
+                                📊 <span data-i18n="company_btn_reports">تقارير وتحليلات الموظفين</span>
                             </a>
                             <a href="company-crm.html" style="display: inline-block; width: 100%; padding: 12px 20px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; text-align: center; border-radius: 10px; text-decoration: none; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(251, 191, 36, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(251, 191, 36, 0.4)'">
-                                🎯 نظام إدارة العملاء CRM
+                                🎯 <span data-i18n="company_btn_crm">نظام إدارة العملاء CRM</span>
                             </a>
                         </div>
                     </div>
 
                     <!-- قسم الرصيد -->
                     <div class="settings-section" id="balance-section">
-                        <h4>💰 رصيد المكالمات</h4>
+                        <h4>💰 <span data-i18n="settings_balance_title">رصيد المكالمات</span></h4>
                         <div class="balance-display">
                             <div class="balance-amount">
                                 <span class="balance-value" id="account-balance">--</span>
                                 <span class="balance-currency" id="balance-currency">USD</span>
                             </div>
-                            <div class="balance-status" id="balance-status">جاري التحميل...</div>
+                            <div class="balance-status" id="balance-status" data-i18n="settings_loading">جاري التحميل...</div>
                         </div>
                         <div class="setting-item">
-                            <span class="setting-label">حالة الحساب</span>
+                            <span class="setting-label" data-i18n="settings_account_status">حالة الحساب</span>
                             <span class="setting-value" id="account-status">--</span>
                         </div>
                         <button class="recharge-btn" id="recharge-btn" onclick="openRechargeUrl()">
-                            💳 إعادة شحن الرصيد
+                            💳 <span data-i18n="settings_recharge">إعادة شحن الرصيد</span>
                         </button>
                         <button class="refresh-balance-btn" onclick="loadAccountBalance()">
-                            🔄 تحديث الرصيد
+                            🔄 <span data-i18n="settings_refresh_balance">تحديث الرصيد</span>
                         </button>
                     </div>
 
@@ -616,35 +616,35 @@
 
                     <!-- قسم إعدادات الصوت (للمطور فقط) -->
                     <div class="settings-section" id="admin-audio-section" style="display: none;">
-                        <h4>إعدادات الصوت</h4>
+                        <h4 data-i18n="settings_audio_title">إعدادات الصوت</h4>
                         <div class="setting-item">
-                            <span class="setting-label">تسجيل المكالمات تلقائياً</span>
+                            <span class="setting-label" data-i18n="settings_auto_record">تسجيل المكالمات تلقائياً</span>
                             <label class="switch">
                                 <input type="checkbox" id="auto-record" checked>
                                 <span class="slider"></span>
                             </label>
                         </div>
                         <div class="setting-item">
-                            <span class="setting-label">جودة الصوت</span>
+                            <span class="setting-label" data-i18n="settings_audio_quality">جودة الصوت</span>
                             <select class="setting-select">
-                                <option value="high">عالية</option>
-                                <option value="medium" selected>متوسطة</option>
-                                <option value="low">منخفضة</option>
+                                <option value="high" data-i18n="quality_high">عالية</option>
+                                <option value="medium" selected data-i18n="quality_medium">متوسطة</option>
+                                <option value="low" data-i18n="quality_low">منخفضة</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="settings-section">
-                        <h4>الإشعارات</h4>
+                        <h4 data-i18n="settings_notifications_title">الإشعارات</h4>
                         <div class="setting-item">
-                            <span class="setting-label">إشعارات المكالمات الواردة</span>
+                            <span class="setting-label" data-i18n="settings_incoming_notif">إشعارات المكالمات الواردة</span>
                             <label class="switch">
                                 <input type="checkbox" id="call-notifications" checked>
                                 <span class="slider"></span>
                             </label>
                         </div>
                         <div class="setting-item">
-                            <span class="setting-label">صوت الرنين</span>
+                            <span class="setting-label" data-i18n="settings_ringtone">صوت الرنين</span>
                             <label class="switch">
                                 <input type="checkbox" id="ringtone-sound" checked>
                                 <span class="slider"></span>
@@ -654,99 +654,99 @@
 
                     <!-- قسم تعديل الملف الشخصي (للمديرين فقط) -->
                     <div class="settings-section" id="employee-profile-section" style="display: none;">
-                        <h4>✏️ الملف الشخصي</h4>
+                        <h4>✏️ <span data-i18n="settings_profile_title">الملف الشخصي</span></h4>
                         <div class="form-group">
-                            <label>الاسم الكامل:</label>
-                            <input type="text" id="profile-fullname" placeholder="الاسم الكامل" class="setting-input">
+                            <label data-i18n="settings_fullname">الاسم الكامل:</label>
+                            <input type="text" id="profile-fullname" data-i18n-placeholder="settings_fullname" placeholder="الاسم الكامل" class="setting-input">
                         </div>
                         <div class="form-group">
-                            <label>رقم الهاتف:</label>
+                            <label data-i18n="settings_phone">رقم الهاتف:</label>
                             <input type="tel" id="profile-phone" placeholder="+966..." class="setting-input">
                         </div>
                         <div class="form-group">
-                            <label>كلمة المرور الحالية:</label>
-                            <input type="password" id="profile-current-password" placeholder="كلمة المرور الحالية" class="setting-input">
+                            <label data-i18n="settings_current_password">كلمة المرور الحالية:</label>
+                            <input type="password" id="profile-current-password" data-i18n-placeholder="settings_current_password" placeholder="كلمة المرور الحالية" class="setting-input">
                         </div>
                         <div class="form-group">
-                            <label>كلمة المرور الجديدة:</label>
-                            <input type="password" id="profile-new-password" placeholder="اتركها فارغة إن لم ترد التغيير" class="setting-input">
+                            <label data-i18n="settings_new_password">كلمة المرور الجديدة:</label>
+                            <input type="password" id="profile-new-password" data-i18n-placeholder="settings_leave_empty" placeholder="اتركها فارغة إن لم ترد التغيير" class="setting-input">
                         </div>
-                        <button class="btn-primary" id="update-profile-btn">💾 حفظ التعديلات</button>
+                        <button class="btn-primary" id="update-profile-btn">💾 <span data-i18n="settings_save_profile">حفظ التعديلات</span></button>
                     </div>
 
                     <!-- قسم إدارة المديرين (للمطور فقط) -->
                     <div class="settings-section" id="employees-section" style="display: none;">
-                        <h4>🔐 إدارة المديرين</h4>
+                        <h4>🔐 <span data-i18n="settings_managers_title">إدارة المديرين</span></h4>
                         <div class="employees-container">
                             <div class="add-employee-form">
-                                <h5>إضافة مدير جديد</h5>
+                                <h5 data-i18n="settings_add_manager">إضافة مدير جديد</h5>
                                 <div class="form-group">
-                                    <input type="text" id="emp-username" placeholder="اسم المستخدم" required>
+                                    <input type="text" id="emp-username" data-i18n-placeholder="emp_username" placeholder="اسم المستخدم" required>
                                 </div>
                                 <div class="form-group">
-                                    <input type="password" id="emp-password" placeholder="كلمة المرور" required>
+                                    <input type="password" id="emp-password" data-i18n-placeholder="emp_password" placeholder="كلمة المرور" required>
                                 </div>
                                 <div class="form-group">
-                                    <input type="text" id="emp-fullname" placeholder="الاسم الكامل" required>
+                                    <input type="text" id="emp-fullname" data-i18n-placeholder="settings_fullname" placeholder="الاسم الكامل" required>
                                 </div>
                                 <div class="form-group">
-                                    <input type="tel" id="emp-phone" placeholder="رقم الهاتف (+966...)" required>
+                                    <input type="tel" id="emp-phone" data-i18n-placeholder="emp_phone" placeholder="رقم الهاتف (+966...)" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>القسم:</label>
+                                    <label data-i18n="settings_dept">القسم:</label>
                                     <select id="emp-department" class="setting-select" required>
-                                        <option value="">-- اختر القسم --</option>
-                                        <option value="1">الحجوزات</option>
-                                        <option value="2">المبيعات</option>
-                                        <option value="3">خدمة العملاء</option>
-                                        <option value="4">الحسابات</option>
-                                        <option value="5">الدعم الفنى</option>
-                                        <option value="6">الشكاوى والاقتراحات</option>
+                                        <option value="" data-i18n="settings_choose_dept">-- اختر القسم --</option>
+                                        <option value="1" data-i18n="dept_reservations">الحجوزات</option>
+                                        <option value="2" data-i18n="dept_sales">المبيعات</option>
+                                        <option value="3" data-i18n="dept_support">خدمة العملاء</option>
+                                        <option value="4" data-i18n="dept_accounts">الحسابات</option>
+                                        <option value="5" data-i18n="dept_tech">الدعم الفنى</option>
+                                        <option value="6" data-i18n="dept_complaints">الشكاوى والاقتراحات</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label style="font-weight: bold; margin-bottom: 10px; display: block;">🔐 الصلاحيات:</label>
+                                    <label style="font-weight: bold; margin-bottom: 10px; display: block;">🔐 <span data-i18n="settings_permissions">الصلاحيات</span>:</label>
                                     <div style="display: grid; gap: 8px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
                                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
                                             <input type="checkbox" id="emp-perm-view-own-recordings" style="width: auto;">
-                                            <span>📹 مشاهدة التسجيلات الخاصة</span>
+                                            <span data-i18n="perm_view_own">📹 مشاهدة التسجيلات الخاصة</span>
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
                                             <input type="checkbox" id="emp-perm-view-all-recordings" style="width: auto;">
-                                            <span>📊 مشاهدة التسجيلات العامة</span>
+                                            <span data-i18n="perm_view_all">📊 مشاهدة التسجيلات العامة</span>
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
                                             <input type="checkbox" id="emp-perm-delete-recordings" style="width: auto;">
-                                            <span>🗑️ مسح التسجيل</span>
+                                            <span data-i18n="perm_delete">🗑️ مسح التسجيل</span>
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
                                             <input type="checkbox" id="emp-perm-edit-profile" style="width: auto;">
-                                            <span>✏️ تعديل الملف الشخصي</span>
+                                            <span data-i18n="perm_edit_profile">✏️ تعديل الملف الشخصي</span>
                                         </label>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label style="font-weight: bold; margin-bottom: 10px; display: block;">📞 صلاحيات الاتصال:</label>
+                                    <label style="font-weight: bold; margin-bottom: 10px; display: block;">📞 <span data-i18n="settings_call_perms">صلاحيات الاتصال</span>:</label>
                                     <div style="display: grid; gap: 8px; padding: 10px; background: #e8f5e9; border-radius: 8px;">
                                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
                                             <input type="checkbox" id="emp-perm-call-usa" style="width: auto;" checked>
-                                            <span>🇺🇸 الاتصال من أمريكا</span>
+                                            <span data-i18n="perm_call_usa">🇺🇸 الاتصال من أمريكا</span>
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
                                             <input type="checkbox" id="emp-perm-call-egypt" style="width: auto;">
-                                            <span>🇪🇬 الاتصال من مصر</span>
+                                            <span data-i18n="perm_call_egypt">🇪🇬 الاتصال من مصر</span>
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px;">
                                             <input type="checkbox" id="emp-perm-call-saudi" style="width: auto;">
-                                            <span>🇸🇦 الاتصال من السعودية</span>
+                                            <span data-i18n="perm_call_saudi">🇸🇦 الاتصال من السعودية</span>
                                         </label>
                                     </div>
                                 </div>
-                                <button class="add-employee-btn" id="add-employee-btn">➕ إضافة مدير</button>
+                                <button class="add-employee-btn" id="add-employee-btn">➕ <span data-i18n="settings_add_manager_btn">إضافة مدير</span></button>
                             </div>
                             
                             <div class="employees-list">
-                                <h5>المديرين الحاليين</h5>
+                                <h5 data-i18n="settings_current_managers">المديرين الحاليين</h5>
                                 <div id="employees-list-container">
                                     <!-- سيتم إضافة المديرين هنا -->
                                 </div>
@@ -755,10 +755,10 @@
                     </div>
 
                     <div class="settings-section">
-                        <h4>عنا</h4>
+                        <h4 data-i18n="settings_about_title">عنا</h4>
                         <div class="about-text">
-                            <p>Link Call - تطبيق مكالمات سحابي متكامل مع Twilio</p>
-                            <p class="copyright">© 2025 ENG/AKRAM ELMASRY. جميع الحقوق محفوظة.</p>
+                            <p data-i18n="settings_about_text">Link Call - تطبيق مكالمات سحابي متكامل مع Twilio</p>
+                            <p class="copyright">© 2025 ENG/AKRAM ELMASRY. <span data-i18n="settings_rights">جميع الحقوق محفوظة.</span></p>
                         </div>
                     </div>
                 </div>
@@ -768,7 +768,7 @@
         <!-- حالة الاتصال -->
         <div class="connection-status" id="connection-status">
             <span class="status-dot"></span>
-            <span id="status-text">جاري الاتصال بـ Twilio...</span>
+            <span id="status-text" data-i18n="status_connecting">جاري الاتصال بـ Twilio...</span>
         </div>
     </div>
 

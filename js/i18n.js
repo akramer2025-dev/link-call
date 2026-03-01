@@ -202,7 +202,122 @@ const i18n = {
 
             // Employee stats
             emp_stat_minutes_total: 'إجمالي الدقائق المتاحة',
-            emp_stat_minutes_used: 'الدقائق المستخدمة'
+            emp_stat_minutes_used: 'الدقائق المستخدمة',
+
+            // Incoming call
+            incoming_call_title: 'مكالمة واردة',
+            incoming_unknown: 'جهة اتصال غير معروفة',
+            incoming_reject: 'رفض',
+            incoming_accept: 'رد',
+
+            // Install app
+            nav_install_app: 'تثبيت التطبيق',
+
+            // Header extra
+            settings_logout_short: 'خروج',
+
+            // Dialpad
+            dialpad_call_from: 'اتصال من:',
+            dialpad_call_now: 'اتصل الآن',
+            dialpad_quick_dial: 'اتصال سريع',
+
+            // Call screen
+            call_status_calling: 'جاري الاتصال...',
+            call_recording: 'جاري التسجيل',
+            call_mute: 'كتم الصوت',
+            call_speaker: 'السبيكر',
+            call_hold: 'إيقاف مؤقت',
+            call_end: 'إنهاء',
+
+            // Call history
+            history_empty: 'لا توجد مكالمات حتى الآن',
+
+            // Contacts
+            contacts_add: 'إضافة جهة اتصال',
+            contacts_search_placeholder: 'ابحث عن جهة اتصال...',
+            contacts_empty: 'لا توجد جهات اتصال',
+
+            // Settings general
+            settings_version: 'الإصدار 1.0.0',
+            settings_build: 'بناء December 7, 2025',
+            status_connecting: 'جاري الاتصال بـ Twilio...',
+
+            // Settings - account section
+            settings_account_title: 'معلومات الحساب',
+            settings_your_number: 'رقمك الشخصي',
+            settings_twilio_number: 'رقم Twilio',
+            settings_connection_status: 'حالة الاتصال',
+            settings_connected: 'متصل',
+
+            // Settings - dev panel
+            settings_dev_panel: 'لوحة تحكم المطور',
+            settings_open_dev_panel: 'فتح لوحة تحكم المطور',
+
+            // Settings - company admin section
+            company_admin_desc: 'إضافة وإدارة موظفين الشركة',
+            company_btn_manage: 'إدارة موظفين شركتك',
+            company_btn_reports: 'تقارير وتحليلات الموظفين',
+            company_btn_crm: 'نظام إدارة العملاء CRM',
+
+            // Settings - balance section
+            settings_balance_title: 'رصيد المكالمات',
+            settings_loading: 'جاري التحميل...',
+            settings_account_status: 'حالة الحساب',
+            settings_recharge: 'إعادة شحن الرصيد',
+            settings_refresh_balance: 'تحديث الرصيد',
+
+            // Settings - audio section
+            settings_audio_title: 'إعدادات الصوت',
+            settings_auto_record: 'تسجيل المكالمات تلقائياً',
+            settings_audio_quality: 'جودة الصوت',
+            quality_high: 'عالية',
+            quality_medium: 'متوسطة',
+            quality_low: 'منخفضة',
+
+            // Settings - notifications
+            settings_notifications_title: 'الإشعارات',
+            settings_incoming_notif: 'إشعارات المكالمات الواردة',
+            settings_ringtone: 'صوت الرنين',
+
+            // Settings - profile
+            settings_profile_title: 'الملف الشخصي',
+            settings_fullname: 'الاسم الكامل',
+            settings_phone: 'رقم الهاتف',
+            settings_current_password: 'كلمة المرور الحالية',
+            settings_new_password: 'كلمة المرور الجديدة',
+            settings_leave_empty: 'اتركها فارغة إن لم ترد التغيير',
+            settings_save_profile: 'حفظ التعديلات',
+
+            // Settings - managers section
+            settings_managers_title: 'إدارة المديرين',
+            settings_add_manager: 'إضافة مدير جديد',
+            emp_username: 'اسم المستخدم',
+            emp_password: 'كلمة المرور',
+            emp_phone: 'رقم الهاتف (+966...)',
+            settings_dept: 'القسم',
+            settings_choose_dept: '-- اختر القسم --',
+            dept_reservations: 'الحجوزات',
+            dept_sales: 'المبيعات',
+            dept_support: 'خدمة العملاء',
+            dept_accounts: 'الحسابات',
+            dept_tech: 'الدعم الفنى',
+            dept_complaints: 'الشكاوى والاقتراحات',
+            settings_permissions: 'الصلاحيات',
+            perm_view_own: '📹 مشاهدة التسجيلات الخاصة',
+            perm_view_all: '📊 مشاهدة التسجيلات العامة',
+            perm_delete: '🗑️ مسح التسجيل',
+            perm_edit_profile: '✏️ تعديل الملف الشخصي',
+            settings_call_perms: 'صلاحيات الاتصال',
+            perm_call_usa: '🇺🇸 الاتصال من أمريكا',
+            perm_call_egypt: '🇪🇬 الاتصال من مصر',
+            perm_call_saudi: '🇸🇦 الاتصال من السعودية',
+            settings_add_manager_btn: 'إضافة مدير',
+            settings_current_managers: 'المديرين الحاليين',
+
+            // Settings - about
+            settings_about_title: 'عنا',
+            settings_about_text: 'Link Call - تطبيق مكالمات سحابي متكامل مع Twilio',
+            settings_rights: 'جميع الحقوق محفوظة.'
         },
 
         en: {
@@ -401,7 +516,122 @@ const i18n = {
 
             // Employee stats
             emp_stat_minutes_total: 'Total Available Minutes',
-            emp_stat_minutes_used: 'Used Minutes'
+            emp_stat_minutes_used: 'Used Minutes',
+
+            // Incoming call
+            incoming_call_title: 'Incoming Call',
+            incoming_unknown: 'Unknown Caller',
+            incoming_reject: 'Reject',
+            incoming_accept: 'Answer',
+
+            // Install app
+            nav_install_app: 'Install App',
+
+            // Header extra
+            settings_logout_short: 'Exit',
+
+            // Dialpad
+            dialpad_call_from: 'Call from:',
+            dialpad_call_now: 'Call Now',
+            dialpad_quick_dial: 'Quick Dial',
+
+            // Call screen
+            call_status_calling: 'Connecting...',
+            call_recording: 'Recording',
+            call_mute: 'Mute',
+            call_speaker: 'Speaker',
+            call_hold: 'Hold',
+            call_end: 'End',
+
+            // Call history
+            history_empty: 'No calls yet',
+
+            // Contacts
+            contacts_add: 'Add Contact',
+            contacts_search_placeholder: 'Search contacts...',
+            contacts_empty: 'No contacts found',
+
+            // Settings general
+            settings_version: 'Version 1.0.0',
+            settings_build: 'Build December 7, 2025',
+            status_connecting: 'Connecting to Twilio...',
+
+            // Settings - account section
+            settings_account_title: 'Account Info',
+            settings_your_number: 'Your Number',
+            settings_twilio_number: 'Twilio Number',
+            settings_connection_status: 'Connection Status',
+            settings_connected: 'Connected',
+
+            // Settings - dev panel
+            settings_dev_panel: 'Developer Panel',
+            settings_open_dev_panel: 'Open Developer Panel',
+
+            // Settings - company admin section
+            company_admin_desc: 'Add and manage company employees',
+            company_btn_manage: 'Manage Your Employees',
+            company_btn_reports: 'Employee Reports & Analytics',
+            company_btn_crm: 'CRM - Customer Management',
+
+            // Settings - balance section
+            settings_balance_title: 'Call Balance',
+            settings_loading: 'Loading...',
+            settings_account_status: 'Account Status',
+            settings_recharge: 'Recharge Balance',
+            settings_refresh_balance: 'Refresh Balance',
+
+            // Settings - audio section
+            settings_audio_title: 'Audio Settings',
+            settings_auto_record: 'Auto-record calls',
+            settings_audio_quality: 'Audio Quality',
+            quality_high: 'High',
+            quality_medium: 'Medium',
+            quality_low: 'Low',
+
+            // Settings - notifications
+            settings_notifications_title: 'Notifications',
+            settings_incoming_notif: 'Incoming Call Notifications',
+            settings_ringtone: 'Ringtone Sound',
+
+            // Settings - profile
+            settings_profile_title: 'Profile',
+            settings_fullname: 'Full Name',
+            settings_phone: 'Phone Number',
+            settings_current_password: 'Current Password',
+            settings_new_password: 'New Password',
+            settings_leave_empty: 'Leave blank to keep unchanged',
+            settings_save_profile: 'Save Changes',
+
+            // Settings - managers section
+            settings_managers_title: 'Manage Managers',
+            settings_add_manager: 'Add New Manager',
+            emp_username: 'Username',
+            emp_password: 'Password',
+            emp_phone: 'Phone (+966...)',
+            settings_dept: 'Department',
+            settings_choose_dept: '-- Choose Department --',
+            dept_reservations: 'Reservations',
+            dept_sales: 'Sales',
+            dept_support: 'Customer Service',
+            dept_accounts: 'Accounts',
+            dept_tech: 'Technical Support',
+            dept_complaints: 'Complaints & Suggestions',
+            settings_permissions: 'Permissions',
+            perm_view_own: '📹 View Own Recordings',
+            perm_view_all: '📊 View All Recordings',
+            perm_delete: '🗑️ Delete Recordings',
+            perm_edit_profile: '✏️ Edit Profile',
+            settings_call_perms: 'Call Permissions',
+            perm_call_usa: '🇺🇸 Call from USA',
+            perm_call_egypt: '🇪🇬 Call from Egypt',
+            perm_call_saudi: '🇸🇦 Call from Saudi Arabia',
+            settings_add_manager_btn: 'Add Manager',
+            settings_current_managers: 'Current Managers',
+
+            // Settings - about
+            settings_about_title: 'About',
+            settings_about_text: 'Link Call - Integrated Cloud Call App with Twilio',
+            settings_rights: 'All rights reserved.'
         }
     },
 

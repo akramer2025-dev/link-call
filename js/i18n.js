@@ -220,6 +220,9 @@ const i18n = {
             dialpad_call_from: 'اتصال من:',
             dialpad_call_now: 'اتصل الآن',
             dialpad_quick_dial: 'اتصال سريع',
+            caller_usa: '🇺🇸 Twilio أمريكا',
+            caller_egypt: '🇪🇬 Zadarma مصر ⭐',
+            caller_saudi: '🇸🇦 Zadarma السعودية',
 
             // Call screen
             call_status_calling: 'جاري الاتصال...',
@@ -534,6 +537,9 @@ const i18n = {
             dialpad_call_from: 'Call from:',
             dialpad_call_now: 'Call Now',
             dialpad_quick_dial: 'Quick Dial',
+            caller_usa: '🇺🇸 Twilio USA',
+            caller_egypt: '🇪🇬 Zadarma Egypt ⭐',
+            caller_saudi: '🇸🇦 Zadarma Saudi Arabia',
 
             // Call screen
             call_status_calling: 'Connecting...',

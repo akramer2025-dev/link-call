@@ -2932,17 +2932,49 @@ async function loadCallHistory() {
 
 // تحميل جهات الاتصال
 // تحميل جهات الاتصال
+// cache للبحث السريع بدون طلب API جديد
+let _cachedContacts = [];
+
+function _renderContactItem(contact) {
+    const item = document.createElement('div');
+    item.className = 'contact-item';
+    const initial = (contact.name || '?').charAt(0).toUpperCase();
+    const cid  = contact._id || contact.id || contact.contactId || '';
+    const safeId = cid.toString().replace(/'/g, '');
+    const safeName = (contact.name || '').replace(/'/g, '&#39;');
+    const safePhone = (contact.phone || '').replace(/'/g, '');
+    item.innerHTML = `
+        <div class="contact-avatar">${initial}</div>
+        <div class="contact-info">
+            <div class="contact-name">${contact.name || ''}</div>
+            <div class="contact-phone">${contact.phone || ''}</div>
+        </div>
+        <div class="contact-actions">
+            <button class="contact-call-btn" onclick="callContact('${safePhone}')" title="اتصال">📞</button>
+            <button class="contact-delete-btn" onclick="deleteContact('${safeId}', '${safeName}')" title="حذف" style="background: linear-gradient(135deg, #fa709a, #fee140); color: white; width: 35px; height: 35px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; transition: all 0.2s;">🗑️</button>
+        </div>
+    `;
+    return item;
+}
+
 async function loadContacts() {
     const container = document.getElementById('contacts-container');
-    
+    const companyId = sessionStorage.getItem('companyId');
+
+    if (!companyId) {
+        console.warn('⚠️ loadContacts: لا يوجد companyId في sessionStorage');
+        return;
+    }
+
     try {
         const baseUrl = API_BASE_URL;
-        const response = await fetch(`${baseUrl}/api/contacts`);
+        const response = await fetch(`${baseUrl}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
         const data = await response.json();
         const contacts = data.contacts || [];
-        
+        _cachedContacts = contacts; // cache للبحث
+
         container.innerHTML = '';
-        
+
         if (contacts.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -2953,27 +2985,9 @@ async function loadContacts() {
             `;
             return;
         }
-        
-        contacts.forEach(contact => {
-            const item = document.createElement('div');
-            item.className = 'contact-item';
-            const initial = contact.name.charAt(0).toUpperCase();
-            
-            item.innerHTML = `
-                <div class="contact-avatar">${initial}</div>
-                <div class="contact-info">
-                    <div class="contact-name">${contact.name}</div>
-                    <div class="contact-phone">${contact.phone}</div>
-                </div>
-                <div class="contact-actions">
-                    <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="اتصال">📞</button>
-                    <button class="contact-delete-btn" onclick="deleteContact(${contact.id}, '${contact.name}')" title="حذف" style="background: linear-gradient(135deg, #fa709a, #fee140); color: white; width: 35px; height: 35px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; transition: all 0.2s;">🗑️</button>
-                </div>
-            `;
-            container.appendChild(item);
-        });
-        
-        console.log('✅ تم تحميل', contacts.length, 'جهة اتصال');
+
+        contacts.forEach(contact => container.appendChild(_renderContactItem(contact)));
+        console.log('✅ تم تحميل', contacts.length, 'جهة اتصال للشركة', companyId);
     } catch (error) {
         console.error('خطأ في تحميل جهات الاتصال:', error);
         container.innerHTML = '<p style="text-align: center; color: #f44336;">خطأ في تحميل جهات الاتصال</p>';
@@ -2983,23 +2997,37 @@ async function loadContacts() {
 // إضافة جهة اتصال
 async function addContact() {
     const name = prompt('أدخل اسم جهة الاتصال:');
-    if (!name) return;
-    
+    if (!name || !name.trim()) return;
+
     const phone = prompt('أدخل رقم الهاتف:');
-    if (!phone) return;
-    
+    if (!phone || !phone.trim()) return;
+
+    const companyId = sessionStorage.getItem('companyId');
+    const addedBy   = sessionStorage.getItem('username') || 'unknown';
+
+    if (!companyId) {
+        alert('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً');
+        return;
+    }
+
     try {
         const baseUrl = API_BASE_URL;
         const response = await fetch(`${baseUrl}/api/contacts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, phone })
+            body: JSON.stringify({
+                companyId,
+                name: name.trim(),
+                phone: phone.trim(),
+                addedBy,
+                device: 'web'
+            })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok && data.success) {
-            console.log('✅ تمت إضافة جهة الاتصال');
+            console.log('✅ تمت إضافة جهة الاتصال إلى Firestore');
             loadContacts();
         } else {
             throw new Error(data.error || 'فشل في إضافة جهة الاتصال');
@@ -3010,22 +3038,29 @@ async function addContact() {
     }
 }
 
-// حذف جهة اتصال
+// حذف جهة اتصال (soft delete - لا تُمسح من Firestore)
 async function deleteContact(contactId, contactName) {
-    if (!confirm(`هل تريد حذف ${contactName}؟`)) {
+    if (!confirm(`هل تريد حذف ${contactName}؟`)) return;
+
+    const companyId = sessionStorage.getItem('companyId');
+    const deletedBy = sessionStorage.getItem('username') || 'unknown';
+
+    if (!companyId) {
+        alert('لم يتم العثور على معلومات الشركة');
         return;
     }
-    
+
     try {
         const baseUrl = API_BASE_URL;
-        const response = await fetch(`${baseUrl}/api/contacts?id=${contactId}`, {
-            method: 'DELETE'
-        });
-        
+        const response = await fetch(
+            `${baseUrl}/api/contacts?companyId=${encodeURIComponent(companyId)}&contactId=${encodeURIComponent(contactId)}&deletedBy=${encodeURIComponent(deletedBy)}`,
+            { method: 'DELETE' }
+        );
+
         const data = await response.json();
-        
+
         if (response.ok && data.success) {
-            console.log('✅ تم حذف جهة الاتصال');
+            console.log('✅ تم حذف جهة الاتصال (soft delete)');
             loadContacts();
         } else {
             throw new Error(data.error || 'فشل في حذف جهة الاتصال');
@@ -3062,37 +3097,31 @@ if (addContactBtn) {
     addContactBtn.addEventListener('click', addContact);
 }
 
-// البحث في جهات الاتصال
+// البحث في جهات الاتصال — يعمل على الـ cache المحلي (بدون طلب API جديد)
 const contactSearch = document.getElementById('contact-search');
 if (contactSearch) {
     contactSearch.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-        const filtered = contacts.filter(c => 
-            c.name.toLowerCase().includes(searchTerm) || 
-            c.phone.includes(searchTerm)
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const container  = document.getElementById('contacts-container');
+
+        if (!searchTerm) {
+            // البحث فارغ → أعد عرض الكل
+            container.innerHTML = '';
+            _cachedContacts.forEach(c => container.appendChild(_renderContactItem(c)));
+            return;
+        }
+
+        const filtered = _cachedContacts.filter(c =>
+            (c.name  || '').toLowerCase().includes(searchTerm) ||
+            (c.phone || '').includes(searchTerm)
         );
-        
-        const container = document.getElementById('contacts-container');
+
         container.innerHTML = '';
-        
-        filtered.forEach(contact => {
-            const item = document.createElement('div');
-            item.className = 'contact-item';
-            const initial = contact.name.charAt(0).toUpperCase();
-            
-            item.innerHTML = `
-                <div class="contact-avatar">${initial}</div>
-                <div class="contact-info">
-                    <div class="contact-name">${contact.name}</div>
-                    <div class="contact-phone">${contact.phone}</div>
-                </div>
-                <div class="contact-actions">
-                    <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="اتصال">📞</button>
-                </div>
-            `;
-            container.appendChild(item);
-        });
+        if (filtered.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:#888;padding:30px">لا نتائج للبحث</p>';
+            return;
+        }
+        filtered.forEach(c => container.appendChild(_renderContactItem(c)));
     });
 }
 

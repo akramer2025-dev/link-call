@@ -276,6 +276,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// خدمة الملفات الثابتة من المجلد الرئيسي
+app.use(express.static(path.join(__dirname, '..')));
+
 // Routes للصفحات الرئيسية
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'login.html'));

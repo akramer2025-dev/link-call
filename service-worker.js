@@ -1,5 +1,5 @@
 // Service Worker for Link Call PWA
-const CACHE_NAME = 'link-call-v26';
+const CACHE_NAME = 'link-call-v27';
 const urlsToCache = [
   '/',
   '/index.html',

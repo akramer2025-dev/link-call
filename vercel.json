@@ -46,6 +46,18 @@
       "continue": true
     },
     {
+      "src": "/api/companies/balance",
+      "dest": "/api/companies.js"
+    },
+    {
+      "src": "/api/companies/deduct-balance",
+      "dest": "/api/companies.js"
+    },
+    {
+      "src": "/api/companies/set-balance",
+      "dest": "/api/companies.js"
+    },
+    {
       "src": "/api/companies/register",
       "dest": "/api/companies.js"
     },

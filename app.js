@@ -635,6 +635,7 @@ async function makeCall() {
         const params = {
             To: formattedNumber,
             employeeId: employeeId,
+            companyId: sessionStorage.getItem('companyId') || '',
             callerId: selectedCallerId
         };
         

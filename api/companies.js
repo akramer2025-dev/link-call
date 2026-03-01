@@ -570,6 +570,98 @@ module.exports.initFromFile = async (req, res) => {
     }
 };
 
+// ══════════════════════════════════════════════
+// BALANCE SYSTEM - نظام الرصيد
+// ══════════════════════════════════════════════
+const COST_PER_MINUTE = 0.014; // دولار لكل دقيقة
+const DEFAULT_BALANCE  = 61.0; // الرصيد الافتراضي
+
+// GET /api/companies/balance?companyId=XXX
+module.exports.getBalance = async (req, res) => {
+    try {
+        const companyId = req.query.companyId;
+        if (!companyId) return res.status(400).json({ success: false, error: 'companyId مطلوب' });
+
+        const { getDb } = require('../utils/firebase');
+        const { doc, getDoc, updateDoc } = require('firebase/firestore');
+        const db = getDb();
+        const snap = await getDoc(doc(db, 'companies', companyId));
+        if (!snap.exists()) return res.status(404).json({ success: false, error: 'الشركة غير موجودة' });
+
+        const company = snap.data();
+        // إذا لم يوجد رصيد بعد، ابدأ بـ 61 دولار
+        if (company.balance === undefined) {
+            await updateDoc(doc(db, 'companies', companyId), { balance: DEFAULT_BALANCE, costPerMinute: COST_PER_MINUTE, totalMinutesUsed: 0, totalCostDeducted: 0 });
+            company.balance = DEFAULT_BALANCE;
+            company.totalMinutesUsed = 0;
+            company.totalCostDeducted = 0;
+        }
+        return res.json({
+            success: true,
+            balance: Number((company.balance || 0).toFixed(4)),
+            costPerMinute: company.costPerMinute || COST_PER_MINUTE,
+            totalMinutesUsed: company.totalMinutesUsed || 0,
+            totalCostDeducted: Number((company.totalCostDeducted || 0).toFixed(4))
+        });
+    } catch (error) {
+        console.error('getBalance error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// POST /api/companies/deduct-balance  { companyId, durationSeconds }
+module.exports.deductBalance = async (req, res) => {
+    try {
+        const { companyId, durationSeconds } = req.body;
+        if (!companyId || !durationSeconds) return res.status(400).json({ success: false, error: 'companyId و durationSeconds مطلوبان' });
+
+        const { getDb } = require('../utils/firebase');
+        const { doc, getDoc, updateDoc } = require('firebase/firestore');
+        const db = getDb();
+        const snap = await getDoc(doc(db, 'companies', companyId));
+        if (!snap.exists()) return res.status(404).json({ success: false, error: 'الشركة غير موجودة' });
+
+        const company = snap.data();
+        const minutes = durationSeconds / 60;
+        const costPerMin = company.costPerMinute || COST_PER_MINUTE;
+        const cost = minutes * costPerMin;
+        const currentBalance = company.balance !== undefined ? company.balance : DEFAULT_BALANCE;
+        const newBalance = Math.max(0, currentBalance - cost);
+
+        await updateDoc(doc(db, 'companies', companyId), {
+            balance: Number(newBalance.toFixed(4)),
+            totalMinutesUsed: (company.totalMinutesUsed || 0) + minutes,
+            totalCostDeducted: Number(((company.totalCostDeducted || 0) + cost).toFixed(4))
+        });
+
+        console.log(`💳 خصم ${cost.toFixed(4)}$ (${minutes.toFixed(2)} دقيقة) من ${companyId} - الرصيد: ${newBalance.toFixed(4)}$`);
+        return res.json({ success: true, deducted: Number(cost.toFixed(4)), newBalance: Number(newBalance.toFixed(4)), minutes: Number(minutes.toFixed(2)) });
+    } catch (error) {
+        console.error('deductBalance error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// POST /api/companies/set-balance  { companyId, balance, adminKey }
+module.exports.setBalance = async (req, res) => {
+    try {
+        const { companyId, balance, adminKey } = req.body;
+        if (adminKey !== (process.env.ADMIN_SECRET || 'LINKCALL_ADMIN_2024')) {
+            return res.status(403).json({ success: false, error: 'غير مصرح' });
+        }
+        if (!companyId || balance === undefined) return res.status(400).json({ success: false, error: 'companyId و balance مطلوبان' });
+
+        const { getDb } = require('../utils/firebase');
+        const { doc, updateDoc } = require('firebase/firestore');
+        const db = getDb();
+        await updateDoc(doc(db, 'companies', companyId), { balance: Number(Number(balance).toFixed(4)) });
+        return res.json({ success: true, balance: Number(Number(balance).toFixed(4)) });
+    } catch (error) {
+        console.error('setBalance error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 // Save handlers before module.exports is overwritten
 const _register = module.exports.register;
 const _getAllCompanies = module.exports.getAllCompanies;
@@ -580,6 +672,9 @@ const _updatePlan = module.exports.updatePlan;
 const _deleteCompany = module.exports.deleteCompany;
 const _login = module.exports.login;
 const _initFromFile = module.exports.initFromFile;
+const _getBalance = module.exports.getBalance;
+const _deductBalance = module.exports.deductBalance;
+const _setBalance = module.exports.setBalance;
 
 // Main handler for Vercel serverless - Router للطلبات
 module.exports = async (req, res) => {
@@ -597,7 +692,13 @@ module.exports = async (req, res) => {
         const method = req.method;
 
         // Route the request based on URL and method
-        if (url.includes('/init') && method === 'GET') {
+        if (url.includes('/balance') && method === 'GET') {
+            return _getBalance(req, res);
+        } else if (url.includes('/deduct-balance') && method === 'POST') {
+            return _deductBalance(req, res);
+        } else if (url.includes('/set-balance') && method === 'POST') {
+            return _setBalance(req, res);
+        } else if (url.includes('/init') && method === 'GET') {
             return _initFromFile(req, res);
         } else if (url.includes('/register') && method === 'POST') {
             return _register(req, res);
@@ -634,3 +735,6 @@ module.exports.updatePlan = _updatePlan;
 module.exports.deleteCompany = _deleteCompany;
 module.exports.login = _login;
 module.exports.initFromFile = _initFromFile;
+module.exports.getBalance = _getBalance;
+module.exports.deductBalance = _deductBalance;
+module.exports.setBalance = _setBalance;

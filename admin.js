@@ -30,6 +30,29 @@ if (!checkAdminAccess()) {
 // ========== المتغيرات العامة ==========
 const API_BASE_URL = window.location.origin;
 const baseUrl = API_BASE_URL;
+
+// تحميل رصيد الشركة
+async function loadBalance() {
+    const companyId = sessionStorage.getItem('companyId');
+    if (!companyId) return;
+    try {
+        const r = await fetch(`${API_BASE_URL}/api/companies/balance?companyId=${companyId}`);
+        const d = await r.json();
+        if (d.success) {
+            const el = document.getElementById('balance-amount');
+            const min = document.getElementById('balance-minutes');
+            const cost = document.getElementById('balance-cost');
+            const rate = document.getElementById('balance-rate');
+            if (el) {
+                el.textContent = `$${Number(d.balance).toFixed(2)}`;
+                el.style.color = d.balance < 5 ? '#dc2626' : d.balance < 15 ? '#d97706' : '#059669';
+            }
+            if (min)  min.textContent  = `${Number(d.totalMinutesUsed || 0).toFixed(1)} دق`;
+            if (cost) cost.textContent = `$${Number(d.totalCostDeducted || 0).toFixed(3)}`;
+            if (rate) rate.textContent = `$${d.costPerMinute || 0.014}`;
+        }
+    } catch (e) { console.error('جلب الرصيد فشل:', e); }
+}
 let allCalls = [];
 let allEmployees = [];
 let allRecordings = [];
@@ -80,6 +103,8 @@ function initNavigation() {
             // تحميل بيانات القسم
             if (targetSection === 'companies') {
                 loadCompanies();
+            } else if (targetSection === 'settings') {
+                loadBalance();
             }
             
             // إغلاق القائمة الجانبية في الهاتف عند اختيار قسم

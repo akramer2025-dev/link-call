@@ -99,12 +99,26 @@ module.exports = async (req, res) => {
         const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
         const callTo = req.body.To;
         const employeeId = req.body.employeeId || 'unknown';
+        const companyId  = req.body.companyId  || null;
         const callSid = req.body.CallSid;
         
         // تنسيق رقم الهاتف لإضافة كود مصر تلقائياً
         const formattedCallTo = formatPhoneNumber(callTo);
         
-        console.log('📞 مكالمة جديدة:', { callSid, to: callTo, formattedTo: formattedCallTo, employeeId });
+        console.log('📞 مكالمة جديدة:', { callSid, to: callTo, formattedTo: formattedCallTo, employeeId, companyId });
+
+        // حفظ callSid → companyId في Firestore للخصم لاحقاً
+        if (callSid && companyId) {
+            try {
+                const { getDb } = require('../utils/firebase');
+                const { doc, setDoc } = require('firebase/firestore');
+                await setDoc(doc(getDb(), 'active_calls', callSid), {
+                    companyId,
+                    employeeId,
+                    startedAt: new Date().toISOString()
+                });
+            } catch (e) { console.error('⚠️ حفظ active_calls فشل:', e.message); }
+        }
         
         const twiml = new twilio.twiml.VoiceResponse();
         

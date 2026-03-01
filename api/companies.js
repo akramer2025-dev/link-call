@@ -201,6 +201,7 @@ module.exports.getAllCompanies = async (req, res) => {
             companyName: c.companyName,
             commercialNumber: c.commercialNumber,
             adminName: c.adminName,
+            username: c.username,
             companyEmail: c.companyEmail,
             companyPhone: c.companyPhone,
             plan: c.plan,

@@ -520,6 +520,7 @@
                         <tr>
                             <th>الشركة</th>
                             <th>المسؤول</th>
+                            <th>اسم المستخدم</th>
                             <th>الخطة</th>
                             <th>الموظفين</th>
                             <th>المكالمات</th>
@@ -572,26 +573,39 @@
             </div>
             <form id="add-company-form">
                 <div class="form-group">
-                    <label>اسم الشركة</label>
-                    <input type="text" name="companyName" required>
+                    <label>اسم الشركة *</label>
+                    <input type="text" name="companyName" required placeholder="مثال: شركة جمجوم">
+                </div>
+                <div class="form-group">
+                    <label>اسم المسؤول / المدير *</label>
+                    <input type="text" name="adminName" required placeholder="اسم الشخص المدير">
+                </div>
+                <div class="form-group">
+                    <label>اسم المستخدم (للدخول) *</label>
+                    <input type="text" name="username" required placeholder="يمكن استخدام الإيميل">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور *</label>
+                    <input type="password" name="password" required placeholder="كلمة مرور قوية">
                 </div>
                 <div class="form-group">
                     <label>البريد الإلكتروني</label>
-                    <input type="email" name="email" required>
+                    <input type="email" name="companyEmail" placeholder="info@company.com">
                 </div>
                 <div class="form-group">
                     <label>رقم الهاتف</label>
-                    <input type="tel" name="phone" required>
+                    <input type="tel" name="companyPhone" placeholder="+966501234567">
                 </div>
                 <div class="form-group">
                     <label>الخطة</label>
-                    <select name="plan" required>
+                    <select name="selectedPlan">
                         <option value="free">الأساسية (مجاناً)</option>
                         <option value="pro">الاحترافية</option>
                         <option value="enterprise">المؤسسات</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <div id="add-company-error" style="display:none;color:#d63031;margin-bottom:10px;"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="add-company-btn">
                     ✓ إضافة الشركة
                 </button>
             </form>
@@ -612,57 +626,12 @@
     </div>
 
     <script>
-        // Sample Data
-        const companies = [
-            {
-                id: 1,
-                name: 'شركة التقنية المتقدمة',
-                admin: 'محمد أحمد',
-                email: 'mohamed@tech.com',
-                phone: '+966501234567',
-                plan: 'pro',
-                employees: 15,
-                calls: 1250,
-                joinDate: '2024-01-15',
-                status: 'active'
-            },
-            {
-                id: 2,
-                name: 'مؤسسة الرعاية الصحية',
-                admin: 'فاطمة علي',
-                email: 'fatima@healthcare.com',
-                phone: '+966502345678',
-                plan: 'enterprise',
-                employees: 45,
-                calls: 3890,
-                joinDate: '2024-02-01',
-                status: 'active'
-            },
-            {
-                id: 3,
-                name: 'شركة التجارة الإلكترونية',
-                admin: 'أحمد خالد',
-                email: 'ahmed@ecommerce.com',
-                phone: '+966503456789',
-                plan: 'free',
-                employees: 5,
-                calls: 456,
-                joinDate: '2024-02-20',
-                status: 'active'
-            },
-            {
-                id: 4,
-                name: 'مكتب الاستشارات القانونية',
-                admin: 'سارة محمود',
-                email: 'sara@legal.com',
-                phone: '+966504567890',
-                plan: 'pro',
-                employees: 8,
-                calls: 678,
-                joinDate: '2024-02-25',
-                status: 'pending'
-            }
-        ];
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://linkcall.akrammostafa.com';
+
+        // Real companies data loaded from API
+        let companies = [];
 
         const activities = [
             { time: '2024-02-28 10:30', text: 'انضمت شركة جديدة: مكتب الاستشارات القانونية' },
@@ -673,10 +642,36 @@
         ];
 
         // Initialize
-        function init() {
+        async function init() {
+            await loadCompanies();
+            renderActivityLog();
+        }
+
+        // Load real companies from API
+        async function loadCompanies() {
+            try {
+                const res = await fetch(`${API_BASE}/api/companies`);
+                if (res.ok) {
+                    const data = await res.json();
+                    companies = (data.companies || data || []).map(c => ({
+                        id: c.id,
+                        name: c.companyName || c.name || '',
+                        admin: c.adminName || c.admin || '',
+                        username: c.username || '',
+                        email: c.companyEmail || c.adminEmail || c.email || '',
+                        phone: c.companyPhone || c.phone || '',
+                        plan: c.plan || 'free',
+                        employees: c.employeesCount || c.employees || 0,
+                        calls: c.callsCount || c.calls || 0,
+                        joinDate: c.createdAt || c.joinDate || new Date().toISOString(),
+                        status: c.status || 'active'
+                    }));
+                }
+            } catch(e) {
+                console.warn('تعذر تحميل الشركات:', e);
+            }
             updateStats();
             renderCompaniesTable();
-            renderActivityLog();
         }
 
         // Update Stats
@@ -702,6 +697,9 @@
                     <td>
                         ${company.admin}<br>
                         <small style="color: #636e72;">${company.phone}</small>
+                    </td>
+                    <td>
+                        <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:12px;">${company.username || '—'}</code>
                     </td>
                     <td>
                         <span style="color: var(--primary); font-weight: 600;">
@@ -870,17 +868,49 @@
             renderCompaniesTable(filtered);
         }
 
-        // Add Company Form
+        // Add Company Form — تسجيل حقيقي عبر الـ API
         document.getElementById('add-company-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('add-company-btn');
+            const errDiv = document.getElementById('add-company-error');
+            errDiv.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = '⏳ جاري الحفظ...';
+
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
-            
-            // Here you would send to your backend
-            console.log('Adding company:', data);
-            alert('تم إضافة الشركة بنجاح!');
-            closeModal('add-company-modal');
-            e.target.reset();
+
+            // خانة السجل التجاري مطلوبة في الـ API — نستخدم اسم الشركة ك**بديل**
+            data.commercialNumber = data.commercialNumber || ('ADMIN-' + Date.now());
+            data.adminEmail = data.companyEmail || '';
+            data.adminPhone = data.companyPhone || '';
+            data.adminTitle = 'مدير';
+            data.businessType = 'other';
+            data.country = data.country || 'غير محدد';
+            data.city = data.city || 'غير محدد';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/companies/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (res.ok && result.success) {
+                    alert('✅ تمت إضافة الشركة بنجاح!\nاسم المستخدم: ' + data.username + '\nكلمة المرور: ' + data.password);
+                    closeModal('add-company-modal');
+                    e.target.reset();
+                    await loadCompanies();
+                } else {
+                    errDiv.textContent = '⚠️ ' + (result.error || 'حدث خطأ أثناء الحفظ');
+                    errDiv.style.display = 'block';
+                }
+            } catch(err) {
+                errDiv.textContent = '⚠️ خطأ في الاتصال بالخادم';
+                errDiv.style.display = 'block';
+            }
+            btn.disabled = false;
+            btn.textContent = '✓ إضافة الشركة';
         });
 
         // Initialize on load

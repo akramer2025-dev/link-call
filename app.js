@@ -1253,15 +1253,23 @@ async function loadRecordings() {
         
         const baseUrl = API_BASE_URL;
         const employeeId = localStorage.getItem('employeeId');
+        const companyId = sessionStorage.getItem('companyId'); // للشركات
+        const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
         
-        console.log('📋 جلب التسجيلات - employeeId:', employeeId, 'userRole:', userRole, 'canViewAll:', canViewAll);
+        console.log('📋 جلب التسجيلات - employeeId:', employeeId, 'companyId:', companyId, 'userRole:', userRole, 'canViewAll:', canViewAll);
         
         // بناء URL مع المعاملات
         let url = `${baseUrl}/recordings`;
         const params = new URLSearchParams();
         
+        // إضافة companyId إذا كان مدير شركة
+        if (isCompanyAdmin && companyId) {
+            params.append('companyId', companyId);
+            params.append('viewAll', 'true');
+            console.log('🏢 جلب تسجيلات الشركة:', companyId);
+        }
         // إذا كان مدير وليس لديه صلاحية رؤية الكل
-        if (employeeId && !canViewAll && userRole !== 'admin') {
+        else if (employeeId && !canViewAll && userRole !== 'admin') {
             params.append('employeeId', employeeId);
             console.log('🔒 فلترة التسجيلات للمدير:', employeeId);
         } else {

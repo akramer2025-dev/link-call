@@ -1,0 +1,1 @@
+﻿{"success":true,"message":"تم تسجيل الدخول بنجاح","company":{"id":"COMP-1772387540280-N0XTXR4DW","companyName":"?????? ??????","adminName":"???? ??????","username":"Jimmmy@jamjoumgroup.com","plan":"premium","limits":{"reports":"basic","api":false,"employees":5,"monthlyMinutes":500,"support":"standard","recordings":true}}}

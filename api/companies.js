@@ -111,8 +111,9 @@ module.exports.register = async (req, res) => {
         const companiesData = await getCompaniesData();
 
         // Check if company already exists
+        const usernameLower = (username || '').trim().toLowerCase();
         const existingCompany = companiesData.companies.find(
-            c => c.commercialNumber === commercialNumber || c.username === username
+            c => c.commercialNumber === commercialNumber || (c.username || '').toLowerCase() === usernameLower
         );
 
         if (existingCompany) {
@@ -448,13 +449,23 @@ module.exports.login = async (req, res) => {
             });
         }
 
+        const usernameTrimmed = username.trim().toLowerCase();
         const companiesData = await getCompaniesData();
-        const company = companiesData.companies.find(c => c.username === username);
+        const company = companiesData.companies.find(
+            c => (c.username || '').toLowerCase() === usernameTrimmed
+        );
 
-        if (!company || company.password !== hashPassword(password)) {
+        if (!company) {
             return res.status(401).json({
                 success: false,
-                error: 'اسم المستخدم أو كلمة المرور غير صحيحة'
+                error: 'هذا المستخدم غير مسجل. يرجى إنشاء حساب أولاً عبر صفحة التسجيل'
+            });
+        }
+
+        if (company.password !== hashPassword(password.trim())) {
+            return res.status(401).json({
+                success: false,
+                error: 'كلمة المرور غير صحيحة'
             });
         }
 

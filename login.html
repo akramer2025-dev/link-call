@@ -286,6 +286,16 @@
                             setTimeout(() => { window.location.href = 'index.html'; }, 500);
                             return;
                         }
+                        // Show company-specific error if more helpful
+                        const companyErr = companyData && companyData.error ? companyData.error : null;
+                        if (companyErr && companyErr.includes('غير مسجل')) {
+                            hideLoading();
+                            errorMessage.textContent = '⚠️ ' + companyErr;
+                            errorMessage.classList.remove('hidden');
+                            loginForm.classList.add('shake');
+                            setTimeout(() => loginForm.classList.remove('shake'), 500);
+                            return;
+                        }
                     } catch (companyError) {
                         console.error('خطأ في تسجيل دخول الشركة:', companyError);
                     }

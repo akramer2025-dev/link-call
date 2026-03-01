@@ -60,7 +60,9 @@ async function getEmployees(req, res) {
         const data = await getCompaniesData();
         const company = data.companies.find(c => c.id === companyId);
         if (!company) return res.status(404).json({ success: false, message: 'الشركة غير موجودة' });
-        res.json({ success: true, employees: company.employees || [] });
+        // أظهر فقط غير المحذوفين للمستخدم
+        const activeEmployees = (company.employees || []).filter(e => !e._deleted);
+        res.json({ success: true, employees: activeEmployees });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -136,20 +138,49 @@ async function updateEmployee(req, res) {
 async function deleteEmployee(req, res) {
     try {
         const { id } = req.params;
+        const deletedBy = req.query.deletedBy || req.body?.deletedBy || 'manager';
         const data = await getCompaniesData();
-        let deleted = null;
+        let found = null;
+        let foundCompanyId = null;
         for (const company of data.companies) {
-            const idx = (company.employees || []).findIndex(e => e.id === parseInt(id));
-            if (idx !== -1) {
-                deleted = company.employees.splice(idx, 1)[0];
-                company.employeesCount = company.employees.length;
+            const emp = (company.employees || []).find(e => e.id === parseInt(id) && !e._deleted);
+            if (emp) { found = emp; foundCompanyId = company.id; break; }
+        }
+        if (!found) return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+
+        // حفظ نسخة في deleted_archive (لا تُمحى أبداً)
+        try {
+            const { getDb } = require('../utils/firebase');
+            const { doc, setDoc } = require('firebase/firestore');
+            const db = getDb();
+            const archiveId = `${foundCompanyId}_employee_${found.id}_${Date.now()}`;
+            await setDoc(doc(db, 'deleted_archive', archiveId), {
+                originalCollection: `companies/${foundCompanyId}/employees`,
+                companyId: foundCompanyId,
+                subcollection: 'employees',
+                data: found,
+                deletedBy,
+                deletedAt: new Date().toISOString()
+            });
+        } catch (archiveErr) {
+            console.error('⚠️ Archive error:', archiveErr.message);
+        }
+
+        // Soft delete - لا نحذف من المصفوفة، نضع علامة فقط
+        for (const company of data.companies) {
+            const emp = (company.employees || []).find(e => e.id === parseInt(id));
+            if (emp) {
+                emp._deleted = true;
+                emp._deletedAt = new Date().toISOString();
+                emp._deletedBy = deletedBy;
+                emp.active = false;
+                company.employeesCount = company.employees.filter(e => !e._deleted).length;
                 break;
             }
         }
-        if (!deleted) return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
         const saved = await saveCompaniesData(data);
         if (!saved) return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات' });
-        res.json({ success: true, message: 'تم حذف الموظف بنجاح' });
+        res.json({ success: true, message: 'تم حذف الموظف بنجاح (محفوظ في الأرشيف)' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

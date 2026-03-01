@@ -108,7 +108,7 @@ module.exports = async (req, res) => {
         return res.status(500).json({ error: 'فشل في تتبع العمل', details: error.message });
     }
 };
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
     
     if (req.method === 'OPTIONS') {
         return res.status(200).end();

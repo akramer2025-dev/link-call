@@ -370,41 +370,52 @@ module.exports.updatePlan = async (req, res) => {
     }
 };
 
-// DELETE /api/companies/:id - Delete company (soft delete)
+// DELETE /api/companies/:id - Soft delete company (يُحفظ في deleted_archive)
 module.exports.deleteCompany = async (req, res) => {
     try {
         const { id } = req.params;
-        
+        const deletedBy = req.body?.deletedBy || req.query?.deletedBy || 'super-admin';
+
         const companiesData = await getCompaniesData();
         const companyIndex = companiesData.companies.findIndex(c => c.id === id);
 
         if (companyIndex === -1) {
-            return res.status(404).json({
-                success: false,
-                error: 'الشركة غير موجودة'
-            });
+            return res.status(404).json({ success: false, error: 'الشركة غير موجودة' });
         }
 
-        // Soft delete
+        const company = companiesData.companies[companyIndex];
+
+        // حفظ نسخة كاملة في deleted_archive
+        try {
+            const { getDb } = require('../utils/firebase');
+            const { doc, setDoc } = require('firebase/firestore');
+            const db = getDb();
+            await setDoc(doc(db, 'deleted_archive', `company_${id}_${Date.now()}`), {
+                originalCollection: 'companies',
+                originalDocId: id,
+                data: company,
+                deletedBy,
+                deletedAt: new Date().toISOString()
+            });
+        } catch (archiveErr) {
+            console.error('⚠️ Archive error:', archiveErr.message);
+        }
+
+        // Soft delete — لا تُمسح الشركة، فقط تُعلَّم
         companiesData.companies[companyIndex].status = 'suspended';
         companiesData.companies[companyIndex].isActive = false;
-        companiesData.companies[companyIndex].deletedAt = new Date().toISOString();
+        companiesData.companies[companyIndex]._deleted = true;
+        companiesData.companies[companyIndex]._deletedAt = new Date().toISOString();
+        companiesData.companies[companyIndex]._deletedBy = deletedBy;
 
         await saveCompaniesData(companiesData);
+        logActivity('company_deleted', id, { deletedBy });
 
-        logActivity('company_deleted', id);
-
-        res.json({
-            success: true,
-            message: 'تم حذف الشركة'
-        });
+        res.json({ success: true, message: 'تم حذف الشركة (محفوظة في الأرشيف)' });
 
     } catch (error) {
         console.error('Delete company error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'حدث خطأ أثناء الحذف'
-        });
+        res.status(500).json({ success: false, error: 'حدث خطأ أثناء الحذف' });
     }
 };
 

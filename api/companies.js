@@ -569,6 +569,57 @@ function logActivity(type, companyId, details = {}) {
     }
 }
 
+// GET /api/companies/init - Initialize Redis from companies.json
+module.exports.initFromFile = async (req, res) => {
+    try {
+        if (!redis) {
+            return res.json({
+                success: false,
+                message: 'Redis غير متاح (تشغيل محلي)'
+            });
+        }
+
+        // قراءة من companies.json
+        if (!fs.existsSync(companiesFile)) {
+            return res.status(404).json({
+                success: false,
+                message: 'ملف companies.json غير موجود'
+            });
+        }
+
+        const fileData = JSON.parse(fs.readFileSync(companiesFile, 'utf8'));
+        
+        if (!fileData.companies || fileData.companies.length === 0) {
+            return res.json({
+                success: false,
+                message: 'ملف companies.json فارغ'
+            });
+        }
+
+        // حفظ في Redis
+        await redis.set('companies_data', fileData);
+
+        console.log('✅ تم تهيئة Redis من companies.json -', fileData.companies.length, 'شركة');
+
+        res.json({
+            success: true,
+            message: `تم تحميل ${fileData.companies.length} شركة إلى Redis بنجاح`,
+            companies: fileData.companies.map(c => ({
+                id: c.id,
+                companyName: c.companyName,
+                username: c.username,
+                plan: c.selectedPlan
+            }))
+        });
+    } catch (error) {
+        console.error('خطأ في تهيئة Redis:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
 // Save handlers before module.exports is overwritten
 const _register = module.exports.register;
 const _getAllCompanies = module.exports.getAllCompanies;
@@ -578,6 +629,7 @@ const _updateStatus = module.exports.updateStatus;
 const _updatePlan = module.exports.updatePlan;
 const _deleteCompany = module.exports.deleteCompany;
 const _login = module.exports.login;
+const _initFromFile = module.exports.initFromFile;
 
 // Main handler for Vercel serverless - Router للطلبات
 module.exports = async (req, res) => {
@@ -595,7 +647,9 @@ module.exports = async (req, res) => {
         const method = req.method;
 
         // Route the request based on URL and method
-        if (url.includes('/register') && method === 'POST') {
+        if (url.includes('/init') && method === 'GET') {
+            return _initFromFile(req, res);
+        } else if (url.includes('/register') && method === 'POST') {
             return _register(req, res);
         } else if (url.includes('/login') && method === 'POST') {
             return _login(req, res);
@@ -629,3 +683,4 @@ module.exports.updateStatus = _updateStatus;
 module.exports.updatePlan = _updatePlan;
 module.exports.deleteCompany = _deleteCompany;
 module.exports.login = _login;
+module.exports.initFromFile = _initFromFile;

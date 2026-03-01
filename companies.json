@@ -1,3 +1,29 @@
 {
-  "companies": []
+  "companies": [
+    {
+      "id": "jamjoum-group-2026",
+      "companyName": "Jamjoum Group",
+      "adminName": "Jimmy",
+      "username": "Jimmmy@jamjoumgroup.com",
+      "password": "01210505010",
+      "email": "Jimmmy@jamjoumgroup.com",
+      "phone": "01210505010",
+      "selectedPlan": "enterprise",
+      "commercialNumber": "JG-2026-001",
+      "status": "active",
+      "maxEmployees": 999999,
+      "maxMinutesPerMonth": 999999,
+      "features": {
+        "callRecording": true,
+        "analytics": true,
+        "multipleNumbers": true,
+        "apiAccess": true,
+        "customBranding": true,
+        "dedicatedSupport": true
+      },
+      "createdAt": "2026-03-01T12:00:00.000Z",
+      "expiresAt": null,
+      "notes": "عميل مدفوع - باقة Enterprise كاملة - لا تحذف هذا الحساب"
+    }
+  ]
 }

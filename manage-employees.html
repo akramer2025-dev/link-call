@@ -787,7 +787,7 @@
                         <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
                             <span style="color: #e17055;">⏱️</span> عدد الدقائق المخصصة <span style="color: #d63031;">*</span>
                         </label>
-                        <input type="number" id="empMinutes" min="0" value="100" required placeholder="1000"
+                        <input type="number" id="empMinutes" min="0" value="100" placeholder="1000"
                                style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
                         <small style="color: #636e72; font-size: 12px; margin-top: 5px; display: block;">
                             ⚠️ سيتم إيقاف حساب الموظف تلقائياً عند نفاذ الدقائق
@@ -854,7 +854,7 @@
                     <button type="button" onclick="closeModal()" style="flex: 1; padding: 14px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;" data-i18n="emp_btn_cancel">
                         إلغاء
                     </button>
-                    <button type="submit" class="btn-submit" style="flex: 2; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);" data-i18n="emp_btn_save">
+                    <button type="button" id="saveEmployeeBtn" onclick="saveEmployee()" class="btn-submit" style="flex: 2; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);" data-i18n="emp_btn_save">
                         ✅ حفظ الموظف
                     </button>
                 </div>
@@ -1185,8 +1185,7 @@
             document.getElementById('modalTitle').textContent = i18n.t('emp_modal_add_title');
             document.getElementById('employeeForm').reset();
             document.getElementById('employeeId').value = '';
-            document.getElementById('empPassword').required = true;
-            
+            document.getElementById('empPassword').required = false;  // validation يدوي
             // تحديد الدور الافتراضي
             const agentCard = document.querySelector('.role-card[onclick*="agent"]');
             selectRole('agent', agentCard);
@@ -1253,63 +1252,88 @@
         }
 
         // حفظ الموظف
-        document.getElementById('employeeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
+        async function saveEmployee() {
             const employeeId = document.getElementById('employeeId').value;
+
+            // Validation يدوي
+            const name = document.getElementById('empName').value.trim();
+            const username = document.getElementById('empUsername').value.trim();
+            const password = document.getElementById('empPassword').value;
+
+            if (!name) {
+                showAlert('يرجى إدخال الاسم الكامل للموظف', 'error');
+                document.getElementById('empName').focus();
+                return;
+            }
+            if (!username) {
+                showAlert('يرجى إدخال اسم المستخدم', 'error');
+                document.getElementById('empUsername').focus();
+                return;
+            }
+            if (!isEditMode && !password) {
+                showAlert('يرجى إدخال كلمة المرور', 'error');
+                document.getElementById('empPassword').focus();
+                return;
+            }
+
             const selectedPermissions = Array.from(
                 document.querySelectorAll('.permission-item input[type="checkbox"]:checked')
             ).map(cb => cb.value);
 
             const employeeData = {
                 companyId: companyId,
-                name: document.getElementById('empName').value,
-                username: document.getElementById('empUsername').value,
+                name: name,
+                username: username,
                 email: document.getElementById('empEmail').value,
                 phone: document.getElementById('empPhone').value,
                 title: document.getElementById('empTitle').value,
-                role: document.getElementById('empRole').value,
+                role: document.getElementById('empRole').value || 'agent',
                 permissions: selectedPermissions,
-                minutesAllocated: parseInt(document.getElementById('empMinutes').value),
+                minutesAllocated: parseInt(document.getElementById('empMinutes').value) || 0,
                 active: document.getElementById('empActive').checked
             };
 
-            const password = document.getElementById('empPassword').value;
-            if (password) {
-                employeeData.password = password;
-            }
+            if (password) employeeData.password = password;
+
+            // حالة التحميل
+            const btn = document.getElementById('saveEmployeeBtn');
+            btn.disabled = true;
+            btn.textContent = 'جاري الحفظ...';
 
             try {
-                const url = isEditMode 
+                const url = isEditMode
                     ? `/api/employees-management/${employeeId}`
                     : '/api/employees-management';
-                
                 const method = isEditMode ? 'PUT' : 'POST';
 
                 const response = await fetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(employeeData)
                 });
 
                 const data = await response.json();
-                
+
                 if (data.success) {
-                    showAlert(
-                        isEditMode ? i18n.t('emp_update_success') : i18n.t('emp_save_success'),
-                        'success'
-                    );
+                    showAlert(isEditMode ? '✅ تم تحديث بيانات الموظف بنجاح' : '✅ تم إضافة الموظف بنجاح', 'success');
                     closeModal();
                     loadEmployees();
                 } else {
-                    showAlert(data.message, 'error');
+                    showAlert('❌ ' + (data.message || 'حدث خطأ غير متوقع'), 'error');
                 }
             } catch (error) {
                 console.error('Error saving employee:', error);
-                showAlert(i18n.t('emp_save_error'), 'error');
+                showAlert('❌ خطأ في الاتصال بالخادم: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✅ حفظ الموظف';
             }
+        }
+
+        // الكود القديم - محتفظ به للتوافق مع أي كود يستخدمه
+        document.getElementById('employeeForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveEmployee();
         });
 
         // إغلاق النافذة المنبثقة

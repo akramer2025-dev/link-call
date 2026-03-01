@@ -24,18 +24,20 @@ const companiesFile = path.join(__dirname, '../companies.json');
 
 // نفس functions الـ companies.js لضمان تزامن البيانات
 async function getCompaniesData() {
-    // Try Redis first (Vercel production) - same logic as companies.js
-    if (redisAvailable && redis && process.env.VERCEL) {
+    // Try Redis first (whenever available)
+    if (redisAvailable && redis) {
         try {
             const data = await redis.get('companies_data');
-            if (data && data.companies) {
-                return data;
+            if (data) {
+                // handle both object and JSON string
+                const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+                if (parsed && parsed.companies) return parsed;
             }
         } catch (e) {
-            console.error('Redis read error in employees-management:', e);
+            console.error('Redis read error in employees-management:', e.message);
         }
     }
-    // Fallback: local file (same as companies.js)
+    // Fallback: local file
     try {
         if (fs.existsSync(companiesFile)) {
             const data = fs.readFileSync(companiesFile, 'utf8');
@@ -48,22 +50,23 @@ async function getCompaniesData() {
 }
 
 async function saveCompaniesData(data) {
-    // Save to Redis in production - same logic as companies.js
-    if (redisAvailable && redis && process.env.VERCEL) {
+    // Save to Redis whenever available
+    if (redisAvailable && redis) {
         try {
             await redis.set('companies_data', data);
+            console.log('✅ employees-management: تم حفظ بيانات الشركات في Redis');
             return true;
         } catch (e) {
-            console.error('Redis write error in employees-management:', e);
-            return false;
+            console.error('❌ Redis write error in employees-management:', e.message);
+            // don't return false yet - try file fallback below
         }
     }
-    // Save to file locally
+    // Fallback: local file (only works locally)
     try {
         fs.writeFileSync(companiesFile, JSON.stringify(data, null, 2));
         return true;
     } catch (error) {
-        console.error('Error saving companies file:', error);
+        console.error('❌ Error saving companies file:', error.message);
         return false;
     }
 }

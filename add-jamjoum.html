@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة Jamjoum Group</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            opacity: 0.9;
+        }
+        
+        .info-value {
+            font-weight: bold;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 إضافة Jamjoum Group</h1>
+        <p class="subtitle">إنشاء حساب Enterprise للعميل</p>
+        
+        <div class="info-box">
+            <h3>📋 بيانات الحساب:</h3>
+            <div class="info-item">
+                <span class="info-label">اسم الشركة:</span>
+                <span class="info-value">Jamjoum Group</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">اسم المدير:</span>
+                <span class="info-value">Jimmy</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Username:</span>
+                <span class="info-value">Jimmmy@jamjoumgroup.com</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Password:</span>
+                <span class="info-value">01210505010</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">الباقة:</span>
+                <span class="info-value">Enterprise (كل المميزات)</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">عدد الموظفين:</span>
+                <span class="info-value">غير محدود</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">دقائق المكالمات:</span>
+                <span class="info-value">غير محدود</span>
+            </div>
+        </div>
+        
+        <button id="addBtn" class="btn btn-primary" onclick="addCompany()">
+            ✅ إضافة الشركة الآن
+        </button>
+        
+        <div id="status" class="status"></div>
+    </div>
+    
+    <script>
+        const baseUrl = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000' 
+            : 'https://linkcall.akrammostafa.com';
+        
+        async function addCompany() {
+            const btn = document.getElementById('addBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> جاري الإضافة...';
+            
+            status.style.display = 'none';
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/companies/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        companyName: 'Jamjoum Group',
+                        adminName: 'Jimmy',
+                        username: 'Jimmmy@jamjoumgroup.com',
+                        password: '01210505010',
+                        email: 'Jimmmy@jamjoumgroup.com',
+                        adminEmail: 'Jimmmy@jamjoumgroup.com',
+                        companyPhone: '01210505010',
+                        adminPhone: '01210505010',
+                        selectedPlan: 'enterprise',
+                        commercialNumber: 'JG-2026-001',
+                        businessType: 'تجارة عامة',
+                        country: 'مصر',
+                        city: 'القاهرة',
+                        address: 'القاهرة',
+                        adminTitle: 'مدير عام'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success || response.ok) {
+                    status.className = 'status success';
+                    status.style.display = 'block';
+                    status.innerHTML = `
+                        <h3>✅ تم إضافة الشركة بنجاح!</h3>
+                        <p style="margin-top: 10px;">
+                            <strong>Company ID:</strong> ${data.company?.id || 'N/A'}<br>
+                            <strong>الآن يمكن تسجيل الدخول مباشرة:</strong><br>
+                            <a href="${baseUrl}/login.html" target="_blank" style="color: #155724; font-weight: bold;">
+                                افتح صفحة تسجيل الدخول →
+                            </a>
+                        </p>
+                    `;
+                    btn.innerHTML = '✅ تمت الإضافة بنجاح';
+                } else {
+                    // قد تكون الشركة موجودة بالفعل
+                    if (data.error && data.error.includes('موجود')) {
+                        status.className = 'status info';
+                        status.style.display = 'block';
+                        status.innerHTML = `
+                            <h3>ℹ️ الشركة موجودة بالفعل</h3>
+                            <p style="margin-top: 10px;">
+                                هذا الحساب مسجل مسبقاً. يمكنك تسجيل الدخول مباشرة:<br>
+                                <a href="${baseUrl}/login.html" target="_blank" style="color: #0c5460; font-weight: bold;">
+                                    افتح صفحة تسجيل الدخول →
+                                </a>
+                            </p>
+                        `;
+                        btn.innerHTML = '✅ الحساب موجود - يمكنك تسجيل الدخول';
+                        btn.disabled = false;
+                    } else {
+                        throw new Error(data.error || 'فشل في إضافة الشركة');
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                status.className = 'status error';
+                status.style.display = 'block';
+                status.innerHTML = `
+                    <h3>❌ حدث خطأ</h3>
+                    <p style="margin-top: 10px;">${error.message}</p>
+                `;
+                btn.innerHTML = '🔄 حاول مرة أخرى';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

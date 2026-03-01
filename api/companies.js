@@ -7,14 +7,24 @@ const crypto = require('crypto');
 
 // Upstash Redis للتخزين السحابي
 let redis;
+let redisAvailable = false;
 try {
     const { Redis } = require('@upstash/redis');
-    redis = new Redis({
-        url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
+    const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+    
+    if (redisUrl && redisToken && redisUrl.startsWith('http')) {
+        redis = new Redis({
+            url: redisUrl,
+            token: redisToken,
+        });
+        redisAvailable = true;
+        console.log('✅ Redis initialized in companies.js');
+    } else {
+        console.log('⚠️ Redis URL/Token غير متاح في companies.js');
+    }
 } catch (e) {
-    console.log('⚠️ Redis غير متاح في companies.js');
+    console.log('⚠️ Redis غير متاح في companies.js:', e.message);
 }
 
 // Database file for companies (local fallback)
@@ -23,7 +33,7 @@ const companiesFile = path.join(__dirname, '../companies.json');
 // Helper functions for data management
 async function getCompaniesData() {
     // Try Redis first (Vercel production)
-    if (redis && process.env.VERCEL) {
+    if (redisAvailable && redis && process.env.VERCEL) {
         try {
             const data = await redis.get('companies_data');
             if (data && data.companies) {
@@ -47,7 +57,7 @@ async function getCompaniesData() {
 
 async function saveCompaniesData(data) {
     // Save to Redis in production
-    if (redis && process.env.VERCEL) {
+    if (redisAvailable && redis && process.env.VERCEL) {
         try {
             await redis.set('companies_data', data);
             return true;
@@ -572,10 +582,17 @@ function logActivity(type, companyId, details = {}) {
 // GET /api/companies/init - Initialize Redis from companies.json
 module.exports.initFromFile = async (req, res) => {
     try {
-        if (!redis) {
+        // التحقق من توفر Redis
+        if (!redisAvailable || !redis) {
             return res.json({
                 success: false,
-                message: 'Redis غير متاح (تشغيل محلي)'
+                message: 'Redis غير متاح أو غير مهيأ بشكل صحيح',
+                details: {
+                    redisAvailable: redisAvailable,
+                    hasRedisObject: !!redis,
+                    isVercel: !!process.env.VERCEL,
+                    hasUrl: !!(process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL)
+                }
             });
         }
 
@@ -593,6 +610,17 @@ module.exports.initFromFile = async (req, res) => {
             return res.json({
                 success: false,
                 message: 'ملف companies.json فارغ'
+            });
+        }
+
+        // اختبار الاتصال بـ Redis أولاً
+        try {
+            await redis.ping();
+        } catch (pingError) {
+            return res.status(500).json({
+                success: false,
+                message: 'فشل الاتصال بـ Redis',
+                error: pingError.message
             });
         }
 

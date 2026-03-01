@@ -161,6 +161,7 @@
     }
 
     // ==================== منع اختصارات لوحة المفاتيح الخطيرة ====================
+    if (PROTECTION_CONFIG.disableDevTools) {
     document.addEventListener('keydown', (e) => {
         // منع F12
         if (e.keyCode === 123) {
@@ -204,6 +205,7 @@
             return false;
         }
     });
+    } // end disableDevTools
 
     // ==================== حماية الكود من المشاهدة ====================
     if (PROTECTION_CONFIG.protectCode) {

@@ -342,29 +342,50 @@
                         const companyData = await companyResponse.json();
                         
                         if (companyResponse.ok && companyData.success) {
-                            // حفظ بيانات مدير الشركة
-                            sessionStorage.setItem('isLoggedIn', 'true');
-                            sessionStorage.setItem('username', companyData.company.username);
-                            sessionStorage.setItem('userRole', 'company-admin');
-                            sessionStorage.setItem('isCompanyAdmin', 'true');
-                            sessionStorage.setItem('fullname', companyData.company.adminName || companyData.company.companyName);
-                            sessionStorage.setItem('companyId', companyData.company.id);
-                            sessionStorage.setItem('companyName', companyData.company.companyName);
-                            sessionStorage.setItem('employeeId', 'company-' + companyData.company.id);
-                            localStorage.setItem('employeeId', 'company-' + companyData.company.id);
-                            localStorage.setItem('employeeName', companyData.company.adminName || companyData.company.companyName);
-                            sessionStorage.setItem('canViewOwnRecordings', 'true');
-                            sessionStorage.setItem('canViewAllRecordings', 'true');
-                            sessionStorage.setItem('canDeleteRecordings', 'true');
-                            sessionStorage.setItem('canEditProfile', 'true');
-                            sessionStorage.setItem('canCallFromUSA', 'true');
-                            sessionStorage.setItem('permissions', JSON.stringify({
-                                viewOwnRecordings: true,
-                                viewAllRecordings: true,
-                                deleteRecordings: true,
-                                editProfile: true,
-                                callFromUSA: true
-                            }));
+                            if (companyData.isEmployee) {
+                                // ─── دخول موظف ───
+                                const emp = companyData.employee;
+                                const co  = companyData.company;
+                                sessionStorage.setItem('isLoggedIn',  'true');
+                                sessionStorage.setItem('username',     emp.username);
+                                sessionStorage.setItem('userRole',     emp.role || 'employee');
+                                sessionStorage.setItem('isCompanyAdmin', 'false');
+                                sessionStorage.setItem('fullname',     emp.name);
+                                sessionStorage.setItem('companyId',    co.id);
+                                sessionStorage.setItem('companyName',  co.companyName);
+                                sessionStorage.setItem('employeeId',   emp.id.toString());
+                                localStorage.setItem('employeeId',     emp.id.toString());
+                                localStorage.setItem('employeeName',   emp.name);
+                                // الصلاحيات
+                                const perms = emp.permissions || [];
+                                sessionStorage.setItem('permissions',             JSON.stringify(perms));
+                                sessionStorage.setItem('canViewOwnRecordings',    perms.includes('listen_recordings')   ? 'true' : 'false');
+                                sessionStorage.setItem('canViewAllRecordings',    perms.includes('listen_recordings')   ? 'true' : 'false');
+                                sessionStorage.setItem('canDeleteRecordings',     perms.includes('delete_recordings')   ? 'true' : 'false');
+                                sessionStorage.setItem('canEditProfile',          perms.includes('edit_profile')        ? 'true' : 'false');
+                                sessionStorage.setItem('canCallFromUSA',          perms.includes('make_calls') ? 'true' : 'false');
+                            } else {
+                                // ─── دخول مدير شركة ───
+                                sessionStorage.setItem('isLoggedIn',  'true');
+                                sessionStorage.setItem('username',    companyData.company.username);
+                                sessionStorage.setItem('userRole',    'company-admin');
+                                sessionStorage.setItem('isCompanyAdmin', 'true');
+                                sessionStorage.setItem('fullname',    companyData.company.adminName || companyData.company.companyName);
+                                sessionStorage.setItem('companyId',   companyData.company.id);
+                                sessionStorage.setItem('companyName', companyData.company.companyName);
+                                sessionStorage.setItem('employeeId',  'company-' + companyData.company.id);
+                                localStorage.setItem('employeeId',    'company-' + companyData.company.id);
+                                localStorage.setItem('employeeName',  companyData.company.adminName || companyData.company.companyName);
+                                sessionStorage.setItem('canViewOwnRecordings', 'true');
+                                sessionStorage.setItem('canViewAllRecordings', 'true');
+                                sessionStorage.setItem('canDeleteRecordings',  'true');
+                                sessionStorage.setItem('canEditProfile',        'true');
+                                sessionStorage.setItem('canCallFromUSA',        'true');
+                                sessionStorage.setItem('permissions', JSON.stringify({
+                                    viewOwnRecordings: true, viewAllRecordings: true,
+                                    deleteRecordings: true, editProfile: true, callFromUSA: true
+                                }));
+                            }
                             loginBtn.classList.add('success');
                             saveRemember(username, password);
                             setTimeout(() => { window.location.href = 'index.html'; }, 500);

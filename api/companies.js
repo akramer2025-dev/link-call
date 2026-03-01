@@ -425,7 +425,7 @@ module.exports.deleteCompany = async (req, res) => {
     }
 };
 
-// POST /api/companies/login - Company login
+// POST /api/companies/login - Company OR Employee login
 module.exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -439,57 +439,90 @@ module.exports.login = async (req, res) => {
 
         const usernameTrimmed = username.trim().toLowerCase();
         const companiesData = await getCompaniesData();
+
+        // ─── 1. هل هو مدير شركة؟ ───
         const company = companiesData.companies.find(
             c => (c.username || '').toLowerCase() === usernameTrimmed
         );
 
-        if (!company) {
+        if (company) {
+            if (company.password !== hashPassword(password.trim())) {
+                return res.status(401).json({ success: false, error: 'كلمة المرور غير صحيحة' });
+            }
+            if (company.status !== 'active') {
+                return res.status(403).json({ success: false, error: 'حسابك غير نشط. الرجاء التواصل مع الدعم الفني' });
+            }
+            // تحديث آخر تسجيل دخول
+            const idx = companiesData.companies.findIndex(c => c.id === company.id);
+            companiesData.companies[idx].lastLoginAt = new Date().toISOString();
+            await saveCompaniesData(companiesData);
+            logActivity('company_login', company.id);
+            return res.json({
+                success: true,
+                isEmployee: false,
+                company: {
+                    id: company.id,
+                    companyName: company.companyName,
+                    adminName: company.adminName,
+                    username: company.username,
+                    plan: company.plan,
+                    limits: company.limits
+                }
+            });
+        }
+
+        // ─── 2. هل هو موظف في إحدى الشركات؟ ───
+        let foundEmployee = null;
+        let foundCompany  = null;
+        for (const c of companiesData.companies) {
+            const emp = (c.employees || []).find(
+                e => !e._deleted && e.active !== false &&
+                     (e.username || '').toLowerCase() === usernameTrimmed
+            );
+            if (emp) { foundEmployee = emp; foundCompany = c; break; }
+        }
+
+        if (!foundEmployee) {
             return res.status(401).json({
                 success: false,
-                error: 'هذا المستخدم غير مسجل. يرجى إنشاء حساب أولاً عبر صفحة التسجيل'
+                error: 'اسم المستخدم غير موجود. يرجى التواصل مع مدير الشركة'
             });
         }
 
-        if (company.password !== hashPassword(password.trim())) {
-            return res.status(401).json({
-                success: false,
-                error: 'كلمة المرور غير صحيحة'
-            });
+        // مقارنة كلمة المرور (نص عادي للموظفين)
+        const rawPass = password.trim();
+        const empPass = foundEmployee.password || '';
+        const passOk  = empPass === rawPass || empPass === hashPassword(rawPass);
+        if (!passOk) {
+            return res.status(401).json({ success: false, error: 'كلمة المرور غير صحيحة' });
         }
 
-        if (company.status !== 'active') {
-            return res.status(403).json({
-                success: false,
-                error: 'حسابك غير نشط. الرجاء التواصل مع الدعم الفني'
-            });
-        }
+        logActivity('employee_login', foundCompany.id, { employeeId: foundEmployee.id });
 
-        // Update last login
-        const companyIndex = companiesData.companies.findIndex(c => c.id === company.id);
-        companiesData.companies[companyIndex].lastLoginAt = new Date().toISOString();
-        await saveCompaniesData(companiesData);
-
-        logActivity('company_login', company.id);
-
-        res.json({
+        return res.json({
             success: true,
-            message: 'تم تسجيل الدخول بنجاح',
+            isEmployee: true,
             company: {
-                id: company.id,
-                companyName: company.companyName,
-                adminName: company.adminName,
-                username: company.username,
-                plan: company.plan,
-                limits: company.limits
+                id: foundCompany.id,
+                companyName: foundCompany.companyName,
+                adminName: foundCompany.adminName
+            },
+            employee: {
+                id: foundEmployee.id,
+                name: foundEmployee.name,
+                username: foundEmployee.username,
+                role: foundEmployee.role || 'agent',
+                title: foundEmployee.title || '',
+                permissions: foundEmployee.permissions || [],
+                minutesAllocated: foundEmployee.minutesAllocated || 0,
+                minutesUsed: foundEmployee.minutesUsed || 0,
+                companyId: foundCompany.id
             }
         });
 
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'حدث خطأ أثناء تسجيل الدخول'
-        });
+        res.status(500).json({ success: false, error: 'حدث خطأ أثناء تسجيل الدخول' });
     }
 };
 

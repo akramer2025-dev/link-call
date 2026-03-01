@@ -432,6 +432,28 @@ body {
 
 /* ========== التصميم المتجاوب ========== */
 
+/* تابلت (769-1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .login-wrapper {
+        max-width: 780px;
+        margin: 10px;
+    }
+
+    .info-section {
+        padding: 30px 20px;
+        min-width: 200px;
+        max-width: 260px;
+    }
+
+    .brand-title {
+        font-size: 1.9em;
+    }
+
+    .login-section {
+        padding: 30px 25px 40px;
+    }
+}
+
 /* الشاشات المتوسطة */
 @media (max-width: 900px) {
     .login-wrapper {

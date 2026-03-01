@@ -846,6 +846,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // تصفية خيارات الاتصال بناءً على صلاحيات الموظف
     filterCallerIdOptions();
+
+    // تحميل جهات الاتصال مسبقاً لضمان ظهور الأسماء في سجل المكالمات
+    setTimeout(() => {
+        const companyId = sessionStorage.getItem('companyId');
+        if (companyId && (!_cachedContacts || _cachedContacts.length === 0)) {
+            fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.contacts && d.contacts.length > 0) {
+                        _cachedContacts = d.contacts;
+                        console.log(`✅ جهات الاتصال محملة مسبقاً: ${_cachedContacts.length}`);
+                    }
+                })
+                .catch(() => {});
+        }
+    }, 1500);
 });
 
 // تصفية خيارات رقم المتصل بناءً على الصلاحيات
@@ -2868,10 +2884,14 @@ function saveCallToHistory(call) {
             // البحث عن اسم جهة الاتصال من الكاش
             let contactName = null;
             if (_cachedContacts && _cachedContacts.length > 0) {
-                const cleanTo = (call.to || '').replace(/[\s\-+]/g, '');
-                const found = _cachedContacts.find(c => {
-                    const cp = (c.phone || '').replace(/[\s\-+]/g, '');
-                    return cp.includes(cleanTo) || cleanTo.includes(cp);
+                const cleanTo = (call.to || '').replace(/[\s\-+(). -]/g, '');
+                const tail   = s => s.length >= 9 ? s.slice(-9) : s;
+                const found  = _cachedContacts.find(c => {
+                    const cp = (c.phone || '').replace(/[\s\-+(). -]/g, '');
+                    return cp === cleanTo ||
+                           cp.includes(cleanTo) ||
+                           cleanTo.includes(cp) ||
+                           (cleanTo.length >= 7 && tail(cp) === tail(cleanTo));
                 });
                 if (found) contactName = found.name;
             }
@@ -2986,15 +3006,26 @@ async function loadCallHistory() {
             // اسم جهة الاتصال — يُعطى الأولوية لـ contactName المحفوظ في Firestore
             let displayName = toNum;
             let isContact   = false;
+
+            // دالة مطابقة محسّنة (تستخدم آخر 9 أرقام كاحتياط)
+            const matchContact = (num, list) => {
+                const clean = (num || '').replace(/[\s\-+(). -]/g, '');
+                if (clean.length < 5) return null;
+                const tail = s => s.length >= 9 ? s.slice(-9) : s;
+                return list.find(c => {
+                    const cp = (c.phone || '').replace(/[\s\-+(). -]/g, '');
+                    return cp === clean ||
+                           cp.includes(clean) ||
+                           clean.includes(cp) ||
+                           (clean.length >= 7 && tail(cp) === tail(clean));
+                }) || null;
+            };
+
             if (call.contactName) {
                 displayName = `👤 ${call.contactName}`;
                 isContact = true;
             } else if (contacts.length > 0) {
-                const cleanTo = toNum.replace(/[\s\-+]/g, '');
-                const found = contacts.find(c => {
-                    const cp = (c.phone || '').replace(/[\s\-+]/g, '');
-                    return cp.includes(cleanTo) || cleanTo.includes(cp);
-                });
+                const found = matchContact(toNum, contacts);
                 if (found) { displayName = `👤 ${found.name}`; isContact = true; }
             }
 

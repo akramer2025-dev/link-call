@@ -3696,6 +3696,148 @@ input:checked + .slider:before {
     }
 }
 
+/* ================================================
+   ===== تابلت (769px - 1024px) =====
+   ================================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    body {
+        padding: 5px;
+        align-items: flex-start;
+    }
+
+    .container {
+        width: 98%;
+        max-width: 920px;
+        min-height: 100vh;
+        max-height: none;
+        border-radius: 0;
+        height: auto;
+    }
+
+    /* الشريط الجانبي — يُفعَّل بزر الهامبرجر */
+    .sidebar {
+        width: 280px;
+        right: -280px;
+    }
+
+    .sidebar.active {
+        right: 0;
+    }
+
+    .hamburger-menu {
+        top: 14px;
+        right: 14px;
+        width: 46px;
+        height: 46px;
+    }
+
+    /* المحتوى الرئيسي */
+    .main-content {
+        width: 100%;
+        padding: 12px 16px;
+        padding-top: 68px;
+    }
+
+    .header {
+        padding: 12px 18px;
+    }
+
+    .header h1 {
+        font-size: 1.6em;
+    }
+
+    .header-logo-container {
+        width: 50px;
+        height: 50px;
+    }
+
+    .header-logo-img {
+        width: 50px;
+        height: 50px;
+    }
+
+    /* لوحة الأرقام */
+    .key {
+        width: 80px;
+        height: 80px;
+        font-size: 24px;
+    }
+
+    .call-btn-round {
+        width: 80px;
+        height: 80px;
+        font-size: 28px;
+    }
+
+    .phone-number {
+        font-size: 30px;
+    }
+
+    /* النماذج والإدخال */
+    input, select, textarea {
+        font-size: 15px !important;
+    }
+
+    /* عناصر القائمة */
+    .menu-item {
+        padding: 10px 14px;
+    }
+
+    .menu-label {
+        font-size: 0.9em;
+    }
+
+    /* Modal */
+    .modal-content {
+        width: 80%;
+        max-width: 600px;
+    }
+
+    /* بطاقات التسجيلات */
+    .recording-item {
+        padding: 12px;
+    }
+
+    /* جهات الاتصال */
+    .contact-item {
+        padding: 10px 14px;
+    }
+
+    /* معلومات المستخدم في الهيدر */
+    .user-info-header {
+        display: flex;
+    }
+
+    .user-info {
+        font-size: 0.9em;
+    }
+}
+
+/* ================================================
+   ===== لابتوب وبيج ستات (1025px - 1400px) =====
+   ================================================ */
+@media (min-width: 1025px) and (max-width: 1400px) {
+    .container {
+        width: 90%;
+        max-width: 900px;
+    }
+
+    .main-content {
+        padding: 15px 20px;
+    }
+
+    .header h1 {
+        font-size: 1.8em;
+    }
+}
+
+/* ===== شاشات عريضة جداً (>1400px) ===== */
+@media (min-width: 1401px) {
+    .container {
+        max-width: 1000px;
+    }
+}
+
 /* ===== PWA زر التثبيت ===== */
 #install-app-btn {
     background: linear-gradient(135deg, #00b894 0%, #00cec9 100%) !important;

@@ -1784,11 +1784,19 @@ if (recordingsBtn) {
 
 if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
-        console.log('Settings clicked');
+        console.log('⚙️ تم النقر على زر الإعدادات');
         hideAllSections();
         removeAllActiveStates();
         settingsPanel.classList.remove('hidden');
         settingsBtn.classList.add('active');
+        
+        // إعادة تطبيق الصلاحيات لضمان ظهور الأقسام الصحيحة
+        applyRoleBasedVisibility();
+        
+        // تحميل قائمة الموظفين
+        setTimeout(() => {
+            loadEmployeesList();
+        }, 100);
     });
 }
 
@@ -1852,54 +1860,59 @@ function checkAdminAccess() {
 }
 
 // إخفاء/إظهار الأقسام حسب الصلاحية
-const userRole = sessionStorage.getItem('userRole');
-const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
-const employeesSection = document.getElementById('employees-section');
-const adminAccountSection = document.getElementById('admin-account-section');
-const adminAudioSection = document.getElementById('admin-audio-section');
-const employeeProfileSection = document.getElementById('employee-profile-section');
-const pricingSection = document.getElementById('pricing-section');
-const adminPanelSection = document.getElementById('admin-panel-section');
-const adminDashboardSection = document.getElementById('admin-dashboard-section');
-const companyAdminSection = document.getElementById('company-admin-section');
+function applyRoleBasedVisibility() {
+    const userRole = sessionStorage.getItem('userRole');
+    const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
+    const employeesSection = document.getElementById('employees-section');
+    const adminAccountSection = document.getElementById('admin-account-section');
+    const adminAudioSection = document.getElementById('admin-audio-section');
+    const employeeProfileSection = document.getElementById('employee-profile-section');
+    const pricingSection = document.getElementById('pricing-section');
+    const adminPanelSection = document.getElementById('admin-panel-section');
+    const adminDashboardSection = document.getElementById('admin-dashboard-section');
+    const companyAdminSection = document.getElementById('company-admin-section');
 
-if (userRole === 'admin' && !isCompanyAdmin) {
-    // المطور يرى إدارة المديرين والإعدادات والتسعيرة
-    if (employeesSection) employeesSection.style.display = 'block';
-    if (adminAccountSection) adminAccountSection.style.display = 'block';
-    if (adminAudioSection) adminAudioSection.style.display = 'block';
-    if (pricingSection) pricingSection.style.display = 'block';
-    if (adminPanelSection) adminPanelSection.style.display = 'block';
-    if (adminDashboardSection) adminDashboardSection.style.display = 'block';
-    if (companyAdminSection) companyAdminSection.style.display = 'none';
-    if (employeeProfileSection) employeeProfileSection.style.display = 'none';
-} else if (userRole === 'company-admin' || isCompanyAdmin) {
-    // مدير الشركة - يرى فقط إدارة الموظفين
-    if (employeesSection) employeesSection.style.display = 'none';
-    if (adminAccountSection) adminAccountSection.style.display = 'none';
-    if (adminAudioSection) adminAudioSection.style.display = 'none';
-    if (pricingSection) pricingSection.style.display = 'none';
-    if (adminPanelSection) adminPanelSection.style.display = 'none';
-    if (adminDashboardSection) adminDashboardSection.style.display = 'none';
-    if (companyAdminSection) companyAdminSection.style.display = 'block';
-    if (employeeProfileSection) {
-        employeeProfileSection.style.display = 'block';
-        loadEmployeeProfile();
-    }
-} else {
-    // المدير العادي يرى فقط تعديل ملفه الشخصي
-    if (employeesSection) employeesSection.style.display = 'none';
-    if (adminAccountSection) adminAccountSection.style.display = 'none';
-    if (adminAudioSection) adminAudioSection.style.display = 'none';
-    if (pricingSection) pricingSection.style.display = 'none';
-    if (adminPanelSection) adminPanelSection.style.display = 'none';
-    if (adminDashboardSection) adminDashboardSection.style.display = 'none';
-    if (companyAdminSection) companyAdminSection.style.display = 'none';
-    if (employeeProfileSection) {
-        employeeProfileSection.style.display = 'block';
-        loadEmployeeProfile();
+    if (userRole === 'admin' && !isCompanyAdmin) {
+        // المطور يرى إدارة المديرين والإعدادات والتسعيرة
+        if (employeesSection) employeesSection.style.display = 'block';
+        if (adminAccountSection) adminAccountSection.style.display = 'block';
+        if (adminAudioSection) adminAudioSection.style.display = 'block';
+        if (pricingSection) pricingSection.style.display = 'block';
+        if (adminPanelSection) adminPanelSection.style.display = 'block';
+        if (adminDashboardSection) adminDashboardSection.style.display = 'block';
+        if (companyAdminSection) companyAdminSection.style.display = 'none';
+        if (employeeProfileSection) employeeProfileSection.style.display = 'none';
+    } else if (userRole === 'company-admin' || isCompanyAdmin) {
+        // مدير الشركة - يرى فقط إدارة الموظفين
+        if (employeesSection) employeesSection.style.display = 'none';
+        if (adminAccountSection) adminAccountSection.style.display = 'none';
+        if (adminAudioSection) adminAudioSection.style.display = 'none';
+        if (pricingSection) pricingSection.style.display = 'none';
+        if (adminPanelSection) adminPanelSection.style.display = 'none';
+        if (adminDashboardSection) adminDashboardSection.style.display = 'none';
+        if (companyAdminSection) companyAdminSection.style.display = 'block';
+        if (employeeProfileSection) {
+            employeeProfileSection.style.display = 'block';
+            loadEmployeeProfile();
+        }
+    } else {
+        // المدير العادي يرى فقط تعديل ملفه الشخصي
+        if (employeesSection) employeesSection.style.display = 'none';
+        if (adminAccountSection) adminAccountSection.style.display = 'none';
+        if (adminAudioSection) adminAudioSection.style.display = 'none';
+        if (pricingSection) pricingSection.style.display = 'none';
+        if (adminPanelSection) adminPanelSection.style.display = 'none';
+        if (adminDashboardSection) adminDashboardSection.style.display = 'none';
+        if (companyAdminSection) companyAdminSection.style.display = 'none';
+        if (employeeProfileSection) {
+            employeeProfileSection.style.display = 'block';
+            loadEmployeeProfile();
+        }
     }
 }
+
+// تطبيق الصلاحيات عند تحميل الصفحة
+applyRoleBasedVisibility();
 
 // جلب المديرين من localStorage
 function getEmployees() {
@@ -2331,16 +2344,6 @@ async function updateEmployee(employeeId) {
 // جعل الدوال متاحة عالمياً
 window.openEditEmployeeModal = openEditEmployeeModal;
 window.updateEmployee = updateEmployee;
-
-// تحميل قائمة المديرين عند فتح الإعدادات
-if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => {
-        console.log('⚙️ تم النقر على زر الإعدادات');
-        setTimeout(() => {
-            loadEmployeesList();
-        }, 100); // انتظار قصير للتأكد من ظهور الـ container
-    });
-}
 
 // تحميل القائمة عند تحميل الصفحة
 setTimeout(() => {

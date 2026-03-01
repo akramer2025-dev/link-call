@@ -189,8 +189,8 @@ async function getEmployees(req, res) {
 // إضافة موظف جديد
 async function addEmployee(req, res) {
     try {
-        console.log('📝 طلب إضافة موظف جديد');
-        console.log('Request body:', JSON.stringify(req.body, null, 2));
+        console.log('📝 API: طلب إضافة موظف جديد');
+        console.log('📦 Request body received:', JSON.stringify(req.body, null, 2));
         
         const {
             companyId,
@@ -274,7 +274,12 @@ async function addEmployee(req, res) {
 // تحديث موظف
 async function updateEmployee(req, res) {
     try {
+        console.log('📝 API: طلب تحديث موظف');
+        
         const { id } = req.params;
+        console.log('Employee ID:', id);
+        console.log('📦 Update data:', JSON.stringify(req.body, null, 2));
+        
         const {
             name,
             email,
@@ -371,6 +376,24 @@ async function deleteEmployee(req, res) {
     }
 }
 
+// Helper function to parse request body (required for Vercel serverless)
+async function parseBody(req) {
+    return new Promise((resolve, reject) => {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', () => {
+            try {
+                resolve(body ? JSON.parse(body) : {});
+            } catch (e) {
+                reject(e);
+            }
+        });
+        req.on('error', reject);
+    });
+}
+
 // Initialize Redis from local file (one-time setup)
 async function initializeFromFile(req, res) {
     try {
@@ -419,6 +442,25 @@ module.exports = async (req, res) => {
     }
     
     try {
+        // Parse body for POST/PUT requests (Vercel serverless compatibility)
+        if (method === 'POST' || method === 'PUT') {
+            if (!req.body || Object.keys(req.body).length === 0) {
+                console.log('⚠️ Body empty or not parsed, attempting manual parse...');
+                try {
+                    req.body = await parseBody(req);
+                    console.log('📦 Manually parsed request body');
+                } catch (parseError) {
+                    console.error('❌ Body parse error:', parseError);
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Invalid request body - must be valid JSON'
+                    });
+                }
+            } else {
+                console.log('✅ Body already parsed by Vercel runtime');
+            }
+        }
+        
         // GET /api/employees-management/init - Initialize Redis from file
         if (method === 'GET' && url.includes('/init')) {
             return await initializeFromFile(req, res);

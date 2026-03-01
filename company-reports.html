@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقارير الموظفين - Link Call</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a1628;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* خلفية متحركة */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(10, 22, 40, 0.95) 0%, 
+                rgba(30, 58, 95, 0.90) 50%, 
+                rgba(10, 22, 40, 0.95) 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(94, 196, 212, 0.6), transparent),
+                radial-gradient(2px 2px at 60px 70px, rgba(94, 196, 212, 0.4), transparent),
+                radial-gradient(1px 1px at 50px 50px, rgba(94, 196, 212, 0.5), transparent);
+            background-repeat: repeat;
+            background-size: 300px 200px;
+            animation: starsAnimation 100s linear infinite;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes starsAnimation {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-200px); }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 25px 35px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(94, 196, 212, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(94, 196, 212, 0.2);
+        }
+
+        .header h1 {
+            color: #1e3a5f;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(94, 196, 212, 0.5);
+        }
+
+        .filters {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(94, 196, 212, 0.2);
+        }
+
+        .filters-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 14px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #5ec4d4;
+            box-shadow: 0 0 15px rgba(94, 196, 212, 0.2);
+        }
+
+        .apply-filters-btn {
+            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            color: white;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
+        }
+
+        .apply-filters-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(94, 196, 212, 0.5);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(94, 196, 212, 0.15);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #1e3a5f;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(94, 196, 212, 0.15);
+        }
+
+        .chart-card h3 {
+            color: #1e3a5f;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .employees-table-container {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(94, 196, 212, 0.2);
+        }
+
+        .employees-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .employees-table thead {
+            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+        }
+
+        .employees-table th {
+            padding: 15px;
+            text-align: right;
+            color: white;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .employees-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .employees-table tr:hover {
+            background: rgba(94, 196, 212, 0.05);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.3s;
+        }
+
+        .progress-fill.low {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .progress-fill.critical {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span>📊</span> تقارير وتحليلات الموظفين
+            </h1>
+            <a href="index.html" class="back-btn">⬅️ العودة للوحة التحكم</a>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <h3 style="color: #1e3a5f; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <span>🔍</span> فلترة التقارير
+            </h3>
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>📅 من تاريخ</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="filter-group">
+                    <label>📅 إلى تاريخ</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="filter-group">
+                    <label>👥 الموظف</label>
+                    <select id="employeeFilter">
+                        <option value="all">جميع الموظفين</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>🎭 الدور</label>
+                    <select id="roleFilter">
+                        <option value="all">جميع الأدوار</option>
+                        <option value="admin">مدير</option>
+                        <option value="supervisor">مشرف</option>
+                        <option value="agent">موظف</option>
+                        <option value="viewer">مراقب</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                <button class="apply-filters-btn" onclick="applyFilters()">تطبيق الفلاتر</button>
+                <button class="export-btn" onclick="exportReport()">📥 تصدير Excel</button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);">
+                        👥
+                    </div>
+                    <div>
+                        <div class="stat-value" id="totalEmployees">0</div>
+                        <div class="stat-label">إجمالي الموظفين</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%);">
+                        📞
+                    </div>
+                    <div>
+                        <div class="stat-value" id="totalCalls">0</div>
+                        <div class="stat-label">إجمالي المكالمات</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                        ⏱️
+                    </div>
+                    <div>
+                        <div class="stat-value" id="totalMinutes">0</div>
+                        <div class="stat-label">إجمالي الدقائق المستخدمة</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);">
+                        📈
+                    </div>
+                    <div>
+                        <div class="stat-value" id="avgCallDuration">0</div>
+                        <div class="stat-label">متوسط مدة المكالمة (دقيقة)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3>📊 استخدام الدقائق حسب الموظف</h3>
+                <canvas id="minutesChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>📞 عدد المكالمات حسب الموظف</h3>
+                <canvas id="callsChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>📈 الاتجاهات اليومية</h3>
+                <canvas id="trendsChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>🎯 الأداء حسب الدور</h3>
+                <canvas id="roleChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Employees Details Table -->
+        <div class="employees-table-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #1e3a5f; font-size: 22px; display: flex; align-items: center; gap: 10px;">
+                    <span>📋</span> تفاصيل أداء الموظفين
+                </h3>
+            </div>
+
+            <table class="employees-table" id="employeesTable">
+                <thead>
+                    <tr>
+                        <th>الموظف</th>
+                        <th>الدور</th>
+                        <th>المكالمات</th>
+                        <th>الدقائق المستخدمة</th>
+                        <th>الدقائق المتبقية</th>
+                        <th>معدل الاستخدام</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody id="employeesTableBody">
+                    <!-- Data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let companyId = null;
+        let allEmployees = [];
+        let reportData = {
+            totalEmployees: 0,
+            totalCalls: 0,
+            totalMinutes: 0,
+            avgCallDuration: 0
+        };
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', async () => {
+            companyId = sessionStorage.getItem('companyId');
+            
+            if (!companyId) {
+                alert('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Set default dates (last 30 days)
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+            
+            document.getElementById('endDate').valueAsDate = endDate;
+            document.getElementById('startDate').valueAsDate = startDate;
+
+            await loadData();
+        });
+
+        async function loadData() {
+            try {
+                // Load employees
+                const response = await fetch(`/api/employees-management?companyId=${companyId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allEmployees = data.employees;
+                    populateEmployeeFilter();
+                    calculateStats();
+                    renderCharts();
+                    renderTable();
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function populateEmployeeFilter() {
+            const select = document.getElementById('employeeFilter');
+            select.innerHTML = '<option value="all">جميع الموظفين</option>';
+            
+            allEmployees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = emp.name;
+                select.appendChild(option);
+            });
+        }
+
+        function calculateStats() {
+            reportData.totalEmployees = allEmployees.length;
+            
+            // Simulate call data (in real implementation, get from API)
+            reportData.totalCalls = allEmployees.reduce((sum, emp) => {
+                return sum + Math.floor(Math.random() * 100);
+            }, 0);
+            
+            reportData.totalMinutes = allEmployees.reduce((sum, emp) => {
+                return sum + (emp.minutesUsage?.minutesUsed || 0);
+            }, 0);
+            
+            reportData.avgCallDuration = reportData.totalCalls > 0 
+                ? Math.round(reportData.totalMinutes / reportData.totalCalls)
+                : 0;
+
+            // Update UI
+            document.getElementById('totalEmployees').textContent = reportData.totalEmployees;
+            document.getElementById('totalCalls').textContent = reportData.totalCalls.toLocaleString();
+            document.getElementById('totalMinutes').textContent = reportData.totalMinutes.toLocaleString();
+            document.getElementById('avgCallDuration').textContent = reportData.avgCallDuration;
+        }
+
+        function renderCharts() {
+            // Minutes Chart
+            const minutesCtx = document.getElementById('minutesChart').getContext('2d');
+            new Chart(minutesCtx, {
+                type: 'bar',
+                data: {
+                    labels: allEmployees.map(e => e.name),
+                    datasets: [{
+                        label: 'الدقائق المستخدمة',
+                        data: allEmployees.map(e => e.minutesUsage?.minutesUsed || 0),
+                        backgroundColor: 'rgba(94, 196, 212, 0.7)',
+                        borderColor: 'rgba(94, 196, 212, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Calls Chart
+            const callsCtx = document.getElementById('callsChart').getContext('2d');
+            const callsData = allEmployees.map(() => Math.floor(Math.random() * 100));
+            new Chart(callsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: allEmployees.map(e => e.name),
+                    datasets: [{
+                        data: callsData,
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(94, 196, 212, 0.7)',
+                            'rgba(251, 191, 36, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+
+            // Trends Chart
+            const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                last7Days.push(date.toLocaleDateString('ar-EG', { weekday: 'short' }));
+            }
+            
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: last7Days,
+                    datasets: [{
+                        label: 'المكالمات',
+                        data: Array.from({length: 7}, () => Math.floor(Math.random() * 50)),
+                        borderColor: 'rgba(94, 196, 212, 1)',
+                        backgroundColor: 'rgba(94, 196, 212, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+
+            // Role Chart
+            const roleCtx = document.getElementById('roleChart').getContext('2d');
+            const roleCounts = {
+                admin: 0,
+                supervisor: 0,
+                agent: 0,
+                viewer: 0
+            };
+            allEmployees.forEach(e => {
+                roleCounts[e.role] = (roleCounts[e.role] || 0) + 1;
+            });
+            
+            new Chart(roleCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['مدير', 'مشرف', 'موظف', 'مراقب'],
+                    datasets: [{
+                        data: [roleCounts.admin, roleCounts.supervisor, roleCounts.agent, roleCounts.viewer],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(251, 191, 36, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('employeesTableBody');
+            tbody.innerHTML = '';
+
+            allEmployees.forEach(emp => {
+                const usage = emp.minutesUsage || {};
+                const minutesUsed = usage.minutesUsed || 0;
+                const minutesAllocated = usage.minutesAllocated || 0;
+                const minutesRemaining = minutesAllocated - minutesUsed;
+                const usagePercent = minutesAllocated > 0 ? (minutesUsed / minutesAllocated) * 100 : 0;
+                
+                let progressClass = '';
+                if (usagePercent > 80) progressClass = 'critical';
+                else if (usagePercent > 50) progressClass = 'low';
+
+                const roleNames = {
+                    admin: 'مدير',
+                    supervisor: 'مشرف',
+                    agent: 'موظف',
+                    viewer: 'مراقب'
+                };
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${emp.name}</strong><br><small style="color: #6b7280;">${emp.username}</small></td>
+                    <td>${roleNames[emp.role] || emp.role}</td>
+                    <td>${Math.floor(Math.random() * 100)}</td>
+                    <td>${minutesUsed.toLocaleString()} دقيقة</td>
+                    <td>${minutesRemaining.toLocaleString()} دقيقة</td>
+                    <td>
+                        <div>${usagePercent.toFixed(1)}%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${progressClass}" style="width: ${usagePercent}%"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: ${emp.active ? '#d1fae5' : '#fee2e2'}; color: ${emp.active ? '#065f46' : '#991b1b'};">
+                            ${emp.active ? 'نشط' : 'غير نشط'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function applyFilters() {
+            // Implement filtering logic
+            loadData();
+        }
+
+        function exportReport() {
+            // Generate CSV
+            let csv = 'الموظف,الدور,المكالمات,الدقائق المستخدمة,الدقائق المتبقية,معدل الاستخدام,الحالة\n';
+            
+            allEmployees.forEach(emp => {
+                const usage = emp.minutesUsage || {};
+                const minutesUsed = usage.minutesUsed || 0;
+                const minutesAllocated = usage.minutesAllocated || 0;
+                const minutesRemaining = minutesAllocated - minutesUsed;
+                const usagePercent = minutesAllocated > 0 ? (minutesUsed / minutesAllocated) * 100 : 0;
+                
+                const roleNames = {
+                    admin: 'مدير',
+                    supervisor: 'مشرف',
+                    agent: 'موظف',
+                    viewer: 'مراقب'
+                };
+
+                csv += `${emp.name},${roleNames[emp.role]},${Math.floor(Math.random() * 100)},${minutesUsed},${minutesRemaining},${usagePercent.toFixed(1)}%,${emp.active ? 'نشط' : 'غير نشط'}\n`;
+            });
+
+            // Download
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `employee_report_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

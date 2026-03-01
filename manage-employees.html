@@ -697,205 +697,107 @@
         </div>
     </div>
 
-    <!-- Add/Edit Employee Modal - تصميم احترافي -->
+    <!-- Add/Edit Employee Modal - نموذج بسيط ونظيف -->
     <div class="modal" id="employeeModal">
-        <div class="modal-content" style="max-width: 850px; max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 25px; border-radius: 15px 15px 0 0; margin: -20px -20px 25px -20px;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
-                        👤
+        <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 20px 25px; border-radius: 15px 15px 0 0; margin: -20px -20px 25px -20px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 28px;">👤</span>
+                    <div>
+                        <h2 id="modalTitle" style="margin: 0; font-size: 20px;">إضافة موظف جديد</h2>
+                        <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.85;">أدخل بيانات الموظف في الحقول أدناه</p>
                     </div>
-                    <div style="flex: 1;">
-                    <h2 id="modalTitle" style="margin: 0; font-size: 22px;" data-i18n="emp_modal_add_title">إضافة موظف جديد</h2>
-                        <p style="margin: 5px 0 0; font-size: 13px; opacity: 0.9;">املأ البيانات أدناه لإضافة موظف إلى فريق العمل</p>
-                    </div>
-                    <button class="btn-close" onclick="closeModal()" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 20px; cursor: pointer; transition: all 0.3s;">&times;</button>
+                </div>
+                <button onclick="closeModal()" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+
+            <!-- رسائل الخطأ داخل الموديل -->
+            <div id="modalAlert" style="display:none; margin: 0 0 15px; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;"></div>
+
+            <input type="hidden" id="employeeId">
+
+            <!-- الاسم + اسم المستخدم -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3436;">👤 الاسم الكامل <span style="color:red;">*</span></label>
+                    <input type="text" id="empName" placeholder="مثال: أحمد محمد علي"
+                           style="width: 100%; padding: 11px 14px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; font-family: inherit;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3436;">🔑 اسم المستخدم <span style="color:red;">*</span></label>
+                    <input type="text" id="empUsername" placeholder="مثال: ahmed_123"
+                           style="width: 100%; padding: 11px 14px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; font-family: inherit;">
                 </div>
             </div>
 
-            <form id="employeeForm" style="padding: 0 20px 20px;">
-                <input type="hidden" id="employeeId">
-                
-                <!-- المعلومات الشخصية -->
-                <div style="background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <h4 style="color: #2d3436; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
-                        <span style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">1</span>
-                        المعلومات الأساسية
-                    </h4>
-                    
-                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="form-group" style="margin: 0;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
-                                <span style="color: #0984e3;">👤</span> الاسم الكامل <span style="color: #d63031;">*</span>
-                            </label>
-                            <input type="text" id="empName" required placeholder="مثال: أحمد محمد علي"
-                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
-                        </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
-                                <span style="color: #0984e3;">🔑</span> اسم المستخدم <span style="color: #d63031;">*</span>
-                            </label>
-                            <input type="text" id="empUsername" required placeholder="مثال: ahmed_123"
-                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
-                        </div>
-                    </div>
-
-                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                        <div class="form-group" style="margin: 0;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
-                                <span style="color: #0984e3;">🔒</span> كلمة المرور <span style="color: #d63031;">*</span>
-                            </label>
-                            <input type="password" id="empPassword" placeholder="كلمة مرور قوية"
-                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
-                            <small style="color: #636e72; font-size: 12px; margin-top: 5px; display: block;">8 أحرف على الأقل</small>
-                        </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
-                                <span style="color: #0984e3;">📧</span> البريد الإلكتروني
-                            </label>
-                            <input type="email" id="empEmail" placeholder="example@company.com"
-                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
-                        </div>
-                    </div>
-
-                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                        <div class="form-group" style="margin: 0;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
-                                <span style="color: #0984e3;">📞</span> رقم الهاتف
-                            </label>
-                            <input type="tel" id="empPhone" placeholder="+966 5x xxx xxxx"
-                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
-                        </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
-                                <span style="color: #0984e3;">💼</span> المسمى الوظيفي
-                            </label>
-                            <input type="text" id="empTitle" value="موظف" placeholder="مثال: موظف مبيعات"
-                                   style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
-                        </div>
-                    </div>
+            <!-- كلمة المرور + البريد -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3436;">🔒 كلمة المرور <span id="passRequired" style="color:red;">*</span></label>
+                    <input type="password" id="empPassword" placeholder="كلمة مرور قوية"
+                           style="width: 100%; padding: 11px 14px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; font-family: inherit;">
+                    <small id="passHint" style="color: #636e72; font-size: 12px;">مطلوبة عند الإضافة</small>
                 </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3436;">📧 البريد الإلكتروني</label>
+                    <input type="text" id="empEmail" placeholder="example@company.com"
+                           style="width: 100%; padding: 11px 14px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; font-family: inherit;">
+                </div>
+            </div>
 
-                <!-- الدقائق والدور -->
-                <div style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <h4 style="color: #e17055; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
-                        <span style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">2</span>
-                        الدقائق والصلاحيات
-                    </h4>
-                    
-                    <div class="form-group" style="margin: 0 0 20px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3436; font-size: 14px;">
-                            <span style="color: #e17055;">⏱️</span> عدد الدقائق المخصصة <span style="color: #d63031;">*</span>
-                        </label>
-                        <input type="number" id="empMinutes" min="0" value="100" placeholder="1000"
-                               style="width: 100%; padding: 12px 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
-                        <small style="color: #636e72; font-size: 12px; margin-top: 5px; display: block;">
-                            ⚠️ سيتم إيقاف حساب الموظف تلقائياً عند نفاذ الدقائق
-                        </small>
+            <!-- الهاتف + المسمى الوظيفي -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3436;">📞 رقم الهاتف</label>
+                    <input type="text" id="empPhone" placeholder="+966 5x xxx xxxx"
+                           style="width: 100%; padding: 11px 14px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; font-family: inherit;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3436;">💼 المسمى الوظيفي</label>
+                    <input type="text" id="empTitle" placeholder="مثال: موظف مبيعات"
+                           style="width: 100%; padding: 11px 14px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; font-family: inherit;">
+                </div>
+            </div>
+
+            <!-- الدور + الدقائق -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3436;">🎭 الدور الوظيفي</label>
+                    <select id="empRole" style="width: 100%; padding: 11px 14px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; font-family: inherit; background: white;">
+                        <option value="agent">👤 موظف - صلاحيات أساسية</option>
+                        <option value="supervisor">👔 مشرف - صلاحيات إشرافية</option>
+                        <option value="admin">🔑 مدير - صلاحيات كاملة</option>
+                        <option value="viewer">👁️ مراقب - عرض فقط</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3436;">⏱️ الدقائق المخصصة</label>
+                    <input type="number" id="empMinutes" value="100" min="0" placeholder="100"
+                           style="width: 100%; padding: 11px 14px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 15px; font-family: inherit;">
+                </div>
+            </div>
+
+            <!-- تفعيل الحساب -->
+            <div style="background: #f0fdf4; border: 2px solid #10b981; border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="empActive" checked style="width: 20px; height: 20px; accent-color: #10b981;">
+                    <div>
+                        <span style="font-weight: 600; color: #065f46; font-size: 15px;">✅ تفعيل الحساب فوراً</span>
+                        <small style="display: block; color: #6b7280; margin-top: 2px;">سيتمكن الموظف من تسجيل الدخول مباشرة</small>
                     </div>
+                </label>
+            </div>
 
-                    <div class="form-group" style="margin: 0;">
-                        <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #2d3436; font-size: 14px;">
-                            <span style="color: #e17055;">🎭</span> الدور الوظيفي
-                        </label>
-                        <div class="role-selector" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
-                            <div class="role-card" onclick="selectRole('admin', this)" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
-                                <h5 style="margin: 0 0 5px; font-size: 24px;">🔑</h5>
-                                <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">مدير</div>
-                                <p style="margin: 0; font-size: 11px; color: #636e72;">صلاحيات كاملة</p>
-                            </div>
-                            <div class="role-card" onclick="selectRole('supervisor', this)" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
-                                <h5 style="margin: 0 0 5px; font-size: 24px;">👔</h5>
-                                <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">مشرف</div>
-                                <p style="margin: 0; font-size: 11px; color: #636e72;">صلاحيات إشرافية</p>
-                            </div>
-                            <div class="role-card selected" onclick="selectRole('agent', this)" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); border: 3px solid #10b981; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
-                                <h5 style="margin: 0 0 5px; font-size: 24px;">👤</h5>
-                                <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">موظف</div>
-                                <p style="margin: 0; font-size: 11px; color: #636e72;">صلاحيات أساسية</p>
-                            </div>
-                            <div class="role-card" onclick="selectRole('viewer', this)" style="background: white; border: 3px solid #dfe6e9; border-radius: 12px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center;">
-                                <h5 style="margin: 0 0 5px; font-size: 24px;">👁️</h5>
-                                <div style="font-weight: bold; color: #2d3436; margin-bottom: 3px; font-size: 14px;">مراقب</div>
-                                <p style="margin: 0; font-size: 11px; color: #636e72;">عرض فقط</p>
-                            </div>
-                        </div>
-                        <input type="hidden" id="empRole" value="agent">
-                    </div>
-                </div>
+            <!-- الأزرار -->
+            <div style="display: flex; gap: 12px;">
+                <button onclick="closeModal()" style="flex: 1; padding: 13px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">إلغاء</button>
+                <button id="saveEmployeeBtn" onclick="saveEmployee()" style="flex: 2; padding: 13px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(16,185,129,0.3);">✅ حفظ الموظف</button>
+            </div>
 
-                <!-- الصلاحيات التفصيلية -->
-                <div class="permissions-section" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <h3 style="color: white; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
-                        <span style="background: rgba(255,255,255,0.2); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">3</span>
-                        الصلاحيات التفصيلية
-                    </h3>
-                    <div id="permissionsContainer" style="background: white; border-radius: 10px; padding: 15px;"></div>
-                </div>
-
-                <!-- حالة الحساب -->
-                <div style="background: rgba(46, 213, 115, 0.1); border: 2px solid #2ed573; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-                    <div class="form-group" style="margin: 0;">
-                        <label style="display: flex; align-items: center; cursor: pointer; gap: 10px;">
-                            <input type="checkbox" id="empActive" checked 
-                                   style="width: 22px; height: 22px; cursor: pointer; accent-color: #10b981;">
-                            <div>
-                                <span style="font-weight: 600; color: #2d3436; font-size: 15px;">✅ تفعيل الحساب</span>
-                                <small style="display: block; color: #636e72; margin-top: 3px; font-size: 12px;">
-                                    سيتمكن الموظف من تسجيل الدخول والبدء في العمل فوراً
-                                </small>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- الأزرار -->
-                <div style="display: flex; gap: 12px; margin-top: 25px;">
-                    <button type="button" onclick="closeModal()" style="flex: 1; padding: 14px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;" data-i18n="emp_btn_cancel">
-                        إلغاء
-                    </button>
-                    <button type="button" id="saveEmployeeBtn" onclick="saveEmployee()" class="btn-submit" style="flex: 2; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);" data-i18n="emp_btn_save">
-                        ✅ حفظ الموظف
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
-    
-    <style>
-        /* تحسين تفاعل بطاقات الأدوار */
-        .role-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            border-color: #10b981 !important;
-        }
-        
-        .role-card.selected {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%) !important;
-            border-color: #10b981 !important;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3) !important;
-        }
-        
-        /* تحسين حقول الإدخال */
-        #employeeForm input:focus,
-        #employeeForm select:focus,
-        #employeeForm textarea:focus {
-            outline: none;
-            border-color: #10b981 !important;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
-        }
-        
-        /* تحسين زر الحفظ */
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
-        }
-        
-        .btn-close:hover {
-            background: rgba(255,255,255,0.3) !important;
-            transform: rotate(90deg);
-        }
-    </style>
 
     <script>
         let allEmployees = [];
@@ -1182,14 +1084,21 @@
         // عرض نافذة إضافة موظف
         function showAddEmployeeModal() {
             isEditMode = false;
-            document.getElementById('modalTitle').textContent = i18n.t('emp_modal_add_title');
-            document.getElementById('employeeForm').reset();
+            // reset
             document.getElementById('employeeId').value = '';
-            document.getElementById('empPassword').required = false;  // validation يدوي
-            // تحديد الدور الافتراضي
-            const agentCard = document.querySelector('.role-card[onclick*="agent"]');
-            selectRole('agent', agentCard);
-            
+            document.getElementById('empName').value = '';
+            document.getElementById('empUsername').value = '';
+            document.getElementById('empPassword').value = '';
+            document.getElementById('empEmail').value = '';
+            document.getElementById('empPhone').value = '';
+            document.getElementById('empTitle').value = '';
+            document.getElementById('empRole').value = 'agent';
+            document.getElementById('empMinutes').value = '100';
+            document.getElementById('empActive').checked = true;
+            document.getElementById('modalTitle').textContent = 'إضافة موظف جديد';
+            document.getElementById('passRequired').style.display = 'inline';
+            document.getElementById('passHint').textContent = 'مطلوبة عند الإضافة';
+            hideModalAlert();
             document.getElementById('employeeModal').classList.add('active');
         }
 
@@ -1197,36 +1106,25 @@
         async function editEmployee(employeeId) {
             const employee = allEmployees.find(e => e.id === employeeId);
             if (!employee) return;
-
             isEditMode = true;
-            document.getElementById('modalTitle').textContent = i18n.t('emp_modal_edit_title');
             document.getElementById('employeeId').value = employee.id;
-            document.getElementById('empName').value = employee.name;
-            document.getElementById('empUsername').value = employee.username;
+            document.getElementById('empName').value = employee.name || '';
+            document.getElementById('empUsername').value = employee.username || '';
+            document.getElementById('empPassword').value = '';
             document.getElementById('empEmail').value = employee.email || '';
             document.getElementById('empPhone').value = employee.phone || '';
             document.getElementById('empTitle').value = employee.title || '';
+            document.getElementById('empRole').value = employee.role || 'agent';
             document.getElementById('empMinutes').value = employee.minutesAllocated || 0;
-            document.getElementById('empActive').checked = employee.active;
-            document.getElementById('empPassword').required = false;
-            document.getElementById('empPassword').value = '';
-
-            // تحديد الدور
-            const roleCard = document.querySelector(`.role-card[onclick*="${employee.role || 'agent'}"]`);
-            selectRole(employee.role || 'agent', roleCard);
-
-            // تحديد الصلاحيات
-            document.querySelectorAll('.permission-item input[type="checkbox"]').forEach(cb => {
-                cb.checked = employee.permissions && employee.permissions.includes(cb.value);
-            });
-
+            document.getElementById('empActive').checked = employee.active !== false;
+            document.getElementById('modalTitle').textContent = 'تعديل بيانات الموظف';
+            document.getElementById('passRequired').style.display = 'none';
+            document.getElementById('passHint').textContent = 'اتركها فارغة إذا لا تريد تغييرها';
+            hideModalAlert();
             document.getElementById('employeeModal').classList.add('active');
         }
 
-        // عرض الصلاحيات
-        function viewPermissions(employeeId) {
-            editEmployee(employeeId);
-        }
+        function viewPermissions(employeeId) { editEmployee(employeeId); }
 
         // حذف موظف
         async function deleteEmployee(employeeId) {
@@ -1251,92 +1149,83 @@
             }
         }
 
-        // حفظ الموظف
+        function showModalAlert(msg, type) {
+            const el = document.getElementById('modalAlert');
+            el.textContent = msg;
+            el.style.display = 'block';
+            el.style.background = type === 'error' ? '#fee2e2' : '#d1fae5';
+            el.style.color     = type === 'error' ? '#991b1b' : '#065f46';
+            el.style.border    = type === 'error' ? '1px solid #fca5a5' : '1px solid #6ee7b7';
+        }
+        function hideModalAlert() {
+            const el = document.getElementById('modalAlert');
+            if (el) el.style.display = 'none';
+        }
+
+        // حفظ الموظف - نسخة جديدة نظيفة
         async function saveEmployee() {
+            const name       = document.getElementById('empName').value.trim();
+            const username   = document.getElementById('empUsername').value.trim();
+            const password   = document.getElementById('empPassword').value;
             const employeeId = document.getElementById('employeeId').value;
 
-            // Validation يدوي
-            const name = document.getElementById('empName').value.trim();
-            const username = document.getElementById('empUsername').value.trim();
-            const password = document.getElementById('empPassword').value;
-
-            if (!name) {
-                showAlert('يرجى إدخال الاسم الكامل للموظف', 'error');
-                document.getElementById('empName').focus();
-                return;
-            }
-            if (!username) {
-                showAlert('يرجى إدخال اسم المستخدم', 'error');
-                document.getElementById('empUsername').focus();
-                return;
-            }
-            if (!isEditMode && !password) {
-                showAlert('يرجى إدخال كلمة المرور', 'error');
-                document.getElementById('empPassword').focus();
-                return;
-            }
-
-            const selectedPermissions = Array.from(
-                document.querySelectorAll('.permission-item input[type="checkbox"]:checked')
-            ).map(cb => cb.value);
+            if (!name)     { showModalAlert('⚠️ أدخل الاسم الكامل', 'error');     document.getElementById('empName').focus();     return; }
+            if (!username) { showModalAlert('⚠️ أدخل اسم المستخدم', 'error');     document.getElementById('empUsername').focus(); return; }
+            if (!isEditMode && !password) { showModalAlert('⚠️ أدخل كلمة المرور', 'error'); document.getElementById('empPassword').focus(); return; }
+            if (!companyId) { showModalAlert('❌ لم يتم تحديد الشركة - سجل الدخول مرة أخرى', 'error'); return; }
 
             const employeeData = {
-                companyId: companyId,
-                name: name,
-                username: username,
-                email: document.getElementById('empEmail').value,
-                phone: document.getElementById('empPhone').value,
-                title: document.getElementById('empTitle').value,
-                role: document.getElementById('empRole').value || 'agent',
-                permissions: selectedPermissions,
+                companyId,
+                name,
+                username,
+                email:            document.getElementById('empEmail').value.trim(),
+                phone:            document.getElementById('empPhone').value.trim(),
+                title:            document.getElementById('empTitle').value.trim(),
+                role:             document.getElementById('empRole').value || 'agent',
+                permissions:      [],
                 minutesAllocated: parseInt(document.getElementById('empMinutes').value) || 0,
-                active: document.getElementById('empActive').checked
+                active:           document.getElementById('empActive').checked
             };
-
             if (password) employeeData.password = password;
 
-            // حالة التحميل
             const btn = document.getElementById('saveEmployeeBtn');
             btn.disabled = true;
-            btn.textContent = 'جاري الحفظ...';
+            btn.textContent = '⏳ جاري الحفظ...';
 
             try {
-                const url = isEditMode
-                    ? `/api/employees-management/${employeeId}`
-                    : '/api/employees-management';
+                const url    = isEditMode ? `/api/employees-management/${employeeId}` : '/api/employees-management';
                 const method = isEditMode ? 'PUT' : 'POST';
 
+                console.log('📤 إرسال:', { url, method, companyId, name, username });
+
                 const response = await fetch(url, {
-                    method: method,
+                    method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(employeeData)
                 });
 
-                const data = await response.json();
+                const responseText = await response.text();
+                console.log('📥 رد الخادم (' + response.status + '):', responseText);
+
+                let data;
+                try { data = JSON.parse(responseText); } catch(e) { data = { success: false, message: 'خطأ في تحليل رد الخادم: ' + responseText.substring(0,200) }; }
 
                 if (data.success) {
-                    showAlert(isEditMode ? '✅ تم تحديث بيانات الموظف بنجاح' : '✅ تم إضافة الموظف بنجاح', 'success');
+                    showAlert('✅ ' + (isEditMode ? 'تم تحديث بيانات الموظف بنجاح' : 'تم إضافة الموظف بنجاح'), 'success');
                     closeModal();
                     loadEmployees();
                 } else {
-                    showAlert('❌ ' + (data.message || 'حدث خطأ غير متوقع'), 'error');
+                    showModalAlert('❌ ' + (data.message || 'HTTP ' + response.status), 'error');
                 }
             } catch (error) {
-                console.error('Error saving employee:', error);
-                showAlert('❌ خطأ في الاتصال بالخادم: ' + error.message, 'error');
+                console.error('❌ خطأ:', error);
+                showModalAlert('❌ خطأ في الاتصال: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
                 btn.textContent = '✅ حفظ الموظف';
             }
         }
 
-        // الكود القديم - محتفظ به للتوافق مع أي كود يستخدمه
-        document.getElementById('employeeForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            saveEmployee();
-        });
-
-        // إغلاق النافذة المنبثقة
         function closeModal() {
             document.getElementById('employeeModal').classList.remove('active');
         }

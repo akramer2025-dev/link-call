@@ -133,7 +133,10 @@ async function addEmployee(req, res) {
         company.employees.push(newEmployee);
         company.employeesCount = company.employees.length;
         const saved = await saveCompaniesData(data);
-        if (!saved) return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات' });
+        if (!saved) {
+            console.error('❌ فشل الحفظ - Redis:', redisAvailable, 'VERCEL:', !!process.env.VERCEL);
+            return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات في قاعدة البيانات. Redis متاح: ' + redisAvailable });
+        }
         res.json({ success: true, employee: newEmployee });
     } catch (error) {
         console.error('addEmployee error:', error);

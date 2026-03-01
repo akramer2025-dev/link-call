@@ -14,15 +14,7 @@
       "use": "@vercel/static"
     },
     {
-      "src": "app.js",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "protection.js",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "service-worker.js",
+      "src": "*.js",
       "use": "@vercel/static"
     },
     {

@@ -53,6 +53,45 @@ async function loadBalance() {
         }
     } catch (e) { console.error('جلب الرصيد فشل:', e); }
 }
+
+// تحميل بيانات الشركة في حقول الإعدادات
+async function loadCompanyProfile() {
+    const companyId = sessionStorage.getItem('companyId');
+    if (!companyId) return;
+    const nameEl  = document.getElementById('edit-company-name');
+    const adminEl = document.getElementById('edit-admin-name');
+    if (nameEl)  nameEl.value  = sessionStorage.getItem('companyName') || '';
+    if (adminEl) adminEl.value = sessionStorage.getItem('fullname')    || '';
+}
+
+// حفظ بيانات الشركة
+async function saveCompanyProfile() {
+    const companyId   = sessionStorage.getItem('companyId');
+    const companyName = document.getElementById('edit-company-name')?.value?.trim();
+    const adminName   = document.getElementById('edit-admin-name')?.value?.trim();
+    const msgEl       = document.getElementById('profile-save-msg');
+    if (!companyId || !companyName) return;
+    try {
+        const r = await fetch(`${API_BASE_URL}/api/companies/${companyId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ companyName, adminName })
+        });
+        const d = await r.json();
+        if (d.success) {
+            sessionStorage.setItem('companyName', companyName);
+            sessionStorage.setItem('fullname', adminName || companyName);
+            // تحديث الاسم في الـ header
+            const headerName = document.getElementById('user-fullname') || document.querySelector('.user-name');
+            if (headerName) headerName.textContent = adminName || companyName;
+            if (msgEl) { msgEl.textContent = '✅ تم الحفظ بنجاح'; msgEl.style.display = 'block'; setTimeout(() => msgEl.style.display = 'none', 3000); }
+        } else {
+            if (msgEl) { msgEl.textContent = '❌ ' + (d.error || 'فشل الحفظ'); msgEl.style.background = '#fee2e2'; msgEl.style.color = '#991b1b'; msgEl.style.display = 'block'; }
+        }
+    } catch (e) {
+        if (msgEl) { msgEl.textContent = '❌ خطأ في الاتصال'; msgEl.style.display = 'block'; }
+    }
+}
 let allCalls = [];
 let allEmployees = [];
 let allRecordings = [];
@@ -105,6 +144,7 @@ function initNavigation() {
                 loadCompanies();
             } else if (targetSection === 'settings') {
                 loadBalance();
+                loadCompanyProfile();
             }
             
             // إغلاق القائمة الجانبية في الهاتف عند اختيار قسم

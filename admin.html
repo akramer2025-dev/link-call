@@ -675,6 +675,23 @@
                             🔄 تحديث الرصيد
                         </button>
                     </div>
+                    <!-- بطاقة تعديل بيانات الشركة -->
+                    <div class="settings-card">
+                        <h3>🏢 بيانات الشركة</h3>
+                        <div class="setting-item" style="flex-direction:column; align-items:stretch; gap:8px;">
+                            <label style="font-weight:600;">اسم الشركة</label>
+                            <input type="text" id="edit-company-name" placeholder="اسم الشركة" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:6px;">
+                        </div>
+                        <div class="setting-item" style="flex-direction:column; align-items:stretch; gap:8px; margin-top:8px;">
+                            <label style="font-weight:600;">اسم المدير</label>
+                            <input type="text" id="edit-admin-name" placeholder="اسم المدير" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:6px;">
+                        </div>
+                        <button onclick="saveCompanyProfile()" style="margin-top:12px; width:100%; padding:8px; background:#6366f1; color:white; border:none; border-radius:8px; cursor:pointer; font-size:0.875rem;">
+                            💾 حفظ التعديلات
+                        </button>
+                        <div id="profile-save-msg" style="display:none; margin-top:8px; padding:8px; background:#d1fae5; color:#065f46; border-radius:6px; text-align:center; font-size:0.85rem;"></div>
+                    </div>
+
                     <div class="settings-card">
                         <h3>🔐 إعدادات Twilio</h3>
                         <div class="setting-item">

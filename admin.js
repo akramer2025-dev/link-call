@@ -967,10 +967,19 @@ let allCompanies = [];
 // تحميل قائمة الشركات
 async function loadCompanies() {
     try {
-        const response = await fetch(`${baseUrl}/companies`);
+        const response = await fetch(`${baseUrl}/api/companies`);
         if (response.ok) {
             const data = await response.json();
-            allCompanies = data.companies || [];
+            allCompanies = (data.companies || []).map(c => ({
+                id: c.id,
+                name: c.companyName || c.name || '',
+                adminUsername: c.username || c.adminUsername || '',
+                adminName: c.adminName || '',
+                subscription: c.plan || c.subscription || 'free',
+                isActive: c.status === 'active',
+                employeesCount: c.employeesCount || 0,
+                createdAt: c.createdAt || ''
+            }));
             renderCompanies();
             updateCompaniesStats();
         }
@@ -1067,7 +1076,7 @@ async function editCompany(companyId) {
     if (!newName) return;
     
     try {
-        const response = await fetch(`${baseUrl}/companies/${companyId}`, {
+        const response = await fetch(`${baseUrl}/api/companies/${companyId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: newName })
@@ -1092,7 +1101,7 @@ async function deleteCompany(companyId) {
     }
     
     try {
-        const response = await fetch(`${baseUrl}/companies/${companyId}`, {
+        const response = await fetch(`${baseUrl}/api/companies/${companyId}`, {
             method: 'DELETE'
         });
         
@@ -1139,10 +1148,17 @@ document.getElementById('add-company-form')?.addEventListener('submit', async (e
         companyName,
         companyPhone,
         companyEmail,
-        adminUsername,
         adminName,
-        adminPassword,
-        subscription
+        username: adminUsername,
+        password: adminPassword,
+        selectedPlan: subscription === 'unlimited' ? 'enterprise' : (subscription === 'pro' ? 'pro' : 'free'),
+        commercialNumber: 'ADMIN-' + Date.now(),
+        adminTitle: 'مدير',
+        adminEmail: companyEmail,
+        adminPhone: companyPhone,
+        businessType: 'other',
+        country: 'غير محدد',
+        city: 'غير محدد'
     };
     
     // عرض مؤشر تحميل
@@ -1152,7 +1168,7 @@ document.getElementById('add-company-form')?.addEventListener('submit', async (e
     submitButton.disabled = true;
     
     try {
-        const response = await fetch(`${baseUrl}/api/company-management`, {
+        const response = await fetch(`${baseUrl}/api/companies/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)

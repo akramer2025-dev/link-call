@@ -187,6 +187,8 @@ const i18n = {
             nav_recordings: 'المحفوظات',
             nav_settings: 'الإعدادات',
             nav_manage_employees: 'إدارة الموظفين',
+            nav_employee_reports: 'تقارير الموظفين والتحليلات',
+            nav_crm: 'CRM - إدارة العملاء',
             nav_admin_panel: 'لوحة التحكم',
             nav_logout: 'تسجيل الخروج',
 
@@ -504,6 +506,8 @@ const i18n = {
             nav_recordings: 'Recordings',
             nav_settings: 'Settings',
             nav_manage_employees: 'Manage Employees',
+            nav_employee_reports: 'Employee Reports & Analytics',
+            nav_crm: 'CRM - Customer Management',
             nav_admin_panel: 'Admin Panel',
             nav_logout: 'Logout',
 

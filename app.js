@@ -1878,6 +1878,8 @@ function applyRoleBasedVisibility() {
     const adminDashboardSection = document.getElementById('admin-dashboard-section');
     const companyAdminSection = document.getElementById('company-admin-section');
     const manageEmployeesNavBtn = document.getElementById('manage-employees-nav-btn');
+    const companyReportsNavBtn = document.getElementById('company-reports-nav-btn');
+    const companyCrmNavBtn = document.getElementById('company-crm-nav-btn');
     const balanceHeader = document.getElementById('balance-header');
     const balanceSection = document.getElementById('balance-section');
     const mobileBalance = document.getElementById('mobile-balance');
@@ -1906,6 +1908,8 @@ function applyRoleBasedVisibility() {
         if (adminDashboardSection) adminDashboardSection.style.display = 'none';
         if (companyAdminSection) companyAdminSection.style.display = 'block';
         if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'flex';
+        if (companyReportsNavBtn) companyReportsNavBtn.style.display = 'flex';
+        if (companyCrmNavBtn) companyCrmNavBtn.style.display = 'flex';
         // إخفاء رصيد Twilio - غير مناسب لمدير الشركة
         if (balanceHeader) balanceHeader.style.display = 'none';
         if (balanceSection) balanceSection.style.display = 'none';
@@ -1924,6 +1928,8 @@ function applyRoleBasedVisibility() {
         if (adminDashboardSection) adminDashboardSection.style.display = 'none';
         if (companyAdminSection) companyAdminSection.style.display = 'none';
         if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'none';
+        if (companyReportsNavBtn) companyReportsNavBtn.style.display = 'none';
+        if (companyCrmNavBtn) companyCrmNavBtn.style.display = 'none';
         if (balanceHeader) balanceHeader.style.display = 'none';
         if (balanceSection) balanceSection.style.display = 'none';
         if (mobileBalance) mobileBalance.style.display = 'none';

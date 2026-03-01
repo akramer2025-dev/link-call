@@ -1262,20 +1262,23 @@ async function loadRecordings() {
         // بناء URL مع المعاملات
         let url = `${baseUrl}/recordings`;
         const params = new URLSearchParams();
-        
-        // إضافة companyId إذا كان مدير شركة
-        if (isCompanyAdmin && companyId) {
+
+        // companyId مطلوب دائماً للـ API
+        if (companyId) {
             params.append('companyId', companyId);
-            params.append('viewAll', 'true');
-            console.log('🏢 جلب تسجيلات الشركة:', companyId);
         }
-        // إذا كان مدير وليس لديه صلاحية رؤية الكل
-        else if (employeeId && !canViewAll && userRole !== 'admin') {
+
+        // تحديد نطاق التسجيلات
+        if (isCompanyAdmin || canViewAll || userRole === 'admin') {
+            // مدير الشركة أو من لديه صلاحية رؤية الكل
+            params.append('viewAll', 'true');
+            console.log('🏢 جلب جميع تسجيلات الشركة:', companyId);
+        } else if (employeeId) {
+            // الموظف يرى تسجيلاته فقط
             params.append('employeeId', employeeId);
-            console.log('🔒 فلترة التسجيلات للمدير:', employeeId);
+            console.log('🔒 فلترة التسجيلات للموظف:', employeeId);
         } else {
             params.append('viewAll', 'true');
-            console.log('🌐 عرض جميع التسجيلات');
         }
         
         if (params.toString()) {

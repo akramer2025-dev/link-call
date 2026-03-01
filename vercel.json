@@ -102,6 +102,10 @@
       "dest": "/api/call-history.js"
     },
     {
+      "src": "/api/contacts",
+      "dest": "/api/contacts.js"
+    },
+    {
       "src": "/api/contacts/(.*)",
       "dest": "/api/contacts.js"
     },

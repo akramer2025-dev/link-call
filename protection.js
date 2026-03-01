@@ -18,11 +18,11 @@
     
     // ==================== إعدادات الحماية ====================
     const PROTECTION_CONFIG = {
-        disableDevTools: true,
+        disableDevTools: false,
         disableRightClick: true,
         disableTextSelection: true,
-        disableConsole: true,
-        detectDebugger: true,
+        disableConsole: false,
+        detectDebugger: false,
         protectCode: true,
         watermark: true,
         antiCopy: true

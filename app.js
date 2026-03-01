@@ -1,6 +1,6 @@
 ﻿// معلومات Twilio
 const TWILIO_PHONE_NUMBER = '+13204336644';
-const API_BASE_URL = 'https://link-call-jade.vercel.app';
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'https://linkcall.akrammostafa.com';
 let currentCallSid = null;
 let callStartTime;
 let callTimer;

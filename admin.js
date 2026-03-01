@@ -28,7 +28,7 @@ if (!checkAdminAccess()) {
 }
 
 // ========== المتغيرات العامة ==========
-const API_BASE_URL = 'https://link-call-jade.vercel.app';
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'https://linkcall.akrammostafa.com';
 const baseUrl = API_BASE_URL;
 let allCalls = [];
 let allEmployees = [];

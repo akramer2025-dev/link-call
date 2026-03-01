@@ -518,3 +518,44 @@ function logActivity(type, companyId, details = {}) {
         console.error('Error logging activity:', error);
     }
 }
+
+// Main handler for Vercel serverless - Router للطلبات
+module.exports = async (req, res) => {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    try {
+        const url = req.url || '';
+        const method = req.method;
+
+        // Route the request based on URL and method
+        if (url.includes('/register') && method === 'POST') {
+            return module.exports.register(req, res);
+        } else if (url.includes('/login') && method === 'POST') {
+            return module.exports.login(req, res);
+        } else if (method === 'GET' && url.match(/\/\d+$/)) {
+            return module.exports.getCompany(req, res);
+        } else if (method === 'GET') {
+            return module.exports.getAllCompanies(req, res);
+        } else if (method === 'PUT' && url.includes('/status')) {
+            return module.exports.updateStatus(req, res);
+        } else if (method === 'PUT' && url.includes('/plan')) {
+            return module.exports.updatePlan(req, res);
+        } else if (method === 'PUT') {
+            return module.exports.updateCompany(req, res);
+        } else if (method === 'DELETE') {
+            return module.exports.deleteCompany(req, res);
+        } else {
+            res.status(404).json({ error: 'Route not found' });
+        }
+    } catch (error) {
+        console.error('Companies API error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

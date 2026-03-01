@@ -1,19 +1,6 @@
 {
   "version": 2,
   "name": "link-call",
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "."
-      }
-    }
-  ],
   "routes": [
     {
       "src": "/(.*\\.(css|js|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webmanifest))",
@@ -114,16 +101,24 @@
       "dest": "/api/index.js"
     },
     {
+      "src": "/account/balance",
+      "dest": "/api/balance.js"
+    },
+    {
+      "src": "/balance",
+      "dest": "/api/balance.js"
+    },
+    {
       "src": "/account/(.*)",
       "dest": "/api/index.js"
     },
     {
       "src": "/heartbeat",
-      "dest": "/api/index.js"
+      "dest": "/api/heartbeat.js"
     },
     {
       "src": "/track-login",
-      "dest": "/api/index.js"
+      "dest": "/api/track-login.js"
     },
     {
       "src": "/track-logout",

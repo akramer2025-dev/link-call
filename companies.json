@@ -32,6 +32,8 @@
       "lastLoginAt": null,
       "isVerified": true,
       "twilioPhone": "+12564884883",
+      "twilioEnvPrefix": "JAMJOUM",
+      "balance": 121,
       "notes": "عميل مدفوع - Enterprise - محمي من الحذف"
     }
   ]

@@ -506,6 +506,122 @@
         .call-btn { background: linear-gradient(135deg, #4facfe, #00c6ff); }
         .edit-btn { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
         .delete-btn { background: linear-gradient(135deg, #f56565, #c53030); }
+
+        /* ══════ Delete Dropdown ══════ */
+        .delete-dropdown-wrap {
+            position: relative;
+            display: inline-block;
+        }
+        .delete-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1f2e;
+            border: 1px solid rgba(245,101,101,0.4);
+            border-radius: 10px;
+            z-index: 9999;
+            min-width: 140px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .delete-dropdown-menu.show { display: block; }
+        .delete-dropdown-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px 14px;
+            background: none;
+            border: none;
+            color: #ccd6f6;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: right;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .delete-dropdown-menu button:hover { background: rgba(255,255,255,0.08); }
+        .delete-dropdown-menu button.danger:hover { background: rgba(245,101,101,0.2); color: #f56565; }
+        .delete-dropdown-menu button.multi:hover { background: rgba(240,147,251,0.15); color: #f093fb; }
+        .delete-dropdown-menu hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 0; }
+
+        /* ══════ Multi Delete Modal ══════ */
+        .multi-delete-modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        .multi-delete-modal-overlay.show { display: flex; }
+        .multi-delete-modal {
+            background: #1a1f2e;
+            border-radius: 16px;
+            padding: 30px;
+            width: 420px;
+            max-width: 95vw;
+            border: 1px solid rgba(245,101,101,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .multi-delete-modal h3 {
+            color: #f56565;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .multi-delete-input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .multi-delete-input-row > div {
+            flex: 1;
+        }
+        .multi-delete-input-row label {
+            display: block;
+            font-size: 13px;
+            color: #8892b0;
+            margin-bottom: 6px;
+        }
+        .multi-delete-input-row input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #252b3b;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #ccd6f6;
+            font-size: 16px;
+            text-align: center;
+        }
+        .multi-delete-preview {
+            background: rgba(245,101,101,0.08);
+            border: 1px solid rgba(245,101,101,0.2);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #ccd6f6;
+            line-height: 1.8;
+            min-height: 60px;
+        }
+        .multi-delete-btn-row {
+            display: flex;
+            gap: 10px;
+        }
+        .multi-delete-btn-row button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            transition: opacity 0.2s;
+        }
+        .multi-delete-btn-row button:hover { opacity: 0.85; }
+        .btn-confirm-delete { background: linear-gradient(135deg, #f56565, #c53030); color: white; }
+        .btn-cancel-delete { background: #2d3450; color: #ccd6f6; }
         
         .contact-rating .star {
             color: #ffc107;
@@ -1287,7 +1403,14 @@
                     <button class="table-action-btn whatsapp-btn" onclick="openWhatsApp('${safePhone}')" title="واتساب">💬</button>
                     <button class="table-action-btn call-btn" onclick="openCallPage('${safePhone}')" title="اتصال">📞</button>
                     <button class="table-action-btn edit-btn" onclick="editContact('${safeId}')" title="تعديل">✏️</button>
-                    <button class="table-action-btn delete-btn" onclick="deleteContact('${safeId}', '${safeName}')" title="حذف">🗑️</button>
+                    <div class="delete-dropdown-wrap">
+                        <button class="table-action-btn delete-btn" onclick="toggleDeleteMenu(event,'delmenu-${safeId}')" title="خيارات الحذف">🗑️</button>
+                        <div id="delmenu-${safeId}" class="delete-dropdown-menu">
+                            <button class="danger" onclick="closeAllDeleteMenus();deleteContact('${safeId}','${safeName}')">🗑️ مسح</button>
+                            <hr>
+                            <button class="multi" onclick="closeAllDeleteMenus();showMultiDeleteModal()">✂️ مسح متعدد</button>
+                        </div>
+                    </div>
                 </td>
             `;
             
@@ -1507,9 +1630,106 @@
         }
         
         function deleteContact(contactId, name) {
-            if (confirm(`هل تريد حذف العميل: ${name}؟`)) {
-                alert('ميزة الحذف قيد التطوير');
+            if (confirm(`⚠️ تأكيد الحذف\n\nسيتم حذف العميل: ${name}\nلا يمكن التراجع بعد الحذف.\n\nهل تريد المتابعة؟`)) {
+                const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+                if (!companyId) { alert('⚠️ خطأ: لم يتم تحديد معرف الشركة'); return; }
+                fetch(`${API_BASE_URL}/api/contacts?companyId=${companyId}&contactId=${contactId}&deletedBy=crm_user`, {
+                    method: 'DELETE'
+                }).then(r => r.json()).then(data => {
+                    if (data.success) {
+                        _allContacts = _allContacts.filter(c => (c._id||c.id||c.contactId||'').toString() !== contactId.toString());
+                        renderTable(_allContacts);
+                        alert(`✅ تم حذف "${name}" بنجاح`);
+                    } else {
+                        alert('❌ فشل الحذف: ' + (data.error || 'حاول مرة أخرى'));
+                    }
+                }).catch(e => alert('❌ خطأ في الاتصال'));
             }
+        }
+
+        // ══════ Delete Dropdown Helpers ══════
+        function toggleDeleteMenu(e, menuId) {
+            e.stopPropagation();
+            closeAllDeleteMenus();
+            const menu = document.getElementById(menuId);
+            if (menu) menu.classList.toggle('show');
+        }
+        function closeAllDeleteMenus() {
+            document.querySelectorAll('.delete-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+        }
+        document.addEventListener('click', closeAllDeleteMenus);
+
+        // ══════ Multi Delete ══════
+        function showMultiDeleteModal() {
+            document.getElementById('multi-del-from').value = '';
+            document.getElementById('multi-del-to').value = '';
+            document.getElementById('multi-del-preview').innerHTML = 'أدخل الأرقام للمعاينة';
+            document.getElementById('multi-delete-modal').classList.add('show');
+        }
+        function closeMultiDeleteModal() {
+            document.getElementById('multi-delete-modal').classList.remove('show');
+        }
+        function updateMultiDeletePreview() {
+            const from = parseInt(document.getElementById('multi-del-from').value);
+            const to   = parseInt(document.getElementById('multi-del-to').value);
+            const prev = document.getElementById('multi-del-preview');
+            if (!from || !to || from < 1 || to < from) {
+                prev.innerHTML = '⚠️ أدخل أرقاماً صحيحة (البداية أصغر من النهاية)';
+                return;
+            }
+            const contacts = _allContacts;
+            const first = contacts[from - 1];
+            const last  = contacts[Math.min(to, contacts.length) - 1];
+            const count = Math.min(to, contacts.length) - from + 1;
+            if (!first) { prev.innerHTML = `⚠️ الرقم ${from} أكبر من عدد العملاء (${contacts.length})`; return; }
+            prev.innerHTML = `
+                🗑️ سيتم حذف <strong style="color:#f56565">${count} عميل</strong><br>
+                • من: <strong>#${from} ${first.name || ''}</strong><br>
+                • إلى: <strong>#${Math.min(to, contacts.length)} ${last ? last.name || '' : ''}</strong>
+            `;
+        }
+        async function executeMultiDelete() {
+            const from  = parseInt(document.getElementById('multi-del-from').value);
+            const to    = parseInt(document.getElementById('multi-del-to').value);
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            if (!from || !to || from < 1 || to < from) { alert('⚠️ أدخل أرقاماً صحيحة'); return; }
+            if (!companyId) { alert('⚠️ خطأ في تحديد الشركة'); return; }
+
+            const toDelete = _allContacts.slice(from - 1, to);
+            const first = toDelete[0];
+            const last  = toDelete[toDelete.length - 1];
+
+            if (!first) { alert('⚠️ لا يوجد عملاء في هذا النطاق'); return; }
+
+            const confirmMsg = `⚠️ تأكيد المسح المتعدد\n\n` +
+                `سيتم حذف ${toDelete.length} عميل:\n` +
+                `• من نمرة ${from}: ${first.name || ''}\n` +
+                `• إلى نمرة ${from + toDelete.length - 1}: ${last.name || ''}\n\n` +
+                `هل أنت متأكد؟`;
+
+            if (!confirm(confirmMsg)) return;
+
+            closeMultiDeleteModal();
+
+            // شريط تقدم
+            const progressMsg = `⏳ جاري حذف 0 / ${toDelete.length}...`;
+            let deleted = 0, failed = 0;
+
+            for (const contact of toDelete) {
+                const cid = (contact._id || contact.id || contact.contactId || '').toString();
+                if (!cid) { failed++; continue; }
+                try {
+                    const r = await fetch(`${API_BASE_URL}/api/contacts?companyId=${companyId}&contactId=${cid}&deletedBy=crm_bulk`, { method: 'DELETE' });
+                    const d = await r.json();
+                    if (d.success) {
+                        deleted++;
+                        _allContacts = _allContacts.filter(c => (c._id||c.id||c.contactId||'').toString() !== cid);
+                    } else { failed++; }
+                } catch { failed++; }
+            }
+
+            renderTable(_allContacts);
+            alert(`✅ اكتمل المسح المتعدد\n\nتم حذف: ${deleted}\nفشل: ${failed}`);
         }
         
         // Add Note Function
@@ -2250,5 +2470,28 @@
         // Load contacts on page load
         window.addEventListener('DOMContentLoaded', loadCRMContacts);
     </script>
+
+    <!-- Multi Delete Modal -->
+    <div id="multi-delete-modal" class="multi-delete-modal-overlay">
+        <div class="multi-delete-modal">
+            <h3>✂️ مسح متعدد</h3>
+            <div class="multi-delete-input-row">
+                <div>
+                    <label>من رقم</label>
+                    <input id="multi-del-from" type="number" min="1" placeholder="1" oninput="updateMultiDeletePreview()">
+                </div>
+                <div>
+                    <label>إلى رقم</label>
+                    <input id="multi-del-to" type="number" min="1" placeholder="56" oninput="updateMultiDeletePreview()">
+                </div>
+            </div>
+            <div id="multi-del-preview" class="multi-delete-preview">أدخل الأرقام للمعاينة</div>
+            <div class="multi-delete-btn-row">
+                <button class="btn-cancel-delete" onclick="closeMultiDeleteModal()">إلغاء</button>
+                <button class="btn-confirm-delete" onclick="executeMultiDelete()">🗑️ تأكيد المسح</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

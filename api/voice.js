@@ -107,8 +107,9 @@ module.exports = async (req, res) => {
         
         console.log('📞 مكالمة جديدة:', { callSid, to: callTo, formattedTo: formattedCallTo, employeeId, companyId });
 
-        // ── جلب رقم Twilio الخاص بالشركة من Firestore ──
+        // ── جلب بيانات Twilio الخاصة بالشركة من Firestore ──
         let callerPhoneNumber = TWILIO_PHONE_NUMBER; // fallback للرقم الافتراضي
+        let companyTwilio = null; // credentials خاصة بالشركة
         if (companyId) {
             try {
                 const { getDb } = require('../utils/firebase');
@@ -118,11 +119,21 @@ module.exports = async (req, res) => {
                     const companyData = companySnap.data();
                     if (companyData.twilioPhone) {
                         callerPhoneNumber = companyData.twilioPhone;
-                        console.log('✅ رقم Twilio للشركة:', callerPhoneNumber, '| شركة:', companyData.companyName);
                     }
+                    // إذا كان للشركة prefix بيئي، استخدم credentials من Environment Variables
+                    if (companyData.twilioEnvPrefix) {
+                        const prefix = companyData.twilioEnvPrefix;
+                        const sid   = process.env[`${prefix}_TWILIO_ACCOUNT_SID`];
+                        const token = process.env[`${prefix}_TWILIO_AUTH_TOKEN`];
+                        if (sid && token) {
+                            companyTwilio = { accountSid: sid, authToken: token };
+                            console.log(`✅ Twilio credentials لشركة ${companyData.companyName} (${prefix})`);
+                        }
+                    }
+                    console.log('✅ Twilio للشركة:', callerPhoneNumber, '| شركة:', companyData.companyName);
                 }
             } catch (e) {
-                console.error('⚠️ جلب بيانات الشركة فشل - سيُستخدم الرقم الافتراضي:', e.message);
+                console.error('⚠️ جلب بيانات الشركة فشل - سيُستخدم الإعداد الافتراضي:', e.message);
             }
         }
 

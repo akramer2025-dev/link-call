@@ -1191,7 +1191,7 @@
                 
                 if (data.success) {
                     allEmployees = data.employees;
-                    updateStats();
+                    await updateStats();
                     renderEmployees();
                 } else {
                     showAlert(data.message, 'error');
@@ -1203,15 +1203,24 @@
         }
 
         // تحديث الإحصائيات
-        function updateStats() {
+        async function updateStats() {
             const active = allEmployees.filter(e => e.active).length;
-            const totalMinutes = allEmployees.reduce((sum, e) => sum + (e.minutesAllocated || 0), 0);
             const usedMinutes = allEmployees.reduce((sum, e) => sum + (e.minutesUsed || 0), 0);
 
             document.getElementById('totalEmployees').textContent = allEmployees.length;
             document.getElementById('activeEmployees').textContent = active;
-            document.getElementById('totalMinutes').textContent = totalMinutes.toLocaleString();
             document.getElementById('usedMinutes').textContent = usedMinutes.toLocaleString();
+
+            // الدقائق المتاحة = الرصيد ÷ تكلفة الدقيقة
+            try {
+                const r = await fetch(`/api/companies/balance?companyId=${companyId}`);
+                const d = await r.json();
+                if (d.success) {
+                    const costPerMin = d.costPerMinute || 0.014;
+                    const availableMins = Math.floor(d.balance / costPerMin);
+                    document.getElementById('totalMinutes').textContent = availableMins.toLocaleString();
+                }
+            } catch(e) { /* keep showing 0 */ }
         }
 
         // عرض الموظفين

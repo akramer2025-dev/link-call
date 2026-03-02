@@ -983,6 +983,9 @@
         <!-- Filters -->
         <div class="filters-section">
             <span class="filter-label">فلترة حسب:</span>
+            <select class="filter-select" id="filter-employee" onchange="applyFilters()" style="display:none;">
+                <option value="">👤 الموظف: الكل</option>
+            </select>
             <select class="filter-select" id="filter-status" onchange="applyFilters()">
                 <option value="">الحالة: الكل</option>
                 <option value="premium">⭐ مميز</option>
@@ -1153,6 +1156,7 @@
         let _totalContacts = 0;
         let _loadingMore = false;
         let _currentAssignedTo = null; // employeeId or 'admin'
+        let _crmEmployees = []; // employee list for admin filter
         
         // Sort Table
         function sortTable(column) {
@@ -1229,6 +1233,32 @@
         }
         
         // Populate Country Filter
+        // تحميل فلتر الموظفين (للأدمن فقط)
+        async function _loadEmployeeFilter(companyId) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/employees-management?companyId=${encodeURIComponent(companyId)}`);
+                const data = await res.json();
+                if (!data.success) return;
+                _crmEmployees = data.employees || [];
+
+                // احسب عدد العملاء لكل موظف
+                const countMap = {};
+                _allContacts.forEach(c => {
+                    if (c.assignedTo) countMap[c.assignedTo] = (countMap[c.assignedTo] || 0) + 1;
+                });
+                const unassigned = _allContacts.filter(c => !c.assignedTo).length;
+
+                const select = document.getElementById('filter-employee');
+                select.innerHTML = `<option value="">👤 الموظف: الكل (${_totalContacts})</option>`;
+                if (unassigned > 0) select.innerHTML += `<option value="__unassigned__">🔓 غير موزع (${unassigned})</option>`;
+                _crmEmployees.forEach(emp => {
+                    const cnt = countMap[emp.id] || 0;
+                    select.innerHTML += `<option value="${emp.id}">${emp.name} (${cnt})</option>`;
+                });
+                select.style.display = '';
+            } catch(e) { /* ignore */ }
+        }
+
         function populateCountryFilter() {
             const countries = new Set();
             _allContacts.forEach(c => {
@@ -1251,11 +1281,19 @@
         
         // Apply Filters
         function applyFilters() {
-            const statusFilter = document.getElementById('filter-status').value;
+            const statusFilter  = document.getElementById('filter-status').value;
             const countryFilter = document.getElementById('filter-country').value;
-            const ratingFilter = document.getElementById('filter-rating').value;
-            
+            const ratingFilter  = document.getElementById('filter-rating').value;
+            const empFilter     = (document.getElementById('filter-employee') || {}).value || '';
+
             let filtered = [..._allContacts];
+
+            // فلتر الموظف
+            if (empFilter === '__unassigned__') {
+                filtered = filtered.filter(c => !c.assignedTo);
+            } else if (empFilter) {
+                filtered = filtered.filter(c => c.assignedTo === empFilter);
+            }
             
             // Status filter
             if (statusFilter) {
@@ -1305,6 +1343,8 @@
             document.getElementById('filter-country').value = '';
             document.getElementById('filter-rating').value = '';
             document.getElementById('crm-search').value = '';
+            const empSel = document.getElementById('filter-employee');
+            if (empSel) empSel.value = '';
             _cachedContacts = [..._allContacts];
             renderTable(_allContacts);
         }
@@ -1585,6 +1625,10 @@
                 await _fetchAndAppend(companyId, _currentAssignedTo, true);
                 updateStatistics();
                 populateCountryFilter();
+                // للأدمن: حمّل قائمة الموظفين لفلتر العملاء
+                if (_currentAssignedTo === 'admin') {
+                    _loadEmployeeFilter(companyId);
+                }
             } catch (error) {
                 console.error('خطأ في تحميل البيانات:', error);
                 container.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>خطأ في تحميل البيانات</p></div>`;

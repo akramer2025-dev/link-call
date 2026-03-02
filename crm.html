@@ -1556,7 +1556,8 @@
             const employeeId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
             const userRole   = sessionStorage.getItem('userRole')   || localStorage.getItem('userRole') || 'agent';
 
-            _currentAssignedTo = (userRole === 'admin' || userRole === 'supervisor') ? 'admin' : (employeeId || 'unknown');
+            const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true' || localStorage.getItem('isCompanyAdmin') === 'true';
+            _currentAssignedTo = (userRole === 'admin' || userRole === 'company-admin' || userRole === 'supervisor' || isCompanyAdmin) ? 'admin' : (employeeId || 'unknown');
 
             // زر المسح للأدمن فقط
             const clearBtn = document.getElementById('clearAllBtn');

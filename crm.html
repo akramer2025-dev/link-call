@@ -234,6 +234,16 @@
             box-shadow: 0 5px 15px rgba(251, 191, 36, 0.4);
         }
         
+        .btn-distribute {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+        
+        .btn-distribute:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+        
         /* Statistics Cards */
         .stats-grid {
             display: grid;
@@ -732,6 +742,9 @@
                 </button>
                 <button class="crm-btn btn-import" onclick="document.getElementById('excel-import-input').click()">
                     📥 استيراد Excel
+                </button>
+                <button class="crm-btn btn-distribute" onclick="showDistributeExistingContacts()">
+                    🎯 توزيع على الموظفين
                 </button>
                 <button class="crm-btn btn-add" onclick="showAddContactModal()">
                     + إضافة عميل جديد
@@ -1700,12 +1713,226 @@
             }
             
             closeDistributionModal();
-            await performExcelImport(_excelContactsToImport, distribution);
+            
+            // Check if we're distributing existing contacts or Excel import
+            const isExistingContacts = _excelContactsToImport.length > 0 && _excelContactsToImport[0]._id;
+            
+            if (isExistingContacts) {
+                await performExistingContactsDistribution(_excelContactsToImport, distribution);
+            } else {
+                await performExcelImport(_excelContactsToImport, distribution);
+            }
         }
         
         async function startImportWithoutDistribution() {
             closeDistributionModal();
             await performExcelImport(_excelContactsToImport, null);
+        }
+        
+        // ==================== Distribute Existing Contacts ====================
+        async function showDistributeExistingContacts() {
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            if (!companyId) {
+                alert('⚠️ يجب تسجيل الدخول أولاً');
+                return;
+            }
+            
+            // Check if there are contacts
+            if (!_allContacts || _allContacts.length === 0) {
+                alert('⚠️ لا توجد جهات اتصال للتوزيع. قم بإضافة جهات اتصال أولاً.');
+                return;
+            }
+            
+            // Save contacts for distribution
+            _excelContactsToImport = _allContacts;
+            
+            // Show distribution modal
+            document.getElementById('distribution-modal').style.display = 'flex';
+            await loadEmployeesForDistribution(companyId);
+            
+            // Update modal title to indicate existing contacts
+            const modalTitle = document.querySelector('#distribution-modal h2');
+            if (modalTitle) {
+                modalTitle.innerHTML = '🎯 توزيع جهات الاتصال الموجودة على الموظفين';
+            }
+            
+            // Update description
+            const modalDesc = document.querySelector('#distribution-modal p');
+            if (modalDesc) {
+                modalDesc.textContent = `حدد عدد جهات الاتصال لكل موظف من إجمالي ${_allContacts.length} جهة اتصال موجودة`;
+            }
+        }
+        
+        async function performExistingContactsDistribution(contacts, distribution) {
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            if (!companyId) {
+                alert('⚠️ خطأ في جلب معرف الشركة');
+                return;
+            }
+            
+            // Show progress modal
+            const modal = document.getElementById('progress-modal');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressResults = document.getElementById('progress-results');
+            const closeBtn = document.getElementById('close-progress-btn');
+            
+            modal.style.display = 'flex';
+            progressBar.style.width = '0%';
+            progressBar.textContent = '0%';
+            progressText.textContent = 'جاري توزيع جهات الاتصال...';
+            progressResults.style.display = 'none';
+            closeBtn.style.display = 'none';
+            
+            try {
+                // Prepare distribution map
+                let distributionMap = [];
+                let contactIndex = 0;
+                
+                if (distribution) {
+                    // Build distribution map: which contacts go to which employee
+                    for (const dist of distribution) {
+                        for (let i = 0; i < dist.count && contactIndex < contacts.length; i++) {
+                            distributionMap.push({
+                                contact: contacts[contactIndex],
+                                employeeId: dist.employeeId,
+                                employeeName: dist.employeeName
+                            });
+                            contactIndex++;
+                        }
+                    }
+                    
+                    // Add remaining contacts without assignment
+                    while (contactIndex < contacts.length) {
+                        distributionMap.push({
+                            contact: contacts[contactIndex],
+                            employeeId: null,
+                            employeeName: null
+                        });
+                        contactIndex++;
+                    }
+                } else {
+                    // No distribution
+                    distributionMap = contacts.map(c => ({
+                        contact: c,
+                        employeeId: null,
+                        employeeName: null
+                    }));
+                }
+                
+                progressText.textContent = `جاري تحديث ${distributionMap.length} جهة اتصال...`;
+                
+                // Update in batches of 50
+                let successCount = 0;
+                let errorCount = 0;
+                const batchSize = 50;
+                
+                for (let i = 0; i < distributionMap.length; i += batchSize) {
+                    const batch = distributionMap.slice(i, i + batchSize);
+                    
+                    for (const item of batch) {
+                        try {
+                            const contact = item.contact;
+                            const contactId = contact._id || contact.id || contact.contactId;
+                            
+                            if (!contactId) {
+                                errorCount++;
+                                continue;
+                            }
+                            
+                            // Get existing notes
+                            const oldNotes = contact.notes || '';
+                            
+                            // Remove old assignment if exists
+                            let updatedNotes = oldNotes.replace(/\s*\|\s*Assigned:\s*[^|]+/g, '');
+                            
+                            // Add new assignment
+                            if (item.employeeId) {
+                                // Find position before Source
+                                if (updatedNotes.includes('| Source:')) {
+                                    updatedNotes = updatedNotes.replace('| Source:', `| Assigned: ${item.employeeName} | Source:`);
+                                } else {
+                                    updatedNotes += ` | Assigned: ${item.employeeName}`;
+                                }
+                            }
+                            
+                            // Build tags - remove old assigned tags
+                            let tags = contact.tags || [];
+                            tags = tags.filter(tag => !tag.startsWith('Assigned-'));
+                            if (item.employeeId) {
+                                tags.push(`Assigned-${item.employeeId}`);
+                            }
+                            
+                            // Update contact
+                            const response = await fetch(`${API_BASE_URL}/api/contacts`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    companyId,
+                                    contactId,
+                                    name: contact.name,
+                                    phone: contact.phone,
+                                    email: contact.email || '',
+                                    notes: updatedNotes,
+                                    tags: tags
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
+                        } catch (err) {
+                            console.error('خطأ في تحديث جهة اتصال:', err);
+                            errorCount++;
+                        }
+                    }
+                    
+                    // Update progress
+                    const progress = Math.min(100, Math.round(((i + batch.length) / distributionMap.length) * 100));
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.textContent = `${progress}%`;
+                    progressText.textContent = `تمت معالجة ${i + batch.length} من ${distributionMap.length}...`;
+                    
+                    // Small delay between batches
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // Show results
+                progressBar.style.width = '100%';
+                progressBar.textContent = '100%';
+                progressText.textContent = '✅ اكتمل التوزيع!';
+                
+                let resultsHTML = `
+                    <div class="success-count">✓ تم التحديث بنجاح: ${successCount}</div>
+                    <div class="error-count">✗ فشل: ${errorCount}</div>
+                `;
+                
+                if (distribution) {
+                    resultsHTML += '<div style="color:#667eea;margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">📊 التوزيع على الموظفين:</div>';
+                    distribution.forEach(dist => {
+                        resultsHTML += `<div style="color:#8892b0;font-size:13px;margin-top:5px;">• ${dist.employeeName}: ${dist.count} جهة اتصال</div>`;
+                    });
+                }
+                
+                resultsHTML += `
+                    <div style="color:#ccd6f6;margin-top:15px;font-weight:700;">
+                        إجمالي: ${contacts.length} جهة اتصال
+                    </div>
+                `;
+                
+                progressResults.innerHTML = resultsHTML;
+                progressResults.style.display = 'block';
+                closeBtn.style.display = 'block';
+                
+            } catch (error) {
+                console.error('خطأ في التوزيع:', error);
+                progressText.textContent = '❌ حدث خطأ أثناء التوزيع';
+                progressResults.innerHTML = `<div class="error-count">حدث خطأ غير متوقع. حاول مرة أخرى.</div>`;
+                progressResults.style.display = 'block';
+                closeBtn.style.display = 'block';
+            }
         }
         
         // ==================== Perform Excel Import ====================

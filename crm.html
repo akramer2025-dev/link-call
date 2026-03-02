@@ -1274,7 +1274,7 @@
             [...countries].sort().forEach(country => {
                 const option = document.createElement('option');
                 option.value = country;
-                option.textContent = country;
+                option.textContent = `${_getCountryFlag(country)} ${country}`;
                 select.appendChild(option);
             });
         }
@@ -1443,6 +1443,64 @@
         }
         
         // Premium CRM Contact Rendering
+        function _getCountryFlag(countryName) {
+            if (!countryName || countryName === '-') return '';
+            const n = countryName.trim().toLowerCase();
+            const map = {
+                // العربية
+                'مصر': '🇪🇬', 'السعودية': '🇸🇦', 'المملكة العربية السعودية': '🇸🇦',
+                'الإمارات': '🇦🇪', 'الامارات': '🇦🇪', 'الإمارات العربية المتحدة': '🇦🇪',
+                'الكويت': '🇰🇼', 'قطر': '🇶🇦', 'البحرين': '🇧🇭', 'عمان': '🇴🇲',
+                'الأردن': '🇯🇴', 'الاردن': '🇯🇴', 'لبنان': '🇱🇧', 'سوريا': '🇸🇾',
+                'العراق': '🇮🇶', 'ليبيا': '🇱🇾', 'تونس': '🇹🇳', 'الجزائر': '🇩🇿',
+                'المغرب': '🇲🇦', 'السودان': '🇸🇩', 'اليمن': '🇾🇪', 'فلسطين': '🇵🇸',
+                'الصومال': '🇸🇴', 'موريتانيا': '🇲🇷', 'جيبوتي': '🇩🇯', 'جزر القمر': '🇰🇲',
+                'تركيا': '🇹🇷', 'إيران': '🇮🇷', 'ايران': '🇮🇷', 'باكستان': '🇵🇰',
+                'الهند': '🇮🇳', 'الصين': '🇨🇳', 'أمريكا': '🇺🇸', 'امريكا': '🇺🇸',
+                'بريطانيا': '🇬🇧', 'إنجلترا': '🇬🇧', 'انجلترا': '🇬🇧',
+                'فرنسا': '🇫🇷', 'ألمانيا': '🇩🇪', 'المانيا': '🇩🇪', 'إيطاليا': '🇮🇹',
+                'إسبانيا': '🇪🇸', 'هولندا': '🇳🇱', 'بلجيكا': '🇧🇪', 'كندا': '🇨🇦',
+                'أستراليا': '🇦🇺', 'استراليا': '🇦🇺', 'روسيا': '🇷🇺',
+                'اليونان': '🇬🇷', 'السويد': '🇸🇪', 'النرويج': '🇳🇴', 'الدنمارك': '🇩🇰',
+                'سويسرا': '🇨🇭', 'النمسا': '🇦🇹', 'بولندا': '🇵🇱', 'البرتغال': '🇵🇹',
+                'أوكرانيا': '🇺🇦', 'رومانيا': '🇷🇴', 'المجر': '🇭🇺',
+                'نيجيريا': '🇳🇬', 'إثيوبيا': '🇪🇹', 'غانا': '🇬🇭', 'كينيا': '🇰🇪',
+                'تنزانيا': '🇹🇿', 'أوغندا': '🇺🇬', 'المكسيك': '🇲🇽', 'البرازيل': '🇧🇷',
+                'الأرجنتين': '🇦🇷', 'كولومبيا': '🇨🇴', 'تشيلي': '🇨🇱',
+                'اليابان': '🇯🇵', 'كوريا': '🇰🇷', 'كوريا الجنوبية': '🇰🇷',
+                'تايلاند': '🇹🇭', 'إندونيسيا': '🇮🇩', 'ماليزيا': '🇲🇾',
+                'الفلبين': '🇵🇭', 'سنغافورة': '🇸🇬', 'فيتنام': '🇻🇳',
+                'نيبال': '🇳🇵', 'بنغلاديش': '🇧🇩', 'سريلانكا': '🇱🇰',
+                'أذربيجان': '🇦🇿', 'أرمينيا': '🇦🇲', 'جورجيا': '🇬🇪',
+                'كازاخستان': '🇰🇿', 'أوزبكستان': '🇺🇿', 'إسرائيل': '🇮🇱',
+                // English
+                'egypt': '🇪🇬', 'saudi arabia': '🇸🇦', 'ksa': '🇸🇦',
+                'uae': '🇦🇪', 'united arab emirates': '🇦🇪', 'dubai': '🇦🇪', 'abu dhabi': '🇦🇪',
+                'kuwait': '🇰🇼', 'qatar': '🇶🇦', 'bahrain': '🇧🇭', 'oman': '🇴🇲',
+                'jordan': '🇯🇴', 'lebanon': '🇱🇧', 'syria': '🇸🇾', 'iraq': '🇮🇶',
+                'libya': '🇱🇾', 'tunisia': '🇹🇳', 'algeria': '🇩🇿', 'morocco': '🇲🇦',
+                'sudan': '🇸🇩', 'yemen': '🇾🇪', 'palestine': '🇵🇸', 'somalia': '🇸🇴',
+                'turkey': '🇹🇷', 'iran': '🇮🇷', 'pakistan': '🇵🇰', 'india': '🇮🇳',
+                'china': '🇨🇳', 'usa': '🇺🇸', 'us': '🇺🇸', 'united states': '🇺🇸',
+                'uk': '🇬🇧', 'united kingdom': '🇬🇧', 'england': '🇬🇧', 'britain': '🇬🇧',
+                'france': '🇫🇷', 'germany': '🇩🇪', 'italy': '🇮🇹', 'spain': '🇪🇸',
+                'netherlands': '🇳🇱', 'belgium': '🇧🇪', 'canada': '🇨🇦',
+                'australia': '🇦🇺', 'russia': '🇷🇺', 'greece': '🇬🇷',
+                'sweden': '🇸🇪', 'norway': '🇳🇴', 'denmark': '🇩🇰',
+                'switzerland': '🇨🇭', 'austria': '🇦🇹', 'poland': '🇵🇱', 'portugal': '🇵🇹',
+                'ukraine': '🇺🇦', 'romania': '🇷🇴', 'hungary': '🇭🇺',
+                'nigeria': '🇳🇬', 'ethiopia': '🇪🇹', 'ghana': '🇬🇭', 'kenya': '🇰🇪',
+                'mexico': '🇲🇽', 'brazil': '🇧🇷', 'argentina': '🇦🇷', 'colombia': '🇨🇴',
+                'japan': '🇯🇵', 'south korea': '🇰🇷', 'korea': '🇰🇷',
+                'thailand': '🇹🇭', 'indonesia': '🇮🇩', 'malaysia': '🇲🇾',
+                'philippines': '🇵🇭', 'singapore': '🇸🇬', 'vietnam': '🇻🇳',
+                'nepal': '🇳🇵', 'bangladesh': '🇧🇩', 'sri lanka': '🇱🇰',
+                'azerbaijan': '🇦🇿', 'armenia': '🇦🇲', 'georgia': '🇬🇪',
+                'kazakhstan': '🇰🇿', 'israel': '🇮🇱'
+            };
+            return map[n] || '🌍';
+        }
+
         function _renderContactItemCRM(contact, index) {
             const tr = document.createElement('tr');
             tr.className = 'contact-row';
@@ -1494,7 +1552,7 @@
                     </div>
                 </td>
                 <td>${email}</td>
-                <td>${country}</td>
+                <td>${country !== '-' ? `<span title="${country}">${_getCountryFlag(country)} ${country}</span>` : '-'}</td>
                 <td style="color:#1dd1a1;font-weight:700;">${balance}</td>
                 <td>
                     <div class="contact-rating">${starsHTML}</div>

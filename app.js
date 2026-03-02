@@ -364,7 +364,9 @@ async function initializeApp() {
             try {
                 attempts++;
                 console.log(`📡 محاولة ${attempts}/${maxAttempts}...`);
-                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`, {
+                const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
+                const tokenUrl = `${baseUrl}/token?identity=${clientIdentity}${companyId ? '&companyId=' + encodeURIComponent(companyId) : ''}`;
+                response = await fetch(tokenUrl, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1019,13 +1021,14 @@ async function endCall() {
         const callDurationText = callDuration.textContent;
         const [minutes, seconds] = callDurationText.split(':').map(Number);
         const totalSeconds = (minutes * 60) + seconds;
+        const callWasAnswered = totalSeconds > 0;
         
         saveCallToHistory({
             to: phoneNumber,
             direction: 'outbound',
-            status: 'completed',
+            status: callWasAnswered ? 'completed' : 'no-answer',
             startTime: new Date().toISOString(),
-            duration: callDurationText
+            duration: totalSeconds  // حفظ بالثواني دائماً
         });
         
         // تسجيل المكالمة في سجل العمل
@@ -3028,14 +3031,21 @@ async function loadCallHistory() {
             const dateStr = call.startTime || call.createdAt;
             const formattedDate = dateStr ? new Date(dateStr).toLocaleString('ar-EG') : '—';
             const durationRaw = call.duration;
-            let durationText = 'لم تكتمل';
-            if (durationRaw) {
-                const sec = parseInt(durationRaw);
-                if (!isNaN(sec) && sec > 0) {
+            let durationText = call.status === 'no-answer' ? '🔕 لم يرد' : 'لم تكتمل';
+            if (durationRaw !== undefined && durationRaw !== null) {
+                let sec;
+                if (typeof durationRaw === 'number') {
+                    sec = durationRaw;
+                } else if (typeof durationRaw === 'string' && durationRaw.includes(':')) {
+                    // تنسيق قديم "MM:SS" - تحويل لثواني
+                    const parts = durationRaw.split(':').map(Number);
+                    sec = (parts[0] * 60) + (parts[1] || 0);
+                } else {
+                    sec = parseInt(durationRaw) || 0;
+                }
+                if (sec > 0) {
                     const m = Math.floor(sec / 60), s = sec % 60;
                     durationText = m > 0 ? `${m} د ${s} ث` : `${s} ث`;
-                } else if (durationRaw.includes(':')) {
-                    durationText = durationRaw;
                 }
             }
 

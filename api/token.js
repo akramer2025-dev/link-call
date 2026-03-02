@@ -11,9 +11,43 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-        const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
-        const TWILIO_TWIML_APP_SID = process.env.TWILIO_TWIML_APP_SID;
+        const companyId = req.query.companyId || null;
+
+        let TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+        let TWILIO_AUTH_TOKEN  = process.env.TWILIO_AUTH_TOKEN;
+        let TWILIO_API_KEY     = process.env.TWILIO_API_KEY;
+        let TWILIO_API_SECRET  = process.env.TWILIO_API_SECRET;
+        let TWILIO_TWIML_APP_SID = process.env.TWILIO_TWIML_APP_SID;
+
+        // استخدام credentials خاصة بالشركة إذا وُجدت
+        if (companyId) {
+            try {
+                const { getDb } = require('../utils/firebase');
+                const { doc, getDoc } = require('firebase/firestore');
+                const snap = await getDoc(doc(getDb(), 'companies', companyId));
+                if (snap.exists()) {
+                    const cData = snap.data();
+                    const prefix = cData.twilioEnvPrefix;
+                    if (prefix) {
+                        const sid    = process.env[`${prefix}_TWILIO_ACCOUNT_SID`];
+                        const token  = process.env[`${prefix}_TWILIO_AUTH_TOKEN`];
+                        const apiKey = process.env[`${prefix}_TWILIO_API_KEY`];
+                        const apiSec = process.env[`${prefix}_TWILIO_API_SECRET`];
+                        const appSid = process.env[`${prefix}_TWILIO_TWIML_APP_SID`];
+                        if (sid && token && apiKey && apiSec && appSid) {
+                            TWILIO_ACCOUNT_SID   = sid;
+                            TWILIO_AUTH_TOKEN    = token;
+                            TWILIO_API_KEY       = apiKey;
+                            TWILIO_API_SECRET    = apiSec;
+                            TWILIO_TWIML_APP_SID = appSid;
+                            console.log(`✅ token.js: credentials شركة ${cData.companyName || companyId} (${prefix})`);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠️ token.js: فشل جلب credentials الشركة، fallback للإعدادات الافتراضية:', e.message);
+            }
+        }
 
         if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_TWIML_APP_SID) {
             return res.status(500).json({ error: 'Missing credentials' });
@@ -25,16 +59,10 @@ module.exports = async (req, res) => {
         const AccessToken = twilio.jwt.AccessToken;
         const VoiceGrant = AccessToken.VoiceGrant;
 
-        // يجب استخدام API Key + API Secret (وليس Account SID + Auth Token)
-        const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
-        const TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
-
         if (!TWILIO_API_KEY || !TWILIO_API_SECRET) {
-            console.error('❌ مطلوب TWILIO_API_KEY و TWILIO_API_SECRET');
-            console.error('   أنشئهم من: console.twilio.com > Account > API Keys');
             return res.status(500).json({ 
-                error: 'Missing API Key - يجب إضافة TWILIO_API_KEY و TWILIO_API_SECRET في Vercel Environment Variables',
-                hint: 'Go to console.twilio.com > Account > API Keys & Tokens > Create API Key'
+                error: 'Missing API Key credentials',
+                hint: 'Add TWILIO_API_KEY and TWILIO_API_SECRET in Vercel Environment Variables'
             });
         }
 

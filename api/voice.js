@@ -146,11 +146,20 @@ module.exports = async (req, res) => {
             } catch (e) { /* fallback: تسجيل مفعّل */ }
         }
 
+        // ─── بناء URL مطلق لـ recording callback مع تضمين companyId و employeeId ───
+        // أسباب استخدام URL مطلق + query params:
+        //   1. بعض Twilio plans لا ترسل ParentCallSid في recording callback
+        //   2. القيم مضمنة في URL تضمن معرفة الشركة حتى لو فشل active_calls
+        const baseCallbackUrl = 'https://linkcall.akrammostafa.com';
+        const recordingCbUrl = companyId
+            ? `${baseCallbackUrl}/api/recording-status?companyId=${encodeURIComponent(companyId)}&employeeId=${encodeURIComponent(employeeId)}`
+            : `${baseCallbackUrl}/api/recording-status`;
+
         const dial = twiml.dial({
             callerId: callerPhoneNumber,
             ...(recordingEnabled ? {
                 record: 'record-from-answer-dual',
-                recordingStatusCallback: '/api/recording-status',
+                recordingStatusCallback: recordingCbUrl,
                 recordingStatusCallbackEvent: 'completed'
             } : {})
         });

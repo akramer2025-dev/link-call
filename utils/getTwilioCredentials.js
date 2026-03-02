@@ -60,10 +60,14 @@ module.exports = async function getTwilioCredentials(companyId) {
                     phoneNumber: data.twilioPhone || creds.phoneNumber,
                 };
             }
-            console.warn(`⚠️ getTwilioCredentials: ${p}_TWILIO_* غير موجودة في ENV — fallback للإعداد الافتراضي`);
+            // ENV vars for prefix are NOT set → return default creds AS-IS to avoid error 13214
+            // (default account doesn't own company's Twilio number)
+            console.warn(`⚠️ getTwilioCredentials: ${p}_TWILIO_* غير موجودة في ENV — الرجوع للإعداد الافتراضي بدون تغيير رقم المتصل`);
+            return creds;
         }
 
-        // ── Priority 3: twilioPhone only (no separate account) ───────────
+        // ── Priority 3: twilioPhone only, no separate account (only when NO prefix) ──
+        // Safe ONLY if the default account owns this phone number
         if (data.twilioPhone) {
             creds.phoneNumber = data.twilioPhone;
         }

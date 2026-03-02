@@ -19,7 +19,11 @@ module.exports = async (req, res) => {
         const recordingStatus = req.body.RecordingStatus || 'completed';
         const toNumber        = req.body.To || req.body.Called || '';
 
-        console.log('📼 recording-status:', { recordingSid, callSid, parentCallSid, duration, toNumber });
+        // ── query params مضمَّنة في URL من voice.js (ضمان إضافي حتى لو active_calls فشل) ──
+        const qCompanyId  = req.query.companyId  || null;
+        const qEmployeeId = req.query.employeeId || null;
+
+        console.log('📼 recording-status:', { recordingSid, callSid, parentCallSid, duration, toNumber, qCompanyId });
 
         if (recordingSid) {
             try {
@@ -39,8 +43,12 @@ module.exports = async (req, res) => {
                     if (snap2.exists()) { callData = snap2.data(); usedSid = parentCallSid; }
                 }
 
-                const companyId  = callData ? callData.companyId  : null;
-                const employeeId = callData ? callData.employeeId : 'unknown';
+                const companyId  = (callData ? callData.companyId  : null) || qCompanyId  || null;
+                const employeeId = (callData ? callData.employeeId : null) || qEmployeeId || 'unknown';
+
+                if (!callData && companyId) {
+                    console.log(`⚠️ recording-status: active_calls غير موجود — استخدام companyId من URL: ${companyId}`);
+                }
 
                 // ──────────────────────────────────────────────────────────
                 // 1) حفظ التسجيل في companies/{companyId}/recordings/{sid}

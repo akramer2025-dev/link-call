@@ -2047,7 +2047,7 @@
         
         async function loadEmployeesForDistribution(companyId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/employees-management/employees?companyId=${encodeURIComponent(companyId)}`);
+                const response = await fetch(`${API_BASE_URL}/api/employees-management?companyId=${encodeURIComponent(companyId)}`);
                 const data = await response.json();
                 _employeesList = data.employees || [];
                 
@@ -2158,18 +2158,21 @@
                 }
             }
             
+            // Save contacts before closing modal (closeDistributionModal clears the array)
+            const contactsSnapshot = [..._excelContactsToImport];
             closeDistributionModal();
             
             if (isExistingContacts) {
-                await performExistingContactsDistribution(_excelContactsToImport, distribution);
+                await performExistingContactsDistribution(contactsSnapshot, distribution);
             } else {
-                await performExcelImport(_excelContactsToImport, distribution);
+                await performExcelImport(contactsSnapshot, distribution);
             }
         }
         
         async function startImportWithoutDistribution() {
+            const contactsSnapshot = [..._excelContactsToImport];
             closeDistributionModal();
-            await performExcelImport(_excelContactsToImport, null);
+            await performExcelImport(contactsSnapshot, null);
         }
         
         // ==================== Distribute Existing Contacts ====================
@@ -2404,7 +2407,7 @@
                 progressText.textContent = 'جاري جلب جهات الاتصال الحالية...';
                 
                 // Get existing contacts for duplicate detection
-                const existingResponse = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
+                const existingResponse = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}&limit=99999`);
                 const existingData = await existingResponse.json();
                 const existingPhones = new Set((existingData.contacts || []).map(c => String(c.phone || '').replace(/[^0-9]/g, '')));
                 

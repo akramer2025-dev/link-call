@@ -698,22 +698,105 @@
 
             .header {
                 flex-direction: column;
-                gap: 15px;
+                gap: 12px;
                 padding: 15px;
                 text-align: center;
             }
 
-            .header h1 { font-size: 20px; }
+            .header h1 { font-size: 18px; }
 
             .header-info {
                 flex-wrap: wrap;
                 justify-content: center;
-                gap: 10px;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .company-name {
+                font-size: 13px;
+                padding: 8px 15px;
+            }
+
+            .btn-add {
+                font-size: 14px;
+                padding: 10px 20px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .back-btn {
+                font-size: 13px;
+                padding: 8px 16px;
             }
 
             .stats-container {
                 grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px;
             }
+
+            .stat-card { padding: 15px; gap: 12px; }
+            .stat-icon { width: 45px; height: 45px; font-size: 20px; }
+            .stat-info h3 { font-size: 12px; }
+            .stat-info p { font-size: 22px; }
+
+            .main-content { padding: 15px; }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box { min-width: unset; width: 100%; }
+
+            .filter-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .filter-btn {
+                padding: 8px 15px;
+                font-size: 13px;
+            }
+
+            /* Table scroll */
+            .main-content > #employeesContainer {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .employees-table {
+                min-width: 700px;
+            }
+
+            .employees-table th,
+            .employees-table td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .btn-icon {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            /* Modal full screen */
+            .modal-content {
+                padding: 20px;
+                max-width: 98% !important;
+                max-height: 95vh;
+                margin: 0 auto;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr !important;
+            }
+
+            .modal-header h2 { font-size: 18px; }
 
             .employees-grid {
                 grid-template-columns: 1fr !important;
@@ -726,6 +809,13 @@
             .stats-container {
                 grid-template-columns: 1fr !important;
             }
+
+            .header-info {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .lang-switcher { align-self: center; }
         }
     </style>
 </head>
@@ -1223,7 +1313,7 @@
                 </table>
             `;
 
-            container.innerHTML = html;
+            container.innerHTML = `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">${html}</div>`;
         }
 
         // عرض نافذة إضافة موظف

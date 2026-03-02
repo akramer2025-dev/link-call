@@ -664,34 +664,87 @@
         
         /* Responsive Design */
         @media (max-width: 768px) {
+            body { padding: 10px; }
+
             .crm-header {
                 flex-direction: column;
                 align-items: stretch;
+                padding: 15px;
+                gap: 12px;
             }
-            
+
+            .crm-title { font-size: 18px; }
+
             .crm-actions {
                 width: 100%;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
-            
+
             .crm-btn {
-                flex: 1;
+                font-size: 12px;
+                padding: 9px 10px;
+                justify-content: center;
+                text-align: center;
             }
-            
+
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
-            
+
+            .stat-card { padding: 15px; gap: 10px; }
+            .stat-icon { width: 40px; height: 40px; font-size: 18px; }
+            .stat-info h3 { font-size: 20px; }
+            .stat-info p { font-size: 12px; }
+
             .filters-section {
                 flex-direction: column;
+                gap: 8px;
             }
-            
+
+            .filter-select, .search-box input {
+                width: 100%;
+                font-size: 15px;
+            }
+
             .table-container {
                 overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
-            
+
             .contacts-table {
-                min-width: 1200px;
+                min-width: 900px;
             }
+
+            .contacts-table th,
+            .contacts-table td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+
+            /* Modal full screen on mobile */
+            .modal-overlay .modal-box,
+            [class*="modal"] [class*="content"],
+            [class*="modal"] [class*="modal-body"] {
+                width: 95% !important;
+                max-width: 95% !important;
+                margin: 10px auto !important;
+                padding: 20px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .crm-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .crm-btn span:not(:first-child) { display: none; }
         }
         
         /* Progress Modal */
@@ -2491,6 +2544,43 @@
                 <button class="btn-confirm-delete" onclick="executeMultiDelete()">🗑️ تأكيد المسح</button>
             </div>
         </div>
+    </div>
+
+    <!-- Floating Navigation -->
+    <style>
+        .float-nav {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 9999;
+        }
+        .float-nav-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.85);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .float-nav-btn:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: scale(1.1);
+        }
+        @media (max-width: 768px) { .float-nav { bottom: 15px; left: 15px; } }
+    </style>
+    <div class="float-nav">
+        <button class="float-nav-btn" onclick="history.back()" title="رجوع">⬅️</button>
+        <button class="float-nav-btn" onclick="history.forward()" title="للأمام">➡️</button>
     </div>
 
 </body>

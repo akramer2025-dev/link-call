@@ -1,11 +1,14 @@
 // contacts.js - Firestore Subcollections: companies/{companyId}/contacts/{contactId}
 // البيانات لا تُحذف أبداً — softDelete فقط → deleted_archive
+const crypto = require('crypto');
 const {
     getCompanySubcollection,
     setCompanyDoc,
     softDelete,
     logCompanyActivity
 } = require('../utils/company-database');
+const { getDb } = require('../utils/firebase');
+function _hashPassword(pw) { return crypto.createHash('sha256').update(pw).digest('hex'); }
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,13 +19,85 @@ module.exports = async (req, res) => {
     try {
         // ─── GET ───────────────────────────────────────────────────────
         if (req.method === 'GET') {
-            const { companyId } = req.query;
+            const { companyId, action, assignedTo, page, limit: limitQ, search } = req.query;
             if (!companyId) return res.status(400).json({ success: false, error: 'Company ID is required' });
 
-            const contacts = await getCompanySubcollection(companyId, 'contacts');
-            const active = contacts.filter(c => !c._deleted);
-            console.log(`📋 [${companyId}] جلب ${active.length} جهة اتصال`);
-            return res.status(200).json({ success: true, contacts: active, count: active.length });
+            const allContacts = await getCompanySubcollection(companyId, 'contacts');
+            let active = allContacts.filter(c => !c._deleted);
+
+            // فلتر الموظف — كل موظف يرى فقط ما وُزِّع عليه
+            if (assignedTo && assignedTo !== 'admin' && assignedTo !== 'all') {
+                active = active.filter(c => c.assignedTo === assignedTo);
+            }
+
+            // فلتر البحث النصي
+            if (search) {
+                const q = search.toLowerCase();
+                active = active.filter(c =>
+                    (c.name  || '').toLowerCase().includes(q) ||
+                    (c.phone || '').includes(q) ||
+                    (c.email || '').toLowerCase().includes(q)
+                );
+            }
+
+            const total = active.length;
+
+            // Pagination
+            const pageNum  = Math.max(1, parseInt(page  || '1',  10));
+            const pageSize = Math.min(500, Math.max(1, parseInt(limitQ || '100', 10)));
+            const offset   = (pageNum - 1) * pageSize;
+            const paginated = active.slice(offset, offset + pageSize);
+            const hasMore   = offset + pageSize < total;
+
+            console.log(`📋 [${companyId}] جلب ${paginated.length}/${total} جهة اتصال (صفحة ${pageNum})`);
+            return res.status(200).json({
+                success: true,
+                contacts: paginated,
+                count: paginated.length,
+                total,
+                page: pageNum,
+                pageSize,
+                hasMore
+            });
+        }
+
+        // ─── DELETE-ALL (admin only, requires password) ────────────────
+        if (req.method === 'POST' && req.query.action === 'deleteAll') {
+            const { companyId, adminPassword, deletedBy } = req.body;
+            if (!companyId) return res.status(400).json({ success: false, error: 'Company ID is required' });
+            if (!adminPassword) return res.status(400).json({ success: false, error: 'كلمة المرور مطلوبة' });
+
+            // ── التحقق من كلمة مرور مدير الشركة ──────────────────────────
+            try {
+                const { doc, getDoc } = require('firebase/firestore');
+                const db = getDb();
+                const companySnap = await getDoc(doc(db, 'companies', companyId));
+                if (!companySnap.exists()) return res.status(404).json({ success: false, error: 'لم يتم العثور على الشركة' });
+                const company = companySnap.data();
+                const storedHash = company.password || '';
+                const suppliedHash = _hashPassword(adminPassword.trim());
+                if (storedHash !== suppliedHash) {
+                    return res.status(401).json({ success: false, error: 'كلمة المرور غير صحيحة' });
+                }
+            } catch (authErr) {
+                console.error('deleteAll auth error:', authErr.message);
+                return res.status(500).json({ success: false, error: 'خطأ في التحقق من الهوية' });
+            }
+
+            const allContacts = await getCompanySubcollection(companyId, 'contacts');
+            const active = allContacts.filter(c => !c._deleted);
+
+            let deleted = 0;
+            for (const c of active) {
+                const cId = c._id || c.id;
+                if (cId) {
+                    await softDelete(companyId, 'contacts', cId, c, deletedBy || 'admin');
+                    deleted++;
+                }
+            }
+            logCompanyActivity(companyId, { action: 'contacts_cleared', count: deleted, deletedBy: deletedBy || 'admin' });
+            console.log(`🗑️ [${companyId}] تم مسح ${deleted} جهة اتصال (deleteAll)`);
+            return res.status(200).json({ success: true, deleted, message: `تم مسح ${deleted} جهة اتصال` });
         }
 
         // ─── POST ──────────────────────────────────────────────────────

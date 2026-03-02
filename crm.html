@@ -942,6 +942,9 @@
                 <button class="crm-btn btn-add" onclick="showAddContactModal()">
                     + إضافة عميل جديد
                 </button>
+                <button class="crm-btn" id="clearAllBtn" onclick="showClearAllModal()" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;display:none;">
+                    🗑️ مسح الكل
+                </button>
             </div>
         </div>
         
@@ -1145,6 +1148,11 @@
         let _cachedContacts = [];
         let _allContacts = []; // For filtering
         let _currentSort = { column: null, direction: 'asc' };
+        let _currentPage = 1;
+        let _hasMore = false;
+        let _totalContacts = 0;
+        let _loadingMore = false;
+        let _currentAssignedTo = null; // employeeId or 'admin'
         
         // Sort Table
         function sortTable(column) {
@@ -1204,7 +1212,7 @@
         
         // Update Statistics
         function updateStatistics() {
-            const total = _allContacts.length;
+            const total = _totalContacts || _allContacts.length;
             const newContacts = _allContacts.filter(c => c.tags?.includes('Excel Import') || !c.lastCallDate).length;
             const premium = _allContacts.filter(c => {
                 const notes = c.notes || '';
@@ -1523,12 +1531,37 @@
             
             container.innerHTML = '';
             container.appendChild(table);
+
+            // زر "تحميل المزيد" لو في بيانات إضافية
+            if (_hasMore) {
+                const loadMoreBtn = document.createElement('div');
+                loadMoreBtn.style.cssText = 'text-align:center;padding:20px;';
+                loadMoreBtn.innerHTML = `
+                    <button onclick="loadMoreContacts()" style="padding:12px 40px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;cursor:pointer;font-size:15px;font-weight:bold;">
+                        ⬇️ تحميل المزيد (${_allContacts.length} / ${_totalContacts})
+                    </button>
+                `;
+                container.appendChild(loadMoreBtn);
+            } else if (_allContacts.length > 0) {
+                const endNote = document.createElement('div');
+                endNote.style.cssText = 'text-align:center;padding:15px;color:#6b7280;font-size:13px;';
+                endNote.textContent = `✅ عرض كل ${_allContacts.length} جهة اتصال`;
+                container.appendChild(endNote);
+            }
         }
         
         async function loadCRMContacts() {
             const container = document.getElementById('crm-table-container');
             const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
-            
+            const employeeId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
+            const userRole   = sessionStorage.getItem('userRole')   || localStorage.getItem('userRole') || 'agent';
+
+            _currentAssignedTo = (userRole === 'admin' || userRole === 'supervisor') ? 'admin' : (employeeId || 'unknown');
+
+            // زر المسح للأدمن فقط
+            const clearBtn = document.getElementById('clearAllBtn');
+            if (clearBtn) clearBtn.style.display = (userRole === 'admin') ? 'flex' : 'none';
+
             if (!companyId) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -1539,45 +1572,98 @@
                 `;
                 return;
             }
-            
+
+            // Show loading spinner
+            container.innerHTML = `<div style="text-align:center;padding:60px;color:#a8b2d1;"><div style="font-size:40px;margin-bottom:15px;animation:spin 1s linear infinite;display:inline-block;">⏳</div><br>جاري تحميل البيانات...</div>`;
+
+            _currentPage  = 1;
+            _allContacts  = [];
+            _cachedContacts = [];
+
             try {
-                const response = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
-                const data = await response.json();
-                const contacts = data.contacts || [];
-                
-                _allContacts = contacts;
-                _cachedContacts = contacts;
-                
-                // Update statistics
+                await _fetchAndAppend(companyId, _currentAssignedTo, true);
                 updateStatistics();
-                
-                // Populate filters
                 populateCountryFilter();
-                
-                if (contacts.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">👥</div>
-                            <p>لا توجد جهات اتصال</p>
-                            <button class="crm-btn btn-add" onclick="showAddContactModal()" style="margin-top:20px;">
-                                + إضافة عميل جديد
-                            </button>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                renderTable(contacts);
-                
-                console.log('✅ تم تحميل', contacts.length, 'عميل في CRM');
             } catch (error) {
                 console.error('خطأ في تحميل البيانات:', error);
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <p>خطأ في تحميل البيانات</p>
-                    </div>
-                `;
+                container.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>خطأ في تحميل البيانات</p></div>`;
+            }
+        }
+
+        async function _fetchAndAppend(companyId, assignedTo, initial = false) {
+            if (_loadingMore) return;
+            _loadingMore = true;
+
+            const PAGE_SIZE = 100;
+            const assignedParam = (assignedTo && assignedTo !== 'admin') ? `&assignedTo=${encodeURIComponent(assignedTo)}` : '';
+            const url = `${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}&limit=${PAGE_SIZE}&page=${_currentPage}${assignedParam}`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+            const newContacts = data.contacts || [];
+
+            _allContacts     = initial ? newContacts : [..._allContacts, ...newContacts];
+            _cachedContacts  = [..._allContacts];
+            _hasMore         = data.hasMore || false;
+            _totalContacts   = data.total   || _allContacts.length;
+            _loadingMore     = false;
+
+            if (initial && newContacts.length === 0) {
+                const container = document.getElementById('crm-table-container');
+                container.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><p>لا توجد جهات اتصال</p><button class="crm-btn btn-add" onclick="showAddContactModal()" style="margin-top:20px;">+ إضافة عميل جديد</button></div>`;
+                return;
+            }
+
+            renderTable(_cachedContacts);
+            updateStatistics();
+            console.log(`✅ تم تحميل ${_allContacts.length}/${_totalContacts} عميل`);
+        }
+
+        async function loadMoreContacts() {
+            if (!_hasMore || _loadingMore) return;
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            _currentPage++;
+            await _fetchAndAppend(companyId, _currentAssignedTo, false);
+        }
+
+        // Clear All Modal
+        function showClearAllModal() {
+            document.getElementById('clearAllCount').textContent = _totalContacts;
+            document.getElementById('clearAllPassword').value = '';
+            document.getElementById('clearAllError').style.display = 'none';
+            document.getElementById('clearAllModal').style.display = 'flex';
+        }
+
+        async function executeClearAll() {
+            const pass = document.getElementById('clearAllPassword').value;
+            const errEl = document.getElementById('clearAllError');
+            if (!pass) { errEl.textContent = 'يرجى إدخال كلمة المرور'; errEl.style.display = 'block'; return; }
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            const employeeId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
+
+            errEl.textContent = 'جاري التحقق والمسح...'; errEl.style.display = 'block'; errEl.style.color = '#60a5fa';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/contacts?action=deleteAll`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ companyId, adminPassword: pass, deletedBy: employeeId || 'admin' })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    errEl.textContent = data.error || 'كلمة المرور خاطئة أو حدث خطأ';
+                    errEl.style.color = '#ef4444';
+                    errEl.style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('clearAllModal').style.display = 'none';
+                alert(`✅ تم مسح ${data.deleted} جهة اتصال بنجاح`);
+                await loadCRMContacts();
+            } catch(e) {
+                errEl.textContent = 'خطأ في الاتصال بالخادم';
+                errEl.style.color = '#ef4444';
             }
         }
         
@@ -2546,6 +2632,20 @@
         </div>
     </div>
 
+    <!-- Clear All Modal -->
+    <div id="clearAllModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;justify-content:center;align-items:center;">
+        <div style="background:#1a1f2e;border:1px solid rgba(239,68,68,0.4);border-radius:16px;padding:35px;max-width:440px;width:90%;">
+            <h2 style="color:#ef4444;margin-bottom:10px;font-size:22px;">⚠️ تحذير — مسح جميع العملاء</h2>
+            <p style="color:#a8b2d1;margin-bottom:20px;font-size:14px;line-height:1.7;">هذا الإجراء سيقوم بمسح <strong style="color:white" id="clearAllCount">0</strong> جهة اتصال. البيانات لن تُحذف نهائياً بل ستُؤرشف.<br>أدخل كلمة مرور الأدمن للتأكيد:</p>
+            <input type="password" id="clearAllPassword" placeholder="كلمة مرور الأدمن" style="width:100%;padding:12px 15px;border:2px solid rgba(239,68,68,0.3);border-radius:10px;background:#0a1628;color:white;font-size:16px;margin-bottom:15px;">
+            <div id="clearAllError" style="color:#ef4444;font-size:13px;margin-bottom:15px;display:none;"></div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="document.getElementById('clearAllModal').style.display='none'" style="flex:1;padding:12px;background:#1e2433;color:#a8b2d1;border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;font-size:15px;">إلغاء</button>
+                <button onclick="executeClearAll()" style="flex:1;padding:12px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:bold;">🗑️ مسح الكل</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Floating Navigation -->
     <style>
         .float-nav {
@@ -2577,6 +2677,8 @@
             transform: scale(1.1);
         }
         @media (max-width: 768px) { .float-nav { bottom: 15px; left: 15px; } }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
     <div class="float-nav">
         <button class="float-nav-btn" onclick="history.back()" title="رجوع">⬅️</button>

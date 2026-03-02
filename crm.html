@@ -1196,7 +1196,7 @@
             const cid = contact._id || contact.id || contact.contactId || '';
             const safeId = cid.toString().replace(/'/g, '');
             const safeName = (contact.name || '').replace(/'/g, '&#39;');
-            const safePhone = (contact.phone || '').replace(/'/g, '');
+            const safePhone = String(contact.phone || '').replace(/'/g, '');
             
             const notes = contact.notes || '';
             const countryMatch = notes.match(/Country:\s*([^|]+)/);

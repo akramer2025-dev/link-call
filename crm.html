@@ -2145,8 +2145,9 @@
             
             // Show confirmation for existing contacts distribution
             if (isExistingContacts) {
+                let distDetails = distribution.map(d => `• ${d.employeeName}: ${d.count} جهة اتصال`).join('\n');
                 const confirmMsg = `🎯 تأكيد التوزيع\n\n` +
-                    `سيتم توزيع ${_excelContactsToImport.length} جهة اتصال على ${distribution.length} موظف.\n\n` +
+                    `سيتم توزيع ${totalAssigned} جهة اتصال على ${distribution.length} موظف:\n${distDetails}\n\n` +
                     `⚠️ ملاحظة هامة:\n` +
                     `• لن يتم حذف أي بيانات\n` +
                     `• سيتم فقط إضافة معلومات الموظف المسؤول لكل جهة اتصال\n` +

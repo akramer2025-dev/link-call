@@ -131,7 +131,7 @@ module.exports = async (req, res) => {
 
         // ─── PUT ───────────────────────────────────────────────────────
         if (req.method === 'PUT') {
-            const { companyId, contactId, name, phone, email, notes, tags, updatedBy } = req.body;
+            const { companyId, contactId, name, phone, email, notes, tags, assignedTo, updatedBy } = req.body;
             if (!companyId || !contactId) return res.status(400).json({ success: false, error: 'Company ID and Contact ID are required' });
 
             const contacts = await getCompanySubcollection(companyId, 'contacts');
@@ -145,11 +145,12 @@ module.exports = async (req, res) => {
 
             const updated = {
                 ...existing,
-                name:         name  !== undefined ? name  : existing.name,
-                phone:        phone !== undefined ? phone : existing.phone,
-                email:        email !== undefined ? email : existing.email,
-                notes:        notes !== undefined ? notes : existing.notes,
-                tags:         tags  !== undefined ? tags  : existing.tags,
+                name:         name       !== undefined ? name       : existing.name,
+                phone:        phone      !== undefined ? phone      : existing.phone,
+                email:        email      !== undefined ? email      : existing.email,
+                notes:        notes      !== undefined ? notes      : existing.notes,
+                tags:         tags       !== undefined ? tags       : existing.tags,
+                assignedTo:   assignedTo !== undefined ? assignedTo : existing.assignedTo,
                 lastModified: new Date().toISOString()
             };
             delete updated._id;

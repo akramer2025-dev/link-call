@@ -1465,9 +1465,11 @@ function displayRecordings() {
         
         // الحصول على اسم المدير من employeeId
         console.log(`👤 employeeId للتسجيل ${index + 1}:`, recording.employeeId);
-        const employeeName = window.employeesMap && recording.employeeId 
-            ? (window.employeesMap[recording.employeeId] || window.employeesMap[String(recording.employeeId)] || 'غير معروف')
-            : 'غير معروف';
+        const employeeName = recording.employeeId && String(recording.employeeId).startsWith('company-')
+            ? '👑 مدير الشركة'
+            : (window.employeesMap && recording.employeeId
+                ? (window.employeesMap[recording.employeeId] || window.employeesMap[String(recording.employeeId)] || recording.employeeId)
+                : 'غير معروف');
         console.log(`✅ اسم الموظف للتسجيل ${index + 1}:`, employeeName);
         
         // حساب المدة بالدقائق والثواني
@@ -3079,8 +3081,11 @@ async function loadCallHistory() {
                 if (found) { displayName = `👤 ${found.name}`; isContact = true; }
             }
 
-            // اسم الموظف
-            const empName = call.employeeName || (window.employeesMap && call.employeeId ? window.employeesMap[call.employeeId] : null) || '';
+            // اسم الموظف (يعالج مدير الشركة الذي empId يبدأ بـ company-)
+            const empName = call.employeeName
+                || (call.employeeId && String(call.employeeId).startsWith('company-') ? '👑 مدير الشركة' : null)
+                || (window.employeesMap && call.employeeId ? window.employeesMap[call.employeeId] : null)
+                || '';
 
             const item = document.createElement('div');
             item.className = 'call-item';

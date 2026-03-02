@@ -898,7 +898,10 @@
             const rows = allIds.map(id => {
                 const emp  = allEmployees.find(e=>e.id===id);
                 const st   = employeeCallMap[id]||{total:0,completed:0,failed:0,noAnswer:0,busy:0,duration:0};
-                const name = emp?emp.name:(id==='unknown'?'غير معروف':id);
+                const name = emp ? emp.name
+                           : id === 'unknown'            ? 'غير معروف'
+                           : id.startsWith('company-')   ? '👑 مدير الشركة'
+                           : id;
                 const sr   = st.total>0?Math.round(st.completed/st.total*100):0;
                 return { id, name, username:emp?.username||'', stats:st, successRate:sr, totalDurationMin:Math.round(st.duration/60) };
             }).sort((a,b)=>b.stats.total-a.stats.total);

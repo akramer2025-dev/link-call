@@ -867,6 +867,8 @@ function getStatusText(status) {
 }
 
 function getEmployeeName(employeeId) {
+    if (!employeeId) return null;
+    if (String(employeeId).startsWith('company-')) return '👑 مدير الشركة';
     const emp = allEmployees.find(e => e.id == employeeId);
     return emp ? (emp.name || emp.fullname) : null;
 }

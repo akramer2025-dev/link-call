@@ -117,18 +117,25 @@ module.exports = async (req, res) => {
                 const companySnap = await getDoc(doc(getDb(), 'companies', companyId));
                 if (companySnap.exists()) {
                     const companyData = companySnap.data();
-                    if (companyData.twilioPhone) {
-                        callerPhoneNumber = companyData.twilioPhone;
-                    }
-                    // إذا كان للشركة prefix بيئي، استخدم credentials من Environment Variables
+                    // إذا كان للشركة prefix بيئي → استخدام credentials خاصة
                     if (companyData.twilioEnvPrefix) {
                         const prefix = companyData.twilioEnvPrefix;
                         const sid   = process.env[`${prefix}_TWILIO_ACCOUNT_SID`];
                         const token = process.env[`${prefix}_TWILIO_AUTH_TOKEN`];
                         if (sid && token) {
                             companyTwilio = { accountSid: sid, authToken: token };
-                            console.log(`✅ Twilio credentials لشركة ${companyData.companyName} (${prefix})`);
+                            // استخدم رقم الشركة فقط إذا توفّرت credentials الشركة
+                            if (companyData.twilioPhone) {
+                                callerPhoneNumber = companyData.twilioPhone;
+                            }
+                            console.log(`✅ Twilio credentials لشركة ${companyData.companyName} (${prefix}): ${callerPhoneNumber}`);
+                        } else {
+                            // المتغيرات البيئية غير موجودة → استخدم الحساب الافتراضي ورقمه
+                            console.warn(`⚠️ ${prefix}_TWILIO_ACCOUNT_SID/AUTH_TOKEN غير موجودة في ENV → يستخدم الحساب الافتراضي (${TWILIO_PHONE_NUMBER || 'unknown'})`);
                         }
+                    } else if (companyData.twilioPhone) {
+                        // لا يوجد prefix → رقم الشركة مع الحساب الافتراضي
+                        callerPhoneNumber = companyData.twilioPhone;
                     }
                     console.log('✅ Twilio للشركة:', callerPhoneNumber, '| شركة:', companyData.companyName);
                 }

@@ -772,6 +772,25 @@
         </div>
     </div>
     
+    <!-- Notes Modal -->
+    <div id="notes-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#1a1f2e;padding:30px;border-radius:12px;width:90%;max-width:600px;border:1px solid rgba(255,255,255,0.1);">
+            <h2 style="color:#ccd6f6;margin-bottom:20px;">📝 ملاحظات - <span id="note-contact-name" style="color:#667eea;"></span></h2>
+            <input type="hidden" id="note-contact-id">
+            <div style="display:flex;flex-direction:column;gap:15px;">
+                <textarea id="contact-notes" rows="6" placeholder="اكتب ملاحظاتك هنا..." style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;resize:vertical;font-family:inherit;"></textarea>
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <button onclick="saveContactNotes()" style="flex:1;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;cursor:pointer;">
+                        ✓ حفظ الملاحظات
+                    </button>
+                    <button onclick="hideNotesModal()" style="flex:1;padding:12px;border:none;border-radius:8px;background:#1e2433;color:#a8b2d1;font-weight:700;cursor:pointer;">
+                        ✕ إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Progress Modal -->
     <div id="progress-modal" class="progress-modal">
         <div class="progress-content">
@@ -1061,14 +1080,6 @@
             const email = contact.email || '-';
             const createdDate = contact.createdAt ? new Date(contact.createdAt).toLocaleDateString('ar-EG') : '-';
             
-            const nameWords = (contact.name || 'User').split(' ');
-            const avatarColors = ['avatar-gradient-1', 'avatar-gradient-2', 'avatar-gradient-3', 'avatar-gradient-4'];
-            const avatarsHTML = nameWords.slice(0, 3).map((word, i) => {
-                const letter = word.charAt(0).toUpperCase();
-                const colorClass = avatarColors[i % avatarColors.length];
-                return `<div class="contact-avatar-multi ${colorClass}">${letter}</div>`;
-            }).join('');
-            
             const isNew = contact.tags?.includes('Excel Import') || !contact.lastCallDate;
             const isPremium = contact.tags?.includes('VIP') || parseFloat(balance.replace(/[^0-9.-]/g, '')) > 1000;
             const isActive = contact.totalCalls > 0;
@@ -1092,13 +1103,15 @@
             tr.innerHTML = `
                 <td style="text-align:center;font-weight:700;color:#8892b0;">${index + 1}</td>
                 <td>
-                    <div class="contact-avatars-group">${avatarsHTML}</div>
-                </td>
-                <td>
                     <div style="font-weight:600;color:#ccd6f6;">${contact.name || ''}</div>
                     <div style="font-size:11px;margin-top:2px;">${statusBadge}</div>
                 </td>
-                <td style="direction:ltr;text-align:right;font-family:monospace;">${contact.phone || ''}</td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:8px;direction:ltr;">
+                        <span style="font-family:monospace;">${contact.phone || ''}</span>
+                        <button class="table-action-btn" onclick="addNote('${safeId}', '${safeName}')" title="إضافة ملاحظة" style="padding:4px 8px;font-size:14px;">📝</button>
+                    </div>
+                </td>
                 <td>${email}</td>
                 <td>${country}</td>
                 <td style="color:#1dd1a1;font-weight:700;">${balance}</td>
@@ -1142,11 +1155,10 @@
                 <thead>
                     <tr>
                         <th style="width:50px;">#</th>
-                        <th style="width:120px;">الصورة</th>
                         <th class="sortable" onclick="sortTable('name')">
                             الاسم <span class="sort-indicator">${getSortIcon('name')}</span>
                         </th>
-                        <th style="width:140px;">الموبايل</th>
+                        <th style="width:180px;">الموبايل</th>
                         <th class="sortable" onclick="sortTable('email')" style="width:180px;">
                             البريد <span class="sort-indicator">${getSortIcon('email')}</span>
                         </th>
@@ -1336,6 +1348,100 @@
             }
         }
         
+        // Add Note Function
+        function addNote(contactId, name) {
+            const contact = _allContacts.find(c => 
+                (c._id || c.id || c.contactId || '').toString() === contactId.toString()
+            );
+            
+            if (!contact) {
+                alert('⚠️ لم يتم العثور على العميل');
+                return;
+            }
+            
+            // Extract existing custom notes (not country/balance/source)
+            const notes = contact.notes || '';
+            const customNotesMatch = notes.match(/Notes:\s*(.+?)(\s*\||$)/);
+            const existingNotes = customNotesMatch ? customNotesMatch[1].trim() : '';
+            
+            // Fill modal
+            document.getElementById('note-contact-id').value = contactId;
+            document.getElementById('note-contact-name').textContent = name;
+            document.getElementById('contact-notes').value = existingNotes;
+            
+            // Show modal
+            document.getElementById('notes-modal').style.display = 'flex';
+        }
+        
+        function hideNotesModal() {
+            document.getElementById('notes-modal').style.display = 'none';
+        }
+        
+        async function saveContactNotes() {
+            const contactId = document.getElementById('note-contact-id').value;
+            const newNotes = document.getElementById('contact-notes').value.trim();
+            
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            if (!companyId) {
+                alert('⚠️ خطأ في جلب معرف الشركة');
+                return;
+            }
+            
+            // Get existing contact to preserve other data
+            const contact = _allContacts.find(c => 
+                (c._id || c.id || c.contactId || '').toString() === contactId.toString()
+            );
+            
+            if (!contact) {
+                alert('⚠️ لم يتم العثور على العميل');
+                return;
+            }
+            
+            // Parse existing notes to preserve Country, Balance, Source
+            const oldNotes = contact.notes || '';
+            const countryMatch = oldNotes.match(/Country:\s*([^|]+)/);
+            const balanceMatch = oldNotes.match(/Balance:\s*([^|]+)/);
+            const sourceMatch = oldNotes.match(/Source:\s*(.+?)(\s*\||$)/);
+            
+            const country = countryMatch ? countryMatch[1].trim() : '-';
+            const balance = balanceMatch ? balanceMatch[1].trim() : '0';
+            const source = sourceMatch ? sourceMatch[1].trim() : 'Manual';
+            
+            // Build updated notes string with custom notes
+            let updatedNotes = `Country: ${country} | Balance: ${balance}`;
+            if (newNotes) {
+                updatedNotes += ` | Notes: ${newNotes}`;
+            }
+            updatedNotes += ` | Source: ${source}`;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/contacts`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        companyId,
+                        contactId,
+                        name: contact.name,
+                        phone: contact.phone,
+                        email: contact.email || '',
+                        notes: updatedNotes
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('✅ تم حفظ الملاحظات بنجاح!');
+                    hideNotesModal();
+                    loadCRMContacts(); // Reload contacts
+                } else {
+                    const error = await response.json();
+                    alert('❌ خطأ في الحفظ: ' + (error.message || 'حاول مرة أخرى'));
+                }
+            } catch (error) {
+                console.error('خطأ في حفظ الملاحظات:', error);
+                alert('❌ خطأ في الاتصال بالسيرفر');
+            }
+        }
+        
         // Search functionality
         document.getElementById('crm-search').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
@@ -1453,7 +1559,7 @@
                             for (const contact of batch) {
                                 try {
                                     // Check for duplicate
-                                    const cleanPhone = contact.phone.replace(/[^0-9]/g, '');
+                                    const cleanPhone = String(contact.phone || '').replace(/[^0-9]/g, '');
                                     if (existingPhones.has(cleanPhone)) {
                                         duplicateCount++;
                                         continue;

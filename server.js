@@ -1365,32 +1365,219 @@ app.delete('/api/companies/:id', companiesAPI.deleteCompany);
 const employeesManagementAPI = require('./api/employees-management');
 
 // الحصول على جميع الموظفين لشركة معينة
-app.get('/api/employees-management', employeesManagementAPI.getAllEmployees);
+app.get('/api/employees-management', employeesManagementAPI);
 
 // إضافة موظف جديد
-app.post('/api/employees-management', employeesManagementAPI.addEmployee);
+app.post('/api/employees-management', employeesManagementAPI);
 
 // الحصول على معلومات موظف واحد
-app.get('/api/employees-management/:id', employeesManagementAPI.getEmployee);
+app.get('/api/employees-management/:id', employeesManagementAPI);
 
 // تحديث بيانات موظف
-app.put('/api/employees-management/:id', employeesManagementAPI.updateEmployee);
+app.put('/api/employees-management/:id', employeesManagementAPI);
 
 // حذف موظف
-app.delete('/api/employees-management/:id', employeesManagementAPI.deleteEmployee);
+app.delete('/api/employees-management/:id', employeesManagementAPI);
 
 // الحصول على قائمة الصلاحيات المتاحة
-app.get('/api/employees-management/permissions', employeesManagementAPI.getPermissions);
+app.get('/api/employees-management/permissions', employeesManagementAPI);
 
 // تسجيل استخدام الدقائق
-app.post('/api/employees-management/minutes/record', employeesManagementAPI.recordMinutesUsage);
+app.post('/api/employees-management/minutes/record', employeesManagementAPI);
 
 // الحصول على سجل استخدام الدقائق
-app.get('/api/employees-management/minutes/:employeeId', employeesManagementAPI.getMinutesUsage);
+app.get('/api/employees-management/minutes/:employeeId', employeesManagementAPI);
 
 // التحقق من توفر الدقائق قبل المكالمة
-app.get('/api/employees-management/minutes/:employeeId/check', employeesManagementAPI.checkMinutesAvailability);
+app.get('/api/employees-management/minutes/:employeeId/check', employeesManagementAPI);
 
+// ==================== نظام النسخ الاحتياطي التلقائي ====================
+const BACKUP_INTERVAL = 5 * 60 * 1000; // 5 دقائق
+const MAX_BACKUPS = 100; // الاحتفاظ بآخر 100 نسخة احتياطية
+const BACKUP_DIR = path.join(__dirname, 'backups');
+
+// إنشاء مجلد النسخ الاحتياطية إذا لم يكن موجوداً
+if (!fs.existsSync(BACKUP_DIR)) {
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    console.log('📁 تم إنشاء مجلد النسخ الاحتياطية');
+}
+
+// دالة لإنشاء نسخة احتياطية
+function createBackup() {
+    try {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupFolder = path.join(BACKUP_DIR, `backup-${timestamp}`);
+        
+        // إنشاء مجلد النسخة الاحتياطية
+        fs.mkdirSync(backupFolder, { recursive: true });
+        
+        // قائمة الملفات المهمة للنسخ الاحتياطي
+        const filesToBackup = [
+            'contacts.json',
+            'companies.json',
+            'employees.json',
+            'permissions.json',
+            'minutes-usage.json',
+            'call-metadata.json',
+            'activity-log.json'
+        ];
+        
+        let backedUpCount = 0;
+        
+        // نسخ كل ملف موجود
+        filesToBackup.forEach(fileName => {
+            const sourcePath = path.join(__dirname, fileName);
+            if (fs.existsSync(sourcePath)) {
+                const destPath = path.join(backupFolder, fileName);
+                fs.copyFileSync(sourcePath, destPath);
+                backedUpCount++;
+            }
+        });
+        
+        console.log(`✅ نسخة احتياطية تلقائية: ${backedUpCount} ملف - ${new Date().toLocaleString('ar-EG')}`);
+        
+        // حذف النسخ القديمة
+        cleanOldBackups();
+        
+        return true;
+    } catch (error) {
+        console.error('❌ خطأ في إنشاء النسخة الاحتياطية:', error.message);
+        return false;
+    }
+}
+
+// دالة لحذف النسخ الاحتياطية القديمة
+function cleanOldBackups() {
+    try {
+        const backups = fs.readdirSync(BACKUP_DIR)
+            .filter(name => name.startsWith('backup-'))
+            .map(name => ({
+                name,
+                path: path.join(BACKUP_DIR, name),
+                time: fs.statSync(path.join(BACKUP_DIR, name)).mtime.getTime()
+            }))
+            .sort((a, b) => b.time - a.time);
+        
+        // احذف النسخ الزائدة
+        if (backups.length > MAX_BACKUPS) {
+            const toDelete = backups.slice(MAX_BACKUPS);
+            toDelete.forEach(backup => {
+                fs.rmSync(backup.path, { recursive: true, force: true });
+            });
+            console.log(`🗑️ تم حذف ${toDelete.length} نسخة احتياطية قديمة`);
+        }
+    } catch (error) {
+        console.error('⚠️ خطأ في تنظيف النسخ القديمة:', error.message);
+    }
+}
+
+// ==================== API إدارة النسخ الاحتياطية ====================
+// الحصول على قائمة النسخ الاحتياطية
+app.get('/api/backups/list', (req, res) => {
+    try {
+        if (!fs.existsSync(BACKUP_DIR)) {
+            return res.json({ backups: [] });
+        }
+        
+        const backups = fs.readdirSync(BACKUP_DIR)
+            .filter(name => name.startsWith('backup-'))
+            .map(name => {
+                const backupPath = path.join(BACKUP_DIR, name);
+                const stat = fs.statSync(backupPath);
+                const files = fs.readdirSync(backupPath);
+                
+                return {
+                    name,
+                    date: stat.mtime,
+                    size: files.reduce((sum, file) => {
+                        const fileStat = fs.statSync(path.join(backupPath, file));
+                        return sum + fileStat.size;
+                    }, 0),
+                    filesCount: files.length,
+                    files: files
+                };
+            })
+            .sort((a, b) => b.date - a.date);
+        
+        res.json({ success: true, backups });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// استرجاع نسخة احتياطية محددة
+app.post('/api/backups/restore/:backupName', (req, res) => {
+    try {
+        const { backupName } = req.params;
+        const backupPath = path.join(BACKUP_DIR, backupName);
+        
+        if (!fs.existsSync(backupPath)) {
+            return res.status(404).json({ error: 'النسخة الاحتياطية غير موجودة' });
+        }
+        
+        // نسخ الملفات من النسخة الاحتياطية إلى المجلد الرئيسي
+        const files = fs.readdirSync(backupPath);
+        let restoredCount = 0;
+        
+        files.forEach(fileName => {
+            const sourcePath = path.join(backupPath, fileName);
+            const destPath = path.join(__dirname, fileName);
+            fs.copyFileSync(sourcePath, destPath);
+            restoredCount++;
+        });
+        
+        res.json({ 
+            success: true, 
+            message: `تم استرجاع ${restoredCount} ملف بنجاح`,
+            restoredFiles: files
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// إنشاء نسخة احتياطية يدوية فورية
+app.post('/api/backups/create', (req, res) => {
+    try {
+        const result = createBackup();
+        if (result) {
+            res.json({ success: true, message: 'تم إنشاء النسخة الاحتياطية بنجاح' });
+        } else {
+            res.status(500).json({ error: 'فشل في إنشاء النسخة الاحتياطية' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ==================== تشغيل نظام النسخ الاحتياطي ====================
+
+// إنشاء نسخة احتياطية عند بدء السيرفر
+console.log('🔄 إنشاء نسخة احتياطية أولية...');
+createBackup();
+
+// جدولة النسخ الاحتياطي التلقائي كل 5 دقائق
+const backupInterval = setInterval(() => {
+    createBackup();
+}, BACKUP_INTERVAL);
+
+console.log(`⏰ النسخ الاحتياطي التلقائي مفعل: كل 5 دقائق`);
+console.log(`📦 الاحتفاظ بآخر ${MAX_BACKUPS} نسخة احتياطية`);
+
+// إيقاف النسخ الاحتياطي عند إيقاف السيرفر
+process.on('SIGINT', () => {
+    console.log('\n⏸️ إيقاف النسخ الاحتياطي التلقائي...');
+    clearInterval(backupInterval);
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n⏸️ إيقاف النسخ الاحتياطي التلقائي...');
+    clearInterval(backupInterval);
+    process.exit(0);
+});
+
+// ==================== بدء الخادم ====================
 // بدء الخادم
 app.listen(PORT, () => {
     console.log(`\n✅ الخادم يعمل على http://localhost:${PORT}`);

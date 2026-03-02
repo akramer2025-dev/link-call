@@ -237,11 +237,35 @@
         .btn-distribute {
             background: linear-gradient(135deg, #f093fb, #f5576c);
             color: white;
+            font-weight: 700;
+            animation: pulse-glow 2s ease-in-out infinite;
         }
         
         .btn-distribute:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.6);
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(240, 147, 251, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(240, 147, 251, 0.5);
+            }
+        }
+        
+        /* Responsive buttons */
+        @media (max-width: 768px) {
+            .crm-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .crm-btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
         
         /* Statistics Cards */
@@ -743,7 +767,7 @@
                 <button class="crm-btn btn-import" onclick="document.getElementById('excel-import-input').click()">
                     📥 استيراد Excel
                 </button>
-                <button class="crm-btn btn-distribute" onclick="showDistributeExistingContacts()">
+                <button class="crm-btn btn-distribute" onclick="showDistributeExistingContacts()" title="توزيع جهات الاتصال الموجودة على الموظفين">
                     🎯 توزيع على الموظفين
                 </button>
                 <button class="crm-btn btn-add" onclick="showAddContactModal()">
@@ -1712,10 +1736,25 @@
                 return;
             }
             
-            closeDistributionModal();
-            
             // Check if we're distributing existing contacts or Excel import
             const isExistingContacts = _excelContactsToImport.length > 0 && _excelContactsToImport[0]._id;
+            
+            // Show confirmation for existing contacts distribution
+            if (isExistingContacts) {
+                const confirmMsg = `🎯 تأكيد التوزيع\n\n` +
+                    `سيتم توزيع ${_excelContactsToImport.length} جهة اتصال على ${distribution.length} موظف.\n\n` +
+                    `⚠️ ملاحظة هامة:\n` +
+                    `• لن يتم حذف أي بيانات\n` +
+                    `• سيتم فقط إضافة معلومات الموظف المسؤول لكل جهة اتصال\n` +
+                    `• يمكنك إعادة التوزيع في أي وقت\n\n` +
+                    `هل تريد المتابعة؟`;
+                
+                if (!confirm(confirmMsg)) {
+                    return;
+                }
+            }
+            
+            closeDistributionModal();
             
             if (isExistingContacts) {
                 await performExistingContactsDistribution(_excelContactsToImport, distribution);

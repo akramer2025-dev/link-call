@@ -1802,6 +1802,11 @@ input:checked + .slider:before {
     color: #333;
 }
 
+.company-actions .btn-twilio {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    color: white;
+}
+
 .company-actions .btn-delete {
     background: var(--danger-color);
     color: white;

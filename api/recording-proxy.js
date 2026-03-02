@@ -16,31 +16,11 @@ module.exports = async (req, res) => {
         let   recordingUrl = req.query.url       || null;
         const recordingSid = req.query.sid       || null;
 
-        // ─── جلب credentials الشركة ───────────────────────────────────
-        let accountSid = process.env.TWILIO_ACCOUNT_SID;
-        let authToken  = process.env.TWILIO_AUTH_TOKEN;
-
-        if (companyId) {
-            try {
-                const { getDb }        = require('../utils/firebase');
-                const { doc, getDoc }  = require('firebase/firestore');
-                const snap = await getDoc(doc(getDb(), 'companies', companyId));
-                if (snap.exists()) {
-                    const prefix = snap.data().twilioEnvPrefix;
-                    if (prefix) {
-                        const sid   = process.env[`${prefix}_TWILIO_ACCOUNT_SID`];
-                        const token = process.env[`${prefix}_TWILIO_AUTH_TOKEN`];
-                        if (sid && token) {
-                            accountSid = sid;
-                            authToken  = token;
-                            console.log(`✅ recording-proxy: credentials شركة ${companyId} (${prefix})`);
-                        }
-                    }
-                }
-            } catch (e) {
-                console.warn('⚠️ recording-proxy: fallback للإعدادات الافتراضية:', e.message);
-            }
-        }
+        // ─── جلب credentials الشركة (Firestore أولاً ← ENV prefix ← default) ───
+        const getTwilioCredentials = require('../utils/getTwilioCredentials');
+        const creds      = await getTwilioCredentials(companyId);
+        const accountSid = creds.accountSid;
+        const authToken  = creds.authToken;
 
         if (!accountSid || !authToken) {
             return res.status(500).json({ error: 'Missing Twilio credentials' });

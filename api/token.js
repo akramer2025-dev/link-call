@@ -13,41 +13,14 @@ module.exports = async (req, res) => {
     try {
         const companyId = req.query.companyId || null;
 
-        let TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-        let TWILIO_AUTH_TOKEN  = process.env.TWILIO_AUTH_TOKEN;
-        let TWILIO_API_KEY     = process.env.TWILIO_API_KEY;
-        let TWILIO_API_SECRET  = process.env.TWILIO_API_SECRET;
-        let TWILIO_TWIML_APP_SID = process.env.TWILIO_TWIML_APP_SID;
-
-        // استخدام credentials خاصة بالشركة إذا وُجدت
-        if (companyId) {
-            try {
-                const { getDb } = require('../utils/firebase');
-                const { doc, getDoc } = require('firebase/firestore');
-                const snap = await getDoc(doc(getDb(), 'companies', companyId));
-                if (snap.exists()) {
-                    const cData = snap.data();
-                    const prefix = cData.twilioEnvPrefix;
-                    if (prefix) {
-                        const sid    = process.env[`${prefix}_TWILIO_ACCOUNT_SID`];
-                        const token  = process.env[`${prefix}_TWILIO_AUTH_TOKEN`];
-                        const apiKey = process.env[`${prefix}_TWILIO_API_KEY`];
-                        const apiSec = process.env[`${prefix}_TWILIO_API_SECRET`];
-                        const appSid = process.env[`${prefix}_TWILIO_TWIML_APP_SID`];
-                        if (sid && token && apiKey && apiSec && appSid) {
-                            TWILIO_ACCOUNT_SID   = sid;
-                            TWILIO_AUTH_TOKEN    = token;
-                            TWILIO_API_KEY       = apiKey;
-                            TWILIO_API_SECRET    = apiSec;
-                            TWILIO_TWIML_APP_SID = appSid;
-                            console.log(`✅ token.js: credentials شركة ${cData.companyName || companyId} (${prefix})`);
-                        }
-                    }
-                }
-            } catch (e) {
-                console.warn('⚠️ token.js: فشل جلب credentials الشركة، fallback للإعدادات الافتراضية:', e.message);
-            }
-        }
+        // جلب credentials الشركة (Firestore أولاً ← ENV prefix ← default ENV)
+        const getTwilioCredentials   = require('../utils/getTwilioCredentials');
+        const creds                  = await getTwilioCredentials(companyId);
+        const TWILIO_ACCOUNT_SID     = creds.accountSid;
+        const TWILIO_AUTH_TOKEN      = creds.authToken;
+        const TWILIO_API_KEY         = creds.apiKey;
+        const TWILIO_API_SECRET      = creds.apiSecret;
+        const TWILIO_TWIML_APP_SID   = creds.twimlAppSid;
 
         if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_TWIML_APP_SID) {
             return res.status(500).json({ error: 'Missing credentials' });

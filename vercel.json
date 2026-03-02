@@ -90,6 +90,10 @@
       "dest": "/api/token.js"
     },
     {
+      "src": "/api/twilio-setup",
+      "dest": "/api/twilio-setup.js"
+    },
+    {
       "src": "/api/recordings/(.*)",
       "dest": "/api/recordings.js"
     },

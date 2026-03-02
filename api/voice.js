@@ -96,53 +96,25 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
-        const callTo = req.body.To;
+        const callTo     = req.body.To;
         const employeeId = req.body.employeeId || 'unknown';
         const companyId  = req.body.companyId  || null;
-        const callSid = req.body.CallSid;
-        
+        const callSid    = req.body.CallSid;
+
         // تنسيق رقم الهاتف لإضافة كود مصر تلقائياً
         const formattedCallTo = formatPhoneNumber(callTo);
-        
+
         console.log('📞 مكالمة جديدة:', { callSid, to: callTo, formattedTo: formattedCallTo, employeeId, companyId });
 
-        // ── جلب بيانات Twilio الخاصة بالشركة من Firestore ──
-        let callerPhoneNumber = TWILIO_PHONE_NUMBER; // fallback للرقم الافتراضي
-        let companyTwilio = null; // credentials خاصة بالشركة
-        if (companyId) {
-            try {
-                const { getDb } = require('../utils/firebase');
-                const { doc, getDoc } = require('firebase/firestore');
-                const companySnap = await getDoc(doc(getDb(), 'companies', companyId));
-                if (companySnap.exists()) {
-                    const companyData = companySnap.data();
-                    // إذا كان للشركة prefix بيئي → استخدام credentials خاصة
-                    if (companyData.twilioEnvPrefix) {
-                        const prefix = companyData.twilioEnvPrefix;
-                        const sid   = process.env[`${prefix}_TWILIO_ACCOUNT_SID`];
-                        const token = process.env[`${prefix}_TWILIO_AUTH_TOKEN`];
-                        if (sid && token) {
-                            companyTwilio = { accountSid: sid, authToken: token };
-                            // استخدم رقم الشركة فقط إذا توفّرت credentials الشركة
-                            if (companyData.twilioPhone) {
-                                callerPhoneNumber = companyData.twilioPhone;
-                            }
-                            console.log(`✅ Twilio credentials لشركة ${companyData.companyName} (${prefix}): ${callerPhoneNumber}`);
-                        } else {
-                            // المتغيرات البيئية غير موجودة → استخدم الحساب الافتراضي ورقمه
-                            console.warn(`⚠️ ${prefix}_TWILIO_ACCOUNT_SID/AUTH_TOKEN غير موجودة في ENV → يستخدم الحساب الافتراضي (${TWILIO_PHONE_NUMBER || 'unknown'})`);
-                        }
-                    } else if (companyData.twilioPhone) {
-                        // لا يوجد prefix → رقم الشركة مع الحساب الافتراضي
-                        callerPhoneNumber = companyData.twilioPhone;
-                    }
-                    console.log('✅ Twilio للشركة:', callerPhoneNumber, '| شركة:', companyData.companyName);
-                }
-            } catch (e) {
-                console.error('⚠️ جلب بيانات الشركة فشل - سيُستخدم الإعداد الافتراضي:', e.message);
-            }
-        }
+        // ── جلب credentials الشركة (Firestore أولاً ← ENV prefix ← default) ──
+        const getTwilioCredentials = require('../utils/getTwilioCredentials');
+        const creds             = await getTwilioCredentials(companyId);
+        const callerPhoneNumber = creds.phoneNumber;
+        // للتسجيل: هل لدينا credentials شركة منفصلة؟
+        const companyTwilio = (creds.accountSid && creds.accountSid !== process.env.TWILIO_ACCOUNT_SID)
+            ? { accountSid: creds.accountSid, authToken: creds.authToken }
+            : null;
+        console.log(`✅ voice.js: callerPhone=${callerPhoneNumber} | شركة=${companyId} | credentialsمنفصلة=${!!companyTwilio}`);
 
         // حفظ callSid → companyId في Firestore للخصم لاحقاً
         if (callSid && companyId) {

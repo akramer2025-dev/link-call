@@ -833,5 +833,112 @@
         <button class="float-nav-btn" onclick="history.back()" title="رجوع">⬅️</button>
         <button class="float-nav-btn" onclick="history.forward()" title="للأمام">➡️</button>
     </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Modal: إعداد Twilio للشركة
+         ══════════════════════════════════════════════════════════════════ -->
+    <div class="modal" id="twilio-setup-modal">
+        <div class="modal-content" style="max-width: 620px; max-height: 90vh; overflow-y: auto;">
+            <!-- header -->
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 25px; border-radius: 15px 15px 0 0; margin: -20px -20px 25px -20px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="background: rgba(255,255,255,0.15); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px;">📞</div>
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0; font-size: 20px;">إعداد Twilio</h3>
+                        <p id="twilio-setup-subtitle" style="margin: 4px 0 0; font-size: 13px; opacity: 0.85;">أدخل بيانات حساب Twilio الخاص بالشركة</p>
+                    </div>
+                    <button onclick="closeTwilioSetup()" style="background: rgba(255,255,255,0.15); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 20px; cursor: pointer;">&times;</button>
+                </div>
+            </div>
+
+            <div style="padding: 0 20px 24px;">
+
+                <!-- Status banner (hidden by default) -->
+                <div id="twilio-current-status" style="display:none; padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 14px;"></div>
+
+                <!-- form -->
+                <form id="twilio-setup-form" onsubmit="saveTwilioSetup(event)">
+                    <input type="hidden" id="twilio-company-id">
+
+                    <!-- Account SID -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display:block; margin-bottom:6px; font-weight:600; font-size:14px; color:#333;">
+                            🔑 Account SID <span style="color:#e74c3c;">*</span>
+                        </label>
+                        <input id="twilio-account-sid" type="text" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                               style="width:100%; padding:10px 14px; border:2px solid #e1e5ee; border-radius:8px; font-size:14px; font-family:monospace; direction:ltr; box-sizing:border-box;"
+                               required>
+                    </div>
+
+                    <!-- Auth Token -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display:block; margin-bottom:6px; font-weight:600; font-size:14px; color:#333;">
+                            🔐 Auth Token <span style="color:#e74c3c;">*</span>
+                        </label>
+                        <div style="position:relative;">
+                            <input id="twilio-auth-token" type="password" placeholder="••••••••••••••••••••••••••••••••"
+                                   style="width:100%; padding:10px 44px 10px 14px; border:2px solid #e1e5ee; border-radius:8px; font-size:14px; font-family:monospace; direction:ltr; box-sizing:border-box;"
+                                   required>
+                            <button type="button" onclick="toggleTwilioTokenVis('twilio-auth-token', this)"
+                                    style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px;">👁️</button>
+                        </div>
+                    </div>
+
+                    <!-- API Key + Secret -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
+                        <div>
+                            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:14px; color:#333;">🗝️ API Key</label>
+                            <input id="twilio-api-key" type="text" placeholder="SKxxxxxxxxxxxxxxxx"
+                                   style="width:100%; padding:10px 14px; border:2px solid #e1e5ee; border-radius:8px; font-size:13px; font-family:monospace; direction:ltr; box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:14px; color:#333;">🔏 API Secret</label>
+                            <div style="position:relative;">
+                                <input id="twilio-api-secret" type="password" placeholder="••••••••"
+                                       style="width:100%; padding:10px 36px 10px 14px; border:2px solid #e1e5ee; border-radius:8px; font-size:13px; font-family:monospace; direction:ltr; box-sizing:border-box;">
+                                <button type="button" onclick="toggleTwilioTokenVis('twilio-api-secret', this)"
+                                        style="position:absolute; left:6px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:14px;">👁️</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phone number -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display:block; margin-bottom:6px; font-weight:600; font-size:14px; color:#333;">
+                            📱 رقم Twilio (E.164)
+                        </label>
+                        <input id="twilio-phone-number" type="text" placeholder="+1xxxxxxxxxx"
+                               style="width:100%; padding:10px 14px; border:2px solid #e1e5ee; border-radius:8px; font-size:14px; font-family:monospace; direction:ltr; box-sizing:border-box;">
+                        <p style="margin:6px 0 0; font-size:12px; color:#888;">اتركه فارغاً لاستخدام رقم الحساب الافتراضي</p>
+                    </div>
+
+                    <!-- Info box -->
+                    <div style="background: linear-gradient(135deg, rgba(102,126,234,.08) 0%, rgba(118,75,162,.08) 100%); border: 1px solid rgba(102,126,234,.25); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: #555; line-height: 1.6;">
+                        💡 <strong>ملاحظة:</strong> سيتم التحقق من البيانات تلقائياً عبر Twilio API وإنشاء TwiML App بـ Webhook للشركة.
+                        يُفضَّل توفير <em>API Key + Secret</em> لتوليد توكنات المكالمات.
+                    </div>
+
+                    <!-- Buttons -->
+                    <div style="display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap;">
+                        <button type="button" id="twilio-delete-btn" onclick="deleteTwilioSetup()"
+                                style="display:none; padding:10px 20px; background:#fff; color:#e74c3c; border:2px solid #e74c3c; border-radius:8px; font-size:14px; cursor:pointer; font-weight:600;">
+                            🗑️ إزالة الإعداد
+                        </button>
+                        <button type="button" onclick="closeTwilioSetup()"
+                                style="padding:10px 20px; background:#f5f5f5; color:#555; border:none; border-radius:8px; font-size:14px; cursor:pointer;">
+                            إلغاء
+                        </button>
+                        <button type="submit" id="twilio-save-btn"
+                                style="padding:10px 28px; background:linear-gradient(135deg,#667eea,#764ba2); color:white; border:none; border-radius:8px; font-size:14px; cursor:pointer; font-weight:700; min-width:120px;">
+                            💾 حفظ الإعداد
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Result area -->
+                <div id="twilio-setup-result" style="display:none; margin-top:16px; padding:14px; border-radius:10px; font-size:14px;"></div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

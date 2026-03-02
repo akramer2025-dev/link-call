@@ -30,6 +30,8 @@ if (!checkAdminAccess()) {
 // ========== المتغيرات العامة ==========
 const API_BASE_URL = window.location.origin;
 const baseUrl = API_BASE_URL;
+// توكن المدير لنقاط API الحساسة (يطابق ADMIN_SECRET في Vercel ENV)
+const adminToken = 'linkcall-super-admin-2024';
 
 // تحميل رصيد الشركة
 async function loadBalance() {
@@ -1113,16 +1115,21 @@ function renderCompanies() {
                     <span class="company-stat-label">تاريخ التسجيل</span>
                 </div>
             </div>
-            ${company.twilioPhone ? `
+            ${company.twilioCredentials?.accountSid ? `
+            <div style="margin: 10px 0; padding: 8px 12px; background: rgba(16,185,129,0.12); border-radius: 8px; font-size: 13px; direction: ltr; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;flex-shrink:0;"></span>
+                📞 Twilio مُعدَّل | ${company.twilioCredentials.phoneNumber || company.twilioPhone || '—'}
+            </div>` : company.twilioPhone ? `
             <div style="margin: 10px 0; padding: 8px 12px; background: rgba(102,126,234,0.1); border-radius: 8px; font-size: 13px; direction: ltr; color: #667eea; font-weight: 600;">
-                📞 Twilio: ${company.twilioPhone}
+                📞 Twilio (ENV): ${company.twilioPhone}
             </div>` : `
             <div style="margin: 10px 0; padding: 8px 12px; background: rgba(255,152,0,0.1); border-radius: 8px; font-size: 12px; color: #ff9800;">
-                ⚠️ لا يوجد رقم Twilio مخصص - اضغط تعديل لإضافته
+                ⚠️ لا يوجد رقم Twilio مخصص — اضغط "📞 Twilio" للإعداد
             </div>`}
             <div class="company-actions">
                 <button class="btn-view" onclick="viewCompany('${company.id}')">👁️ عرض</button>
                 <button class="btn-edit" onclick="editCompany('${company.id}')">✏️ تعديل</button>
+                <button class="btn-twilio" onclick="openTwilioSetup('${company.id}', '${(company.name || '').replace(/'/g, "\\'")}')">📞 Twilio</button>
                 ${company.id !== 'default' ? `<button class="btn-delete" onclick="deleteCompany('${company.id}')">🗑️ حذف</button>` : ''}
             </div>
         </div>
@@ -1407,3 +1414,162 @@ async function deleteEmployee(employeeId) {
 }
 
 console.log('✅ Admin Dashboard Ready');
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Twilio Setup Modal
+// ══════════════════════════════════════════════════════════════════════════════
+
+function openTwilioSetup(companyId, companyName) {
+    // Reset form
+    document.getElementById('twilio-setup-form').reset();
+    document.getElementById('twilio-company-id').value = companyId;
+    document.getElementById('twilio-setup-subtitle').textContent = `إعداد Twilio للشركة: ${companyName}`;
+    document.getElementById('twilio-setup-result').style.display = 'none';
+    document.getElementById('twilio-current-status').style.display = 'none';
+    document.getElementById('twilio-delete-btn').style.display = 'none';
+
+    // Show modal
+    document.getElementById('twilio-setup-modal').classList.add('active');
+
+    // Fetch existing credentials (if any)
+    loadTwilioStatus(companyId);
+}
+
+function closeTwilioSetup() {
+    document.getElementById('twilio-setup-modal').classList.remove('active');
+}
+
+async function loadTwilioStatus(companyId) {
+    try {
+        const res  = await fetch(`${baseUrl}/api/twilio-setup?companyId=${companyId}`, {
+            headers: { Authorization: adminToken }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.configured) {
+            const statusEl = document.getElementById('twilio-current-status');
+            statusEl.style.display = 'block';
+            statusEl.style.background = 'rgba(16,185,129,0.1)';
+            statusEl.style.border = '1px solid rgba(16,185,129,0.3)';
+            statusEl.style.color = '#059669';
+            statusEl.innerHTML = `
+                ✅ <strong>Twilio مُعدَّل حالياً</strong><br>
+                <small style="direction:ltr;display:block;margin-top:4px;">
+                    SID: ${data.accountSid} &nbsp;|&nbsp;
+                    رقم: ${data.phoneNumber || '—'} &nbsp;|&nbsp;
+                    TwiML App: ${data.twimlAppSid || '—'}
+                </small>
+            `;
+            // Pre-fill visible fields (excluding tokens)
+            if (data.accountSid) document.getElementById('twilio-account-sid').value = data.accountSid;
+            if (data.apiKey)     document.getElementById('twilio-api-key').value     = data.apiKey;
+            if (data.phoneNumber)document.getElementById('twilio-phone-number').value= data.phoneNumber;
+            document.getElementById('twilio-delete-btn').style.display = 'inline-block';
+        }
+    } catch (e) {
+        console.warn('loadTwilioStatus:', e.message);
+    }
+}
+
+async function saveTwilioSetup(e) {
+    e.preventDefault();
+
+    const companyId  = document.getElementById('twilio-company-id').value;
+    const accountSid = document.getElementById('twilio-account-sid').value.trim();
+    const authToken  = document.getElementById('twilio-auth-token').value.trim();
+    const apiKey     = document.getElementById('twilio-api-key').value.trim();
+    const apiSecret  = document.getElementById('twilio-api-secret').value.trim();
+    const phoneNumber= document.getElementById('twilio-phone-number').value.trim();
+
+    if (!accountSid || !authToken) {
+        alert('⚠️ Account SID و Auth Token مطلوبان');
+        return;
+    }
+
+    const saveBtn = document.getElementById('twilio-save-btn');
+    const resultEl = document.getElementById('twilio-setup-result');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '⏳ جارٍ الحفظ…';
+    resultEl.style.display = 'none';
+
+    try {
+        const res = await fetch(`${baseUrl}/api/twilio-setup`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: adminToken },
+            body: JSON.stringify({ companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber }),
+        });
+        const data = await res.json();
+
+        resultEl.style.display = 'block';
+        if (res.ok && data.success) {
+            resultEl.style.background = 'rgba(16,185,129,0.1)';
+            resultEl.style.border = '1px solid rgba(16,185,129,0.3)';
+            resultEl.style.color = '#059669';
+            resultEl.innerHTML = `
+                ✅ <strong>${data.message}</strong><br>
+                <small style="direction:ltr;display:block;margin-top:6px;">
+                    TwiML App SID: ${data.twimlAppSid || '—'} &nbsp;|&nbsp; رقم: ${data.phoneNumber || phoneNumber || '—'}
+                </small>
+            `;
+            // Refresh companies list so the card shows updated status
+            await loadCompanies();
+            // Close after 2 seconds
+            setTimeout(closeTwilioSetup, 2000);
+        } else {
+            resultEl.style.background = 'rgba(231,76,60,0.1)';
+            resultEl.style.border = '1px solid rgba(231,76,60,0.3)';
+            resultEl.style.color = '#e74c3c';
+            resultEl.innerHTML = `❌ <strong>${data.error || 'فشل الحفظ'}</strong>${data.details ? `<br><small>${data.details}</small>` : ''}`;
+        }
+    } catch (err) {
+        resultEl.style.display = 'block';
+        resultEl.style.background = 'rgba(231,76,60,0.1)';
+        resultEl.style.color = '#e74c3c';
+        resultEl.textContent = '❌ خطأ في الاتصال: ' + err.message;
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 حفظ الإعداد';
+    }
+}
+
+async function deleteTwilioSetup() {
+    const companyId = document.getElementById('twilio-company-id').value;
+    if (!confirm('⚠️ هل أنت متأكد من إزالة إعدادات Twilio؟\nسيتم الرجوع إلى الإعدادات الافتراضية.')) return;
+
+    const resultEl = document.getElementById('twilio-setup-result');
+    try {
+        const res  = await fetch(`${baseUrl}/api/twilio-setup?companyId=${companyId}`, {
+            method: 'DELETE',
+            headers: { Authorization: adminToken },
+        });
+        const data = await res.json();
+        resultEl.style.display = 'block';
+        if (res.ok && data.success) {
+            resultEl.style.background = 'rgba(16,185,129,0.1)';
+            resultEl.style.color = '#059669';
+            resultEl.textContent = '✅ ' + data.message;
+            await loadCompanies();
+            setTimeout(closeTwilioSetup, 1500);
+        } else {
+            resultEl.style.background = 'rgba(231,76,60,0.1)';
+            resultEl.style.color = '#e74c3c';
+            resultEl.textContent = '❌ ' + (data.error || 'فشل الحذف');
+        }
+    } catch (err) {
+        resultEl.style.display = 'block';
+        resultEl.style.color = '#e74c3c';
+        resultEl.textContent = '❌ خطأ: ' + err.message;
+    }
+}
+
+function toggleTwilioTokenVis(fieldId, btn) {
+    const inp = document.getElementById(fieldId);
+    if (inp.type === 'password') { inp.type = 'text';     btn.textContent = '🙈'; }
+    else                         { inp.type = 'password'; btn.textContent = '👁️'; }
+}
+
+// Close modal on outside click
+document.getElementById('twilio-setup-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeTwilioSetup();
+});

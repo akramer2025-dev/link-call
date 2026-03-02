@@ -886,8 +886,22 @@ function populateEmployeeFilter() {
 }
 
 // ========== الإجراءات ==========
+
+/**
+ * بناء رابط البروكسي لتشغيل تسجيل Twilio مع المصادقة
+ * يحوّل روابط Twilio المباشرة إلى /api/recording-proxy
+ */
+function getRecordingProxyUrl(twilioUrl) {
+    if (!twilioUrl) return null;
+    // إذا كان رابط البروكسي بالفعل، أعده كما هو
+    if (twilioUrl.includes('/api/recording-proxy')) return twilioUrl;
+    const companyId = sessionStorage.getItem('companyId') || '';
+    return `/api/recording-proxy?url=${encodeURIComponent(twilioUrl)}&companyId=${encodeURIComponent(companyId)}`;
+}
+
 function playRecording(url) {
-    window.open(url, '_blank');
+    const proxyUrl = getRecordingProxyUrl(url);
+    window.open(proxyUrl || url, '_blank');
 }
 
 function showCallDetails(callSid) {
@@ -909,7 +923,7 @@ function showCallDetails(callSid) {
             ${call.recordingUrl ? `
                 <div>
                     <strong>التسجيل:</strong>
-                    <audio controls src="${call.recordingUrl}" style="width: 100%; margin-top: 10px;"></audio>
+                    <audio controls src="${getRecordingProxyUrl(call.recordingUrl)}" style="width: 100%; margin-top: 10px;"></audio>
                 </div>
             ` : ''}
         </div>

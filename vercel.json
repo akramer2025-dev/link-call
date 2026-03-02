@@ -98,6 +98,10 @@
       "dest": "/api/recording-status.js"
     },
     {
+      "src": "/api/recording-proxy",
+      "dest": "/api/recording-proxy.js"
+    },
+    {
       "src": "/api/call-history",
       "dest": "/api/call-history.js"
     },

@@ -2182,30 +2182,41 @@
                 alert('⚠️ يجب تسجيل الدخول أولاً');
                 return;
             }
-            
-            // Check if there are contacts
-            if (!_allContacts || _allContacts.length === 0) {
-                alert('⚠️ لا توجد جهات اتصال للتوزيع. قم بإضافة جهات اتصال أولاً.');
-                return;
-            }
-            
-            // Save contacts for distribution
-            _excelContactsToImport = _allContacts;
-            
-            // Show distribution modal
+
+            // Show loading indicator in modal title area
             document.getElementById('distribution-modal').style.display = 'flex';
-            await loadEmployeesForDistribution(companyId);
-            
-            // Update modal title to indicate existing contacts
             const modalTitle = document.querySelector('#distribution-modal h2');
-            if (modalTitle) {
-                modalTitle.innerHTML = '🎯 توزيع جهات الاتصال الموجودة على الموظفين';
-            }
-            
-            // Update description
             const modalDesc = document.querySelector('#distribution-modal p');
-            if (modalDesc) {
-                modalDesc.textContent = `حدد عدد جهات الاتصال لكل موظف من إجمالي ${_allContacts.length} جهة اتصال موجودة`;
+            if (modalTitle) modalTitle.innerHTML = '⏳ جاري تحميل جهات الاتصال...';
+            if (modalDesc) modalDesc.textContent = '';
+
+            try {
+                // Fetch ALL contacts (not just the loaded page)
+                const res = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}&limit=99999`);
+                const data = await res.json();
+                const allServerContacts = data.contacts || data || [];
+
+                if (!allServerContacts.length) {
+                    document.getElementById('distribution-modal').style.display = 'none';
+                    alert('⚠️ لا توجد جهات اتصال للتوزيع.');
+                    return;
+                }
+
+                // Save ALL contacts for distribution
+                _excelContactsToImport = allServerContacts;
+
+                await loadEmployeesForDistribution(companyId);
+
+                // Update modal title & description
+                if (modalTitle) modalTitle.innerHTML = '🎯 توزيع جهات الاتصال الموجودة على الموظفين';
+                if (modalDesc) modalDesc.textContent = `حدد عدد جهات الاتصال لكل موظف من إجمالي ${allServerContacts.length} جهة اتصال موجودة`;
+
+                // Refresh summary counter
+                updateDistributionSummary();
+            } catch (err) {
+                console.error('خطأ في تحميل جهات الاتصال:', err);
+                document.getElementById('distribution-modal').style.display = 'none';
+                alert('❌ حدث خطأ في تحميل جهات الاتصال');
             }
         }
         
@@ -2248,22 +2259,11 @@
                         }
                     }
                     
-                    // Add remaining contacts without assignment
-                    while (contactIndex < contacts.length) {
-                        distributionMap.push({
-                            contact: contacts[contactIndex],
-                            employeeId: null,
-                            employeeName: null
-                        });
-                        contactIndex++;
-                    }
+                    // Remaining contacts are LEFT UNTOUCHED (don't clear their assignments)
+                    // contactIndex already points past the assigned ones — we stop here.
                 } else {
-                    // No distribution
-                    distributionMap = contacts.map(c => ({
-                        contact: c,
-                        employeeId: null,
-                        employeeName: null
-                    }));
+                    // No distribution — nothing to update
+                    distributionMap = [];
                 }
                 
                 progressText.textContent = `جاري تحديث ${distributionMap.length} جهة اتصال...`;
@@ -2364,7 +2364,7 @@
                 
                 resultsHTML += `
                     <div style="color:#ccd6f6;margin-top:15px;font-weight:700;">
-                        إجمالي: ${contacts.length} جهة اتصال
+                        تم تحديث: ${distributionMap.length} جهة اتصال
                     </div>
                 `;
                 

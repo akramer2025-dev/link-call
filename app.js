@@ -3111,7 +3111,7 @@ function _renderContactItem(contact) {
     const cid = contact._id || contact.id || contact.contactId || '';
     const safeId = cid.toString().replace(/'/g, '');
     const safeName = (contact.name || '').replace(/'/g, '&#39;');
-    const safePhone = (contact.phone || '').replace(/'/g, '');
+    const safePhone = String(contact.phone || '').replace(/'/g, '');
     
     // تحديد لون الـ avatar بناءً على أول حرف
     const colors = ['#667eea', '#764ba2', '#5ec4d4', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140'];

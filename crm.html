@@ -622,6 +622,94 @@
         .success-count { color: #43e97b; }
         .error-count { color: #f56565; }
         .duplicate-count { color: #fbbf24; }
+        
+        /* Distribution Modal */
+        .distribution-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .distribution-content {
+            background: #1a1f2e;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .employee-distribution-item {
+            background: #1e2433;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .employee-info {
+            flex: 1;
+            color: #ccd6f6;
+        }
+        
+        .employee-name {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .employee-email {
+            font-size: 13px;
+            color: #8892b0;
+        }
+        
+        .employee-count-input {
+            width: 120px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            background: #0d1117;
+            color: #ccd6f6;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .distribution-summary {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .distribution-summary-item {
+            display: flex;
+            justify-content: space-between;
+            color: #ccd6f6;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .distribution-summary-item:last-child {
+            margin-bottom: 0;
+            font-weight: 700;
+            font-size: 16px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -787,6 +875,45 @@
                         ✕ إلغاء
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Distribution Modal -->
+    <div id="distribution-modal" class="distribution-modal">
+        <div class="distribution-content">
+            <h2 style="color:#ccd6f6;margin-bottom:10px;">📊 توزيع جهات الاتصال على الموظفين</h2>
+            <p style="color:#8892b0;margin-bottom:20px;font-size:14px;">حدد عدد جهات الاتصال لكل موظف (اترك 0 لتجاهل الموظف)</p>
+            
+            <div id="employees-distribution-list" style="margin-bottom:20px;">
+                <!-- Will be populated dynamically -->
+            </div>
+            
+            <div class="distribution-summary" id="distribution-summary" style="display:none;">
+                <div class="distribution-summary-item">
+                    <span>إجمالي جهات الاتصال في Excel:</span>
+                    <span id="total-excel-contacts">0</span>
+                </div>
+                <div class="distribution-summary-item">
+                    <span>موزع على الموظفين:</span>
+                    <span id="total-distributed">0</span>
+                </div>
+                <div class="distribution-summary-item">
+                    <span>المتبقي (بدون تخصيص):</span>
+                    <span id="total-remaining">0</span>
+                </div>
+            </div>
+            
+            <div style="display:flex;gap:10px;margin-top:20px;">
+                <button onclick="startImportWithDistribution()" style="flex:1;padding:14px;border:none;border-radius:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;cursor:pointer;font-size:15px;">
+                    ✓ بدء الاستيراد مع التوزيع
+                </button>
+                <button onclick="startImportWithoutDistribution()" style="flex:1;padding:14px;border:none;border-radius:8px;background:linear-gradient(135deg,#43e97b,#38f9d7);color:white;font-weight:700;cursor:pointer;font-size:15px;">
+                    استيراد بدون توزيع
+                </button>
+                <button onclick="closeDistributionModal()" style="padding:14px 20px;border:none;border-radius:8px;background:#1e2433;color:#a8b2d1;font-weight:700;cursor:pointer;">
+                    ✕ إلغاء
+                </button>
             </div>
         </div>
     </div>
@@ -1466,14 +1593,126 @@
             loadCRMContacts(); // Reload contacts after import
         }
         
-        // Excel Import Handler
-        document.getElementById('excel-import-input').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        // ==================== Distribution System ====================
+        let _excelContactsToImport = [];
+        let _currentExcelFile = null;
+        let _employeesList = [];
+        
+        function closeDistributionModal() {
+            document.getElementById('distribution-modal').style.display = 'none';
+            _excelContactsToImport = [];
+            _currentExcelFile = null;
+        }
+        
+        async function loadEmployeesForDistribution(companyId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/employees-management/employees?companyId=${encodeURIComponent(companyId)}`);
+                const data = await response.json();
+                _employeesList = data.employees || [];
+                
+                const container = document.getElementById('employees-distribution-list');
+                container.innerHTML = '';
+                
+                if (_employeesList.length === 0) {
+                    container.innerHTML = '<p style="color:#8892b0;text-align:center;">لا يوجد موظفين. سيتم استيراد جهات الاتصال بدون توزيع.</p>';
+                    return;
+                }
+                
+                _employeesList.forEach((emp, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'employee-distribution-item';
+                    item.innerHTML = `
+                        <div class="employee-info">
+                            <div class="employee-name">${emp.fullname || emp.name || 'موظف'}</div>
+                            <div class="employee-email">${emp.email || emp.username || ''}</div>
+                        </div>
+                        <input 
+                            type="number" 
+                            class="employee-count-input" 
+                            id="emp-count-${index}" 
+                            data-employee-id="${emp.id || emp._id || emp.employeeId}" 
+                            data-employee-name="${emp.fullname || emp.name}"
+                            placeholder="0" 
+                            value="0"
+                            min="0"
+                            onchange="updateDistributionSummary()"
+                        />
+                    `;
+                    container.appendChild(item);
+                });
+                
+                updateDistributionSummary();
+            } catch (error) {
+                console.error('خطأ في جلب الموظفين:', error);
+            }
+        }
+        
+        function updateDistributionSummary() {
+            const totalExcel = _excelContactsToImport.length;
+            let totalDistributed = 0;
             
+            document.querySelectorAll('.employee-count-input').forEach(input => {
+                totalDistributed += parseInt(input.value) || 0;
+            });
+            
+            const remaining = Math.max(0, totalExcel - totalDistributed);
+            
+            document.getElementById('total-excel-contacts').textContent = totalExcel;
+            document.getElementById('total-distributed').textContent = totalDistributed;
+            document.getElementById('total-remaining').textContent = remaining;
+            document.getElementById('distribution-summary').style.display = 'block';
+            
+            // Color code remaining
+            const remainingEl = document.getElementById('total-remaining');
+            if (totalDistributed > totalExcel) {
+                remainingEl.style.color = '#f56565'; // Red if over
+            } else if (remaining === 0) {
+                remainingEl.style.color = '#43e97b'; // Green if exact
+            } else {
+                remainingEl.style.color = '#fbbf24'; // Yellow if under
+            }
+        }
+        
+        async function startImportWithDistribution() {
+            const distribution = [];
+            let totalAssigned = 0;
+            
+            document.querySelectorAll('.employee-count-input').forEach(input => {
+                const count = parseInt(input.value) || 0;
+                if (count > 0) {
+                    distribution.push({
+                        employeeId: input.dataset.employeeId,
+                        employeeName: input.dataset.employeeName,
+                        count: count
+                    });
+                    totalAssigned += count;
+                }
+            });
+            
+            if (distribution.length === 0) {
+                alert('⚠️ يجب تحديد عدد جهات اتصال لموظف واحد على الأقل');
+                return;
+            }
+            
+            if (totalAssigned > _excelContactsToImport.length) {
+                alert(`⚠️ العدد المحدد (${totalAssigned}) أكبر من عدد جهات الاتصال المتاحة (${_excelContactsToImport.length})`);
+                return;
+            }
+            
+            closeDistributionModal();
+            await performExcelImport(_excelContactsToImport, distribution);
+        }
+        
+        async function startImportWithoutDistribution() {
+            closeDistributionModal();
+            await performExcelImport(_excelContactsToImport, null);
+        }
+        
+        // ==================== Perform Excel Import ====================
+        async function performExcelImport(contacts, distribution) {
             const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
             if (!companyId) {
-                alert('⚠️ يجب تسجيل الدخول أولاً');
+                alert('⚠️ خطأ في جلب معرف الشركة');
                 return;
             }
             
@@ -1487,18 +1726,180 @@
             modal.style.display = 'flex';
             progressBar.style.width = '0%';
             progressBar.textContent = '0%';
-            progressText.textContent = 'جاري قراءة الملف...';
+            progressText.textContent = 'جاري التحضير...';
             progressResults.style.display = 'none';
             closeBtn.style.display = 'none';
             
             try {
-                // Read file
+                progressText.textContent = 'جاري جلب جهات الاتصال الحالية...';
+                
+                // Get existing contacts for duplicate detection
+                const existingResponse = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
+                const existingData = await existingResponse.json();
+                const existingPhones = new Set((existingData.contacts || []).map(c => String(c.phone || '').replace(/[^0-9]/g, '')));
+                
+                // Prepare distribution map
+                let distributionMap = [];
+                let contactIndex = 0;
+                
+                if (distribution) {
+                    // Build distribution map: which contacts go to which employee
+                    for (const dist of distribution) {
+                        for (let i = 0; i < dist.count && contactIndex < contacts.length; i++) {
+                            distributionMap.push({
+                                contact: contacts[contactIndex],
+                                employeeId: dist.employeeId,
+                                employeeName: dist.employeeName
+                            });
+                            contactIndex++;
+                        }
+                    }
+                    
+                    // Add remaining contacts without assignment
+                    while (contactIndex < contacts.length) {
+                        distributionMap.push({
+                            contact: contacts[contactIndex],
+                            employeeId: null,
+                            employeeName: null
+                        });
+                        contactIndex++;
+                    }
+                } else {
+                    // No distribution - import all without assignment
+                    distributionMap = contacts.map(c => ({
+                        contact: c,
+                        employeeId: null,
+                        employeeName: null
+                    }));
+                }
+                
+                progressText.textContent = `جاري استيراد ${distributionMap.length} جهة اتصال...`;
+                
+                // Import in batches of 50
+                let successCount = 0;
+                let errorCount = 0;
+                let duplicateCount = 0;
+                const batchSize = 50;
+                
+                for (let i = 0; i < distributionMap.length; i += batchSize) {
+                    const batch = distributionMap.slice(i, i + batchSize);
+                    
+                    for (const item of batch) {
+                        try {
+                            const contact = item.contact;
+                            
+                            // Check for duplicate
+                            const cleanPhone = String(contact.phone || '').replace(/[^0-9]/g, '');
+                            if (existingPhones.has(cleanPhone)) {
+                                duplicateCount++;
+                                continue;
+                            }
+                            
+                            // Build notes with assignedTo info
+                            let notes = `Country: ${contact.country || '-'} | Balance: ${contact.balance || '0'}`;
+                            if (item.employeeId) {
+                                notes += ` | Assigned: ${item.employeeName}`;
+                            }
+                            notes += ` | Source: Excel Import`;
+                            
+                            // Build tags
+                            const tags = ['Excel Import'];
+                            if (item.employeeId) {
+                                tags.push(`Assigned-${item.employeeId}`);
+                            }
+                            
+                            // Add contact
+                            const response = await fetch(`${API_BASE_URL}/api/contacts`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    companyId,
+                                    name: contact.name,
+                                    phone: contact.phone,
+                                    email: contact.email || '',
+                                    notes: notes,
+                                    tags: tags,
+                                    assignedTo: item.employeeId || null
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                successCount++;
+                                existingPhones.add(cleanPhone);
+                            } else {
+                                errorCount++;
+                            }
+                        } catch (err) {
+                            console.error('خطأ في إضافة جهة اتصال:', err);
+                            errorCount++;
+                        }
+                    }
+                    
+                    // Update progress
+                    const progress = Math.min(100, Math.round(((i + batch.length) / distributionMap.length) * 100));
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.textContent = `${progress}%`;
+                    progressText.textContent = `تمت معالجة ${i + batch.length} من ${distributionMap.length}...`;
+                    
+                    // Small delay between batches
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // Show results
+                progressBar.style.width = '100%';
+                progressBar.textContent = '100%';
+                progressText.textContent = '✅ اكتمل الاستيراد!';
+                
+                let resultsHTML = `
+                    <div class="success-count">✓ تم الإضافة بنجاح: ${successCount}</div>
+                    <div class="duplicate-count">⚠ مكرر (تم التجاهل): ${duplicateCount}</div>
+                    <div class="error-count">✗ فشل: ${errorCount}</div>
+                `;
+                
+                if (distribution) {
+                    resultsHTML += '<div style="color:#667eea;margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">📊 التوزيع على الموظفين:</div>';
+                    distribution.forEach(dist => {
+                        resultsHTML += `<div style="color:#8892b0;font-size:13px;margin-top:5px;">• ${dist.employeeName}: ${dist.count} جهة اتصال</div>`;
+                    });
+                }
+                
+                resultsHTML += `
+                    <div style="color:#ccd6f6;margin-top:15px;font-weight:700;">
+                        إجمالي: ${contacts.length} جهة اتصال
+                    </div>
+                `;
+                
+                progressResults.innerHTML = resultsHTML;
+                progressResults.style.display = 'block';
+                closeBtn.style.display = 'block';
+                
+            } catch (error) {
+                console.error('خطأ في الاستيراد:', error);
+                progressText.textContent = '❌ حدث خطأ أثناء الاستيراد';
+                progressResults.innerHTML = `<div class="error-count">حدث خطأ غير متوقع. حاول مرة أخرى.</div>`;
+                progressResults.style.display = 'block';
+                closeBtn.style.display = 'block';
+            }
+        }
+        
+        // Excel Import Handler - Show Distribution Modal First
+        document.getElementById('excel-import-input').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            _currentExcelFile = file;
+            const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            if (!companyId) {
+                alert('⚠️ يجب تسجيل الدخول أولاً');
+                return;
+            }
+            
+            // Read and parse Excel file first
+            try {
                 const reader = new FileReader();
                 
                 reader.onload = async function(e) {
                     try {
-                        progressText.textContent = 'جاري تحليل البيانات...';
-                        
                         // Parse Excel file
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, {type: 'array'});
@@ -1509,11 +1910,8 @@
                         
                         if (rows.length === 0) {
                             alert('⚠️ الملف فارغ أو لا يحتوي على بيانات صحيحة');
-                            modal.style.display = 'none';
                             return;
                         }
-                        
-                        progressText.textContent = `تم العثور على ${rows.length} صف. جاري الاستيراد...`;
                         
                         // Extract contacts from rows
                         const contacts = [];
@@ -1538,101 +1936,24 @@
                         
                         if (contacts.length === 0) {
                             alert('⚠️ لم يتم العثور على جهات اتصال صالحة (تحتاج على الأقل اسم ورقم موبايل)');
-                            modal.style.display = 'none';
                             return;
                         }
                         
-                        // Get existing contacts for duplicate detection
-                        const existingResponse = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
-                        const existingData = await existingResponse.json();
-                        const existingPhones = new Set((existingData.contacts || []).map(c => c.phone?.replace(/[^0-9]/g, '')));
+                        // Save contacts for distribution
+                        _excelContactsToImport = contacts;
                         
-                        // Import in batches of 50
-                        let successCount = 0;
-                        let errorCount = 0;
-                        let duplicateCount = 0;
-                        const batchSize = 50;
-                        
-                        for (let i = 0; i < contacts.length; i += batchSize) {
-                            const batch = contacts.slice(i, i + batchSize);
-                            
-                            for (const contact of batch) {
-                                try {
-                                    // Check for duplicate
-                                    const cleanPhone = String(contact.phone || '').replace(/[^0-9]/g, '');
-                                    if (existingPhones.has(cleanPhone)) {
-                                        duplicateCount++;
-                                        continue;
-                                    }
-                                    
-                                    // Build notes
-                                    const notes = `Country: ${contact.country || '-'} | Balance: ${contact.balance || '0'} | Source: Excel Import`;
-                                    
-                                    // Add contact
-                                    const response = await fetch(`${API_BASE_URL}/api/contacts`, {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            companyId,
-                                            name: contact.name,
-                                            phone: contact.phone,
-                                            email: contact.email || '',
-                                            notes: notes,
-                                            tags: ['Excel Import']
-                                        })
-                                    });
-                                    
-                                    if (response.ok) {
-                                        successCount++;
-                                        existingPhones.add(cleanPhone); // Add to set to prevent duplicates in same batch
-                                    } else {
-                                        errorCount++;
-                                    }
-                                } catch (err) {
-                                    console.error('خطأ في إضافة جهة اتصال:', err);
-                                    errorCount++;
-                                }
-                            }
-                            
-                            // Update progress
-                            const progress = Math.min(100, Math.round(((i + batch.length) / contacts.length) * 100));
-                            progressBar.style.width = `${progress}%`;
-                            progressBar.textContent = `${progress}%`;
-                            progressText.textContent = `تمت معالجة ${i + batch.length} من ${contacts.length}...`;
-                            
-                            // Small delay between batches
-                            await new Promise(resolve => setTimeout(resolve, 100));
-                        }
-                        
-                        // Show results
-                        progressBar.style.width = '100%';
-                        progressBar.textContent = '100%';
-                        progressText.textContent = '✅ اكتمل الاستيراد!';
-                        progressResults.innerHTML = `
-                            <div class="success-count">✓ تم الإضافة بنجاح: ${successCount}</div>
-                            <div class="duplicate-count">⚠ مكرر (تم التجاهل): ${duplicateCount}</div>
-                            <div class="error-count">✗ فشل: ${errorCount}</div>
-                            <div style="color:#ccd6f6;margin-top:10px;font-weight:700;">
-                                إجمالي: ${contacts.length} جهة اتصال
-                            </div>
-                        `;
-                        progressResults.style.display = 'block';
-                        closeBtn.style.display = 'block';
+                        // Show distribution modal
+                        document.getElementById('distribution-modal').style.display = 'flex';
+                        await loadEmployeesForDistribution(companyId);
                         
                     } catch (parseError) {
                         console.error('خطأ في معالجة الملف:', parseError);
-                        progressText.textContent = '❌ خطأ في معالجة الملف';
-                        progressResults.innerHTML = `
-                            <div class="error-count">فشل في قراءة الملف. تأكد أن الملف بصيغة Excel صحيحة (.xlsx أو .xls)</div>
-                        `;
-                        progressResults.style.display = 'block';
-                        closeBtn.style.display = 'block';
+                        alert('❌ فشل في قراءة الملف. تأكد أن الملف بصيغة Excel صحيحة (.xlsx أو .xls)');
                     }
                 };
                 
                 reader.onerror = function() {
                     alert('❌ خطأ في قراءة الملف');
-                    modal.style.display = 'none';
                 };
                 
                 reader.readAsArrayBuffer(file);
@@ -1640,7 +1961,6 @@
             } catch (error) {
                 console.error('خطأ في استيراد Excel:', error);
                 alert('❌ حدث خطأ أثناء الاستيراد');
-                modal.style.display = 'none';
             }
             
             // Reset file input

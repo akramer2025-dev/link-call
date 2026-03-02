@@ -153,11 +153,27 @@ module.exports = async (req, res) => {
         
         const twiml = new twilio.twiml.VoiceResponse();
         
+        // التحقق هل التسجيل معطّل لهذه الشركة (لتخفيض التكلفة)
+        let recordingEnabled = true;
+        if (companyId) {
+            try {
+                const { getDb } = require('../utils/firebase');
+                const { doc, getDoc } = require('firebase/firestore');
+                const snap = await getDoc(doc(getDb(), 'companies', companyId));
+                if (snap.exists() && snap.data().disableRecording === true) {
+                    recordingEnabled = false;
+                    console.log(`🔇 التسجيل معطّل لشركة: ${companyId}`);
+                }
+            } catch (e) { /* fallback: تسجيل مفعّل */ }
+        }
+
         const dial = twiml.dial({
             callerId: callerPhoneNumber,
-            record: 'record-from-answer-dual',
-            recordingStatusCallback: '/api/recording-status',
-            recordingStatusCallbackEvent: 'completed'
+            ...(recordingEnabled ? {
+                record: 'record-from-answer-dual',
+                recordingStatusCallback: '/api/recording-status',
+                recordingStatusCallbackEvent: 'completed'
+            } : {})
         });
         
         if (formattedCallTo) {

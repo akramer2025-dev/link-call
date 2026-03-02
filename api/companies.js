@@ -613,7 +613,7 @@ module.exports.initFromFile = async (req, res) => {
 // BALANCE SYSTEM - نظام الرصيد
 // ══════════════════════════════════════════════
 const COST_PER_MINUTE = 0.014; // دولار لكل دقيقة
-const DEFAULT_BALANCE  = 61.0; // الرصيد الافتراضي
+const DEFAULT_BALANCE  = 121.0; // الرصيد الافتراضي
 
 // GET /api/companies/balance?companyId=XXX
 module.exports.getBalance = async (req, res) => {
@@ -628,7 +628,7 @@ module.exports.getBalance = async (req, res) => {
         if (!snap.exists()) return res.status(404).json({ success: false, error: 'الشركة غير موجودة' });
 
         const company = snap.data();
-        // إذا لم يوجد رصيد بعد، ابدأ بـ 61 دولار
+        // إذا لم يوجد رصيد بعد، ابدأ بـ 121 دولار
         if (company.balance === undefined) {
             await updateDoc(doc(db, 'companies', companyId), { balance: DEFAULT_BALANCE, costPerMinute: COST_PER_MINUTE, totalMinutesUsed: 0, totalCostDeducted: 0 });
             company.balance = DEFAULT_BALANCE;

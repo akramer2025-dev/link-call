@@ -34,6 +34,7 @@
       "twilioPhone": "+12564884883",
       "twilioEnvPrefix": "JAMJOUM",
       "balance": 121,
+      "disableRecording": true,
       "notes": "عميل مدفوع - Enterprise - محمي من الحذف"
     }
   ]

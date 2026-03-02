@@ -794,5 +794,44 @@
     </div>
 
     <script src="admin.js"></script>
+
+    <!-- Floating Navigation -->
+    <style>
+        .float-nav {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 9999;
+        }
+        .float-nav-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: rgba(30, 58, 95, 0.9);
+            color: white;
+            border: 2px solid rgba(94, 196, 212, 0.5);
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .float-nav-btn:hover {
+            background: rgba(94, 196, 212, 0.8);
+            transform: scale(1.1);
+        }
+        @media (max-width: 768px) {
+            .float-nav { bottom: 15px; left: 15px; }
+        }
+    </style>
+    <div class="float-nav">
+        <button class="float-nav-btn" onclick="history.back()" title="رجوع">⬅️</button>
+        <button class="float-nav-btn" onclick="history.forward()" title="للأمام">➡️</button>
+    </div>
 </body>
 </html>

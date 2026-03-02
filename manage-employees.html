@@ -642,6 +642,91 @@
             opacity: 1;
         }
         .lang-btn:hover { opacity: 1; }
+
+        /* Back button */
+        .back-btn {
+            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            color: white;
+            padding: 9px 22px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(94, 196, 212, 0.5);
+        }
+
+        /* Floating nav */
+        .float-nav {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .float-nav-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: rgba(30, 58, 95, 0.9);
+            color: white;
+            border: 2px solid rgba(94, 196, 212, 0.5);
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .float-nav-btn:hover {
+            background: rgba(94, 196, 212, 0.8);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+                text-align: center;
+            }
+
+            .header h1 { font-size: 20px; }
+
+            .header-info {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            .employees-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .float-nav { bottom: 15px; left: 15px; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-container {
+                grid-template-columns: 1fr !important;
+            }
+        }
     </style>
 </head>
 <body data-title-key="emp_page_title">
@@ -650,6 +735,7 @@
         <div class="header">
             <h1>📋 <span data-i18n="emp_header_title">إدارة الموظفين</span></h1>
             <div class="header-info">
+                <a href="index.html" class="back-btn">⬅️ العودة للتطبيق</a>
                 <div class="lang-switcher">
                     <button class="lang-btn active" data-lang="ar" onclick="i18n.setLang('ar')">ع</button>
                     <button class="lang-btn" data-lang="en" onclick="i18n.setLang('en')">EN</button>
@@ -1363,5 +1449,11 @@
             }, 5000);
         }
     </script>
+
+    <!-- Floating Navigation -->
+    <div class="float-nav">
+        <button class="float-nav-btn" onclick="history.back()" title="رجوع">⬅️</button>
+        <button class="float-nav-btn" onclick="history.forward()" title="للأمام">➡️</button>
+    </div>
 </body>
 </html>

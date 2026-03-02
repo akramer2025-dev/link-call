@@ -323,13 +323,126 @@
             box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
         }
 
+        /* Call Analytics Table */
+        .call-analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .call-analytics-table thead {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5986 100%);
+        }
+
+        .call-analytics-table th {
+            padding: 14px 15px;
+            text-align: right;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .call-analytics-table td {
+            padding: 14px 15px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        .call-analytics-table tr:hover {
+            background: rgba(94, 196, 212, 0.05);
+        }
+
+        /* Floating nav */
+        .float-nav {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .float-nav-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: rgba(30, 58, 95, 0.9);
+            color: white;
+            border: 2px solid rgba(94, 196, 212, 0.5);
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .float-nav-btn:hover {
+            background: rgba(94, 196, 212, 0.8);
+            transform: scale(1.1);
+        }
+
         @media (max-width: 768px) {
             .charts-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .filters-row {
                 grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-value {
+                font-size: 26px;
+            }
+
+            .employees-table-container {
+                padding: 15px;
+                overflow-x: auto;
+            }
+
+            .employees-table,
+            .call-analytics-table {
+                min-width: 600px;
+            }
+
+            .filters {
+                padding: 15px;
+            }
+
+            .float-nav {
+                bottom: 15px;
+                left: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-card {
+                padding: 15px;
             }
         }
     </style>
@@ -480,11 +593,49 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Call Analytics Per Employee -->
+        <div class="employees-table-container" style="margin-top: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="color: #1e3a5f; font-size: 22px; display: flex; align-items: center; gap: 10px;">
+                    <span>📞</span> تحليل المكالمات لكل موظف
+                </h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <span id="callAnalyticsSummary" style="padding: 8px 16px; background: #dbeafe; color: #1e40af; border-radius: 20px; font-size: 13px; font-weight: bold;"></span>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="call-analytics-table" id="callAnalyticsTable">
+                    <thead>
+                        <tr>
+                            <th>الموظف</th>
+                            <th>إجمالي المكالمات</th>
+                            <th>ناجحة ✅</th>
+                            <th>فشلت ❌</th>
+                            <th>لم يرد 📵</th>
+                            <th>مدة المكالمات</th>
+                            <th>نسبة النجاح</th>
+                        </tr>
+                    </thead>
+                    <tbody id="callAnalyticsBody">
+                        <tr><td colspan="7" style="text-align:center; padding: 30px; color: #6b7280;">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Navigation -->
+    <div class="float-nav">
+        <button class="float-nav-btn" onclick="history.back()" title="رجوع">⬅️</button>
+        <button class="float-nav-btn" onclick="history.forward()" title="للأمام">➡️</button>
     </div>
 
     <script>
         let companyId = null;
         let allEmployees = [];
+        let allCalls = [];
+        let employeeCallMap = {};
         let reportData = {
             totalEmployees: 0,
             totalCalls: 0,
@@ -515,17 +666,49 @@
 
         async function loadData() {
             try {
-                // Load employees
-                const response = await fetch(`/api/employees-management?companyId=${companyId}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    allEmployees = data.employees;
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const selectedEmployee = document.getElementById('employeeFilter').value;
+
+                let callsUrl = `/api/call-history?companyId=${companyId}&limit=5000`;
+                if (startDate) callsUrl += `&fromDate=${startDate}`;
+                if (endDate) callsUrl += `&toDate=${endDate}`;
+                if (selectedEmployee && selectedEmployee !== 'all') callsUrl += `&employeeId=${selectedEmployee}`;
+
+                const [empResponse, callsResponse] = await Promise.all([
+                    fetch(`/api/employees-management?companyId=${companyId}`),
+                    fetch(callsUrl).catch(() => ({ json: () => ({}) }))
+                ]);
+
+                const empData = await empResponse.json();
+                const callsData = await callsResponse.json().catch(() => ({}));
+
+                if (empData.success) {
+                    allEmployees = empData.employees;
                     populateEmployeeFilter();
-                    calculateStats();
-                    renderCharts();
-                    renderTable();
                 }
+
+                allCalls = Array.isArray(callsData.calls) ? callsData.calls : [];
+
+                // Build per-employee call map
+                employeeCallMap = {};
+                allCalls.forEach(call => {
+                    const eId = call.employeeId || 'unknown';
+                    if (!employeeCallMap[eId]) {
+                        employeeCallMap[eId] = { total: 0, completed: 0, failed: 0, noAnswer: 0, busy: 0, duration: 0 };
+                    }
+                    employeeCallMap[eId].total++;
+                    employeeCallMap[eId].duration += Number(call.duration) || 0;
+                    if (call.status === 'completed') employeeCallMap[eId].completed++;
+                    else if (call.status === 'failed') employeeCallMap[eId].failed++;
+                    else if (call.status === 'no-answer') employeeCallMap[eId].noAnswer++;
+                    else if (call.status === 'busy') employeeCallMap[eId].busy++;
+                });
+
+                calculateStats();
+                renderCharts();
+                renderTable();
+                renderCallAnalytics();
             } catch (error) {
                 console.error('Error loading data:', error);
             }
@@ -533,6 +716,7 @@
 
         function populateEmployeeFilter() {
             const select = document.getElementById('employeeFilter');
+            const currentVal = select.value;
             select.innerHTML = '<option value="all">جميع الموظفين</option>';
             
             allEmployees.forEach(emp => {
@@ -541,22 +725,20 @@
                 option.textContent = emp.name;
                 select.appendChild(option);
             });
+            if (currentVal) select.value = currentVal;
         }
 
         function calculateStats() {
             reportData.totalEmployees = allEmployees.length;
-            
-            // Simulate call data (in real implementation, get from API)
-            reportData.totalCalls = allEmployees.reduce((sum, emp) => {
-                return sum + Math.floor(Math.random() * 100);
-            }, 0);
-            
+            reportData.totalCalls = allCalls.length;
+
             reportData.totalMinutes = allEmployees.reduce((sum, emp) => {
                 return sum + (emp.minutesUsage?.minutesUsed || 0);
             }, 0);
-            
-            reportData.avgCallDuration = reportData.totalCalls > 0 
-                ? Math.round(reportData.totalMinutes / reportData.totalCalls)
+
+            const totalDuration = allCalls.reduce((sum, c) => sum + (Number(c.duration) || 0), 0);
+            reportData.avgCallDuration = reportData.totalCalls > 0
+                ? (Math.round(totalDuration / reportData.totalCalls / 6) / 10)
                 : 0;
 
             // Update UI
@@ -567,6 +749,9 @@
         }
 
         function renderCharts() {
+            // Destroy all existing chart instances to avoid canvas reuse errors
+            Object.values(Chart.instances || {}).forEach(c => { try { c.destroy(); } catch(e) {} });
+
             // Minutes Chart
             const minutesCtx = document.getElementById('minutesChart').getContext('2d');
             new Chart(minutesCtx, {
@@ -584,78 +769,77 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
+                    scales: { y: { beginAtZero: true } }
                 }
             });
 
-            // Calls Chart
+            // Calls Chart — real data grouped by employee (stacked: success/fail/no-answer)
             const callsCtx = document.getElementById('callsChart').getContext('2d');
-            const callsData = allEmployees.map(() => Math.floor(Math.random() * 100));
             new Chart(callsCtx, {
-                type: 'doughnut',
+                type: 'bar',
                 data: {
                     labels: allEmployees.map(e => e.name),
-                    datasets: [{
-                        data: callsData,
-                        backgroundColor: [
-                            'rgba(16, 185, 129, 0.7)',
-                            'rgba(94, 196, 212, 0.7)',
-                            'rgba(251, 191, 36, 0.7)',
-                            'rgba(239, 68, 68, 0.7)',
-                            'rgba(139, 92, 246, 0.7)'
-                        ]
-                    }]
+                    datasets: [
+                        {
+                            label: 'ناجحة ✅',
+                            data: allEmployees.map(e => (employeeCallMap[e.id] || {}).completed || 0),
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)'
+                        },
+                        {
+                            label: 'فشلت ❌',
+                            data: allEmployees.map(e => (employeeCallMap[e.id] || {}).failed || 0),
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)'
+                        },
+                        {
+                            label: 'لم يرد 📵',
+                            data: allEmployees.map(e => ((employeeCallMap[e.id] || {}).noAnswer || 0) + ((employeeCallMap[e.id] || {}).busy || 0)),
+                            backgroundColor: 'rgba(251, 191, 36, 0.8)'
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true
+                    maintainAspectRatio: true,
+                    scales: { y: { beginAtZero: true } }
                 }
             });
 
-            // Trends Chart
+            // Trends Chart — real data from last 7 days
             const trendsCtx = document.getElementById('trendsChart').getContext('2d');
             const last7Days = [];
+            const dailyCounts = [];
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
-                last7Days.push(date.toLocaleDateString('ar-EG', { weekday: 'short' }));
+                const dateStr = date.toISOString().split('T')[0];
+                last7Days.push(date.toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' }));
+                dailyCounts.push(allCalls.filter(c => {
+                    const callDate = new Date(c.startTime || c.createdAt || 0).toISOString().split('T')[0];
+                    return callDate === dateStr;
+                }).length);
             }
-            
             new Chart(trendsCtx, {
                 type: 'line',
                 data: {
                     labels: last7Days,
                     datasets: [{
                         label: 'المكالمات',
-                        data: Array.from({length: 7}, () => Math.floor(Math.random() * 50)),
+                        data: dailyCounts,
                         borderColor: 'rgba(94, 196, 212, 1)',
                         backgroundColor: 'rgba(94, 196, 212, 0.1)',
                         tension: 0.4,
                         fill: true
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true
-                }
+                options: { responsive: true, maintainAspectRatio: true }
             });
 
             // Role Chart
             const roleCtx = document.getElementById('roleChart').getContext('2d');
-            const roleCounts = {
-                admin: 0,
-                supervisor: 0,
-                agent: 0,
-                viewer: 0
-            };
+            const roleCounts = { admin: 0, supervisor: 0, agent: 0, viewer: 0 };
             allEmployees.forEach(e => {
                 roleCounts[e.role] = (roleCounts[e.role] || 0) + 1;
             });
-            
             new Chart(roleCtx, {
                 type: 'pie',
                 data: {
@@ -670,10 +854,7 @@
                         ]
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true
-                }
+                options: { responsive: true, maintainAspectRatio: true }
             });
         }
 
@@ -687,6 +868,7 @@
                 const minutesAllocated = usage.minutesAllocated || 0;
                 const minutesRemaining = minutesAllocated - minutesUsed;
                 const usagePercent = minutesAllocated > 0 ? (minutesUsed / minutesAllocated) * 100 : 0;
+                const callStats = employeeCallMap[emp.id] || { total: 0 };
                 
                 let progressClass = '';
                 if (usagePercent > 80) progressClass = 'critical';
@@ -703,13 +885,13 @@
                 tr.innerHTML = `
                     <td><strong>${emp.name}</strong><br><small style="color: #6b7280;">${emp.username}</small></td>
                     <td>${roleNames[emp.role] || emp.role}</td>
-                    <td>${Math.floor(Math.random() * 100)}</td>
+                    <td><strong>${callStats.total || 0}</strong></td>
                     <td>${minutesUsed.toLocaleString()} دقيقة</td>
                     <td>${minutesRemaining.toLocaleString()} دقيقة</td>
                     <td>
                         <div>${usagePercent.toFixed(1)}%</div>
                         <div class="progress-bar">
-                            <div class="progress-fill ${progressClass}" style="width: ${usagePercent}%"></div>
+                            <div class="progress-fill ${progressClass}" style="width: ${Math.min(usagePercent, 100)}%"></div>
                         </div>
                     </td>
                     <td>
@@ -722,21 +904,75 @@
             });
         }
 
+        function renderCallAnalytics() {
+            const tbody = document.getElementById('callAnalyticsBody');
+            tbody.innerHTML = '';
+
+            if (allCalls.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px; color: #6b7280;">لا توجد مكالمات في الفترة المحددة</td></tr>';
+                document.getElementById('callAnalyticsSummary').textContent = '';
+                return;
+            }
+
+            // Merge known employees + employees found only in call records
+            const allIds = [...new Set([
+                ...allEmployees.map(e => e.id),
+                ...allCalls.map(c => c.employeeId).filter(Boolean)
+            ])];
+
+            let rows = allIds.map(id => {
+                const emp = allEmployees.find(e => e.id === id);
+                const stats = employeeCallMap[id] || { total: 0, completed: 0, failed: 0, noAnswer: 0, busy: 0, duration: 0 };
+                const name = emp ? emp.name : (id === 'unknown' ? 'غير معروف' : id);
+                const username = emp ? emp.username : '';
+                const successRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+                const totalDurationMin = Math.round(stats.duration / 60);
+                return { id, name, username, stats, successRate, totalDurationMin };
+            });
+
+            rows.sort((a, b) => b.stats.total - a.stats.total);
+
+            rows.forEach(({ name, username, stats, successRate, totalDurationMin }) => {
+                const tr = document.createElement('tr');
+                const rateColor = successRate >= 70 ? '#065f46' : successRate >= 40 ? '#92400e' : '#991b1b';
+                const rateBg = successRate >= 70 ? '#d1fae5' : successRate >= 40 ? '#fef3c7' : '#fee2e2';
+                tr.innerHTML = `
+                    <td><strong>${name}</strong>${username ? `<br><small style="color:#6b7280">${username}</small>` : ''}</td>
+                    <td><strong style="font-size:18px">${stats.total}</strong></td>
+                    <td><span style="color:#059669; font-weight:bold">✅ ${stats.completed}</span></td>
+                    <td><span style="color:#dc2626; font-weight:bold">❌ ${stats.failed}</span></td>
+                    <td><span style="color:#d97706; font-weight:bold">📵 ${stats.noAnswer + stats.busy}</span></td>
+                    <td>${totalDurationMin} دقيقة</td>
+                    <td>
+                        <span style="padding:5px 14px; border-radius:20px; font-size:13px; font-weight:bold; background:${rateBg}; color:${rateColor}">
+                            ${successRate}%
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const completed = allCalls.filter(c => c.status === 'completed').length;
+            const rate = Math.round(completed / allCalls.length * 100);
+            document.getElementById('callAnalyticsSummary').textContent =
+                `إجمالي: ${allCalls.length} مكالمة | نسبة النجاح: ${rate}%`;
+        }
+
         function applyFilters() {
-            // Implement filtering logic
             loadData();
         }
 
         function exportReport() {
-            // Generate CSV
-            let csv = 'الموظف,الدور,المكالمات,الدقائق المستخدمة,الدقائق المتبقية,معدل الاستخدام,الحالة\n';
+            // Generate CSV with real data
+            let csv = 'الموظف,الدور,إجمالي المكالمات,ناجحة,فشلت,لم يرد,الدقائق المستخدمة,الدقائق المتبقية,نسبة النجاح,الحالة\n';
             
             allEmployees.forEach(emp => {
                 const usage = emp.minutesUsage || {};
                 const minutesUsed = usage.minutesUsed || 0;
                 const minutesAllocated = usage.minutesAllocated || 0;
                 const minutesRemaining = minutesAllocated - minutesUsed;
-                const usagePercent = minutesAllocated > 0 ? (minutesUsed / minutesAllocated) * 100 : 0;
+                const calls = employeeCallMap[emp.id] || { total: 0, completed: 0, failed: 0, noAnswer: 0, busy: 0 };
+                const successRate = calls.total > 0 ? Math.round((calls.completed / calls.total) * 100) : 0;
                 
                 const roleNames = {
                     admin: 'مدير',
@@ -745,7 +981,7 @@
                     viewer: 'مراقب'
                 };
 
-                csv += `${emp.name},${roleNames[emp.role]},${Math.floor(Math.random() * 100)},${minutesUsed},${minutesRemaining},${usagePercent.toFixed(1)}%,${emp.active ? 'نشط' : 'غير نشط'}\n`;
+                csv += `${emp.name},${roleNames[emp.role]},${calls.total},${calls.completed},${calls.failed},${calls.noAnswer + calls.busy},${minutesUsed},${minutesRemaining},${successRate}%,${emp.active ? 'نشط' : 'غير نشط'}\n`;
             });
 
             // Download

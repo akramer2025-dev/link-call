@@ -76,7 +76,7 @@ module.exports = async (req, res) => {
                     const compSnap = await getDoc(doc(db, 'companies', companyId));
                     if (compSnap.exists()) {
                         const comp       = compSnap.data();
-                        const oldBalance = comp.balance !== undefined ? comp.balance : 61.0;
+                        const oldBalance = comp.balance !== undefined ? comp.balance : 121.0;
                         const newBalance = Math.max(0, oldBalance - cost);
 
                         await updateDoc(doc(db, 'companies', companyId), {

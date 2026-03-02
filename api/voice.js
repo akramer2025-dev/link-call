@@ -107,6 +107,25 @@ module.exports = async (req, res) => {
         
         console.log('📞 مكالمة جديدة:', { callSid, to: callTo, formattedTo: formattedCallTo, employeeId, companyId });
 
+        // ── جلب رقم Twilio الخاص بالشركة من Firestore ──
+        let callerPhoneNumber = TWILIO_PHONE_NUMBER; // fallback للرقم الافتراضي
+        if (companyId) {
+            try {
+                const { getDb } = require('../utils/firebase');
+                const { doc, getDoc } = require('firebase/firestore');
+                const companySnap = await getDoc(doc(getDb(), 'companies', companyId));
+                if (companySnap.exists()) {
+                    const companyData = companySnap.data();
+                    if (companyData.twilioPhone) {
+                        callerPhoneNumber = companyData.twilioPhone;
+                        console.log('✅ رقم Twilio للشركة:', callerPhoneNumber, '| شركة:', companyData.companyName);
+                    }
+                }
+            } catch (e) {
+                console.error('⚠️ جلب بيانات الشركة فشل - سيُستخدم الرقم الافتراضي:', e.message);
+            }
+        }
+
         // حفظ callSid → companyId في Firestore للخصم لاحقاً
         if (callSid && companyId) {
             try {
@@ -115,6 +134,7 @@ module.exports = async (req, res) => {
                 await setDoc(doc(getDb(), 'active_calls', callSid), {
                     companyId,
                     employeeId,
+                    callerPhone: callerPhoneNumber,
                     startedAt: new Date().toISOString()
                 });
             } catch (e) { console.error('⚠️ حفظ active_calls فشل:', e.message); }
@@ -123,7 +143,7 @@ module.exports = async (req, res) => {
         const twiml = new twilio.twiml.VoiceResponse();
         
         const dial = twiml.dial({
-            callerId: TWILIO_PHONE_NUMBER,
+            callerId: callerPhoneNumber,
             record: 'record-from-answer-dual',
             recordingStatusCallback: '/api/recording-status',
             recordingStatusCallbackEvent: 'completed'

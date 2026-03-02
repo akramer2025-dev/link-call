@@ -31,6 +31,7 @@
       "createdAt": "2026-03-01T12:00:00.000Z",
       "lastLoginAt": null,
       "isVerified": true,
+      "twilioPhone": "+12564884883",
       "notes": "عميل مدفوع - Enterprise - محمي من الحذف"
     }
   ]

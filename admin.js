@@ -1043,7 +1043,8 @@ async function loadCompanies() {
                 subscription: c.plan || c.subscription || 'free',
                 isActive: c.status === 'active',
                 employeesCount: c.employeesCount || 0,
-                createdAt: c.createdAt || ''
+                createdAt: c.createdAt || '',
+                twilioPhone: c.twilioPhone || ''
             }));
             renderCompanies();
             updateCompaniesStats();
@@ -1096,6 +1097,13 @@ function renderCompanies() {
                     <span class="company-stat-label">تاريخ التسجيل</span>
                 </div>
             </div>
+            ${company.twilioPhone ? `
+            <div style="margin: 10px 0; padding: 8px 12px; background: rgba(102,126,234,0.1); border-radius: 8px; font-size: 13px; direction: ltr; color: #667eea; font-weight: 600;">
+                📞 Twilio: ${company.twilioPhone}
+            </div>` : `
+            <div style="margin: 10px 0; padding: 8px 12px; background: rgba(255,152,0,0.1); border-radius: 8px; font-size: 12px; color: #ff9800;">
+                ⚠️ لا يوجد رقم Twilio مخصص - اضغط تعديل لإضافته
+            </div>`}
             <div class="company-actions">
                 <button class="btn-view" onclick="viewCompany('${company.id}')">👁️ عرض</button>
                 <button class="btn-edit" onclick="editCompany('${company.id}')">✏️ تعديل</button>
@@ -1140,15 +1148,28 @@ async function editCompany(companyId) {
     const newName = prompt('اسم الشركة:', company.name);
     if (!newName) return;
     
+    const newTwilioPhone = prompt(
+        '📞 رقم Twilio الخاص بالشركة:\n(اتركه فارغاً لاستخدام الرقم الافتراضي)\n(الصيغة: +12564884883)',
+        company.twilioPhone || ''
+    );
+    // إذا ضغط Cancel يرجع null - نقبل القيمة الفارغة
+    if (newTwilioPhone === null) return;
+    
     try {
         const response = await fetch(`${baseUrl}/api/companies/${companyId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: newName })
+            body: JSON.stringify({ 
+                companyName: newName,
+                twilioPhone: newTwilioPhone.trim() || null
+            })
         });
         
         if (response.ok) {
-            alert('✅ تم تحديث الشركة');
+            const msg = newTwilioPhone.trim()
+                ? `✅ تم تحديث الشركة\n\n📞 رقم Twilio: ${newTwilioPhone.trim()}\nسيُستخدم هذا الرقم كـ Caller ID لجميع مكالمات ${newName}`
+                : '✅ تم تحديث الشركة (سيُستخدم الرقم الافتراضي)';
+            alert(msg);
             loadCompanies();
         } else {
             const data = await response.json();

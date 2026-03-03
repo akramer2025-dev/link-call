@@ -5,7 +5,7 @@ console.log('🛠️ Admin Dashboard Loaded');
 function checkAdminAccess() {
     const userRole = sessionStorage.getItem('userRole');
     const username = sessionStorage.getItem('username');
-    
+
     // السماح بالدخول على localhost للتطوير
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         // تعيين بيانات مطور افتراضية
@@ -13,7 +13,7 @@ function checkAdminAccess() {
         if (!username) sessionStorage.setItem('username', 'akram');
         return true;
     }
-    
+
     if (userRole !== 'admin' && username !== 'akram') {
         alert('⛔ غير مصرح لك بالدخول لهذه الصفحة');
         window.location.href = 'index.html';
@@ -49,7 +49,7 @@ async function loadBalance() {
                 el.textContent = `$${Number(d.balance).toFixed(2)}`;
                 el.style.color = d.balance < 5 ? '#dc2626' : d.balance < 15 ? '#d97706' : '#059669';
             }
-            if (min)  min.textContent  = `${Number(d.totalMinutesUsed || 0).toFixed(1)} دق`;
+            if (min) min.textContent = `${Number(d.totalMinutesUsed || 0).toFixed(1)} دق`;
             if (cost) cost.textContent = `$${Number(d.totalCostDeducted || 0).toFixed(3)}`;
             if (rate) rate.textContent = `$${d.costPerMinute || 0.014}`;
         }
@@ -60,18 +60,18 @@ async function loadBalance() {
 async function loadCompanyProfile() {
     const companyId = sessionStorage.getItem('companyId');
     if (!companyId) return;
-    const nameEl  = document.getElementById('edit-company-name');
+    const nameEl = document.getElementById('edit-company-name');
     const adminEl = document.getElementById('edit-admin-name');
-    if (nameEl)  nameEl.value  = sessionStorage.getItem('companyName') || '';
-    if (adminEl) adminEl.value = sessionStorage.getItem('fullname')    || '';
+    if (nameEl) nameEl.value = sessionStorage.getItem('companyName') || '';
+    if (adminEl) adminEl.value = sessionStorage.getItem('fullname') || '';
 }
 
 // حفظ بيانات الشركة
 async function saveCompanyProfile() {
-    const companyId   = sessionStorage.getItem('companyId');
+    const companyId = sessionStorage.getItem('companyId');
     const companyName = document.getElementById('edit-company-name')?.value?.trim();
-    const adminName   = document.getElementById('edit-admin-name')?.value?.trim();
-    const msgEl       = document.getElementById('profile-save-msg');
+    const adminName = document.getElementById('edit-admin-name')?.value?.trim();
+    const msgEl = document.getElementById('profile-save-msg');
     if (!companyId || !companyName) return;
     try {
         const r = await fetch(`${API_BASE_URL}/api/companies/${companyId}`, {
@@ -114,20 +114,20 @@ document.addEventListener('DOMContentLoaded', () => {
 function initNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
     const sections = document.querySelectorAll('.section');
-    
+
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             const targetSection = item.dataset.section;
-            
+
             // تحديث القائمة
             navItems.forEach(nav => nav.classList.remove('active'));
             item.classList.add('active');
-            
+
             // تحديث الأقسام
             sections.forEach(section => section.classList.remove('active'));
             document.getElementById(`${targetSection}-section`).classList.add('active');
-            
+
             // تحديث العنوان
             const titles = {
                 'dashboard': 'لوحة التحكم',
@@ -140,7 +140,7 @@ function initNavigation() {
                 'settings': 'إعدادات النظام'
             };
             document.getElementById('page-title').textContent = titles[targetSection] || 'لوحة التحكم';
-            
+
             // تحميل بيانات القسم
             if (targetSection === 'companies') {
                 loadCompanies();
@@ -148,19 +148,19 @@ function initNavigation() {
                 loadBalance();
                 loadCompanyProfile();
             }
-            
+
             // إغلاق القائمة الجانبية في الهاتف عند اختيار قسم
             closeMobileSidebar();
         });
     });
-    
+
     // إغلاق الـ Modals
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', () => {
             btn.closest('.modal').classList.remove('active');
         });
     });
-    
+
     // التحكم في القائمة الجانبية للهاتف
     initMobileSidebar();
 }
@@ -170,14 +170,14 @@ function initMobileSidebar() {
     const menuBtn = document.getElementById('mobile-menu-btn');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
-    
+
     if (menuBtn) {
         menuBtn.addEventListener('click', () => {
             sidebar.classList.toggle('open');
             overlay.classList.toggle('show');
         });
     }
-    
+
     if (overlay) {
         overlay.addEventListener('click', closeMobileSidebar);
     }
@@ -186,7 +186,7 @@ function initMobileSidebar() {
 function closeMobileSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
-    
+
     if (sidebar) sidebar.classList.remove('open');
     if (overlay) overlay.classList.remove('show');
 }
@@ -216,7 +216,7 @@ async function loadDashboardData() {
                 totalRecordings: allRecordings.length
             });
         }
-        
+
         // تحميل المستخدمين الأونلاين
         loadOnlineUsers();
         // تحديث كل 10 ثواني
@@ -243,12 +243,12 @@ function renderOnlineUsers(data) {
     const countEl = document.getElementById('online-count');
     const listEl = document.getElementById('online-users-list');
     const lastLoginEl = document.getElementById('last-login-info');
-    
+
     // تحديث العدد
     if (countEl) {
         countEl.textContent = data.count || 0;
     }
-    
+
     // عرض قائمة المستخدمين الأونلاين
     if (listEl) {
         if (data.users && data.users.length > 0) {
@@ -266,7 +266,7 @@ function renderOnlineUsers(data) {
             listEl.innerHTML = '<div class="no-users">🔴 لا يوجد مستخدمين أونلاين حالياً</div>';
         }
     }
-    
+
     // عرض آخر تسجيل دخول
     if (lastLoginEl) {
         if (data.lastLoggedIn) {
@@ -288,7 +288,7 @@ function renderOnlineUsers(data) {
             lastLoginEl.innerHTML = '<div class="no-login">لا توجد بيانات تسجيل دخول</div>';
         }
     }
-    
+
     // تحديث عدد الموظفين النشطين في الإحصائيات
     const activeEmployeesEl = document.getElementById('active-employees');
     if (activeEmployeesEl) {
@@ -301,13 +301,13 @@ function formatTimeAgo(dateString) {
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'الآن';
     if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
-    
+
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `منذ ${diffHours} ساعة`;
-    
+
     const diffDays = Math.floor(diffHours / 24);
     return `منذ ${diffDays} يوم`;
 }
@@ -319,7 +319,7 @@ function updateDashboardStats(data) {
     document.getElementById('active-employees').textContent = data.activeEmployees || 0;
     document.getElementById('total-duration').textContent = formatDuration(data.totalDuration || 0);
     document.getElementById('total-recordings').textContent = data.totalRecordings || 0;
-    
+
     // تحديث الرسوم البيانية
     renderWeeklyChart();
     renderDistributionChart();
@@ -330,7 +330,7 @@ async function loadAllCalls() {
     try {
         // أولاً، محاولة جلب من admin/all-calls
         let response = await fetch(`${baseUrl}/admin/all-calls`);
-        
+
         if (response.ok) {
             const data = await response.json();
             allCalls = Array.isArray(data) ? data : [];
@@ -345,7 +345,7 @@ async function loadAllCalls() {
                 allCalls = [];
             }
         }
-        
+
         console.log(`📊 تم تحميل ${allCalls.length} مكالمة`);
         renderCallsTable();
         renderRecentCalls();
@@ -361,11 +361,11 @@ async function loadAllCalls() {
 function renderCallsTable(page = 1) {
     const tbody = document.getElementById('calls-table-body');
     if (!tbody) return;
-    
+
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const pageCalls = allCalls.slice(startIndex, endIndex);
-    
+
     tbody.innerHTML = pageCalls.map(call => `
         <tr>
             <td>${formatDate(call.dateCreated || call.date)}</td>
@@ -386,7 +386,7 @@ function renderCallsTable(page = 1) {
             </td>
         </tr>
     `).join('');
-    
+
     renderPagination(allCalls.length, page);
 }
 
@@ -394,14 +394,14 @@ function renderCallsTable(page = 1) {
 function renderPagination(totalItems, currentPage) {
     const pagination = document.getElementById('calls-pagination');
     if (!pagination) return;
-    
+
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     let html = '';
-    
+
     if (currentPage > 1) {
         html += `<button onclick="renderCallsTable(${currentPage - 1})">السابق</button>`;
     }
-    
+
     for (let i = 1; i <= totalPages; i++) {
         if (i === currentPage) {
             html += `<button class="active">${i}</button>`;
@@ -411,11 +411,11 @@ function renderPagination(totalItems, currentPage) {
             html += '...';
         }
     }
-    
+
     if (currentPage < totalPages) {
         html += `<button onclick="renderCallsTable(${currentPage + 1})">التالي</button>`;
     }
-    
+
     pagination.innerHTML = html;
 }
 
@@ -423,9 +423,9 @@ function renderPagination(totalItems, currentPage) {
 function renderRecentCalls() {
     const container = document.getElementById('recent-calls-list');
     if (!container) return;
-    
+
     const recentCalls = allCalls.slice(0, 5);
-    
+
     container.innerHTML = recentCalls.map(call => `
         <div class="recent-item">
             <div class="icon">${call.status === 'completed' ? '✅' : '📵'}</div>
@@ -504,7 +504,7 @@ function renderEmployeesGrid() {
         const roleLabel = ROLE_LABELS[emp.role] || emp.role || '—';
         const deptLabel = DEPT_LABELS[emp.department] || emp.departmentArabic || emp.department || 'غير محدد';
         const minAlloc = emp.minutesAllocated || 0;
-        const minUsed  = emp.minutesUsed || 0;
+        const minUsed = emp.minutesUsed || 0;
         const isActive = emp.active !== false;
         const statusBadge = isActive
             ? '<span style="background:rgba(16,185,129,0.2);color:#34d399;border:1px solid rgba(16,185,129,0.3);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;">✅ نشط</span>'
@@ -541,14 +541,14 @@ function renderEmployeesGrid() {
 function renderEmployeeActivity() {
     const container = document.getElementById('employee-activity-list');
     if (!container) return;
-    
+
     // ترتيب حسب آخر نشاط
     const sortedEmployees = [...allEmployees].sort((a, b) => {
         const aLastCall = allCalls.find(c => c.employeeId == a.id);
         const bLastCall = allCalls.find(c => c.employeeId == b.id);
         return (bLastCall?.dateCreated || 0) - (aLastCall?.dateCreated || 0);
     }).slice(0, 5);
-    
+
     container.innerHTML = sortedEmployees.map(emp => {
         const lastCall = allCalls.find(c => c.employeeId == emp.id);
         return `
@@ -582,7 +582,7 @@ async function loadRecordings() {
 function renderTranscriptList() {
     const container = document.getElementById('transcript-list');
     if (!container) return;
-    
+
     container.innerHTML = allRecordings.map((rec, index) => `
         <div class="transcript-item" onclick="loadTranscript('${rec.recordingSid || rec.sid}', ${index})">
             <div class="phone" dir="ltr">${rec.to || rec.phone || 'غير معروف'}</div>
@@ -600,23 +600,23 @@ async function loadTranscript(recordingSid, index) {
     document.querySelectorAll('.transcript-item').forEach((item, i) => {
         item.classList.toggle('active', i === index);
     });
-    
+
     const recording = allRecordings[index];
     const metaEl = document.getElementById('transcript-meta');
     const contentEl = document.getElementById('transcript-content');
-    
+
     metaEl.innerHTML = `
         <span>📞 ${recording.to || recording.phone || 'غير معروف'}</span> | 
         <span>📅 ${formatDate(recording.dateCreated)}</span> | 
         <span>⏱️ ${formatDuration(recording.duration)}</span>
     `;
-    
+
     // التحقق من وجود نص محفوظ
     if (recording.transcript) {
         renderTranscriptContent(recording.transcript);
         return;
     }
-    
+
     contentEl.innerHTML = `
         <div style="text-align: center; padding: 50px;">
             <p>لم يتم تحويل هذا التسجيل بعد</p>
@@ -633,12 +633,12 @@ async function transcribeCall(recordingSid) {
     const progressFill = document.getElementById('transcribe-progress-fill');
     const statusText = document.getElementById('transcribe-status');
     const resultDiv = document.getElementById('transcribe-result');
-    
+
     modal.classList.add('active');
     progressFill.style.width = '0%';
     statusText.textContent = 'جاري بدء التحويل...';
     resultDiv.innerHTML = '';
-    
+
     try {
         // محاكاة التقدم
         let progress = 0;
@@ -651,19 +651,19 @@ async function transcribeCall(recordingSid) {
                 else statusText.textContent = 'جاري تحويل إلى نص...';
             }
         }, 500);
-        
+
         const response = await fetch(`${baseUrl}/admin/transcribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ recordingSid })
         });
-        
+
         clearInterval(progressInterval);
         progressFill.style.width = '100%';
-        
+
         if (response.ok) {
             const data = await response.json();
-            
+
             if (data.pending) {
                 statusText.textContent = '⏳ جاري المعالجة...';
                 resultDiv.innerHTML = `
@@ -717,7 +717,7 @@ async function transcribeCall(recordingSid) {
 // ========== عرض محتوى النص ==========
 function renderTranscriptContent(transcript) {
     const contentEl = document.getElementById('transcript-content');
-    
+
     // تحويل النص إلى رسائل (إذا كان النص يحتوي على تنسيق)
     if (typeof transcript === 'string') {
         contentEl.innerHTML = `<p style="line-height: 1.8;">${transcript}</p>`;
@@ -733,34 +733,34 @@ function renderTranscriptContent(transcript) {
 
 // ========== المكالمات الفائتة ==========
 function loadMissedCalls() {
-    const missedCalls = allCalls.filter(c => 
-        c.status === 'no-answer' || 
-        c.status === 'missed' || 
+    const missedCalls = allCalls.filter(c =>
+        c.status === 'no-answer' ||
+        c.status === 'missed' ||
         c.status === 'busy' ||
         c.status === 'failed'
     );
-    
+
     // تحديث الإحصائيات
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate() - 7);
-    
+
     const monthAgo = new Date(today);
     monthAgo.setMonth(monthAgo.getMonth() - 1);
-    
-    document.getElementById('missed-today').textContent = 
+
+    document.getElementById('missed-today').textContent =
         missedCalls.filter(c => new Date(c.dateCreated) >= today).length;
-    document.getElementById('missed-week').textContent = 
+    document.getElementById('missed-week').textContent =
         missedCalls.filter(c => new Date(c.dateCreated) >= weekAgo).length;
-    document.getElementById('missed-month').textContent = 
+    document.getElementById('missed-month').textContent =
         missedCalls.filter(c => new Date(c.dateCreated) >= monthAgo).length;
-    
+
     // عرض الشبكة
     const container = document.getElementById('missed-grid');
     if (!container) return;
-    
+
     container.innerHTML = missedCalls.slice(0, 20).map(call => `
         <div class="missed-card">
             <div class="phone" dir="ltr">${call.to || call.phone || 'غير معروف'}</div>
@@ -780,27 +780,27 @@ function loadMissedCalls() {
 function renderWeeklyChart() {
     const container = document.getElementById('weekly-chart');
     if (!container) return;
-    
+
     const days = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
     const today = new Date().getDay();
-    
+
     // حساب المكالمات لكل يوم
     const weeklyCalls = days.map((day, index) => {
         const dayDate = new Date();
         dayDate.setDate(dayDate.getDate() - ((today - index + 7) % 7));
         dayDate.setHours(0, 0, 0, 0);
-        
+
         const nextDay = new Date(dayDate);
         nextDay.setDate(nextDay.getDate() + 1);
-        
+
         return allCalls.filter(c => {
             const callDate = new Date(c.dateCreated);
             return callDate >= dayDate && callDate < nextDay;
         }).length;
     });
-    
+
     const maxCalls = Math.max(...weeklyCalls, 1);
-    
+
     container.innerHTML = days.map((day, index) => `
         <div style="text-align: center;">
             <div class="bar" style="height: ${(weeklyCalls[index] / maxCalls) * 200}px;" data-value="${weeklyCalls[index]}"></div>
@@ -812,21 +812,21 @@ function renderWeeklyChart() {
 function renderDistributionChart() {
     const container = document.getElementById('distribution-chart');
     if (!container) return;
-    
+
     const completed = allCalls.filter(c => c.status === 'completed').length;
     const missed = allCalls.filter(c => c.status === 'no-answer' || c.status === 'missed').length;
     const busy = allCalls.filter(c => c.status === 'busy').length;
     const other = allCalls.length - completed - missed - busy;
-    
+
     const total = allCalls.length || 1;
-    
+
     container.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="width: 15px; height: 15px; background: var(--success-color); border-radius: 3px;"></div>
                 <span>مكتملة</span>
                 <div style="flex: 1; height: 20px; background: var(--bg-card-hover); border-radius: 10px; overflow: hidden;">
-                    <div style="width: ${(completed/total)*100}%; height: 100%; background: var(--success-color);"></div>
+                    <div style="width: ${(completed / total) * 100}%; height: 100%; background: var(--success-color);"></div>
                 </div>
                 <span>${completed}</span>
             </div>
@@ -834,7 +834,7 @@ function renderDistributionChart() {
                 <div style="width: 15px; height: 15px; background: var(--danger-color); border-radius: 3px;"></div>
                 <span>فائتة</span>
                 <div style="flex: 1; height: 20px; background: var(--bg-card-hover); border-radius: 10px; overflow: hidden;">
-                    <div style="width: ${(missed/total)*100}%; height: 100%; background: var(--danger-color);"></div>
+                    <div style="width: ${(missed / total) * 100}%; height: 100%; background: var(--danger-color);"></div>
                 </div>
                 <span>${missed}</span>
             </div>
@@ -842,7 +842,7 @@ function renderDistributionChart() {
                 <div style="width: 15px; height: 15px; background: var(--warning-color); border-radius: 3px;"></div>
                 <span>مشغول</span>
                 <div style="flex: 1; height: 20px; background: var(--bg-card-hover); border-radius: 10px; overflow: hidden;">
-                    <div style="width: ${(busy/total)*100}%; height: 100%; background: var(--warning-color);"></div>
+                    <div style="width: ${(busy / total) * 100}%; height: 100%; background: var(--warning-color);"></div>
                 </div>
                 <span>${busy}</span>
             </div>
@@ -850,7 +850,7 @@ function renderDistributionChart() {
                 <div style="width: 15px; height: 15px; background: var(--info-color); border-radius: 3px;"></div>
                 <span>أخرى</span>
                 <div style="flex: 1; height: 20px; background: var(--bg-card-hover); border-radius: 10px; overflow: hidden;">
-                    <div style="width: ${(other/total)*100}%; height: 100%; background: var(--info-color);"></div>
+                    <div style="width: ${(other / total) * 100}%; height: 100%; background: var(--info-color);"></div>
                 </div>
                 <span>${other}</span>
             </div>
@@ -884,7 +884,7 @@ function formatTimeAgo(dateStr) {
     const date = new Date(dateStr);
     const now = new Date();
     const diff = Math.floor((now - date) / 1000);
-    
+
     if (diff < 60) return 'الآن';
     if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
     if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
@@ -931,9 +931,9 @@ function calculateTotalDuration(calls) {
 function populateEmployeeFilter() {
     const select = document.getElementById('call-filter-employee');
     if (!select) return;
-    
+
     select.innerHTML = '<option value="all">جميع الموظفين</option>' +
-        allEmployees.map(emp => 
+        allEmployees.map(emp =>
             `<option value="${emp.id}">${emp.name || emp.fullname}</option>`
         ).join('');
 }
@@ -960,10 +960,10 @@ function playRecording(url) {
 function showCallDetails(callSid) {
     const call = allCalls.find(c => c.sid === callSid);
     if (!call) return;
-    
+
     const modal = document.getElementById('call-detail-modal');
     const body = document.getElementById('call-detail-body');
-    
+
     body.innerHTML = `
         <div style="display: grid; gap: 15px;">
             <div><strong>رقم المكالمة:</strong> ${call.sid}</div>
@@ -981,20 +981,20 @@ function showCallDetails(callSid) {
             ` : ''}
         </div>
     `;
-    
+
     modal.classList.add('active');
 }
 
 async function deleteCall(callSid) {
     if (!confirm('هل أنت متأكد من حذف هذه المكالمة؟')) return;
-    
+
     try {
         const response = await fetch(`${baseUrl}/admin/delete-call`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ callSid })
         });
-        
+
         if (response.ok) {
             allCalls = allCalls.filter(c => c.sid !== callSid);
             renderCallsTable(currentPage);
@@ -1024,11 +1024,11 @@ document.getElementById('export-calls')?.addEventListener('click', () => {
         formatDuration(call.duration),
         getStatusText(call.status)
     ]);
-    
+
     const csvContent = [headers, ...rows]
         .map(row => row.join(','))
         .join('\n');
-    
+
     const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -1041,29 +1041,29 @@ document.getElementById('apply-call-filter')?.addEventListener('click', () => {
     const status = document.getElementById('call-filter-status').value;
     const employee = document.getElementById('call-filter-employee').value;
     const date = document.getElementById('call-filter-date').value;
-    
+
     let filteredCalls = [...allCalls];
-    
+
     if (status !== 'all') {
         filteredCalls = filteredCalls.filter(c => c.status === status);
     }
-    
+
     if (employee !== 'all') {
         filteredCalls = filteredCalls.filter(c => c.employeeId == employee);
     }
-    
+
     if (date) {
         const filterDate = new Date(date);
         filterDate.setHours(0, 0, 0, 0);
         const nextDay = new Date(filterDate);
         nextDay.setDate(nextDay.getDate() + 1);
-        
+
         filteredCalls = filteredCalls.filter(c => {
             const callDate = new Date(c.dateCreated);
             return callDate >= filterDate && callDate < nextDay;
         });
     }
-    
+
     // تحديث العرض مؤقتاً
     const originalCalls = allCalls;
     allCalls = filteredCalls;
@@ -1074,19 +1074,19 @@ document.getElementById('apply-call-filter')?.addEventListener('click', () => {
 // ========== البحث العام ==========
 document.getElementById('global-search')?.addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase();
-    
+
     if (!query) {
         renderCallsTable(1);
         return;
     }
-    
-    const filtered = allCalls.filter(call => 
+
+    const filtered = allCalls.filter(call =>
         (call.to || '').includes(query) ||
         (call.phone || '').includes(query) ||
         (call.employeeName || '').toLowerCase().includes(query) ||
         getEmployeeName(call.employeeId)?.toLowerCase().includes(query)
     );
-    
+
     const originalCalls = allCalls;
     allCalls = filtered;
     renderCallsTable(1);
@@ -1127,7 +1127,7 @@ async function loadCompanies() {
 function renderCompanies() {
     const container = document.getElementById('companies-list');
     if (!container) return;
-    
+
     if (allCompanies.length === 0) {
         container.innerHTML = `
             <div class="no-data" style="grid-column: 1/-1; text-align: center; padding: 50px;">
@@ -1138,7 +1138,7 @@ function renderCompanies() {
         `;
         return;
     }
-    
+
     container.innerHTML = allCompanies.map(company => `
         <div class="company-card ${company.isActive ? '' : 'inactive'}">
             <div class="company-header">
@@ -1192,11 +1192,11 @@ function renderCompanies() {
 // إدارة رصيد الشركات
 // =========================================
 function openSetBalance(companyId, companyName) {
-    document.getElementById('balance-modal-company-id').value   = companyId;
+    document.getElementById('balance-modal-company-id').value = companyId;
     document.getElementById('balance-modal-company-name').textContent = companyName;
-    document.getElementById('balance-modal-amount').value        = '';
-    document.getElementById('balance-modal-msg').textContent     = '';
-    document.getElementById('balance-modal-msg').style.display   = 'none';
+    document.getElementById('balance-modal-amount').value = '';
+    document.getElementById('balance-modal-msg').textContent = '';
+    document.getElementById('balance-modal-msg').style.display = 'none';
 
     // جيب الرصيد الحالي
     fetch(`${baseUrl}/api/companies/balance?companyId=${companyId}`)
@@ -1216,14 +1216,14 @@ function closeSetBalance() {
 
 async function saveCompanyBalance() {
     const companyId = document.getElementById('balance-modal-company-id').value;
-    const amount    = parseFloat(document.getElementById('balance-modal-amount').value);
-    const msgEl     = document.getElementById('balance-modal-msg');
+    const amount = parseFloat(document.getElementById('balance-modal-amount').value);
+    const msgEl = document.getElementById('balance-modal-msg');
 
     if (isNaN(amount) || amount < 0) {
         msgEl.style.display = 'block';
         msgEl.style.background = '#fee2e2';
-        msgEl.style.color      = '#dc2626';
-        msgEl.textContent      = '⚠️ أدخل مبلغاً صحيحاً';
+        msgEl.style.color = '#dc2626';
+        msgEl.textContent = '⚠️ أدخل مبلغاً صحيحاً';
         return;
     }
 
@@ -1241,8 +1241,8 @@ async function saveCompanyBalance() {
         if (d.success) {
             msgEl.style.display = 'block';
             msgEl.style.background = '#d1fae5';
-            msgEl.style.color      = '#065f46';
-            msgEl.textContent      = `✅ تم تحديث الرصيد إلى $${parseFloat(d.balance).toFixed(2)}`;
+            msgEl.style.color = '#065f46';
+            msgEl.textContent = `✅ تم تحديث الرصيد إلى $${parseFloat(d.balance).toFixed(2)}`;
             document.getElementById('balance-modal-current').textContent = `الرصيد الحالي: $${parseFloat(d.balance).toFixed(2)}`;
         } else {
             throw new Error(d.error || 'فشل الحفظ');
@@ -1250,8 +1250,8 @@ async function saveCompanyBalance() {
     } catch (e) {
         msgEl.style.display = 'block';
         msgEl.style.background = '#fee2e2';
-        msgEl.style.color      = '#dc2626';
-        msgEl.textContent      = '❌ ' + e.message;
+        msgEl.style.color = '#dc2626';
+        msgEl.textContent = '❌ ' + e.message;
     } finally {
         btn.disabled = false;
         btn.textContent = '💾 حفظ الرصيد';
@@ -1262,7 +1262,7 @@ async function saveCompanyBalance() {
 function updateCompaniesStats() {
     const totalEl = document.getElementById('total-companies');
     const activeEl = document.getElementById('active-companies');
-    
+
     if (totalEl) totalEl.textContent = allCompanies.length;
     if (activeEl) activeEl.textContent = allCompanies.filter(c => c.isActive).length;
 }
@@ -1281,7 +1281,7 @@ function getSubscriptionName(type) {
 function viewCompany(companyId) {
     const company = allCompanies.find(c => c.id === companyId);
     if (!company) return;
-    
+
     alert(`🏢 ${company.name}\n\nالمدير: ${company.adminUsername}\nالاشتراك: ${getSubscriptionName(company.subscription)}\nالحالة: ${company.isActive ? 'نشط' : 'متوقف'}`);
 }
 
@@ -1289,27 +1289,27 @@ function viewCompany(companyId) {
 async function editCompany(companyId) {
     const company = allCompanies.find(c => c.id === companyId);
     if (!company) return;
-    
+
     const newName = prompt('اسم الشركة:', company.name);
     if (!newName) return;
-    
+
     const newTwilioPhone = prompt(
         '📞 رقم Twilio الخاص بالشركة:\n(اتركه فارغاً لاستخدام الرقم الافتراضي)\n(الصيغة: +12564884883)',
         company.twilioPhone || ''
     );
     // إذا ضغط Cancel يرجع null - نقبل القيمة الفارغة
     if (newTwilioPhone === null) return;
-    
+
     try {
         const response = await fetch(`${baseUrl}/api/companies/${companyId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 companyName: newName,
                 twilioPhone: newTwilioPhone.trim() || null
             })
         });
-        
+
         if (response.ok) {
             const msg = newTwilioPhone.trim()
                 ? `✅ تم تحديث الشركة\n\n📞 رقم Twilio: ${newTwilioPhone.trim()}\nسيُستخدم هذا الرقم كـ Caller ID لجميع مكالمات ${newName}`
@@ -1330,12 +1330,12 @@ async function deleteCompany(companyId) {
     if (!confirm('⚠️ هل تريد إيقاف هذه الشركة؟\n\nسيتم إيقاف جميع حسابات الموظفين التابعين لها.')) {
         return;
     }
-    
+
     try {
         const response = await fetch(`${baseUrl}/api/companies/${companyId}`, {
             method: 'DELETE'
         });
-        
+
         if (response.ok) {
             alert('✅ تم إيقاف الشركة');
             loadCompanies();
@@ -1355,7 +1355,7 @@ document.getElementById('add-company-btn')?.addEventListener('click', () => {
 
 document.getElementById('add-company-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const companyName = document.getElementById('company-name').value.trim();
     const companyPhone = document.getElementById('company-phone')?.value.trim() || '';
     const companyEmail = document.getElementById('company-email')?.value.trim() || '';
@@ -1363,18 +1363,18 @@ document.getElementById('add-company-form')?.addEventListener('submit', async (e
     const adminName = document.getElementById('company-admin-name').value.trim();
     const adminPassword = document.getElementById('company-admin-password').value;
     const subscription = document.getElementById('company-subscription').value;
-    
+
     // التحقق من البيانات
     if (!companyName || !adminUsername || !adminName || !adminPassword) {
         alert('❌ يرجى إدخال جميع البيانات المطلوبة');
         return;
     }
-    
+
     if (adminPassword.length < 8) {
         alert('❌ كلمة المرور يجب أن تكون 8 أحرف على الأقل');
         return;
     }
-    
+
     const data = {
         companyName,
         companyPhone,
@@ -1391,36 +1391,36 @@ document.getElementById('add-company-form')?.addEventListener('submit', async (e
         country: 'غير محدد',
         city: 'غير محدد'
     };
-    
+
     // عرض مؤشر تحميل
     const submitButton = e.target.querySelector('button[type="submit"]');
     const originalText = submitButton.textContent;
     submitButton.textContent = '⏳ جاري الإنشاء...';
     submitButton.disabled = true;
-    
+
     try {
         const response = await fetch(`${baseUrl}/api/companies/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok && result.success) {
             alert(`✅ تم إنشاء الشركة بنجاح! 🎉\n\n` +
-                  `📝 اسم الشركة: ${companyName}\n` +
-                  `👤 اسم المدير: ${adminName}\n` +
-                  `🔑 اسم المستخدم: ${adminUsername}\n` +
-                  `📦 الباقة: ${subscription === 'basic' ? 'أساسي' : subscription === 'pro' ? 'احترافي' : 'غير محدود'}\n` +
-                  `🆔 معرف الشركة: ${result.company.id}\n\n` +
-                  `✅ تم إنشاء قاعدة بيانات منفصلة تماماً للشركة\n` +
-                  `✅ تم إنشاء حساب المدير مع صلاحيات كاملة\n\n` +
-                  `يمكن للمدير تسجيل الدخول الآن والبدء في العمل! 🚀`);
-            
+                `📝 اسم الشركة: ${companyName}\n` +
+                `👤 اسم المدير: ${adminName}\n` +
+                `🔑 اسم المستخدم: ${adminUsername}\n` +
+                `📦 الباقة: ${subscription === 'basic' ? 'أساسي' : subscription === 'pro' ? 'احترافي' : 'غير محدود'}\n` +
+                `🆔 معرف الشركة: ${result.company.id}\n\n` +
+                `✅ تم إنشاء قاعدة بيانات منفصلة تماماً للشركة\n` +
+                `✅ تم إنشاء حساب المدير مع صلاحيات كاملة\n\n` +
+                `يمكن للمدير تسجيل الدخول الآن والبدء في العمل! 🚀`);
+
             document.getElementById('add-company-modal').classList.remove('active');
             document.getElementById('add-company-form').reset();
-            
+
             // إعادة تعيين البطاقات
             document.querySelectorAll('.subscription-card').forEach(card => {
                 card.style.borderColor = '#e0e6f0';
@@ -1428,7 +1428,7 @@ document.getElementById('add-company-form')?.addEventListener('submit', async (e
             });
             document.querySelector('.subscription-card[data-plan="basic"]').style.borderColor = '#667eea';
             document.querySelector('.subscription-card[data-plan="basic"]').style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
-            
+
             // تحديث قائمة الشركات إذا كانت موجودة
             if (typeof loadCompanies === 'function') {
                 await loadCompanies();
@@ -1450,8 +1450,8 @@ document.getElementById('add-company-form')?.addEventListener('submit', async (e
 // إضافة موظف جديد — يدعم مطور (بدون companyId) عبر منسدلة الشركات
 document.getElementById('add-employee-btn')?.addEventListener('click', () => {
     const companyId = sessionStorage.getItem('companyId');
-    const devRow    = document.getElementById('dev-company-row');
-    const compSel   = document.getElementById('employee-company-select');
+    const devRow = document.getElementById('dev-company-row');
+    const compSel = document.getElementById('employee-company-select');
     if (!companyId && devRow && compSel) {
         devRow.style.display = 'block';
         if (compSel.options.length <= 1 && allCompanies.length > 0) {
@@ -1485,18 +1485,18 @@ document.getElementById('add-employee-form')?.addEventListener('submit', async (
 
     const payload = {
         companyId,
-        name:             document.getElementById('employee-fullname').value.trim(),
-        username:         document.getElementById('employee-username').value.trim(),
-        password:         document.getElementById('employee-password').value,
-        email:            document.getElementById('employee-email').value.trim(),
-        phone:            document.getElementById('employee-phone').value.trim(),
-        title:            document.getElementById('employee-title').value.trim(),
-        department:       dept,
+        name: document.getElementById('employee-fullname').value.trim(),
+        username: document.getElementById('employee-username').value.trim(),
+        password: document.getElementById('employee-password').value,
+        email: document.getElementById('employee-email').value.trim(),
+        phone: document.getElementById('employee-phone').value.trim(),
+        title: document.getElementById('employee-title').value.trim(),
+        department: dept,
         departmentArabic: DEPT_LABELS[dept] || dept,
         role,
         permissions,
         minutesAllocated: parseInt(document.getElementById('employee-minutes').value) || 0,
-        active:           document.getElementById('employee-active').checked
+        active: document.getElementById('employee-active').checked
     };
 
     if (!payload.name || !payload.username) { alert('❌ الاسم الكامل واسم المستخدم حقول إلزامية'); return; }
@@ -1541,15 +1541,15 @@ const PRESETS = {
     supervisor: {
         role: 'supervisor',
         permissions: ['make_calls', 'view_calls', 'listen_recordings', 'download_recordings',
-                      'view_contacts', 'add_contacts', 'edit_contacts',
-                      'view_reports', 'view_employees', 'view_dashboard', 'edit_profile']
+            'view_contacts', 'add_contacts', 'edit_contacts',
+            'view_reports', 'view_employees', 'view_dashboard', 'edit_profile']
     },
     manager: {
         role: 'manager',
         permissions: ['make_calls', 'view_calls', 'listen_recordings', 'download_recordings', 'delete_recordings',
-                      'view_contacts', 'add_contacts', 'edit_contacts', 'delete_contacts',
-                      'view_reports', 'export_reports',
-                      'view_employees', 'manage_employees', 'view_dashboard', 'edit_profile']
+            'view_contacts', 'add_contacts', 'edit_contacts', 'delete_contacts',
+            'view_reports', 'export_reports',
+            'view_employees', 'manage_employees', 'view_dashboard', 'edit_profile']
     },
     readonly: {
         role: 'agent',
@@ -1585,14 +1585,14 @@ async function deleteEmployee(employeeId) {
     if (!confirm('⚠️ هل أنت متأكد من حذف هذا الموظف؟\n\nملاحظة: البيانات محفوظة في قاعدة البيانات ويمكن استرجاعها.')) {
         return;
     }
-    
+
     try {
         const response = await fetch(`${baseUrl}/api/employees/${employeeId}`, {
             method: 'DELETE'
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok && result.success) {
             alert('✅ تم حذف الموظف (يمكن استرجاع البيانات)');
             await loadEmployees();
@@ -1633,7 +1633,7 @@ function closeTwilioSetup() {
 
 async function loadTwilioStatus(companyId) {
     try {
-        const res  = await fetch(`${baseUrl}/api/twilio-setup?companyId=${companyId}`, {
+        const res = await fetch(`${baseUrl}/api/twilio-setup?companyId=${companyId}`, {
             headers: { Authorization: adminToken }
         });
         if (!res.ok) return;
@@ -1653,10 +1653,10 @@ async function loadTwilioStatus(companyId) {
                     TwiML App: ${data.twimlAppSid || '—'}
                 </small>
             `;
-            if (data.accountSid)  document.getElementById('twilio-account-sid').value   = data.accountSid;
-            if (data.apiKey)      document.getElementById('twilio-api-key').value        = data.apiKey;
-            if (data.phoneNumber) document.getElementById('twilio-phone-number').value   = data.phoneNumber;
-            if (data.twimlAppSid) document.getElementById('twilio-twiml-app-sid').value  = data.twimlAppSid;
+            if (data.accountSid) document.getElementById('twilio-account-sid').value = data.accountSid;
+            if (data.apiKey) document.getElementById('twilio-api-key').value = data.apiKey;
+            if (data.phoneNumber) document.getElementById('twilio-phone-number').value = data.phoneNumber;
+            if (data.twimlAppSid) document.getElementById('twilio-twiml-app-sid').value = data.twimlAppSid;
             document.getElementById('twilio-delete-btn').style.display = 'inline-block';
         }
     } catch (e) {
@@ -1667,11 +1667,11 @@ async function loadTwilioStatus(companyId) {
 async function saveTwilioSetup(e) {
     e.preventDefault();
 
-    const companyId   = document.getElementById('twilio-company-id').value;
-    const accountSid  = document.getElementById('twilio-account-sid').value.trim();
-    const authToken   = document.getElementById('twilio-auth-token').value.trim();
-    const apiKey      = document.getElementById('twilio-api-key').value.trim();
-    const apiSecret   = document.getElementById('twilio-api-secret').value.trim();
+    const companyId = document.getElementById('twilio-company-id').value;
+    const accountSid = document.getElementById('twilio-account-sid').value.trim();
+    const authToken = document.getElementById('twilio-auth-token').value.trim();
+    const apiKey = document.getElementById('twilio-api-key').value.trim();
+    const apiSecret = document.getElementById('twilio-api-secret').value.trim();
     const phoneNumber = document.getElementById('twilio-phone-number').value.trim();
     const twimlAppSid = document.getElementById('twilio-twiml-app-sid').value.trim();
 
@@ -1688,18 +1688,32 @@ async function saveTwilioSetup(e) {
 
     try {
         const res = await fetch(`${baseUrl}/api/twilio-setup`, {
-            method:  'POST',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: adminToken },
             body: JSON.stringify({ companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber, twimlAppSid }),
         });
-        const data = await res.json();
+
+        // Handle non-JSON responses (e.g. 504 timeout)
+        let data;
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            data = await res.json();
+        } else {
+            const text = await res.text();
+            if (!res.ok) {
+                throw new Error(res.status === 504
+                    ? 'انتهت مهلة الاتصال (504). جرب مرة تانية - أحياناً أول مرة بتاخد وقت.'
+                    : `خطأ من السيرفر (${res.status}): ${text.substring(0, 100)}`);
+            }
+            data = { success: false, error: text };
+        }
 
         resultEl.style.display = 'block';
         if (res.ok && data.success) {
             const hasWarning = !!data.warning;
             resultEl.style.background = hasWarning ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)';
-            resultEl.style.border     = hasWarning ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(16,185,129,0.3)';
-            resultEl.style.color      = hasWarning ? '#d97706' : '#059669';
+            resultEl.style.border = hasWarning ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(16,185,129,0.3)';
+            resultEl.style.color = hasWarning ? '#d97706' : '#059669';
             const icon = hasWarning ? '⚠️' : '✅';
             const apiKeyNote = data.apiKeyCreated
                 ? `<br><small style="color:#f59e0b;">🔑 تم إنشاء API Key تلقائياً وحفظه</small>`
@@ -1737,7 +1751,7 @@ async function deleteTwilioSetup() {
 
     const resultEl = document.getElementById('twilio-setup-result');
     try {
-        const res  = await fetch(`${baseUrl}/api/twilio-setup?companyId=${companyId}`, {
+        const res = await fetch(`${baseUrl}/api/twilio-setup?companyId=${companyId}`, {
             method: 'DELETE',
             headers: { Authorization: adminToken },
         });
@@ -1763,11 +1777,11 @@ async function deleteTwilioSetup() {
 
 function toggleTwilioTokenVis(fieldId, btn) {
     const inp = document.getElementById(fieldId);
-    if (inp.type === 'password') { inp.type = 'text';     btn.textContent = '🙈'; }
-    else                         { inp.type = 'password'; btn.textContent = '👁️'; }
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else { inp.type = 'password'; btn.textContent = '👁️'; }
 }
 
 // Close modal on outside click
-document.getElementById('twilio-setup-modal')?.addEventListener('click', function(e) {
+document.getElementById('twilio-setup-modal')?.addEventListener('click', function (e) {
     if (e.target === this) closeTwilioSetup();
 });

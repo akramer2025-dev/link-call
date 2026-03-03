@@ -20,6 +20,9 @@ const twilio = require('twilio');
 
 const VOICE_WEBHOOK_URL = 'https://linkcall.akrammostafa.com/api/voice';
 
+// Vercel serverless function config — increase timeout for Twilio API calls
+module.exports.config = { maxDuration: 30 };
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
@@ -35,7 +38,7 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { getDb }                      = require('../utils/firebase');
+        const { getDb } = require('../utils/firebase');
         const { doc, getDoc, updateDoc, setDoc } = require('firebase/firestore');
         const db = getDb();
 
@@ -53,14 +56,14 @@ module.exports = async (req, res) => {
             if (!tc) return res.status(200).json({ configured: false });
 
             return res.status(200).json({
-                configured:  true,
-                accountSid:  tc.accountSid,
-                authToken:   tc.authToken ? tc.authToken.substring(0, 6) + '••••••••••••••••••••••••••' : null,
-                apiKey:      tc.apiKey,
-                apiSecret:   tc.apiSecret ? tc.apiSecret.substring(0, 6) + '••••••••' : null,
+                configured: true,
+                accountSid: tc.accountSid,
+                authToken: tc.authToken ? tc.authToken.substring(0, 6) + '••••••••••••••••••••••••••' : null,
+                apiKey: tc.apiKey,
+                apiSecret: tc.apiSecret ? tc.apiSecret.substring(0, 6) + '••••••••' : null,
                 twimlAppSid: tc.twimlAppSid,
                 phoneNumber: tc.phoneNumber,
-                updatedAt:   tc.updatedAt,
+                updatedAt: tc.updatedAt,
             });
         }
 
@@ -95,16 +98,16 @@ module.exports = async (req, res) => {
 
         const { companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber, twimlAppSid: manualTwimlSid } = req.body || {};
 
-        if (!companyId)  return res.status(400).json({ error: 'companyId مطلوب' });
+        if (!companyId) return res.status(400).json({ error: 'companyId مطلوب' });
         if (!accountSid) return res.status(400).json({ error: 'accountSid مطلوب' });
-        if (!authToken)  return res.status(400).json({ error: 'authToken مطلوب' });
+        if (!authToken) return res.status(400).json({ error: 'authToken مطلوب' });
 
         // Sanitize: trim whitespace (common copy-paste issue)
-        const cleanSid   = accountSid.trim();
+        const cleanSid = accountSid.trim();
         const cleanToken = authToken.trim();
-        const cleanApiKey    = (apiKey    || '').trim() || null;
+        const cleanApiKey = (apiKey || '').trim() || null;
         const cleanApiSecret = (apiSecret || '').trim() || null;
-        const cleanPhone     = (phoneNumber || '').trim() || null;
+        const cleanPhone = (phoneNumber || '').trim() || null;
 
         // ── 1. Verify company exists ──────────────────────────────────────
         const compSnap = await getDoc(doc(db, 'companies', companyId));
@@ -112,10 +115,10 @@ module.exports = async (req, res) => {
         const companyName = compSnap.data().companyName || companyId;
 
         // ── 2. Create TwiML App (best-effort, non-blocking) ───────────────
-        let twimlAppSid   = manualTwimlSid || null;
-        let finalApiKey   = cleanApiKey;
-        let finalApiSecret= cleanApiSecret;
-        let setupWarning  = null;
+        let twimlAppSid = manualTwimlSid || null;
+        let finalApiKey = cleanApiKey;
+        let finalApiSecret = cleanApiSecret;
+        let setupWarning = null;
 
         try {
             const client = twilio(cleanSid, cleanToken);
@@ -135,7 +138,7 @@ module.exports = async (req, res) => {
             // Auto-create API Key if missing
             if (!finalApiKey || !finalApiSecret) {
                 const newKey = await client.newKeys.create({ friendlyName: `LinkCall-${companyName}` });
-                finalApiKey    = newKey.sid;
+                finalApiKey = newKey.sid;
                 finalApiSecret = newKey.secret;
                 console.log(`🔑 twilio-setup: API Key تلقائي ${finalApiKey}`);
             }
@@ -147,27 +150,27 @@ module.exports = async (req, res) => {
 
         // ── 3. Save to Firestore regardless of TwiML App result ──────────
         const twilioCredentials = {
-            accountSid:  cleanSid,
-            authToken:   cleanToken,
-            apiKey:      finalApiKey,
-            apiSecret:   finalApiSecret,
+            accountSid: cleanSid,
+            authToken: cleanToken,
+            apiKey: finalApiKey,
+            apiSecret: finalApiSecret,
             twimlAppSid: twimlAppSid || null,
             phoneNumber: cleanPhone,
-            updatedAt:   new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         };
 
         await updateDoc(doc(db, 'companies', companyId), { twilioCredentials });
         console.log(`💾 twilio-setup: تم حفظ credentials للشركة ${companyName} (${companyId})`);
 
         return res.status(200).json({
-            success:      true,
+            success: true,
             twimlAppSid,
             apiKeyCreated: !cleanApiKey,
-            warning:      setupWarning,
-            message:      setupWarning
+            warning: setupWarning,
+            message: setupWarning
                 ? `تم حفظ بيانات Twilio. ملاحظة: ${setupWarning}`
                 : `تم حفظ إعدادات Twilio بنجاح لشركة ${companyName}`,
-            phoneNumber:  cleanPhone,
+            phoneNumber: cleanPhone,
         });
 
     } catch (error) {

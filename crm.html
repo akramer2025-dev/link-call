@@ -15,6 +15,8 @@
     <link rel="icon" type="image/png" href="icon-512.png?v=3">
     <!-- Security Protection -->
     <script src="js/protection.js?v=1.0" defer></script>
+    <!-- Twilio Voice SDK -->
+    <script src="https://unpkg.com/@twilio/voice-sdk@2.11.2/dist/twilio.min.js"></script>
     <!-- SheetJS Library for Excel Import -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1787,9 +1789,129 @@
             window.open(`https://wa.me/${cleanPhone}`, '_blank');
         }
         
-        function openCallPage(phone) {
-            // Navigate to main page with call parameter
-            window.location.href = `index.html#dialpad?call=${encodeURIComponent(phone)}`;
+        // ─── In-page Twilio Call ─────────────────────────────────────────
+        let _crmDevice   = null;
+        let _crmCall     = null;
+        let _crmMuted    = false;
+        let _crmTimer    = null;
+        let _crmSeconds  = 0;
+
+        function _crmFormatTime(s) {
+            return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+        }
+
+        function _crmShowPanel(phone) {
+            document.getElementById('crm-panel-number').textContent = phone;
+            document.getElementById('crm-panel-status').textContent  = '⏳ جاري التهيئة...';
+            document.getElementById('crm-panel-duration').textContent = '';
+            document.getElementById('crm-call-panel').classList.add('active');
+        }
+
+        function _crmStartTimer() {
+            _crmSeconds = 0;
+            clearInterval(_crmTimer);
+            _crmTimer = setInterval(() => {
+                _crmSeconds++;
+                document.getElementById('crm-panel-duration').textContent = _crmFormatTime(_crmSeconds);
+            }, 1000);
+        }
+
+        function crmEndCall() {
+            if (_crmCall) { try { _crmCall.disconnect(); } catch(e){} }
+            if (_crmDevice) { try { _crmDevice.destroy(); } catch(e){} }
+            clearInterval(_crmTimer);
+            _crmCall = null; _crmDevice = null; _crmMuted = false;
+            document.getElementById('crm-call-panel').classList.remove('active');
+            document.getElementById('crm-mute-btn').classList.remove('active');
+            document.getElementById('crm-mute-btn').textContent = '🔇 كتم';
+        }
+
+        function crmToggleMute() {
+            if (!_crmCall) return;
+            _crmMuted = !_crmMuted;
+            _crmCall.mute(_crmMuted);
+            const btn = document.getElementById('crm-mute-btn');
+            btn.classList.toggle('active', _crmMuted);
+            btn.textContent = _crmMuted ? '🔊 رفع الكتم' : '🔇 كتم';
+        }
+
+        async function openCallPage(phone) {
+            const cleanPhone = phone.replace(/[\u200E\u200F\u202A-\u202E\uFEFF]/g,'').replace(/[\s\-\(\)]/g,'');
+            _crmShowPanel(cleanPhone);
+
+            try {
+                // ميكروفون أولاً
+                const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mic.getTracks().forEach(t => t.stop());
+            } catch(e) {
+                alert('يرجى السماح باستخدام الميكروفون');
+                crmEndCall(); return;
+            }
+
+            try {
+                // انتظار Twilio SDK
+                let w = 0;
+                while (typeof Twilio === 'undefined' && w++ < 30)
+                    await new Promise(r => setTimeout(r, 200));
+                if (typeof Twilio === 'undefined') throw new Error('Twilio SDK غير محمل');
+
+                const companyId  = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
+                const employeeId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId') || 'crm';
+                const identity   = `crm_${employeeId}`;
+                const baseUrl    = API_BASE_URL;
+
+                document.getElementById('crm-panel-status').textContent = '⏳ جاري الاتصال بالخادم...';
+
+                const res  = await fetch(`${baseUrl}/api/token?identity=${identity}&companyId=${companyId}`);
+                const data = await res.json();
+                if (!data.token) throw new Error('فشل الحصول على Token');
+
+                _crmDevice = new Twilio.Device(data.token, {
+                    codecPreferences: ['opus','pcmu'],
+                    enableRingingState: true,
+                    logLevel: 1
+                });
+
+                _crmDevice.on('registered', async () => {
+                    document.getElementById('crm-panel-status').textContent = '📞 جاري الاتصال...';
+                    try {
+                        _crmCall = await _crmDevice.connect({
+                            params: {
+                                To:         cleanPhone,
+                                companyId:  companyId,
+                                employeeId: employeeId
+                            }
+                        });
+
+                        _crmCall.on('accept', () => {
+                            document.getElementById('crm-panel-status').textContent = '🟢 متصل';
+                            _crmStartTimer();
+                        });
+                        _crmCall.on('disconnect', () => {
+                            document.getElementById('crm-panel-status').textContent = '🔴 انتهت المكالمة';
+                            setTimeout(crmEndCall, 1500);
+                        });
+                        _crmCall.on('error', (err) => {
+                            document.getElementById('crm-panel-status').textContent = '⚠️ خطأ: ' + err.message;
+                            setTimeout(crmEndCall, 2000);
+                        });
+                    } catch(ce) {
+                        document.getElementById('crm-panel-status').textContent = '❌ ' + ce.message;
+                        setTimeout(crmEndCall, 2000);
+                    }
+                });
+
+                _crmDevice.on('error', (err) => {
+                    document.getElementById('crm-panel-status').textContent = '❌ ' + err.message;
+                    setTimeout(crmEndCall, 2000);
+                });
+
+                await _crmDevice.register();
+
+            } catch(err) {
+                document.getElementById('crm-panel-status').textContent = '❌ ' + err.message;
+                setTimeout(crmEndCall, 3000);
+            }
         }
         
         function editContact(contactId) {
@@ -2805,7 +2927,83 @@
         @media (max-width: 768px) { .float-nav { bottom: 15px; left: 15px; } }
 
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* ─── Floating Call Panel ─────────────────────────────── */
+        #crm-call-panel {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            left: 24px;
+            z-index: 9999;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2744 100%);
+            border: 1px solid rgba(102,126,234,.45);
+            border-radius: 20px;
+            padding: 22px 24px 18px;
+            min-width: 270px;
+            max-width: 300px;
+            box-shadow: 0 8px 40px rgba(0,0,0,.6);
+            animation: slideUpPanel .25s ease;
+        }
+        #crm-call-panel.active { display: block; }
+        @keyframes slideUpPanel {
+            from { opacity:0; transform:translateY(20px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .crm-panel-status {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-bottom: 4px;
+            letter-spacing: .5px;
+        }
+        .crm-panel-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            font-family: monospace;
+            margin-bottom: 4px;
+            direction: ltr;
+            text-align: center;
+        }
+        .crm-panel-duration {
+            font-size: 13px;
+            color: #68d391;
+            text-align: center;
+            min-height: 18px;
+            margin-bottom: 14px;
+        }
+        .crm-panel-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .crm-panel-btn {
+            flex: 1;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 0;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .crm-panel-btn:hover { transform: translateY(-1px); }
+        .crm-panel-btn.mute  { background: rgba(255,255,255,.12); color: #fff; }
+        .crm-panel-btn.mute.active { background: #f59e0b; color: #000; }
+        .crm-panel-btn.end   { background: #e53e3e; color: #fff; }
+        .crm-panel-btn.end:hover { background: #c53030; }
     </style>
+
+    <!-- Floating Call Panel -->
+    <div id="crm-call-panel">
+        <div class="crm-panel-status" id="crm-panel-status">جاري الاتصال...</div>
+        <div class="crm-panel-number" id="crm-panel-number"></div>
+        <div class="crm-panel-duration" id="crm-panel-duration"></div>
+        <div class="crm-panel-btns">
+            <button class="crm-panel-btn mute" id="crm-mute-btn" onclick="crmToggleMute()">🔇 كتم</button>
+            <button class="crm-panel-btn end"  onclick="crmEndCall()">📞 إنهاء</button>
+        </div>
+    </div>
+
     <div class="float-nav">
         <button class="float-nav-btn" onclick="history.back()" title="رجوع">⬅️</button>
         <button class="float-nav-btn" onclick="history.forward()" title="للأمام">➡️</button>

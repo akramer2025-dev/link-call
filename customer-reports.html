@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير العميل - Link Call</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a1628;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background: linear-gradient(135deg,rgba(10,22,40,.95) 0%,rgba(30,58,95,.90) 50%,rgba(10,22,40,.95) 100%);
+            z-index: 0; pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, rgba(94,196,212,.5), transparent),
+                radial-gradient(2px 2px at 60px 70px, rgba(94,196,212,.3), transparent);
+            background-repeat: repeat;
+            background-size: 300px 200px;
+            animation: stars 100s linear infinite;
+            opacity: .3; pointer-events: none; z-index: 0;
+        }
+        @keyframes stars { 0%{transform:translateY(0)} 100%{transform:translateY(-200px)} }
+
+        .container { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+
+        /* ===== Header ===== */
+        .header {
+            background: rgba(255,255,255,.98);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.3);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .customer-avatar {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg,#5ec4d4,#1e88a8);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; color: white; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .header h1 { color: #1e3a5f; font-size: 22px; line-height: 1.3; }
+        .header .phone-tag {
+            font-size: 13px; color: #6b7280;
+            background: #f3f4f6; padding: 3px 10px; border-radius: 20px;
+            display: inline-block; margin-top: 4px;
+        }
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-btn {
+            padding: 10px 20px; border: none; border-radius: 10px;
+            cursor: pointer; font-size: 13px; font-weight: 700;
+            transition: all .25s; text-decoration: none; display: inline-flex;
+            align-items: center; gap: 6px;
+        }
+        .nav-btn.back     { background: linear-gradient(135deg,#5ec4d4,#1e88a8); color: white; }
+        .nav-btn.emp      { background: linear-gradient(135deg,#10b981,#059669); color: white; }
+        .nav-btn.call-log { background: linear-gradient(135deg,#667eea,#764ba2); color: white; }
+        .nav-btn:hover { transform: translateY(-2px); opacity: .9; }
+
+        /* ===== Stats Grid ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,.97);
+            border-radius: 12px; padding: 20px 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.2);
+            display: flex; align-items: center; gap: 14px;
+        }
+        .stat-icon { font-size: 30px; flex-shrink: 0; }
+        .stat-value { font-size: 26px; font-weight: 700; color: #1e3a5f; line-height: 1; }
+        .stat-label { font-size: 12px; color: #6b7280; margin-top: 3px; }
+
+        /* ===== Section Card ===== */
+        .card {
+            background: rgba(255,255,255,.98);
+            border-radius: 15px;
+            padding: 25px 28px;
+            box-shadow: 0 8px 25px rgba(0,0,0,.25);
+            margin-bottom: 22px;
+        }
+        .card h3 {
+            color: #1e3a5f; font-size: 18px;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .card-subtitle {
+            font-size: 12px; font-weight: 400; color: #6b7280;
+            background: #dbeafe; color: #1e40af;
+            padding: 3px 10px; border-radius: 20px;
+        }
+
+        /* ===== Calls Table ===== */
+        .calls-table { width: 100%; border-collapse: collapse; }
+        .calls-table thead { background: linear-gradient(135deg,#1e3a5f,#2d5986); }
+        .calls-table th { padding: 12px 14px; text-align: right; color: white; font-size: 13px; }
+        .calls-table td { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; font-size: 13px; vertical-align: middle; }
+        .calls-table tr:hover { background: rgba(94,196,212,.04); }
+
+        .status-badge {
+            display: inline-block; padding: 3px 11px;
+            border-radius: 20px; font-size: 12px; font-weight: 700;
+        }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-failed    { background: #fee2e2; color: #991b1b; }
+        .status-no-answer { background: #fef3c7; color: #92400e; }
+        .status-busy      { background: #fef3c7; color: #92400e; }
+        .status-unknown   { background: #f3f4f6; color: #374151; }
+
+        .emp-link {
+            color: #1e88a8; text-decoration: none; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .emp-link:hover { text-decoration: underline; }
+
+        .rec-play-btn {
+            background: linear-gradient(135deg,#4CAF50,#388E3C);
+            color: white; border: none; padding: 5px 12px;
+            border-radius: 6px; cursor: pointer; font-size: 12px;
+            transition: opacity .2s;
+        }
+        .rec-play-btn:hover { opacity: .85; }
+        .rec-dl-btn {
+            background: linear-gradient(135deg,#2196F3,#1565C0);
+            color: white; border: none; padding: 5px 12px;
+            border-radius: 6px; cursor: pointer; font-size: 12px;
+            transition: opacity .2s; margin-right: 5px;
+        }
+
+        /* ===== Employee Summary ===== */
+        .emp-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px,1fr));
+            gap: 12px;
+        }
+        .emp-summary-card {
+            background: #f0f9ff; border-radius: 10px;
+            padding: 14px; text-align: center;
+            cursor: pointer; transition: all .2s;
+            border: 2px solid transparent;
+        }
+        .emp-summary-card:hover {
+            border-color: #5ec4d4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(94,196,212,.25);
+        }
+        .emp-summary-name { font-weight: 700; color: #1e3a5f; font-size: 14px; margin-bottom: 6px; }
+        .emp-summary-calls { font-size: 22px; font-weight: 700; color: #0369a1; }
+        .emp-summary-sub { font-size: 11px; color: #6b7280; margin-top: 3px; }
+
+        /* ===== Recordings ===== */
+        .rec-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .rec-item:last-child { border-bottom: none; }
+        .rec-info { flex: 1; min-width: 200px; }
+        .rec-date { font-size: 12px; color: #888; margin-top: 3px; }
+        .rec-controls { display: flex; align-items: center; gap: 6px; }
+
+        /* ===== Filter ===== */
+        .filter-row {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            margin-bottom: 16px; align-items: center;
+        }
+        .filter-row select, .filter-row input[type="date"] {
+            padding: 7px 12px; border: 1px solid #d1d5db;
+            border-radius: 8px; font-size: 13px; color: #374151;
+            background: white; cursor: pointer;
+        }
+        .filter-btn {
+            padding: 7px 18px; background: linear-gradient(135deg,#5ec4d4,#1e88a8);
+            color: white; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: 700; font-size: 13px;
+        }
+        .export-btn {
+            padding: 7px 18px; background: linear-gradient(135deg,#10b981,#059669);
+            color: white; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: 700; font-size: 13px; margin-right: auto;
+        }
+
+        /* ===== Empty State ===== */
+        .empty-state { text-align: center; padding: 40px 20px; color: #6b7280; }
+        .empty-state div { font-size: 42px; margin-bottom: 12px; }
+
+        /* ===== Loading ===== */
+        .loading { text-align: center; padding: 20px; color: #6b7280; }
+
+        /* ===== Floating nav ===== */
+        .float-nav {
+            position: fixed; bottom: 28px; left: 28px;
+            display: flex; gap: 8px; z-index: 1000;
+        }
+        .float-nav-btn {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(30,58,95,.9); color: white;
+            border: 2px solid rgba(94,196,212,.5);
+            cursor: pointer; font-size: 17px;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px); transition: all .3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,.3);
+        }
+        .float-nav-btn:hover { background: rgba(94,196,212,.8); transform: scale(1.1); }
+
+        @media(max-width:640px) {
+            .stats-grid { grid-template-columns: repeat(2,1fr); }
+            .header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="customer-avatar" id="customerAvatar">👤</div>
+            <div>
+                <h1 id="customerTitle">جاري التحميل...</h1>
+                <span class="phone-tag" id="customerPhone"></span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="index.html" class="nav-btn back"          onclick="goCallHistory(event)">⬅️ سجل المكالمات</a>
+            <a href="company-reports.html" class="nav-btn emp" id="empReportsBtn">📊 تقارير الموظفين</a>
+            <button class="nav-btn call-log"                   onclick="callCustomer()">📞 اتصال الآن</button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📞</div>
+            <div><div class="stat-value" id="statTotalCalls">0</div><div class="stat-label">إجمالي المكالمات</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div><div class="stat-value" id="statCompleted">0</div><div class="stat-label">مكالمات ناجحة</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div><div class="stat-value" id="statMinutes">0</div><div class="stat-label">إجمالي الدقائق</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div><div class="stat-value" id="statEmployees">0</div><div class="stat-label">موظفين تواصلوا</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🎙️</div>
+            <div><div class="stat-value" id="statRecordings">0</div><div class="stat-label">تسجيلات محفوظة</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div><div class="stat-value" id="statLastCall" style="font-size:14px;margin-top:4px;">—</div><div class="stat-label">آخر مكالمة</div></div>
+        </div>
+    </div>
+
+    <!-- Per-employee summary -->
+    <div class="card">
+        <h3>👥 الموظفون الذين تواصلوا مع هذا العميل</h3>
+        <div class="emp-summary-grid" id="empSummaryGrid">
+            <div class="loading">⏳ جاري التحميل...</div>
+        </div>
+    </div>
+
+    <!-- Call History -->
+    <div class="card">
+        <h3>
+            📋 سجل المكالمات الكامل
+            <span class="card-subtitle" id="callsBadge">0 مكالمة</span>
+        </h3>
+        <div class="filter-row">
+            <label style="font-size:13px;color:#374151;">من:</label>
+            <input type="date" id="filterFrom">
+            <label style="font-size:13px;color:#374151;">إلى:</label>
+            <input type="date" id="filterTo">
+            <select id="filterStatus">
+                <option value="all">كل الحالات</option>
+                <option value="completed">✅ ناجحة</option>
+                <option value="failed">❌ فشلت</option>
+                <option value="no-answer">📵 لم يرد</option>
+            </select>
+            <select id="filterEmp">
+                <option value="all">كل الموظفين</option>
+            </select>
+            <button class="filter-btn" onclick="renderCallsTable()">🔍 تطبيق</button>
+            <button class="export-btn"  onclick="exportCSV()">📥 تصدير</button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="calls-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الموظف</th>
+                        <th>التاريخ</th>
+                        <th>الوقت</th>
+                        <th>المدة</th>
+                        <th>الحالة</th>
+                        <th>تسجيل</th>
+                    </tr>
+                </thead>
+                <tbody id="callsTableBody">
+                    <tr><td colspan="7" class="loading">⏳ جاري التحميل...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recordings -->
+    <div class="card">
+        <h3>
+            🎙️ تسجيلات هذا العميل
+            <span class="card-subtitle" id="recBadge">0 تسجيل</span>
+        </h3>
+        <div id="recList">
+            <div class="loading">⏳ جاري التحميل...</div>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+<!-- Floating nav -->
+<div class="float-nav">
+    <button class="float-nav-btn" onclick="history.back()" title="رجوع">⬅️</button>
+    <button class="float-nav-btn" onclick="window.location.href='index.html'" title="الرئيسية">🏠</button>
+</div>
+
+<script>
+/* ─────────────────── المتغيرات ─────────────────── */
+const params       = new URLSearchParams(location.search);
+const PHONE        = decodeURIComponent(params.get('phone') || '');
+const CUSTOMER_NAME = decodeURIComponent(params.get('name') || '');
+const COMPANY_ID   = params.get('companyId') || sessionStorage.getItem('companyId') || '';
+
+let allCalls       = [];
+let allRecordings  = [];
+let allEmployees   = [];
+let employeesMap   = {};
+
+/* ─────────────────── Init ─────────────────── */
+window.addEventListener('DOMContentLoaded', async () => {
+    if (!COMPANY_ID) {
+        alert('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً');
+        window.location.href = 'login.html';
+        return;
+    }
+    if (!PHONE) {
+        document.getElementById('customerTitle').textContent = 'رقم هاتف غير محدد';
+        return;
+    }
+
+    // رابط تقارير الموظفين - مع companyId إن أمكن
+    document.getElementById('empReportsBtn').href = 'company-reports.html';
+
+    // تحديث header
+    const displayLabel = CUSTOMER_NAME || PHONE;
+    document.getElementById('customerTitle').textContent = displayLabel;
+    document.getElementById('customerPhone').textContent = PHONE !== CUSTOMER_NAME ? PHONE : '';
+    document.getElementById('customerAvatar').textContent = CUSTOMER_NAME
+        ? CUSTOMER_NAME.charAt(0).toUpperCase() : '☎️';
+    document.title = `تقرير العميل: ${displayLabel} - Link Call`;
+
+    // تاريخ افتراضي — آخر 6 أشهر
+    const now = new Date(), from = new Date(); from.setMonth(from.getMonth() - 6);
+    document.getElementById('filterTo').valueAsDate   = now;
+    document.getElementById('filterFrom').valueAsDate = from;
+
+    await Promise.all([loadEmployees(), loadCalls(), loadRecordings()]);
+    renderStats();
+    renderEmpSummary();
+    renderCallsTable();
+    renderRecordings();
+});
+
+/* ─────────────────── Helpers ─────────────────── */
+function normPhone(p) {
+    return (p || '').replace(/[\s\-+(). ]/g, '');
+}
+function matchesPhone(a, b) {
+    const ca = normPhone(a), cb = normPhone(b);
+    if (!ca || !cb || ca.length < 5 || cb.length < 5) return false;
+    const tail = s => s.length >= 9 ? s.slice(-9) : s;
+    return ca === cb || tail(ca) === tail(cb);
+}
+function fmtDur(sec) {
+    sec = Number(sec) || 0;
+    if (sec <= 0) return '—';
+    const m = Math.floor(sec/60), s = sec%60;
+    return m > 0 ? `${m}د ${s}ث` : `${s}ث`;
+}
+function fmtDate(dt) {
+    const d = new Date(dt);
+    if (isNaN(d)) return '—';
+    return d.toLocaleDateString('ar-EG');
+}
+function fmtTime(dt) {
+    const d = new Date(dt);
+    if (isNaN(d)) return '—';
+    return d.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+}
+function fmtDateFull(dt) {
+    const d = new Date(dt);
+    if (isNaN(d)) return '—';
+    return d.toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+function getEmpName(id) {
+    if (!id) return '—';
+    if (String(id).startsWith('company-')) return '👑 مدير الشركة';
+    return employeesMap[id] || employeesMap[String(id)] || id;
+}
+function statusBadge(st) {
+    const map = {
+        completed: ['✅ ناجحة',   'status-completed'],
+        failed:    ['❌ فشلت',    'status-failed'],
+        'no-answer':['📵 لم يرد','status-no-answer'],
+        busy:      ['📵 مشغول',   'status-busy']
+    };
+    const [label, cls] = map[st] || [st || '—', 'status-unknown'];
+    return `<span class="status-badge ${cls}">${label}</span>`;
+}
+
+/* ─────────────────── API Calls ─────────────────── */
+async function loadEmployees() {
+    try {
+        const r = await fetch(`/api/employees-management?companyId=${encodeURIComponent(COMPANY_ID)}`);
+        const d = await r.json();
+        allEmployees = d.employees || [];
+        allEmployees.forEach(e => { employeesMap[e.id] = e.name; });
+        // ملء فلتر الموظفين
+        const sel = document.getElementById('filterEmp');
+        allEmployees.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e.id; opt.textContent = e.name;
+            sel.appendChild(opt);
+        });
+    } catch(e) { console.error('loadEmployees:', e); }
+}
+
+async function loadCalls() {
+    try {
+        const r = await fetch(`/api/call-history?companyId=${encodeURIComponent(COMPANY_ID)}&limit=9999`);
+        const d = await r.json();
+        // فلترة المكالمات الخاصة بهذا الرقم
+        const raw = d.calls || [];
+        allCalls = raw.filter(c => matchesPhone(c.to, PHONE) || matchesPhone(c.from, PHONE));
+    } catch(e) { console.error('loadCalls:', e); }
+}
+
+async function loadRecordings() {
+    try {
+        const r = await fetch(`/recordings?companyId=${encodeURIComponent(COMPANY_ID)}&viewAll=true`);
+        const d = await r.json();
+        const raw = d.recordings || [];
+        allRecordings = raw.filter(rec => matchesPhone(rec.to, PHONE));
+    } catch(e) { console.error('loadRecordings:', e); }
+}
+
+/* ─────────────────── Render Stats ─────────────────── */
+function renderStats() {
+    const completed = allCalls.filter(c => c.status === 'completed').length;
+    const totalSec  = allCalls.reduce((s,c) => s + (Number(c.duration)||0), 0);
+    const empIds    = [...new Set(allCalls.map(c => c.employeeId).filter(Boolean))];
+    const sorted    = [...allCalls].sort((a,b) => new Date(b.startTime||b.createdAt||0) - new Date(a.startTime||a.createdAt||0));
+    const lastCall  = sorted[0];
+
+    document.getElementById('statTotalCalls').textContent  = allCalls.length;
+    document.getElementById('statCompleted').textContent   = completed;
+    document.getElementById('statMinutes').textContent     = Math.round(totalSec/60);
+    document.getElementById('statEmployees').textContent   = empIds.length;
+    document.getElementById('statRecordings').textContent  = allRecordings.length;
+    document.getElementById('statLastCall').textContent    = lastCall ? fmtDate(lastCall.startTime||lastCall.createdAt) : '—';
+}
+
+/* ─────────────────── Render Employee Summary ─────────────────── */
+function renderEmpSummary() {
+    const container = document.getElementById('empSummaryGrid');
+    if (allCalls.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div>📞</div><p>لا توجد مكالمات بعد</p></div>';
+        return;
+    }
+    const map = {};
+    allCalls.forEach(c => {
+        const id = c.employeeId || 'unknown';
+        if (!map[id]) map[id] = { calls: 0, completed: 0, duration: 0 };
+        map[id].calls++;
+        if (c.status === 'completed') map[id].completed++;
+        map[id].duration += Number(c.duration)||0;
+    });
+
+    const html = Object.entries(map)
+        .sort((a,b) => b[1].calls - a[1].calls)
+        .map(([id, st]) => {
+            const name = getEmpName(id);
+            const sr   = st.calls > 0 ? Math.round(st.completed/st.calls*100) : 0;
+            const min  = Math.round(st.duration/60);
+            return `
+                <div class="emp-summary-card" onclick="filterByEmp('${id}')" title="انقر للفلترة بهذا الموظف">
+                    <div class="emp-summary-name">${name}</div>
+                    <div class="emp-summary-calls">${st.calls}</div>
+                    <div class="emp-summary-sub">مكالمة · ${min} د · ${sr}% نجاح</div>
+                    <a href="company-reports.html?emp=${id}" style="font-size:11px;color:#1e88a8;text-decoration:none;margin-top:6px;display:block;" onclick="event.stopPropagation()">📊 تقرير الموظف ←</a>
+                </div>`;
+        }).join('');
+    container.innerHTML = html || '<div class="empty-state"><p>لا يوجد بيانات</p></div>';
+}
+
+function filterByEmp(empId) {
+    document.getElementById('filterEmp').value = empId;
+    renderCallsTable();
+    document.getElementById('callsTableBody').scrollIntoView({ behavior:'smooth' });
+}
+
+/* ─────────────────── Render Calls Table ─────────────────── */
+function renderCallsTable() {
+    const tbody     = document.getElementById('callsTableBody');
+    const fromDate  = document.getElementById('filterFrom').value;
+    const toDate    = document.getElementById('filterTo').value;
+    const statusF   = document.getElementById('filterStatus').value;
+    const empF      = document.getElementById('filterEmp').value;
+
+    let list = [...allCalls];
+    if (fromDate) list = list.filter(c => new Date(c.startTime||c.createdAt||0) >= new Date(fromDate));
+    if (toDate)   list = list.filter(c => new Date(c.startTime||c.createdAt||0) <= new Date(toDate + 'T23:59:59'));
+    if (statusF !== 'all') list = list.filter(c => c.status === statusF);
+    if (empF    !== 'all') list = list.filter(c => String(c.employeeId) === String(empF));
+
+    list.sort((a,b) => new Date(b.startTime||b.createdAt||0) - new Date(a.startTime||a.createdAt||0));
+    document.getElementById('callsBadge').textContent = `${list.length} مكالمة`;
+
+    if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="loading">لا توجد مكالمات بهذه الفلاتر</td></tr>';
+        return;
+    }
+
+    // ربط مكالمة بتسجيل لها
+    const recBySid = {};
+    allRecordings.forEach(rec => {
+        if (rec.callSid) recBySid[rec.callSid] = rec;
+    });
+
+    tbody.innerHTML = list.map((call, i) => {
+        const rec = call.sid ? recBySid[call.sid] : null;
+        const empId = call.employeeId;
+        const empName = getEmpName(empId);
+        const empUrl  = empId && !String(empId).startsWith('company-')
+            ? `<a href="company-reports.html?emp=${empId}" class="emp-link" target="_blank">👤 ${empName}</a>`
+            : `<span>👑 ${empName}</span>`;
+        const recCell = rec
+            ? `<button class="rec-play-btn" onclick="playRec('${rec.sid}')">▶️ تشغيل</button>
+               <button class="rec-dl-btn"   onclick="dlRec('${rec.sid}','${PHONE}')">⬇️</button>`
+            : `<span style="color:#d1d5db;font-size:12px;">—</span>`;
+        return `<tr>
+            <td style="color:#9ca3af">${i+1}</td>
+            <td>${empUrl}</td>
+            <td>${fmtDate(call.startTime||call.createdAt)}</td>
+            <td>${fmtTime(call.startTime||call.createdAt)}</td>
+            <td>${fmtDur(call.duration)}</td>
+            <td>${statusBadge(call.status)}</td>
+            <td>${recCell}</td>
+        </tr>`;
+    }).join('');
+}
+
+/* ─────────────────── Render Recordings ─────────────────── */
+function renderRecordings() {
+    const container = document.getElementById('recList');
+    document.getElementById('recBadge').textContent = `${allRecordings.length} تسجيل`;
+
+    if (!allRecordings.length) {
+        container.innerHTML = '<div class="empty-state"><div>🎙️</div><p>لا توجد تسجيلات لهذا العميل</p></div>';
+        return;
+    }
+
+    container.innerHTML = allRecordings
+        .sort((a,b) => new Date(b.dateCreated||0) - new Date(a.dateCreated||0))
+        .map((rec, i) => {
+            const empId   = rec.employeeId;
+            const empName = getEmpName(empId);
+            const dur     = fmtDur(rec.duration);
+            const date    = fmtDateFull(rec.dateCreated);
+            const empUrl  = empId && !String(empId).startsWith('company-')
+                ? `<a href="company-reports.html?emp=${empId}" class="emp-link">👤 ${empName}</a>`
+                : `<span>👑 ${empName}</span>`;
+            return `
+                <div class="rec-item">
+                    <div class="rec-info">
+                        <div style="font-weight:600;color:#1e3a5f;">تسجيل #${i+1} — ${dur}</div>
+                        <div class="rec-date">📅 ${date} · بواسطة: ${empUrl}</div>
+                    </div>
+                    <div class="rec-controls">
+                        <button class="rec-play-btn" onclick="playRec('${rec.sid}')">▶️ تشغيل</button>
+                        <button class="rec-dl-btn"   onclick="dlRec('${rec.sid}','${PHONE}')">⬇️ تحميل</button>
+                    </div>
+                </div>`;
+        }).join('');
+}
+
+/* ─────────────────── Actions ─────────────────── */
+function callCustomer() {
+    window.location.href = `index.html?call=${encodeURIComponent(PHONE)}`;
+}
+
+function goCallHistory(e) {
+    e.preventDefault();
+    window.location.href = 'index.html?openSection=call-history';
+}
+
+async function playRec(sid) {
+    try {
+        const r = await fetch(`/api/recordings/${sid}/url`);
+        if (r.ok) {
+            const d = await r.json();
+            const url = d.url || d.recordingUrl;
+            if (url) { window.open(url, '_blank'); return; }
+        }
+        window.open(`/api/recordings/${sid}/stream`, '_blank');
+    } catch(e) {
+        window.open(`/api/recordings/${sid}/stream`, '_blank');
+    }
+}
+
+function dlRec(sid, phone) {
+    const a = document.createElement('a');
+    a.href = `/api/recordings/${sid}/download`;
+    a.download = `rec_${phone}_${new Date().toISOString().split('T')[0]}.mp3`;
+    a.click();
+}
+
+function exportCSV() {
+    let csv = 'م,الموظف,التاريخ,الوقت,المدة (ثانية),الحالة\n';
+    allCalls.forEach((c,i) => {
+        const dt = new Date(c.startTime||c.createdAt||0);
+        csv += `${i+1},"${getEmpName(c.employeeId)}","${fmtDate(dt)}","${fmtTime(dt)}",${Number(c.duration)||0},${c.status||''}\n`;
+    });
+    const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `customer_${PHONE}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+}
+</script>
+</body>
+</html>

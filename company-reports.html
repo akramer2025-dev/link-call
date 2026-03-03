@@ -454,7 +454,11 @@
             <h1>
                 <span>📊</span> تقارير وتحليلات الموظفين
             </h1>
-            <a href="index.html" class="back-btn">⬅️ العودة للوحة التحكم</a>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                <a href="index.html?openSection=call-history" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:10px 20px;border-radius:25px;text-decoration:none;font-weight:bold;font-size:14px;">📋 سجل المكالمات</a>
+                <a href="index.html?openSection=recordings"   style="background:linear-gradient(135deg,#f093fb,#f5576c);color:white;padding:10px 20px;border-radius:25px;text-decoration:none;font-weight:bold;font-size:14px;">🎙️ المحفوظات</a>
+                <a href="index.html" class="back-btn">⬅️ الرئيسية</a>
+            </div>
         </div>
 
         <!-- Filters -->
@@ -661,6 +665,14 @@
             const empRes  = await fetch(`/api/employees-management?companyId=${companyId}`);
             const empData = await empRes.json();
             if (empData.success) { allEmployees = empData.employees; populateEmployeeFilter(); }
+
+            // دعم ?emp= للانتقال المباشر من تقرير عميل أو صفحة أخرى
+            const urlEmpId = new URLSearchParams(location.search).get('emp');
+            if (urlEmpId) {
+                const sel = document.getElementById('employeeFilter');
+                if (sel) sel.value = urlEmpId;
+            }
+
             await applyFilters();
         });
 
@@ -788,7 +800,11 @@
                 const durStr  = durSec>=60 ? `${Math.floor(durSec/60)}د ${durSec%60}ث` : `${durSec}ث`;
                 const st  = call.status||'unknown';
                 const bg  = statusBg[st]||'#f3f4f6', clr = statusColor[st]||'#374151', lbl = statusLabel[st]||st;
-                return `<tr><td style="color:#6b7280;font-size:13px;">${i+1}</td><td>${call.to||call.from||'—'}</td><td>${dateStr}</td><td>${timeStr}</td><td>${durStr}</td><td><span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;background:${bg};color:${clr};">${lbl}</span></td><td style="color:#6b7280;font-size:12px;">${call.sid?call.sid.substring(0,15)+'...':'—'}</td></tr>`;
+                const phone = call.to || call.from || '';
+                const phoneCell = phone
+                    ? `<a href="customer-reports.html?phone=${encodeURIComponent(phone)}&companyId=${encodeURIComponent(companyId||'')}" style="color:#1e88a8;font-weight:600;text-decoration:none;" title="عرض تقرير العميل">${phone} 📊</a>`
+                    : '—';
+                return `<tr><td style="color:#6b7280;font-size:13px;">${i+1}</td><td>${phoneCell}</td><td>${dateStr}</td><td>${timeStr}</td><td>${durStr}</td><td><span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;background:${bg};color:${clr};">${lbl}</span></td><td style="color:#6b7280;font-size:12px;">${call.sid?call.sid.substring(0,15)+'...':'—'}</td></tr>`;
             }).join('');
             if (!rows) rows = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#6b7280;">لا توجد مكالمات في الفترة المحددة</td></tr>';
             document.getElementById('callLogSection').innerHTML = `

@@ -889,6 +889,22 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const phoneToCall = callParam || hashCallParam;
         
+        // فتح قسم محدد عبر openSection=call-history|recordings
+        const openSection = searchParams.get('openSection');
+        if (openSection === 'call-history' && callHistoryBtn) {
+            hideAllSections();
+            removeAllActiveStates();
+            callHistoryList.classList.remove('hidden');
+            callHistoryBtn.classList.add('active');
+            loadCallHistory();
+        } else if (openSection === 'recordings' && recordingsBtn) {
+            hideAllSections();
+            removeAllActiveStates();
+            recordingsList.classList.remove('hidden');
+            recordingsBtn.classList.add('active');
+            loadRecordings();
+        }
+
         if (phoneToCall) {
             console.log('📞 طلب اتصال من CRM:', phoneToCall);
             
@@ -1501,13 +1517,14 @@ function displayRecordings() {
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                     <span style="font-size: 24px;">📞</span>
                     <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                             <div class="recording-number" style="font-weight: bold; font-size: 16px; color: #333;">
                                 ${phoneNumber}
                             </div>
                             <button onclick="copyPhoneNumber('${phoneNumber}')" style="background: linear-gradient(135deg, #5ec4d4, #1e3a5f); color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px; transition: all 0.3s;" title="نسخ الرقم">
                                 📋 نسخ
                             </button>
+                            ${phoneNumber && phoneNumber !== 'غير محدد' ? `<a href="customer-reports.html?phone=${encodeURIComponent(recording.to||'')}&companyId=${encodeURIComponent(sessionStorage.getItem('companyId')||'')}" style="background:linear-gradient(135deg,#5ec4d4,#1e88a8);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:3px;">📊 تقرير العميل</a>` : ''}
                         </div>
                         <div style="font-size: 12px; color: #666;">
                             بواسطة: ${employeeName}
@@ -1990,6 +2007,7 @@ function applyRoleBasedVisibility() {
     const companyAdminSection = document.getElementById('company-admin-section');
     const manageEmployeesNavBtn = document.getElementById('manage-employees-nav-btn');
     const companyReportsNavBtn = document.getElementById('company-reports-nav-btn');
+    const customerReportsNavBtn = document.getElementById('customer-reports-nav-btn');
     const companyCrmNavBtn = document.getElementById('company-crm-nav-btn');
     const balanceHeader = document.getElementById('balance-header');
     const balanceSection = document.getElementById('balance-section');
@@ -2006,6 +2024,7 @@ function applyRoleBasedVisibility() {
         if (companyAdminSection) companyAdminSection.style.display = 'none';
         if (employeeProfileSection) employeeProfileSection.style.display = 'none';
         if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'none';
+        if (customerReportsNavBtn) customerReportsNavBtn.style.display = 'none';
         if (balanceHeader) balanceHeader.style.display = 'flex';
         if (balanceSection) balanceSection.style.display = 'block';
         if (mobileBalance) mobileBalance.style.display = 'flex';
@@ -2020,6 +2039,7 @@ function applyRoleBasedVisibility() {
         if (companyAdminSection) companyAdminSection.style.display = 'block';
         if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'flex';
         if (companyReportsNavBtn) companyReportsNavBtn.style.display = 'flex';
+        if (customerReportsNavBtn) customerReportsNavBtn.style.display = 'flex';
         if (companyCrmNavBtn) companyCrmNavBtn.style.display = 'flex';
         // إخفاء رصيد Twilio - غير مناسب لمدير الشركة
         if (balanceHeader) balanceHeader.style.display = 'none';
@@ -2064,6 +2084,8 @@ function applyRoleBasedVisibility() {
             manageEmployeesNavBtn.style.display = canManageEmployees ? 'flex' : 'none';
         if (companyReportsNavBtn)
             companyReportsNavBtn.style.display  = canViewReports    ? 'flex' : 'none';
+        if (customerReportsNavBtn)
+            customerReportsNavBtn.style.display = canViewReports    ? 'flex' : 'none';
         if (companyCrmNavBtn)
             companyCrmNavBtn.style.display      = canViewContacts   ? 'flex' : 'none';
 
@@ -3102,6 +3124,8 @@ async function loadCallHistory() {
 
             const item = document.createElement('div');
             item.className = 'call-item';
+            // link لصفحة تقرير العميل
+            const customerReportUrl = `customer-reports.html?phone=${encodeURIComponent(toNum)}&name=${encodeURIComponent(displayName.replace(/^👤\s*/,''))}&companyId=${encodeURIComponent(companyId || '')}`;
             item.innerHTML = `
                 <div class="call-item-info">
                     <div class="call-item-number" style="${isContact ? 'color:#5ec4d4;font-weight:600;' : ''}">${displayName}</div>
@@ -3115,6 +3139,7 @@ async function loadCallHistory() {
                 </div>
                 <div class="call-item-actions">
                     <button class="play-btn" onclick="dialNumber('${toNum}')">📞 اتصال</button>
+                    ${toNum ? `<a href="${customerReportUrl}" style="display:inline-flex;align-items:center;gap:4px;padding:7px 12px;background:linear-gradient(135deg,#5ec4d4,#1e88a8);color:white;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;transition:opacity .2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">📊 تقرير العميل</a>` : ''}
                 </div>
             `;
             container.appendChild(item);

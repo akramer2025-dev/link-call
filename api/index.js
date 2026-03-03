@@ -2131,42 +2131,59 @@ app.get('/debug/data-status', async (req, res) => {
 // جلب رصيد الحساب
 app.get('/account/balance', async (req, res) => {
     try {
-        if (!twilioClient) {
+        const companyId = req.query.companyId || null;
+
+        // جلب credentials الشركة (Firestore أولاً ← default ENV)
+        const getTwilioCredentials = require('../utils/getTwilioCredentials');
+        const creds = await getTwilioCredentials(companyId);
+        const sid   = creds.accountSid;
+        const token = creds.authToken;
+
+        if (!sid || !token) {
             return res.status(500).json({ error: 'خدمة Twilio غير متاحة' });
         }
-        
-        // جلب معلومات الحساب من Twilio
-        const account = await twilioClient.api.accounts(TWILIO_ACCOUNT_SID).fetch();
-        
-        // جلب الرصيد من Balance API
-        const balanceUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Balance.json`;
-        const authHeader = 'Basic ' + Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
-        
+
+        // جلب الرصيد من Twilio Balance API
+        const balanceUrl = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Balance.json`;
+        const authHeader = 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64');
+
         const balanceResponse = await fetch(balanceUrl, {
             headers: { 'Authorization': authHeader }
         });
-        
+
         let balance = 0;
         let currency = 'USD';
-        
+
         if (balanceResponse.ok) {
             const balanceData = await balanceResponse.json();
             balance = parseFloat(balanceData.balance) || 0;
             currency = balanceData.currency || 'USD';
         }
-        
+
+        // جلب اسم الحساب
+        let accountName = 'Link Call';
+        let accountStatus = 'active';
+        try {
+            const accountUrl = `https://api.twilio.com/2010-04-01/Accounts/${sid}.json`;
+            const accRes = await fetch(accountUrl, { headers: { 'Authorization': authHeader } });
+            if (accRes.ok) {
+                const accData = await accRes.json();
+                accountName   = accData.friendly_name || accountName;
+                accountStatus = accData.status        || accountStatus;
+            }
+        } catch(e) { /* ignore */ }
+
         res.json({
             success: true,
-            balance: balance,
-            currency: currency,
-            accountName: account.friendlyName,
-            accountStatus: account.status,
-            // رابط لإعادة الشحن
+            balance,
+            currency,
+            accountName,
+            accountStatus,
             rechargeUrl: 'https://console.twilio.com/us1/billing/manage-billing/billing-overview'
         });
-        
+
     } catch (error) {
-        console.error('خطأ في جلب الرصيد:', error);
+        console.error('\u062e\u0637\u0623 \u0641\u064a \u062c\u0644\u0628 \u0627\u0644\u0631\u0635\u064a\u062f:', error);
         res.status(500).json({ error: error.message });
     }
 });

@@ -352,6 +352,7 @@ async function initializeApp() {
         const baseUrl = API_BASE_URL;
         const empId = localStorage.getItem('employeeId') || sessionStorage.getItem('employeeId') || 'admin';
         const clientIdentity = `client_${empId}`;
+        const cid = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
         console.log('🆔 Client Identity:', clientIdentity);
         console.log('🔗 Fetching token from:', `${baseUrl}/token`);
         
@@ -364,7 +365,7 @@ async function initializeApp() {
             try {
                 attempts++;
                 console.log(`📡 محاولة ${attempts}/${maxAttempts}...`);
-                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`, {
+                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}&companyId=${cid}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2382,7 +2383,7 @@ async function loadAccountBalance() {
         }
         
         const baseUrl = API_BASE_URL;
-        const response = await fetch(`${baseUrl}/account/balance`);
+        const response = await fetch(`${baseUrl}/account/balance?companyId=${sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || ''}`);
         
         if (response.ok) {
             const data = await response.json();

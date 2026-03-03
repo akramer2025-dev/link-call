@@ -2386,7 +2386,15 @@ async function loadAccountBalance() {
         }
         
         const baseUrl = API_BASE_URL;
-        const response = await fetch(`${baseUrl}/account/balance?companyId=${sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || ''}`);
+        const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
+        
+        // الشركات تستخدم رصيد النظام (companies/balance) - المطور يستخدم Twilio
+        const isCompanyUser = !!companyId && sessionStorage.getItem('userRole') !== 'admin';
+        const balanceUrl = isCompanyUser
+            ? `${baseUrl}/api/companies/balance?companyId=${companyId}`
+            : `${baseUrl}/account/balance?companyId=${companyId}`;
+        
+        const response = await fetch(balanceUrl);
         
         if (response.ok) {
             const data = await response.json();
@@ -2396,7 +2404,7 @@ async function loadAccountBalance() {
             
             if (balanceEl) {
                 balanceEl.textContent = balance;
-                currencyEl.textContent = data.currency || 'USD';
+                if (currencyEl) currencyEl.textContent = data.currency || 'USD';
             }
             
             // تحديث الهيدر
@@ -2416,7 +2424,7 @@ async function loadAccountBalance() {
             
             // حالة الحساب
             if (accountStatusEl) {
-                accountStatusEl.textContent = data.accountStatus === 'active' ? '✅ نشط' : data.accountStatus;
+                accountStatusEl.textContent = data.accountStatus === 'active' ? '✅ نشط' : '✅ نشط';
             }
             
             // تحديد حالة الرصيد (منخفض/متوسط/جيد)

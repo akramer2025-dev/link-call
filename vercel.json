@@ -103,7 +103,7 @@
     },
     {
       "src": "/api/recording-status",
-      "dest": "/api/recording-status.js"
+      "dest": "/api/recordings.js"
     },
     {
       "src": "/api/recording-proxy",
@@ -155,7 +155,7 @@
     },
     {
       "src": "/recording-status",
-      "dest": "/api/recording-status.js"
+      "dest": "/api/recordings.js"
     },
     {
       "src": "/work-tracking",

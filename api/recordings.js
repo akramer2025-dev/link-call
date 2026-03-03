@@ -219,6 +219,84 @@ module.exports = async (req, res) => {
         return res.status(200).end();
     }
 
+    // ─── مسار Twilio Webhook: recording-status ─────────────────────────────
+    // يُوجَّه إليه من /recording-status و /api/recording-status
+    const urlPath = (req.url || '').split('?')[0];
+    if (urlPath.endsWith('recording-status') || req.query._rs === '1') {
+        const COST_PER_MINUTE = 0.014;
+        try {
+            const recordingSid    = req.body.RecordingSid;
+            const callSid         = req.body.CallSid;
+            const parentCallSid   = req.body.ParentCallSid || callSid;
+            const duration        = parseInt(req.body.RecordingDuration || '0', 10);
+            const recordingUrl    = req.body.RecordingUrl
+                || `https://api.twilio.com/2010-04-01/Accounts/${req.body.AccountSid}/Recordings/${recordingSid}`;
+            const recordingStatus = req.body.RecordingStatus || 'completed';
+            const toNumber        = req.body.To || req.body.Called || '';
+            const qCompanyId      = req.query.companyId  || null;
+            const qEmployeeId     = req.query.employeeId || null;
+
+            console.log('📼 recording-status:', { recordingSid, callSid, parentCallSid, duration, toNumber, qCompanyId });
+
+            if (recordingSid) {
+                const { getDb } = require('../utils/firebase');
+                const { doc, getDoc, setDoc, updateDoc, deleteDoc } = require('firebase/firestore');
+                const db = getDb();
+
+                let callData = null;
+                let usedSid  = callSid;
+                const snap1 = await getDoc(doc(db, 'active_calls', callSid));
+                if (snap1.exists()) {
+                    callData = snap1.data();
+                } else if (parentCallSid && parentCallSid !== callSid) {
+                    const snap2 = await getDoc(doc(db, 'active_calls', parentCallSid));
+                    if (snap2.exists()) { callData = snap2.data(); usedSid = parentCallSid; }
+                }
+
+                const companyId  = (callData ? callData.companyId  : null) || qCompanyId  || null;
+                const employeeId = (callData ? callData.employeeId : null) || qEmployeeId || 'unknown';
+
+                if (!callData && companyId) console.log(`⚠️ recording-status: active_calls غير موجود — استخدام companyId من URL: ${companyId}`);
+
+                if (companyId && recordingSid) {
+                    const mm = Math.floor(duration / 60).toString().padStart(2, '0');
+                    const ss = (duration % 60).toString().padStart(2, '0');
+                    await setDoc(doc(db, 'companies', companyId, 'recordings', recordingSid), {
+                        sid: recordingSid, callSid, companyId, employeeId, to: toNumber,
+                        url: recordingUrl + '.mp3', duration, durationText: `${mm}:${ss}`,
+                        status: recordingStatus, createdAt: new Date().toISOString()
+                    });
+                    console.log(`📦 [حفظ تسجيل] ${recordingSid} → companies/${companyId}/recordings`);
+                } else {
+                    console.warn(`⚠️ لم يُحفظ التسجيل — companyId: ${companyId}, sid: ${recordingSid}`);
+                }
+
+                if (duration > 0 && companyId) {
+                    const minutes = duration / 60;
+                    const cost    = minutes * COST_PER_MINUTE;
+                    const compSnap = await getDoc(doc(db, 'companies', companyId));
+                    if (compSnap.exists()) {
+                        const comp = compSnap.data();
+                        const newBalance = Math.max(0, (comp.balance !== undefined ? comp.balance : 121.0) - cost);
+                        await updateDoc(doc(db, 'companies', companyId), {
+                            balance:           Number(newBalance.toFixed(4)),
+                            totalMinutesUsed:  Number(((comp.totalMinutesUsed  || 0) + minutes).toFixed(4)),
+                            totalCostDeducted: Number(((comp.totalCostDeducted || 0) + cost  ).toFixed(4))
+                        });
+                        console.log(`💳 خصم ${cost.toFixed(4)}$ (${minutes.toFixed(2)} دق) من ${companyId} → رصيد: ${newBalance.toFixed(4)}$`);
+                    }
+                }
+
+                if (callData) await deleteDoc(doc(db, 'active_calls', usedSid));
+            }
+            return res.status(200).send('OK');
+        } catch (rsErr) {
+            console.error('⚠️ recording-status error:', rsErr.message);
+            return res.status(200).send('OK'); // دائماً 200 لـ Twilio
+        }
+    }
+    // ───────────────────────────────────────────────────────────────────────
+
     try {
         // GET - جلب التسجيلات
         if (req.method === 'GET') {

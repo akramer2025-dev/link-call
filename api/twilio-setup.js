@@ -106,12 +106,25 @@ module.exports = async (req, res) => {
 
         // ── 2. Validate credentials + auto-create TwiML App ──────────────
         let twimlAppSid = null;
+        let finalApiKey    = apiKey    || null;
+        let finalApiSecret = apiSecret || null;
         try {
             const client = twilio(accountSid, authToken);
 
             // Check accountSid is valid
             await client.api.accounts(accountSid).fetch();
             console.log(`✅ twilio-setup: credentials صحيحة لـ ${accountSid}`);
+
+            // ── Auto-create API Key if not provided ──
+            // API Keys MUST belong to the same account — cannot borrow from default ENV
+            if (!finalApiKey || !finalApiSecret) {
+                const newKey = await client.newKeys.create({
+                    friendlyName: `LinkCall-${companyName}`
+                });
+                finalApiKey    = newKey.sid;    // SK...
+                finalApiSecret = newKey.secret; // only available at creation!
+                console.log(`🔑 twilio-setup: تم إنشاء API Key تلقائياً ${finalApiKey}`);
+            }
 
             // Look for existing TwiML App named "LinkCall - {companyName}"
             const appFriendlyName = `LinkCall - ${companyName}`;
@@ -146,8 +159,8 @@ module.exports = async (req, res) => {
         const twilioCredentials = {
             accountSid,
             authToken,
-            apiKey:      apiKey      || null,
-            apiSecret:   apiSecret   || null,
+            apiKey:      finalApiKey,
+            apiSecret:   finalApiSecret,
             twimlAppSid: twimlAppSid || null,
             phoneNumber: phoneNumber || null,
             updatedAt:   new Date().toISOString(),
@@ -159,6 +172,7 @@ module.exports = async (req, res) => {
         return res.status(200).json({
             success:     true,
             twimlAppSid,
+            apiKeyCreated: !apiKey,  // inform admin that a new API Key was auto-created
             message:     `تم حفظ إعدادات Twilio بنجاح لشركة ${companyName}`,
             phoneNumber: phoneNumber || null,
         });

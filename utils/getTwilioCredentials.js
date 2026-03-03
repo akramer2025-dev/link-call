@@ -33,13 +33,15 @@ module.exports = async function getTwilioCredentials(companyId) {
         // ── Priority 1: Firestore-stored credentials (new system) ────────
         if (data.twilioCredentials && data.twilioCredentials.accountSid) {
             const tc = data.twilioCredentials;
+            const isSameAccount = tc.accountSid === creds.accountSid;
             console.log(`✅ getTwilioCredentials: Firestore credentials للشركة ${data.companyName || companyId}`);
             return {
-                accountSid:  tc.accountSid  || creds.accountSid,
+                accountSid:  tc.accountSid,
                 authToken:   tc.authToken   || creds.authToken,
-                apiKey:      tc.apiKey      || creds.apiKey,
-                apiSecret:   tc.apiSecret   || creds.apiSecret,
-                twimlAppSid: tc.twimlAppSid || creds.twimlAppSid,
+                // API Key MUST belong to the same account — NEVER fall back to default if account differs
+                apiKey:      tc.apiKey      || (isSameAccount ? creds.apiKey    : null),
+                apiSecret:   tc.apiSecret   || (isSameAccount ? creds.apiSecret : null),
+                twimlAppSid: tc.twimlAppSid || (isSameAccount ? creds.twimlAppSid : null),
                 phoneNumber: tc.phoneNumber  || creds.phoneNumber,
             };
         }

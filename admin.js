@@ -1508,8 +1508,11 @@ async function saveTwilioSetup(e) {
             resultEl.style.background = 'rgba(16,185,129,0.1)';
             resultEl.style.border = '1px solid rgba(16,185,129,0.3)';
             resultEl.style.color = '#059669';
+            const apiKeyNote = data.apiKeyCreated
+                ? `<br><small style="color:#f59e0b;">🔑 تم إنشاء API Key تلقائياً وحفظه (لا تحتاج لإعادة إدخاله)</small>`
+                : '';
             resultEl.innerHTML = `
-                ✅ <strong>${data.message}</strong><br>
+                ✅ <strong>${data.message}</strong>${apiKeyNote}<br>
                 <small style="direction:ltr;display:block;margin-top:6px;">
                     TwiML App SID: ${data.twimlAppSid || '—'} &nbsp;|&nbsp; رقم: ${data.phoneNumber || phoneNumber || '—'}
                 </small>

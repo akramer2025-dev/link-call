@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
         if (!TWILIO_API_KEY || !TWILIO_API_SECRET) {
             return res.status(500).json({ 
                 error: 'Missing API Key credentials',
-                hint: 'Add TWILIO_API_KEY and TWILIO_API_SECRET in Vercel Environment Variables'
+                hint: 'افتح لوحة المطور → الشركات → ⚙️ Twilio Setup واحفظ الإعداد مجدداً ليتم إنشاء API Key تلقائياً'
             });
         }
 

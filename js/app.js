@@ -2337,7 +2337,10 @@ function displayUserInfo() {
         sidebarUsername.textContent = displayName;
     }
     
-    const roleText = role === 'admin' ? '👑 مطور' : '👨‍💼 مدير';
+    const roleText = role === 'admin' ? '👑 مطور'
+                   : role === 'owner' ? '🏢 مدير الشركة'
+                   : role === 'agent' || role === 'employee' ? '👤 موظف'
+                   : '👨‍💼 مدير';
     
     if (headerRole) {
         headerRole.textContent = roleText;
@@ -2604,6 +2607,18 @@ if (sidebarAdminBtn) {
         sidebarAdminBtn.style.display = 'flex';
     }
 }
+
+// إظهار أزرار الشركة (CRM - تقارير - حسابات - موظفين) لمديري الشركات
+(function showCompanyNavButtons() {
+    const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+    const role = sessionStorage.getItem('userRole');
+    // إظهار للمدير (owner) والموظف (agent/employee) ولكن ليس للأدمن (developer)
+    if (companyId && role !== 'admin') {
+        document.querySelectorAll('.company-nav-btn').forEach(function(btn) {
+            btn.style.display = 'flex';
+        });
+    }
+})();
 
 // معالجة زر الحذف
 const deleteBtn = document.getElementById('delete-btn');

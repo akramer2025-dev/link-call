@@ -193,10 +193,10 @@
                 return;
             }
             
-            // محاولة تسجيل دخول مدير
+            // محاولة تسجيل دخول عبر نظام الشركات
             try {
                 const baseUrl = API_BASE_URL;
-                const response = await fetch(`${baseUrl}/login`, {
+                const response = await fetch(`${baseUrl}/api/companies/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -205,49 +205,66 @@
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
-                    // حفظ بيانات المدير
                     sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('username', data.employee.username);
                     
-                    const userRole = data.employee.isTrial ? 'trial' : (data.employee.role || 'employee');
-                    sessionStorage.setItem('userRole', userRole);
-                    
-                    if (data.employee.isTrial) {
-                        sessionStorage.setItem('isTrial', 'true');
-                        sessionStorage.setItem('maxCalls', data.employee.maxCalls || '2');
+                    if (!data.isEmployee) {
+                        // ─── مدير الشركة (صاحب الحساب) ───
+                        sessionStorage.setItem('username', data.company.username);
+                        sessionStorage.setItem('userRole', 'owner');
+                        sessionStorage.setItem('fullname', data.company.adminName);
+                        sessionStorage.setItem('companyId', data.company.id);
+                        localStorage.setItem('companyId', data.company.id);
+                        localStorage.setItem('employeeId', data.company.username);
+                        localStorage.setItem('employeeName', data.company.adminName);
+                    } else {
+                        // ─── موظف تابع لشركة ───
+                        const emp = data.employee;
+                        const cmp = data.company;
+                        sessionStorage.setItem('username', emp.username);
+                        sessionStorage.setItem('userRole', emp.role || 'agent');
+                        sessionStorage.setItem('fullname', emp.name);
+                        sessionStorage.setItem('companyId', cmp.id);
+                        localStorage.setItem('companyId', cmp.id);
+                        sessionStorage.setItem('employeeId', emp.id.toString());
+                        localStorage.setItem('employeeId', emp.id.toString());
+                        localStorage.setItem('employeeName', emp.name);
+
+                        // الصلاحيات (مصفوفة في النظام الجديد)
+                        const permsArr = Array.isArray(emp.permissions) ? emp.permissions : [];
+                        const hasPerm = (p) => permsArr.includes(p);
+                        const permsObj = {
+                            viewOwnRecordings: hasPerm('viewOwnRecordings'),
+                            viewAllRecordings: hasPerm('viewAllRecordings'),
+                            deleteRecordings:  hasPerm('deleteRecordings'),
+                            editProfile:       hasPerm('editProfile'),
+                            callFromUSA:       hasPerm('callFromUSA'),
+                            callFromEgypt:     hasPerm('callFromEgypt'),
+                            callFromSaudi:     hasPerm('callFromSaudi')
+                        };
+                        sessionStorage.setItem('permissions', JSON.stringify(permsObj));
+                        sessionStorage.setItem('canViewOwnRecordings', permsObj.viewOwnRecordings ? 'true' : 'false');
+                        sessionStorage.setItem('canViewAllRecordings', permsObj.viewAllRecordings ? 'true' : 'false');
+                        sessionStorage.setItem('canDeleteRecordings',  permsObj.deleteRecordings  ? 'true' : 'false');
+                        sessionStorage.setItem('canEditProfile',       permsObj.editProfile       ? 'true' : 'false');
+                        sessionStorage.setItem('canCallFromUSA',       permsObj.callFromUSA       ? 'true' : 'false');
+                        sessionStorage.setItem('canCallFromEgypt',     permsObj.callFromEgypt     ? 'true' : 'false');
+                        sessionStorage.setItem('canCallFromSaudi',     permsObj.callFromSaudi     ? 'true' : 'false');
                     }
                     
-                    sessionStorage.setItem('fullname', data.employee.name);
-                    sessionStorage.setItem('departmentName', data.employee.departmentName);
-                    sessionStorage.setItem('employeeId', data.employee.id.toString());
-                    localStorage.setItem('employeeId', data.employee.id.toString());
-                    localStorage.setItem('employeeName', data.employee.name);
-                    
-                    const permissions = data.employee.permissions || {};
-                    sessionStorage.setItem('permissions', JSON.stringify(permissions));
-                    sessionStorage.setItem('canViewOwnRecordings', permissions.viewOwnRecordings ? 'true' : 'false');
-                    sessionStorage.setItem('canViewAllRecordings', permissions.viewAllRecordings ? 'true' : 'false');
-                    sessionStorage.setItem('canDeleteRecordings', permissions.deleteRecordings ? 'true' : 'false');
-                    sessionStorage.setItem('canEditProfile', permissions.editProfile ? 'true' : 'false');
-                    sessionStorage.setItem('canCallFromUSA', permissions.callFromUSA !== false ? 'true' : 'false');
-                    sessionStorage.setItem('canCallFromEgypt', permissions.callFromEgypt ? 'true' : 'false');
-                    sessionStorage.setItem('canCallFromSaudi', permissions.callFromSaudi ? 'true' : 'false');
-                    
                     // تسجيل وقت الدخول
-                    await fetch(`${baseUrl}/work-tracking`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'login',
-                            employeeId: data.employee.id.toString(),
-                            employeeName: data.employee.name
-                        })
-                    });
+                    try {
+                        const empId   = localStorage.getItem('employeeId')   || username;
+                        const empName = localStorage.getItem('employeeName') || username;
+                        await fetch(`${baseUrl}/work-tracking`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'login', employeeId: empId, employeeName: empName })
+                        });
+                    } catch (e) { /* غير حرج */ }
                     
                     loginBtn.classList.add('success');
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 500);
+                    setTimeout(() => { window.location.href = 'index.html'; }, 500);
+
                 } else {
                     hideLoading();
                     errorMessage.textContent = '⚠️ ' + (data.error || 'اسم المستخدم أو كلمة المرور غير صحيحة');

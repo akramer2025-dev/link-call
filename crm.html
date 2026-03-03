@@ -1669,11 +1669,12 @@
             document.body.style.opacity = '1'; // إظهار الصفحة
 
             const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true' || localStorage.getItem('isCompanyAdmin') === 'true';
-            _currentAssignedTo = (userRole === 'admin' || userRole === 'company-admin' || userRole === 'supervisor' || isCompanyAdmin) ? 'admin' : (employeeId || 'unknown');
+            const isManager = userRole === 'admin' || userRole === 'owner' || userRole === 'company-admin' || userRole === 'supervisor' || isCompanyAdmin;
+            _currentAssignedTo = isManager ? 'admin' : (employeeId || 'unknown');
 
             // زر المسح للأدمن فقط
             const clearBtn = document.getElementById('clearAllBtn');
-            if (clearBtn) clearBtn.style.display = (userRole === 'admin') ? 'flex' : 'none';
+            if (clearBtn) clearBtn.style.display = (userRole === 'admin' || userRole === 'owner') ? 'flex' : 'none';
 
             if (!companyId) {
                 container.innerHTML = `

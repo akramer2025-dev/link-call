@@ -1463,10 +1463,10 @@ async function loadTwilioStatus(companyId) {
                     TwiML App: ${data.twimlAppSid || '—'}
                 </small>
             `;
-            // Pre-fill visible fields (excluding tokens)
-            if (data.accountSid) document.getElementById('twilio-account-sid').value = data.accountSid;
-            if (data.apiKey)     document.getElementById('twilio-api-key').value     = data.apiKey;
-            if (data.phoneNumber)document.getElementById('twilio-phone-number').value= data.phoneNumber;
+            if (data.accountSid)  document.getElementById('twilio-account-sid').value   = data.accountSid;
+            if (data.apiKey)      document.getElementById('twilio-api-key').value        = data.apiKey;
+            if (data.phoneNumber) document.getElementById('twilio-phone-number').value   = data.phoneNumber;
+            if (data.twimlAppSid) document.getElementById('twilio-twiml-app-sid').value  = data.twimlAppSid;
             document.getElementById('twilio-delete-btn').style.display = 'inline-block';
         }
     } catch (e) {
@@ -1477,12 +1477,13 @@ async function loadTwilioStatus(companyId) {
 async function saveTwilioSetup(e) {
     e.preventDefault();
 
-    const companyId  = document.getElementById('twilio-company-id').value;
-    const accountSid = document.getElementById('twilio-account-sid').value.trim();
-    const authToken  = document.getElementById('twilio-auth-token').value.trim();
-    const apiKey     = document.getElementById('twilio-api-key').value.trim();
-    const apiSecret  = document.getElementById('twilio-api-secret').value.trim();
-    const phoneNumber= document.getElementById('twilio-phone-number').value.trim();
+    const companyId   = document.getElementById('twilio-company-id').value;
+    const accountSid  = document.getElementById('twilio-account-sid').value.trim();
+    const authToken   = document.getElementById('twilio-auth-token').value.trim();
+    const apiKey      = document.getElementById('twilio-api-key').value.trim();
+    const apiSecret   = document.getElementById('twilio-api-secret').value.trim();
+    const phoneNumber = document.getElementById('twilio-phone-number').value.trim();
+    const twimlAppSid = document.getElementById('twilio-twiml-app-sid').value.trim();
 
     if (!accountSid || !authToken) {
         alert('⚠️ Account SID و Auth Token مطلوبان');
@@ -1499,7 +1500,7 @@ async function saveTwilioSetup(e) {
         const res = await fetch(`${baseUrl}/api/twilio-setup`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', Authorization: adminToken },
-            body: JSON.stringify({ companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber }),
+            body: JSON.stringify({ companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber, twimlAppSid }),
         });
         const data = await res.json();
 

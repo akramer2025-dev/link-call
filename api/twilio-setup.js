@@ -93,7 +93,7 @@ module.exports = async (req, res) => {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
-        const { companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber } = req.body || {};
+        const { companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber, twimlAppSid: manualTwimlSid } = req.body || {};
 
         if (!companyId)  return res.status(400).json({ error: 'companyId مطلوب' });
         if (!accountSid) return res.status(400).json({ error: 'accountSid مطلوب' });
@@ -112,7 +112,7 @@ module.exports = async (req, res) => {
         const companyName = compSnap.data().companyName || companyId;
 
         // ── 2. Create TwiML App (best-effort, non-blocking) ───────────────
-        let twimlAppSid   = null;
+        let twimlAppSid   = manualTwimlSid || null;
         let finalApiKey   = cleanApiKey;
         let finalApiSecret= cleanApiSecret;
         let setupWarning  = null;

@@ -111,8 +111,8 @@ module.exports = async (req, res) => {
         try {
             const client = twilio(accountSid, authToken);
 
-            // Check accountSid is valid
-            await client.api.accounts(accountSid).fetch();
+            // Validate credentials — use incomingPhoneNumbers (works for all account types incl. sub-accounts & trial)
+            await client.incomingPhoneNumbers.list({ limit: 1 });
             console.log(`✅ twilio-setup: credentials صحيحة لـ ${accountSid}`);
 
             // ── Auto-create API Key if not provided ──
@@ -149,9 +149,12 @@ module.exports = async (req, res) => {
             }
         } catch (twilioErr) {
             console.error('❌ twilio-setup: فشل التحقق من credentials:', twilioErr.message);
+            const isAuthError = twilioErr.status === 401 || twilioErr.code === 20003 || /authenticate/i.test(twilioErr.message);
             return res.status(400).json({
                 error:   'فشل التحقق من بيانات Twilio',
-                details: twilioErr.message,
+                details: isAuthError
+                    ? 'بيانات تسجيل الدخول غير صحيحة — تأكد من Account SID و Auth Token من لوحة Twilio Console'
+                    : twilioErr.message,
             });
         }
 

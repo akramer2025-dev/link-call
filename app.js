@@ -374,7 +374,16 @@ async function initializeApp() {
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    // Read JSON body to get hint if available
+                    let errBody = {};
+                    try { errBody = await response.json(); } catch(_) {}
+                    const hintMsg = errBody.hint ? `\n\n${errBody.hint}` : '';
+                    const errMsg  = errBody.error || `HTTP ${response.status}`;
+                    // 400 = config error, no point retrying
+                    if (response.status === 400) {
+                        throw new Error(`⚙️ ${errMsg}${hintMsg}`);
+                    }
+                    throw new Error(`HTTP ${response.status}: ${errMsg}${hintMsg}`);
                 }
                 
                 data = await response.json();

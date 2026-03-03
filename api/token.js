@@ -22,8 +22,18 @@ module.exports = async (req, res) => {
         const TWILIO_API_SECRET      = creds.apiSecret;
         const TWILIO_TWIML_APP_SID   = creds.twimlAppSid;
 
-        if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_TWIML_APP_SID) {
-            return res.status(500).json({ error: 'Missing credentials' });
+        if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) {
+            return res.status(400).json({ 
+                error: 'Twilio credentials not configured',
+                hint: 'افتح لوحة المطور → الشركات → ⚙️ Twilio Setup واحفظ البيانات'
+            });
+        }
+
+        if (!TWILIO_TWIML_APP_SID) {
+            return res.status(400).json({ 
+                error: 'TwiML App SID missing',
+                hint: 'افتح لوحة المطور → الشركات → ⚙️ Twilio Setup ،أدخل TwiML App SID (يبدأ بـ AP) واحفظ'
+            });
         }
 
         // استخدام identity من query parameter أو إنشاء واحد جديد
@@ -33,7 +43,7 @@ module.exports = async (req, res) => {
         const VoiceGrant = AccessToken.VoiceGrant;
 
         if (!TWILIO_API_KEY || !TWILIO_API_SECRET) {
-            return res.status(500).json({ 
+            return res.status(400).json({ 
                 error: 'Missing API Key credentials',
                 hint: 'افتح لوحة المطور → الشركات → ⚙️ Twilio Setup واحفظ الإعداد مجدداً ليتم إنشاء API Key تلقائياً'
             });

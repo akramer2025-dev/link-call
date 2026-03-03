@@ -39,6 +39,181 @@
         opacity: 1;
     }
     .lang-btn:hover { opacity: 1; }
+
+    /* ===== نموذج إضافة الموظف - تصميم احترافي ===== */
+    #add-employee-modal .modal-content {
+        max-width: 760px;
+        max-height: 92vh;
+        overflow-y: auto;
+    }
+    #add-employee-modal .modal-content::-webkit-scrollbar { width: 6px; }
+    #add-employee-modal .modal-content::-webkit-scrollbar-track { background: transparent; }
+    #add-employee-modal .modal-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+    .form-section-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #a78bfa;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 25px 4px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        margin-top: 4px;
+    }
+    .form-section-title:first-child { border-top: none; margin-top: 0; padding-top: 18px; }
+
+    .form-body { padding: 0 25px 20px; }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 12px;
+    }
+    .form-row.single { grid-template-columns: 1fr; }
+
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #ccc;
+        margin-bottom: 6px;
+    }
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px 12px;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 8px;
+        color: #eee;
+        font-size: 14px;
+        transition: border-color 0.2s, background 0.2s;
+        box-sizing: border-box;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #7c3aed;
+        background: rgba(124,58,237,0.1);
+    }
+    .form-group select option { background: #1e1e2e; color: #eee; }
+    .form-group .pw-wrap { position: relative; }
+    .form-group .pw-wrap input { padding-left: 38px; }
+    .form-group .pw-toggle {
+        position: absolute;
+        left: 10px; top: 50%;
+        transform: translateY(-50%);
+        background: none; border: none;
+        cursor: pointer; font-size: 15px;
+        color: #888; padding: 0;
+    }
+
+    /* أزرار الأدوار السريعة */
+    .role-presets {
+        display: flex; gap: 8px; flex-wrap: wrap;
+        padding: 10px 25px 0;
+    }
+    .preset-btn {
+        flex: 1; min-width: 120px;
+        padding: 10px 14px;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        color: #ccc;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+    .preset-btn:hover { background: rgba(124,58,237,0.2); border-color: #7c3aed; color: #fff; }
+    .preset-btn.active { background: rgba(124,58,237,0.35); border-color: #a855f7; color: #fff; }
+
+    /* مصفوفة الصلاحيات */
+    .permissions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        padding: 12px 25px 0;
+    }
+    .perm-category {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 12px 14px;
+    }
+    .perm-category-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #a78bfa;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .perm-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        font-size: 13px;
+        color: #ccc;
+        cursor: pointer;
+        transition: color 0.15s;
+    }
+    .perm-item:hover { color: #fff; }
+    .perm-item input[type="checkbox"] {
+        width: 15px; height: 15px;
+        accent-color: #7c3aed;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    /* تذييل النموذج */
+    #add-employee-form .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 18px 25px 20px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        margin-top: 14px;
+    }
+
+    /* بطاقة الموظف المحسّنة */
+    .emp-card-perms {
+        display: flex; flex-wrap: wrap; gap: 4px;
+        margin-top: 8px;
+    }
+    .emp-perm-tag {
+        font-size: 10px;
+        background: rgba(124,58,237,0.2);
+        border: 1px solid rgba(124,58,237,0.3);
+        color: #c4b5fd;
+        padding: 2px 7px;
+        border-radius: 20px;
+    }
+    .emp-card-actions {
+        display: flex; gap: 6px; margin-top: 12px;
+        justify-content: center;
+    }
+    .emp-action-btn {
+        padding: 5px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: opacity 0.2s;
+    }
+    .emp-action-btn:hover { opacity: 0.8; }
+    .emp-action-edit { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .emp-action-delete { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+
+    @media (max-width: 600px) {
+        .form-row { grid-template-columns: 1fr; }
+        .permissions-grid { grid-template-columns: 1fr; }
+        .role-presets .preset-btn { min-width: calc(50% - 8px); }
+    }
     </style>
 </head>
 <body data-title-key="admin_page_title">
@@ -519,7 +694,7 @@
                     <!-- سيتم ملؤها بـ JavaScript -->
                 </div>
                 
-                <!-- Modal إضافة موظف -->
+                <!-- Modal إضافة موظف - نموذج احترافي متكامل -->
                 <div class="modal" id="add-employee-modal">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -527,41 +702,133 @@
                             <button class="close-modal">&times;</button>
                         </div>
                         <form id="add-employee-form">
-                            <div class="form-group">
-                                <label>اسم الموظف بالكامل *</label>
-                                <input type="text" id="employee-fullname" required placeholder="مثال: أحمد محمد">
+
+                            <!-- ⚡ الأدوار السريعة -->
+                            <div class="form-section-title">⚡ إعداد سريع بقالب جاهز</div>
+                            <div class="role-presets">
+                                <button type="button" class="preset-btn" data-preset="agent"    onclick="applyEmployeePreset('agent')">👤 وكيل مكالمات</button>
+                                <button type="button" class="preset-btn" data-preset="supervisor" onclick="applyEmployeePreset('supervisor')">👔 مشرف</button>
+                                <button type="button" class="preset-btn" data-preset="manager"  onclick="applyEmployeePreset('manager')">🏆 مدير</button>
+                                <button type="button" class="preset-btn" data-preset="readonly" onclick="applyEmployeePreset('readonly')">👁️ مشاهدة فقط</button>
                             </div>
-                            <div class="form-group">
-                                <label>اسم المستخدم *</label>
-                                <input type="text" id="employee-username" required placeholder="مثال: ahmed123">
+
+                            <!-- 👤 المعلومات الشخصية -->
+                            <div class="form-section-title">👤 المعلومات الشخصية</div>
+                            <div class="form-body">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>الاسم الكامل *</label>
+                                        <input type="text" id="employee-fullname" required placeholder="مثال: أحمد محمد علي">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>المسمى الوظيفي</label>
+                                        <input type="text" id="employee-title" placeholder="مثال: ممثل خدمة عملاء">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>اسم المستخدم (للدخول) *</label>
+                                        <input type="text" id="employee-username" required placeholder="مثال: ahmed123" autocomplete="off">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>كلمة المرور *</label>
+                                        <div class="pw-wrap">
+                                            <input type="password" id="employee-password" required placeholder="كلمة مرور قوية" value="Aa123456" autocomplete="new-password">
+                                            <button type="button" class="pw-toggle" onclick="toggleEmpPassword()">👁️</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>البريد الإلكتروني</label>
+                                        <input type="email" id="employee-email" placeholder="example@company.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>رقم الهاتف</label>
+                                        <input type="tel" id="employee-phone" placeholder="+966500000000">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>كلمة المرور *</label>
-                                <input type="password" id="employee-password" required placeholder="كلمة مرور قوية">
+
+                            <!-- ⚙️ إعدادات الوظيفة -->
+                            <div class="form-section-title">⚙️ إعدادات الوظيفة</div>
+                            <div class="form-body">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>القسم *</label>
+                                        <select id="employee-department" required>
+                                            <option value="">اختر القسم</option>
+                                            <option value="customer_service">خدمة العملاء</option>
+                                            <option value="sales">المبيعات</option>
+                                            <option value="support">الدعم الفني</option>
+                                            <option value="hospitality">حجز وحدات الضيافة والفنادق</option>
+                                            <option value="cars">تأجير السيارات</option>
+                                            <option value="tours">البرامج والجولات السياحية</option>
+                                            <option value="complaints">الشكاوى</option>
+                                            <option value="admin">الإدارة</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>الدور الوظيفي *</label>
+                                        <select id="employee-role" required>
+                                            <option value="agent">👤 وكيل</option>
+                                            <option value="supervisor">👔 مشرف</option>
+                                            <option value="manager">🏆 مدير</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>الدقائق المخصصة &nbsp;<span style="color:#888;font-size:11px">(0 = غير محدود)</span></label>
+                                        <input type="number" id="employee-minutes" min="0" value="0" placeholder="0">
+                                    </div>
+                                    <div class="form-group" style="display:flex;align-items:center;padding-top:22px;">
+                                        <label class="perm-item" style="font-size:13px;font-weight:600;color:#ccc;cursor:pointer;">
+                                            <input type="checkbox" id="employee-active" checked style="width:17px;height:17px;accent-color:#7c3aed;">
+                                            تفعيل الحساب فور الإنشاء
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>رقم الهاتف</label>
-                                <input type="tel" id="employee-phone" placeholder="+966500000000">
+
+                            <!-- 🔐 الصلاحيات -->
+                            <div class="form-section-title">🔐 الصلاحيات التفصيلية</div>
+                            <div class="permissions-grid">
+                                <div class="perm-category">
+                                    <div class="perm-category-title">📞 المكالمات</div>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="make_calls"> إجراء المكالمات</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="view_calls"> عرض سجل المكالمات</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="listen_recordings"> الاستماع للتسجيلات</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="download_recordings"> تحميل التسجيلات</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="delete_recordings"> حذف التسجيلات</label>
+                                </div>
+                                <div class="perm-category">
+                                    <div class="perm-category-title">👥 جهات الاتصال</div>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="view_contacts"> عرض جهات الاتصال</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="add_contacts"> إضافة جهات اتصال</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="edit_contacts"> تعديل جهات الاتصال</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="delete_contacts"> حذف جهات الاتصال</label>
+                                </div>
+                                <div class="perm-category">
+                                    <div class="perm-category-title">📊 التقارير</div>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="view_reports"> عرض التقارير</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="export_reports"> تصدير التقارير</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="view_dashboard"> عرض لوحة التحكم</label>
+                                </div>
+                                <div class="perm-category">
+                                    <div class="perm-category-title">⚙️ الإدارة</div>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="view_employees"> عرض الموظفين</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="manage_employees"> إدارة الموظفين</label>
+                                    <label class="perm-item"><input type="checkbox" name="perm" value="edit_profile"> تعديل الملف الشخصي</label>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>القسم *</label>
-                                <select id="employee-department" required>
-                                    <option value="">اختر القسم</option>
-                                    <option value="1">حجز وحدات الضيافة والفنادق</option>
-                                    <option value="2">تأجير السيارات</option>
-                                    <option value="3">البرامج والجولات السياحية</option>
-                                    <option value="0">خدمة العملاء</option>
-                                    <option value="9">الشكاوى</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>البريد الإلكتروني</label>
-                                <input type="email" id="employee-email" placeholder="example@company.com">
-                            </div>
+
+                            <!-- أزرار الإجراء -->
                             <div class="form-actions">
                                 <button type="button" class="btn-secondary close-modal">إلغاء</button>
-                                <button type="submit" class="btn-primary">✅ إضافة الموظف</button>
+                                <button type="submit" class="btn-primary" id="add-employee-submit-btn">✅ إضافة الموظف</button>
                             </div>
+
                         </form>
                     </div>
                 </div>

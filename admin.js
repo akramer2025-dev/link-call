@@ -441,7 +441,9 @@ function renderRecentCalls() {
 // ========== تحميل الموظفين ==========
 async function loadEmployees() {
     try {
-        const response = await fetch(`${baseUrl}/employees`);
+        const companyId = sessionStorage.getItem('companyId');
+        if (!companyId) { console.warn('⚠️ loadEmployees: companyId غير موجود'); return; }
+        const response = await fetch(`${baseUrl}/api/employees-management?companyId=${encodeURIComponent(companyId)}`);
         if (response.ok) {
             const data = await response.json();
             allEmployees = data.employees || [];
@@ -454,38 +456,75 @@ async function loadEmployees() {
     }
 }
 
+// ========== ترجمة اسم الصلاحية ==========
+const PERM_LABELS = {
+    make_calls: 'إجراء مكالمات', view_calls: 'عرض المكالمات',
+    listen_recordings: 'استماع', download_recordings: 'تحميل التسجيلات',
+    delete_recordings: 'حذف التسجيلات', view_contacts: 'عرض جهات اتصال',
+    add_contacts: 'إضافة جهات', edit_contacts: 'تعديل جهات', delete_contacts: 'حذف جهات',
+    view_reports: 'عرض التقارير', export_reports: 'تصدير التقارير',
+    view_dashboard: 'لوحة التحكم', view_employees: 'عرض الموظفين',
+    manage_employees: 'إدارة الموظفين', edit_profile: 'تعديل الملف'
+};
+const ROLE_LABELS = { agent: '👤 وكيل', supervisor: '👔 مشرف', manager: '🏆 مدير', employee: '👤 موظف' };
+const DEPT_LABELS = {
+    customer_service: 'خدمة العملاء', sales: 'المبيعات', support: 'الدعم الفني',
+    hospitality: 'الضيافة والفنادق', cars: 'تأجير السيارات', tours: 'الجولات السياحية',
+    complaints: 'الشكاوى', admin: 'الإدارة'
+};
+
 // ========== عرض شبكة الموظفين ==========
 function renderEmployeesGrid() {
     const container = document.getElementById('employees-grid');
     if (!container) return;
-    
+    if (!allEmployees.length) {
+        container.innerHTML = `
+            <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted);">
+                <div style="font-size:48px;margin-bottom:12px;">👥</div>
+                <p style="font-size:16px;">لا يوجد موظفين بعد</p>
+                <p style="font-size:13px;margin-top:6px;">اضغط "➕ إضافة موظف" لإضافة أول موظف</p>
+            </div>`;
+        return;
+    }
     container.innerHTML = allEmployees.map(emp => {
         const empCalls = allCalls.filter(c => c.employeeId == emp.id || c.employeeName === emp.name);
         const completedCalls = empCalls.filter(c => c.status === 'completed').length;
         const totalDuration = empCalls.reduce((sum, c) => sum + (parseInt(c.duration) || 0), 0);
-        
+        const perms = emp.permissions || [];
+        const roleLabel = ROLE_LABELS[emp.role] || emp.role || '—';
+        const deptLabel = DEPT_LABELS[emp.department] || emp.departmentArabic || emp.department || 'غير محدد';
+        const minAlloc = emp.minutesAllocated || 0;
+        const minUsed  = emp.minutesUsed || 0;
+        const isActive = emp.active !== false;
+        const statusBadge = isActive
+            ? '<span style="background:rgba(16,185,129,0.2);color:#34d399;border:1px solid rgba(16,185,129,0.3);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;">✅ نشط</span>'
+            : '<span style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.25);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;">⛔ موقوف</span>';
+        const permTags = perms.slice(0, 4).map(p =>
+            `<span class="emp-perm-tag">${PERM_LABELS[p] || p}</span>`
+        ).join('') + (perms.length > 4 ? `<span class="emp-perm-tag">+${perms.length - 4}</span>` : '');
+
         return `
             <div class="employee-card">
-                <div class="employee-avatar">👤</div>
-                <h4>${emp.name || emp.fullname || emp.username}</h4>
-                <div class="department">${emp.departmentArabic || emp.department || 'غير محدد'}</div>
-                <div class="employee-stats">
-                    <div class="stat">
-                        <div class="value">${empCalls.length}</div>
-                        <div class="label">مكالمات</div>
-                    </div>
-                    <div class="stat">
-                        <div class="value">${completedCalls}</div>
-                        <div class="label">ناجحة</div>
-                    </div>
-                    <div class="stat">
-                        <div class="value">${formatDuration(totalDuration)}</div>
-                        <div class="label">المدة</div>
-                    </div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                    <div class="employee-avatar">👤</div>
+                    ${statusBadge}
+                </div>
+                <h4 style="margin:6px 0 2px;">${emp.name || emp.fullname || emp.username}</h4>
+                <div class="department">${deptLabel}</div>
+                <div style="font-size:11px;color:#a78bfa;margin:4px 0;">${roleLabel}${emp.title ? ' · ' + emp.title : ''}</div>
+                ${minAlloc > 0 ? `<div style="font-size:11px;color:#888;margin-bottom:4px;">دقائق: ${minUsed}/${minAlloc}</div>` : ''}
+                <div class="emp-card-perms">${permTags || '<span style="font-size:11px;color:#666;">لا توجد صلاحيات</span>'}</div>
+                <div class="employee-stats" style="margin-top:10px;">
+                    <div class="stat"><div class="value">${empCalls.length}</div><div class="label">مكالمات</div></div>
+                    <div class="stat"><div class="value">${completedCalls}</div><div class="label">ناجحة</div></div>
+                    <div class="stat"><div class="value">${formatDuration(totalDuration)}</div><div class="label">المدة</div></div>
+                </div>
+                <div class="emp-card-actions">
+                    <button class="emp-action-btn emp-action-delete" onclick="deleteEmployee(${emp.id})">🗑️ حذف</button>
                 </div>
             </div>
         `;
-    }).join('') || '<p>لا يوجد موظفين</p>';
+    }).join('');
 }
 
 // ========== عرض نشاط الموظفين ==========
@@ -1340,55 +1379,114 @@ document.getElementById('add-employee-btn')?.addEventListener('click', () => {
 
 document.getElementById('add-employee-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log('📝 إرسال نموذج إضافة موظف');
-    
-    const departmentMap = {
-        '1': 'حجز وحدات الضيافة والفنادق',
-        '2': 'تأجير السيارات',
-        '3': 'البرامج والجولات السياحية',
-        '0': 'خدمة العملاء',
-        '9': 'الشكاوى'
-    };
-    
+
+    const companyId = sessionStorage.getItem('companyId');
+    if (!companyId) { alert('❌ لا يوجد companyId في الجلسة، سجّل دخول أولاً'); return; }
+
+    // جمع الصلاحيات المحددة
+    const permissions = Array.from(
+        document.querySelectorAll('#add-employee-form input[name="perm"]:checked')
+    ).map(cb => cb.value);
+
+    const role = document.getElementById('employee-role').value;
     const dept = document.getElementById('employee-department').value;
-    const data = {
-        fullname: document.getElementById('employee-fullname').value.trim(),
-        username: document.getElementById('employee-username').value.trim(),
-        password: document.getElementById('employee-password').value,
-        phone: document.getElementById('employee-phone').value.trim(),
-        department: dept,
-        departmentArabic: departmentMap[dept] || 'غير محدد',
-        email: document.getElementById('employee-email').value.trim(),
-        role: 'employee',
-        createdAt: new Date().toISOString()
+
+    const payload = {
+        companyId,
+        name:             document.getElementById('employee-fullname').value.trim(),
+        username:         document.getElementById('employee-username').value.trim(),
+        password:         document.getElementById('employee-password').value,
+        email:            document.getElementById('employee-email').value.trim(),
+        phone:            document.getElementById('employee-phone').value.trim(),
+        title:            document.getElementById('employee-title').value.trim(),
+        department:       dept,
+        departmentArabic: DEPT_LABELS[dept] || dept,
+        role,
+        permissions,
+        minutesAllocated: parseInt(document.getElementById('employee-minutes').value) || 0,
+        active:           document.getElementById('employee-active').checked
     };
-    
-    console.log('📤 بيانات الموظف:', data);
-    
+
+    if (!payload.name || !payload.username) { alert('❌ الاسم الكامل واسم المستخدم حقول إلزامية'); return; }
+
+    const submitBtn = document.getElementById('add-employee-submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ جاري الإضافة...';
+
     try {
-        const response = await fetch(`${baseUrl}/api/employees/add`, {
+        const response = await fetch(`${baseUrl}/api/employees-management`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
         });
-        
         const result = await response.json();
-        console.log('📥 استجابة الخادم:', result);
-        
+
         if (response.ok && result.success) {
-            alert(`✅ تم إضافة الموظف بنجاح!\n\nالاسم: ${data.fullname}\nاسم المستخدم: ${data.username}\n\n✅ تم حفظ البيانات بشكل دائم في قاعدة البيانات`);
+            alert(`✅ تم إضافة الموظف بنجاح!\n\nالاسم: ${payload.name}\nاسم المستخدم: ${payload.username}\nالدور: ${ROLE_LABELS[role] || role}\nالصلاحيات: ${permissions.length} صلاحية`);
             document.getElementById('add-employee-modal').classList.remove('active');
             document.getElementById('add-employee-form').reset();
-            // إعادة تحميل قائمة الموظفين
+            // إزالة تمييز القالب
+            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
             await loadEmployees();
         } else {
-            alert('❌ ' + (result.error || 'خطأ في إضافة الموظف'));
+            alert('❌ ' + (result.message || result.error || 'خطأ في إضافة الموظف'));
         }
     } catch (error) {
         console.error('❌ خطأ في الاتصال:', error);
         alert('❌ خطأ في الاتصال بالخادم');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '✅ إضافة الموظف';
     }
 });
+
+// ========== قوالب الأدوار السريعة ==========
+const PRESETS = {
+    agent: {
+        role: 'agent',
+        permissions: ['make_calls', 'view_calls', 'listen_recordings', 'view_contacts', 'view_dashboard', 'edit_profile']
+    },
+    supervisor: {
+        role: 'supervisor',
+        permissions: ['make_calls', 'view_calls', 'listen_recordings', 'download_recordings',
+                      'view_contacts', 'add_contacts', 'edit_contacts',
+                      'view_reports', 'view_employees', 'view_dashboard', 'edit_profile']
+    },
+    manager: {
+        role: 'manager',
+        permissions: ['make_calls', 'view_calls', 'listen_recordings', 'download_recordings', 'delete_recordings',
+                      'view_contacts', 'add_contacts', 'edit_contacts', 'delete_contacts',
+                      'view_reports', 'export_reports',
+                      'view_employees', 'manage_employees', 'view_dashboard', 'edit_profile']
+    },
+    readonly: {
+        role: 'agent',
+        permissions: ['view_calls', 'listen_recordings', 'view_contacts', 'view_reports', 'view_dashboard']
+    }
+};
+
+function applyEmployeePreset(preset) {
+    const p = PRESETS[preset];
+    if (!p) return;
+    // تحديد الدور
+    const roleEl = document.getElementById('employee-role');
+    if (roleEl) roleEl.value = p.role;
+    // إعادة ضبط جميع الصلاحيات
+    document.querySelectorAll('#add-employee-form input[name="perm"]').forEach(cb => {
+        cb.checked = p.permissions.includes(cb.value);
+    });
+    // تمييز الزر النشط
+    document.querySelectorAll('.preset-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.preset === preset);
+    });
+}
+
+// إظهار / إخفاء كلمة المرور
+function toggleEmpPassword() {
+    const inp = document.getElementById('employee-password');
+    if (!inp) return;
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+}
 
 // حذف موظف
 async function deleteEmployee(employeeId) {

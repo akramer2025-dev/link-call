@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -406,8 +406,8 @@
                 <div class="form-group">
                     <label>العملة</label>
                     <select id="v-currency">
+                        <option value="EGP" selected>جنيه مصري (EGP)</option>
                         <option value="SAR">ريال سعودي (SAR)</option>
-                        <option value="EGP">جنيه مصري (EGP)</option>
                         <option value="AED">درهم إماراتي (AED)</option>
                         <option value="USD">دولار أمريكي (USD)</option>
                         <option value="EUR">يورو (EUR)</option>
@@ -492,8 +492,8 @@
                 <div class="form-group">
                     <label>العملة</label>
                     <select id="sal-currency">
+                        <option value="EGP" selected>جنيه مصري (EGP)</option>
                         <option value="SAR">ريال سعودي (SAR)</option>
-                        <option value="EGP">جنيه مصري (EGP)</option>
                         <option value="AED">درهم إماراتي (AED)</option>
                         <option value="USD">دولار أمريكي (USD)</option>
                     </select>
@@ -549,8 +549,8 @@
                 <div class="form-group">
                     <label>العملة</label>
                     <select id="ss-currency">
+                        <option value="EGP" selected>EGP</option>
                         <option value="SAR">SAR</option>
-                        <option value="EGP">EGP</option>
                         <option value="AED">AED</option>
                         <option value="USD">USD</option>
                     </select>
@@ -652,12 +652,12 @@ function renderAll() {
 }
 
 // ═══════════ Stats ════════════════════════════════════
-function fmt(n, cur='SAR') {
-    return Number(n||0).toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + cur;
+function fmt(n, cur='EGP') {
+    return Number(n||0).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + cur;
 }
 function fmtDate(str) {
     if (!str) return '—';
-    return new Date(str).toLocaleDateString('ar-SA');
+    return new Date(str).toLocaleDateString('ar-EG');
 }
 function getCatLabel(c) {
     const m = { salary:'راتب', bonus:'مكافأة', expense:'مصروف', invoice:'فاتورة', refund:'استرداد', other:'أخرى' };
@@ -667,17 +667,17 @@ function getCatLabel(c) {
 function renderStats() {
     const payments = allVouchers.filter(v => v.type === 'payment');
     const receipts = allVouchers.filter(v => v.type === 'receipt');
-    const curPay   = payments[0]?.currency || 'SAR';
-    const curRec   = receipts[0]?.currency || 'SAR';
+    const curPay   = payments[0]?.currency || 'EGP';
+    const curRec   = receipts[0]?.currency || 'EGP';
     const out  = payments.reduce((s,v) => s + (v.amount||0), 0);
     const inn  = receipts.reduce((s,v) => s + (v.amount||0), 0);
     const sal  = allSalaries.reduce((s,v) => s + (v.netPay||0), 0);
     const bal  = inn - out;
     document.getElementById('stat-out').textContent      = fmt(out, curPay);
     document.getElementById('stat-in').textContent       = fmt(inn, curRec);
-    document.getElementById('stat-balance').textContent  = fmt(bal, 'SAR');
+    document.getElementById('stat-balance').textContent  = fmt(bal, 'EGP');
     document.getElementById('stat-balance').style.color  = bal >= 0 ? '#34d399' : '#f87171';
-    document.getElementById('stat-salaries').textContent = fmt(sal, allSalaries[0]?.currency || 'SAR');
+    document.getElementById('stat-salaries').textContent = fmt(sal, allSalaries[0]?.currency || 'EGP');
 }
 
 // ═══════════ Payments table ══════════════════════════
@@ -748,7 +748,7 @@ function renderSalaryCards() {
     grid.innerHTML = allEmployees.map(emp => {
         const setting   = salarySettings[String(emp.id)] || {};
         const base      = setting.baseSalary || 0;
-        const cur       = setting.currency   || 'SAR';
+        const cur       = setting.currency   || 'EGP';
         const lastSal   = [...allSalaries].filter(s => s.employeeId == emp.id).sort((a,b) => b.paidDate > a.paidDate ? 1 : -1)[0];
         return `
         <div class="salary-card">
@@ -821,8 +821,8 @@ function renderReports() {
     const totalIn  = rec.reduce((s,v) => s+(v.amount||0), 0);
     const totalSal = sal.reduce((s,v) => s+(v.netPay||0), 0);
     const balance  = totalIn - totalOut;
-    const curOut   = pay[0]?.currency || 'SAR';
-    const curIn    = rec[0]?.currency || 'SAR';
+    const curOut   = pay[0]?.currency || 'EGP';
+    const curIn    = rec[0]?.currency || 'EGP';
 
     // تجميع المصروفات حسب التصنيف
     const byCategory = {};
@@ -833,8 +833,8 @@ function renderReports() {
             <h4>📊 ملخص الفترة (${start || '—'} : ${end || '—'})</h4>
             <div class="report-row"><span class="lbl">إجمالي الصرف</span><span class="val red">${fmt(totalOut, curOut)}</span></div>
             <div class="report-row"><span class="lbl">إجمالي القبض</span><span class="val green">${fmt(totalIn, curIn)}</span></div>
-            <div class="report-row"><span class="lbl">الرصيد الصافي</span><span class="val ${balance>=0?'green':'red'}">${fmt(balance, 'SAR')}</span></div>
-            <div class="report-row"><span class="lbl">إجمالي الرواتب المصروفة</span><span class="val red">${fmt(totalSal, sal[0]?.currency||'SAR')}</span></div>
+            <div class="report-row"><span class="lbl">الرصيد الصافي</span><span class="val ${balance>=0?'green':'red'}">${fmt(balance, 'EGP')}</span></div>
+            <div class="report-row"><span class="lbl">إجمالي الرواتب المصروفة</span><span class="val red">${fmt(totalSal, sal[0]?.currency||'EGP')}</span></div>
             <div class="report-row"><span class="lbl">عدد سندات الصرف</span><span class="val">${pay.length}</span></div>
             <div class="report-row"><span class="lbl">عدد سندات القبض</span><span class="val">${rec.length}</span></div>
             <div class="report-row"><span class="lbl">عدد سجلات الرواتب</span><span class="val">${sal.length}</span></div>
@@ -863,9 +863,9 @@ function renderReports() {
             <tr>
                 <td>${e.name || '—'}</td>
                 <td style="text-align:center;">${e.count}</td>
-                <td style="color:#34d399;">+${fmt(e.bonuses,'SAR')}</td>
-                <td style="color:#f87171;">-${fmt(e.deductions,'SAR')}</td>
-                <td style="font-weight:800;">${fmt(e.net,'SAR')}</td>
+                <td style="color:#34d399;">+${fmt(e.bonuses,'EGP')}</td>
+                <td style="color:#f87171;">-${fmt(e.deductions,'EGP')}</td>
+                <td style="font-weight:800;">${fmt(e.net,'EGP')}</td>
                 <td>${fmtDate(e.last)}</td>
             </tr>`).join('')
         : `<tr><td colspan="6"><div class="empty-state" style="padding:30px;"><p>لا توجد بيانات في هذه الفترة</p></div></td></tr>`;
@@ -928,7 +928,7 @@ function openSalaryModal(empId, empName) {
     document.getElementById('sal-emp-display').value  = empName;
     const setting = salarySettings[String(empId)] || {};
     document.getElementById('sal-base').value      = setting.baseSalary || '';
-    document.getElementById('sal-currency').value  = setting.currency   || 'SAR';
+    document.getElementById('sal-currency').value  = setting.currency   || 'EGP';
     document.getElementById('sal-bonuses').value   = '0';
     document.getElementById('sal-deductions').value= '0';
     document.getElementById('sal-notes').value     = '';
@@ -942,7 +942,7 @@ function updateNetPreview() {
     const bon  = parseFloat(document.getElementById('sal-bonuses')?.value || 0);
     const ded  = parseFloat(document.getElementById('sal-deductions')?.value || 0);
     const net  = base + bon - ded;
-    const cur  = document.getElementById('sal-currency')?.value || 'SAR';
+    const cur  = document.getElementById('sal-currency')?.value || 'EGP';
     const el = document.getElementById('sal-net-preview');
     if (el) { el.textContent = `الصافي: ${fmt(net, cur)}`; el.style.color = net >= 0 ? '#34d399' : '#f87171'; }
 }
@@ -991,7 +991,7 @@ function openSalarySettingModal(empId, empName, base, cur) {
     document.getElementById('ss-employee-id').value = empId;
     document.getElementById('ss-emp-display').value = empName;
     document.getElementById('ss-base').value        = base;
-    document.getElementById('ss-currency').value    = cur || 'SAR';
+    document.getElementById('ss-currency').value    = cur || 'EGP';
     document.getElementById('salary-setting-modal').classList.add('active');
 }
 
@@ -1094,7 +1094,7 @@ function openPrintWindow(v) {
     </div>
 
     <div class="amount-box">
-        <div class="amount">${Number(v.amount||0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ${v.currency || 'SAR'}</div>
+        <div class="amount">${Number(v.amount||0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ${v.currency || 'EGP'}</div>
         <div class="lbl">${isPayment ? 'المبلغ المصروف' : 'المبلغ المقبوض'}</div>
     </div>
 

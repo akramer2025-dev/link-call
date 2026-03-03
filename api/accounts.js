@@ -1,4 +1,4 @@
-// ========== API: الحسابات - سندات الصرف والقبض والرواتب ==========
+﻿// ========== API: الحسابات - سندات الصرف والقبض والرواتب ==========
 const { getDb } = require('../utils/firebase');
 
 // ───────── Firestore helpers ─────────
@@ -101,7 +101,7 @@ module.exports = async (req, res) => {
                 id:            nextVoucherId(data.vouchers, voucherType),
                 type:          voucherType,        // payment | receipt
                 amount:        parseFloat(amount),
-                currency:      body.currency || 'SAR',
+                currency:      body.currency || 'EGP',
                 recipient,
                 recipientType: recipientType || 'other',
                 employeeId:    employeeId || null,
@@ -131,7 +131,7 @@ module.exports = async (req, res) => {
                 id:            nextVoucherId(data.vouchers, 'payment'),
                 type:          'payment',
                 amount:        netPay,
-                currency:      body.currency || 'SAR',
+                currency:      body.currency || 'EGP',
                 recipient:     employeeName,
                 recipientType: 'employee',
                 employeeId,
@@ -152,7 +152,7 @@ module.exports = async (req, res) => {
                 bonuses:      voucherBonus,
                 deductions:   voucherDeduct,
                 netPay,
-                currency:     body.currency || 'SAR',
+                currency:     body.currency || 'EGP',
                 month,
                 status:       'paid',
                 paidDate:     now.split('T')[0],
@@ -171,7 +171,7 @@ module.exports = async (req, res) => {
         if (body.action === 'save-salary-setting') {
             const { employeeId, baseSalary, currency } = body;
             if (!employeeId) return res.status(400).json({ success: false, message: 'employeeId مطلوب' });
-            data.salarySettings[String(employeeId)] = { baseSalary: parseFloat(baseSalary || 0), currency: currency || 'SAR', updatedAt: now };
+            data.salarySettings[String(employeeId)] = { baseSalary: parseFloat(baseSalary || 0), currency: currency || 'EGP', updatedAt: now };
             await saveAccountsData(cId, data);
             return res.json({ success: true, message: 'تم حفظ الإعداد' });
         }

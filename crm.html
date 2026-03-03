@@ -2585,172 +2585,104 @@
         // ==================== Perform Excel Import ====================
         async function performExcelImport(contacts, distribution) {
             const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
-            if (!companyId) {
-                alert('⚠️ خطأ في جلب معرف الشركة');
-                return;
-            }
-            
-            // Show progress modal
-            const modal = document.getElementById('progress-modal');
-            const progressBar = document.getElementById('progress-bar');
+            if (!companyId) { alert('⚠️ خطأ في جلب معرف الشركة'); return; }
+
+            const modal        = document.getElementById('progress-modal');
+            const progressBar  = document.getElementById('progress-bar');
             const progressText = document.getElementById('progress-text');
             const progressResults = document.getElementById('progress-results');
-            const closeBtn = document.getElementById('close-progress-btn');
-            
+            const closeBtn     = document.getElementById('close-progress-btn');
+
             modal.style.display = 'flex';
             progressBar.style.width = '0%';
             progressBar.textContent = '0%';
             progressText.textContent = 'جاري التحضير...';
             progressResults.style.display = 'none';
             closeBtn.style.display = 'none';
-            
+
             try {
-                progressText.textContent = 'جاري جلب جهات الاتصال الحالية...';
-                
-                // Get existing contacts for duplicate detection
-                const existingResponse = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}&limit=99999`);
-                const existingData = await existingResponse.json();
-                const existingPhones = new Set((existingData.contacts || []).map(c => String(c.phone || '').replace(/[^0-9]/g, '')));
-                
-                // Prepare distribution map
+                // ── بناء distribution map ──────────────────────────────
                 let distributionMap = [];
-                let contactIndex = 0;
-                
+                let idx = 0;
                 if (distribution) {
-                    // Build distribution map: which contacts go to which employee
                     for (const dist of distribution) {
-                        for (let i = 0; i < dist.count && contactIndex < contacts.length; i++) {
-                            distributionMap.push({
-                                contact: contacts[contactIndex],
-                                employeeId: dist.employeeId,
-                                employeeName: dist.employeeName
-                            });
-                            contactIndex++;
+                        for (let k = 0; k < dist.count && idx < contacts.length; k++, idx++) {
+                            distributionMap.push({ contact: contacts[idx], employeeId: dist.employeeId, employeeName: dist.employeeName });
                         }
                     }
-                    
-                    // Add remaining contacts without assignment
-                    while (contactIndex < contacts.length) {
-                        distributionMap.push({
-                            contact: contacts[contactIndex],
-                            employeeId: null,
-                            employeeName: null
-                        });
-                        contactIndex++;
+                    while (idx < contacts.length) {
+                        distributionMap.push({ contact: contacts[idx++], employeeId: null, employeeName: null });
                     }
                 } else {
-                    // No distribution - import all without assignment
-                    distributionMap = contacts.map(c => ({
-                        contact: c,
-                        employeeId: null,
-                        employeeName: null
-                    }));
+                    distributionMap = contacts.map(c => ({ contact: c, employeeId: null, employeeName: null }));
                 }
-                
-                progressText.textContent = `جاري استيراد ${distributionMap.length} جهة اتصال...`;
-                
-                // Import in batches of 50
-                let successCount = 0;
-                let errorCount = 0;
-                let duplicateCount = 0;
-                const batchSize = 50;
-                
-                for (let i = 0; i < distributionMap.length; i += batchSize) {
-                    const batch = distributionMap.slice(i, i + batchSize);
-                    
-                    for (const item of batch) {
-                        try {
-                            const contact = item.contact;
-                            
-                            // Check for duplicate
-                            const cleanPhone = String(contact.phone || '').replace(/[^0-9]/g, '');
-                            if (existingPhones.has(cleanPhone)) {
-                                duplicateCount++;
-                                continue;
-                            }
-                            
-                            // Build notes with assignedTo info
-                            let notes = `Country: ${contact.country || '-'} | Balance: ${contact.balance || '0'}`;
-                            if (item.employeeId) {
-                                notes += ` | Assigned: ${item.employeeName}`;
-                            }
-                            notes += ` | Source: Excel Import`;
-                            
-                            // Build tags
-                            const tags = ['Excel Import'];
-                            if (item.employeeId) {
-                                tags.push(`Assigned-${item.employeeId}`);
-                            }
-                            
-                            // Add contact
-                            const response = await fetch(`${API_BASE_URL}/api/contacts`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    companyId,
-                                    name: contact.name,
-                                    phone: contact.phone,
-                                    email: contact.email || '',
-                                    notes: notes,
-                                    tags: tags,
-                                    assignedTo: item.employeeId || null
-                                })
-                            });
-                            
-                            if (response.ok) {
-                                successCount++;
-                                existingPhones.add(cleanPhone);
-                            } else {
-                                errorCount++;
-                            }
-                        } catch (err) {
-                            console.error('خطأ في إضافة جهة اتصال:', err);
-                            errorCount++;
+
+                // ── تحضير الـ contacts للإرسال ─────────────────────────
+                const prepared = distributionMap.map(item => {
+                    const c = item.contact;
+                    let notes = `Country: ${c.country || '-'} | Balance: ${c.balance || '0'}`;
+                    if (item.employeeId) notes += ` | Assigned: ${item.employeeName}`;
+                    notes += ` | Source: Excel Import`;
+                    const tags = ['Excel Import'];
+                    if (item.employeeId) tags.push(`Assigned-${item.employeeId}`);
+                    return { name: c.name, phone: c.phone, email: c.email || '', notes, tags, assignedTo: item.employeeId || null };
+                });
+
+                // ── إرسال بـ chunks إلى bulk endpoint ─────────────────
+                const CHUNK = 200;
+                let totalInserted = 0, totalDuplicates = 0, totalErrors = 0;
+
+                progressText.textContent = `جاري رفع ${prepared.length} جهة اتصال...`;
+
+                for (let i = 0; i < prepared.length; i += CHUNK) {
+                    const chunk = prepared.slice(i, i + CHUNK);
+                    try {
+                        const res = await fetch(`${API_BASE_URL}/api/contacts?action=bulkImport`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ companyId, contacts: chunk, addedBy: sessionStorage.getItem('username') || 'excel' })
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                            totalInserted  += data.inserted  || 0;
+                            totalDuplicates += data.duplicates || 0;
+                        } else {
+                            totalErrors += chunk.length;
                         }
+                    } catch (e) {
+                        totalErrors += chunk.length;
                     }
-                    
-                    // Update progress
-                    const progress = Math.min(100, Math.round(((i + batch.length) / distributionMap.length) * 100));
-                    progressBar.style.width = `${progress}%`;
-                    progressBar.textContent = `${progress}%`;
-                    progressText.textContent = `تمت معالجة ${i + batch.length} من ${distributionMap.length}...`;
-                    
-                    // Small delay between batches
-                    await new Promise(resolve => setTimeout(resolve, 100));
+
+                    const pct = Math.min(100, Math.round(((i + chunk.length) / prepared.length) * 100));
+                    progressBar.style.width = `${pct}%`;
+                    progressBar.textContent = `${pct}%`;
+                    progressText.textContent = `تم رفع ${Math.min(i + CHUNK, prepared.length)} من ${prepared.length}...`;
                 }
-                
-                // Show results
+
+                // ── النتائج ────────────────────────────────────────────
                 progressBar.style.width = '100%';
                 progressBar.textContent = '100%';
                 progressText.textContent = '✅ اكتمل الاستيراد!';
-                
+
                 let resultsHTML = `
-                    <div class="success-count">✓ تم الإضافة بنجاح: ${successCount}</div>
-                    <div class="duplicate-count">⚠ مكرر (تم التجاهل): ${duplicateCount}</div>
-                    <div class="error-count">✗ فشل: ${errorCount}</div>
+                    <div class="success-count">✓ تم الإضافة بنجاح: ${totalInserted}</div>
+                    <div class="duplicate-count">⚠ مكرر (تم التجاهل): ${totalDuplicates}</div>
+                    <div class="error-count">✗ فشل: ${totalErrors}</div>
                 `;
-                
                 if (distribution) {
                     resultsHTML += '<div style="color:#667eea;margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">📊 التوزيع على الموظفين:</div>';
-                    distribution.forEach(dist => {
-                        resultsHTML += `<div style="color:#8892b0;font-size:13px;margin-top:5px;">• ${dist.employeeName}: ${dist.count} جهة اتصال</div>`;
-                    });
+                    distribution.forEach(d => resultsHTML += `<div style="color:#8892b0;font-size:13px;margin-top:5px;">• ${d.employeeName}: ${d.count} جهة اتصال</div>`);
                 }
-                
-                resultsHTML += `
-                    <div style="color:#ccd6f6;margin-top:15px;font-weight:700;">
-                        إجمالي: ${contacts.length} جهة اتصال
-                    </div>
-                `;
-                
+                resultsHTML += `<div style="color:#ccd6f6;margin-top:15px;font-weight:700;">إجمالي الملف: ${contacts.length} جهة اتصال</div>`;
+
                 progressResults.innerHTML = resultsHTML;
                 progressResults.style.display = 'block';
                 closeBtn.style.display = 'block';
-                
+
             } catch (error) {
                 console.error('خطأ في الاستيراد:', error);
                 progressText.textContent = '❌ حدث خطأ أثناء الاستيراد';
-                progressResults.innerHTML = `<div class="error-count">حدث خطأ غير متوقع. حاول مرة أخرى.</div>`;
+                progressResults.innerHTML = `<div class="error-count">حدث خطأ غير متوقع: ${error.message}</div>`;
                 progressResults.style.display = 'block';
                 closeBtn.style.display = 'block';
             }

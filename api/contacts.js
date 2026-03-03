@@ -100,6 +100,66 @@ module.exports = async (req, res) => {
             return res.status(200).json({ success: true, deleted, message: `تم مسح ${deleted} جهة اتصال` });
         }
 
+        // ─── BULK IMPORT: POST ?action=bulkImport ──────────────────────
+        if (req.method === 'POST' && req.query.action === 'bulkImport') {
+            const { companyId, contacts: incoming, addedBy } = req.body;
+            if (!companyId) return res.status(400).json({ success: false, error: 'Company ID is required' });
+            if (!Array.isArray(incoming) || incoming.length === 0)
+                return res.status(400).json({ success: false, error: 'contacts array is required' });
+
+            // جلب الأرقام الموجودة للكشف عن التكرار
+            const existing = await getCompanySubcollection(companyId, 'contacts');
+            const existingPhones = new Set(
+                existing.filter(c => !c._deleted).map(c => String(c.phone || '').replace(/[^0-9]/g, ''))
+            );
+
+            const { doc, writeBatch } = require('firebase/firestore');
+            const db = getDb();
+
+            let successCount = 0;
+            let duplicateCount = 0;
+            const FIRESTORE_BATCH_LIMIT = 490; // أقل من 500 هامش أمان
+
+            // تقسيم على batches لـ Firestore
+            for (let i = 0; i < incoming.length; i += FIRESTORE_BATCH_LIMIT) {
+                const chunk = incoming.slice(i, i + FIRESTORE_BATCH_LIMIT);
+                const batch = writeBatch(db);
+                let batchCount = 0;
+
+                for (const c of chunk) {
+                    const cleanPhone = String(c.phone || '').replace(/[^0-9]/g, '');
+                    if (!c.name || !c.phone || existingPhones.has(cleanPhone)) {
+                        duplicateCount++;
+                        continue;
+                    }
+                    existingPhones.add(cleanPhone); // منع التكرار داخل الـ import نفسه
+                    const contactId = `contact_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    const newContact = {
+                        id: contactId, companyId,
+                        name: c.name, phone: c.phone,
+                        email: c.email || null,
+                        notes: c.notes || '',
+                        tags: c.tags || [],
+                        assignedTo: c.assignedTo || null,
+                        addedBy: addedBy || 'excel-import',
+                        device: 'excel',
+                        createdAt: new Date().toISOString(),
+                        lastModified: new Date().toISOString(),
+                        callHistory: [], totalCalls: 0, totalDuration: 0, lastCallDate: null
+                    };
+                    const docRef = doc(db, 'companies', companyId, 'contacts', contactId);
+                    batch.set(docRef, newContact);
+                    batchCount++;
+                    successCount++;
+                }
+                if (batchCount > 0) await batch.commit();
+            }
+
+            logCompanyActivity(companyId, { action: 'bulk_import', count: successCount, duplicates: duplicateCount, addedBy: addedBy || 'excel-import' });
+            console.log(`📥 [${companyId}] Bulk import: ${successCount} جديد، ${duplicateCount} مكرر`);
+            return res.status(200).json({ success: true, inserted: successCount, duplicates: duplicateCount });
+        }
+
         // ─── POST ──────────────────────────────────────────────────────
         if (req.method === 'POST') {
             const { companyId, name, phone, email, notes, tags, addedBy, device } = req.body;

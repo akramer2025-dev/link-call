@@ -104,35 +104,18 @@ module.exports = async (req, res) => {
         if (!compSnap.exists()) return res.status(404).json({ error: 'الشركة غير موجودة' });
         const companyName = compSnap.data().companyName || companyId;
 
-        // ── 2. Validate credentials + auto-create TwiML App ──────────────
+        // ── 2. Create TwiML App (this implicitly validates credentials) ──────
         let twimlAppSid = null;
         let finalApiKey    = apiKey    || null;
         let finalApiSecret = apiSecret || null;
+        const client = twilio(accountSid, authToken);
         try {
-            const client = twilio(accountSid, authToken);
-
-            // Validate credentials — use incomingPhoneNumbers (works for all account types incl. sub-accounts & trial)
-            await client.incomingPhoneNumbers.list({ limit: 1 });
-            console.log(`✅ twilio-setup: credentials صحيحة لـ ${accountSid}`);
-
-            // ── Auto-create API Key if not provided ──
-            // API Keys MUST belong to the same account — cannot borrow from default ENV
-            if (!finalApiKey || !finalApiSecret) {
-                const newKey = await client.newKeys.create({
-                    friendlyName: `LinkCall-${companyName}`
-                });
-                finalApiKey    = newKey.sid;    // SK...
-                finalApiSecret = newKey.secret; // only available at creation!
-                console.log(`🔑 twilio-setup: تم إنشاء API Key تلقائياً ${finalApiKey}`);
-            }
-
-            // Look for existing TwiML App named "LinkCall - {companyName}"
+            // Step A: TwiML App — look for existing then create/update
             const appFriendlyName = `LinkCall - ${companyName}`;
             const existingApps = await client.applications.list({ friendlyName: appFriendlyName, limit: 1 });
 
             if (existingApps.length > 0) {
                 twimlAppSid = existingApps[0].sid;
-                // Update webhook URL in case it changed
                 await client.applications(twimlAppSid).update({
                     voiceUrl:    VOICE_WEBHOOK_URL,
                     voiceMethod: 'POST',
@@ -148,14 +131,27 @@ module.exports = async (req, res) => {
                 console.log(`✅ twilio-setup: تم إنشاء TwiML App ${twimlAppSid}`);
             }
         } catch (twilioErr) {
-            console.error('❌ twilio-setup: فشل التحقق من credentials:', twilioErr.message);
-            const isAuthError = twilioErr.status === 401 || twilioErr.code === 20003 || /authenticate/i.test(twilioErr.message);
+            console.error('❌ twilio-setup TwiML App خطأ:', twilioErr.status, twilioErr.code, twilioErr.message);
+            const isAuth = twilioErr.status === 401 || twilioErr.code === 20003;
             return res.status(400).json({
-                error:   'فشل التحقق من بيانات Twilio',
-                details: isAuthError
-                    ? 'بيانات تسجيل الدخول غير صحيحة — تأكد من Account SID و Auth Token من لوحة Twilio Console'
-                    : twilioErr.message,
+                error:   'فشل إنشاء TwiML App',
+                details: isAuth
+                    ? `بيانات Account SID أو Auth Token غير صحيحة (Twilio code: ${twilioErr.code || twilioErr.status})`
+                    : `${twilioErr.message} (code: ${twilioErr.code || twilioErr.status || 'N/A'})`,
             });
+        }
+
+        // Step B: Auto-create API Key if not provided (must belong to same account)
+        if (!finalApiKey || !finalApiSecret) {
+            try {
+                const newKey = await client.newKeys.create({ friendlyName: `LinkCall-${companyName}` });
+                finalApiKey    = newKey.sid;
+                finalApiSecret = newKey.secret;
+                console.log(`🔑 twilio-setup: تم إنشاء API Key تلقائياً ${finalApiKey}`);
+            } catch (keyErr) {
+                console.warn('⚠️ twilio-setup: فشل إنشاء API Key تلقائياً:', keyErr.message);
+                // Not fatal — token generation will use authToken fallback
+            }
         }
 
         // ── 3. Save to Firestore ──────────────────────────────────────────

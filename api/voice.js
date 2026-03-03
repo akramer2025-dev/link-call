@@ -98,11 +98,36 @@ module.exports = async (req, res) => {
     try {
         const callTo     = req.body.To;
         const employeeId = req.body.employeeId || 'unknown';
-        const companyId  = req.body.companyId  || null;
+        let   companyId  = req.body.companyId  || null;
         const callSid    = req.body.CallSid;
 
         // تنسيق رقم الهاتف لإضافة كود مصر تلقائياً
         const formattedCallTo = formatPhoneNumber(callTo);
+
+        // ── Fallback: استخراج companyId من employeeId إذا لم يُرسل من العميل ──
+        if (!companyId && employeeId && employeeId !== 'unknown') {
+            try {
+                const { getDb }         = require('../utils/firebase');
+                const { collection, query, where, getDocs } = require('firebase/firestore');
+                const empSnap = await getDocs(
+                    query(collection(getDb(), 'employees'), where('username', '==', employeeId))
+                );
+                if (!empSnap.empty) {
+                    companyId = empSnap.docs[0].data().companyId || null;
+                    console.log(`🔍 voice.js: استخرجنا companyId من employeeId: ${companyId}`);
+                }
+                // fallback: search across companies subcollections via users collection
+                if (!companyId) {
+                    const usrSnap = await getDocs(
+                        query(collection(getDb(), 'users'), where('username', '==', employeeId))
+                    );
+                    if (!usrSnap.empty) {
+                        companyId = usrSnap.docs[0].data().companyId || null;
+                        console.log(`🔍 voice.js: استخرجنا companyId من users: ${companyId}`);
+                    }
+                }
+            } catch (e) { console.warn('⚠️ voice.js fallback lookup:', e.message); }
+        }
 
         console.log('📞 مكالمة جديدة:', { callSid, to: callTo, formattedTo: formattedCallTo, employeeId, companyId });
 
@@ -110,6 +135,15 @@ module.exports = async (req, res) => {
         const getTwilioCredentials = require('../utils/getTwilioCredentials');
         const creds             = await getTwilioCredentials(companyId);
         const callerPhoneNumber = creds.phoneNumber;
+
+        // إذا لم يكن هناك رقم هاتف، نرجع خطأ واضح
+        if (!callerPhoneNumber) {
+            console.error(`❌ voice.js: callerPhoneNumber غير محدد! companyId=${companyId}`);
+            const twimlErr = new twilio.twiml.VoiceResponse();
+            twimlErr.say({ language: 'ar-SA' }, 'خطأ في الإعداد: رقم المتصل غير محدد. يرجى مراجعة المسؤول.');
+            res.setHeader('Content-Type', 'text/xml');
+            return res.status(200).send(twimlErr.toString());
+        }
         // للتسجيل: هل لدينا credentials شركة منفصلة؟
         const companyTwilio = (creds.accountSid && creds.accountSid !== process.env.TWILIO_ACCOUNT_SID)
             ? { accountSid: creds.accountSid, authToken: creds.authToken }

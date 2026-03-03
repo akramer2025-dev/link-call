@@ -40,6 +40,11 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      // إخبار جميع الصفحات المفتوحة بإعادة التحميل للحصول على الإصدار الجديد
+      return self.clients.matchAll({ type: 'window' }).then(clients => {
+        clients.forEach(client => client.navigate(client.url));
+      });
     })
   );
   return self.clients.claim();

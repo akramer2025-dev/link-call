@@ -50,8 +50,16 @@
       "dest": "/api/index.js"
     },
     {
-      "src": "/api/(voice|token|recordings|recording-status|call-history|contacts|work-tracking)",
+      "src": "/api/(voice|token|recordings|call-history|contacts|work-tracking)",
       "dest": "/api/$1.js"
+    },
+    {
+      "src": "/api/recording-status",
+      "dest": "/api/recordings.js"
+    },
+    {
+      "src": "/api/recording-proxy",
+      "dest": "/api/recordings.js"
     },
     {
       "src": "/api/(.*)",

@@ -295,6 +295,55 @@ module.exports = async (req, res) => {
             return res.status(200).send('OK'); // دائماً 200 لـ Twilio
         }
     }
+
+    // ─── مسار بروكسي التسجيلات: recording-proxy ────────────────────────────
+    if (urlPath.endsWith('recording-proxy')) {
+        try {
+            const companyId    = req.query.companyId || null;
+            let   recordingUrl = req.query.url       || null;
+            const recordingSid = req.query.sid       || null;
+
+            const getTwilioCredentials = require('../utils/getTwilioCredentials');
+            const creds      = await getTwilioCredentials(companyId);
+            const accountSid = creds.accountSid;
+            const authToken  = creds.authToken;
+
+            if (!accountSid || !authToken) {
+                return res.status(500).json({ error: 'Missing Twilio credentials' });
+            }
+
+            if (!recordingUrl && recordingSid) {
+                recordingUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Recordings/${recordingSid}.mp3`;
+            }
+            if (!recordingUrl) return res.status(400).json({ error: 'يجب توفير url أو sid' });
+            if (!recordingUrl.endsWith('.mp3') && !recordingUrl.includes('.mp3?')) recordingUrl += '.mp3';
+
+            console.log(`🎵 recording-proxy: جلب ${recordingUrl}`);
+            const authHeader = 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64');
+            const https = require('https');
+            const urlObj = new URL(recordingUrl);
+
+            const twilioReq = https.request(
+                { hostname: urlObj.hostname, path: urlObj.pathname + (urlObj.search || ''), method: 'GET', headers: { Authorization: authHeader } },
+                (twilioRes) => {
+                    const status = twilioRes.statusCode;
+                    if (status === 301 || status === 302 || status === 303) { res.redirect(twilioRes.headers.location); return; }
+                    if (status !== 200) { res.status(status).json({ error: `Twilio returned ${status}` }); return; }
+                    res.setHeader('Content-Type', twilioRes.headers['content-type'] || 'audio/mpeg');
+                    res.setHeader('Accept-Ranges', 'bytes');
+                    res.setHeader('Cache-Control', 'public, max-age=3600');
+                    if (twilioRes.headers['content-length']) res.setHeader('Content-Length', twilioRes.headers['content-length']);
+                    twilioRes.pipe(res);
+                }
+            );
+            twilioReq.on('error', (err) => { if (!res.headersSent) res.status(500).json({ error: err.message }); });
+            twilioReq.end();
+            return;
+        } catch (proxyErr) {
+            if (!res.headersSent) return res.status(500).json({ error: proxyErr.message });
+            return;
+        }
+    }
     // ───────────────────────────────────────────────────────────────────────
 
     try {

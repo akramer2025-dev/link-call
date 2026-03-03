@@ -6,9 +6,19 @@
     <meta name="author" content="Eng. Akram Elmasry">
     <meta name="copyright" content="© 2024-2026 ENG. AKRAM ELMASRY. All Rights Reserved.">
     <meta name="robots" content="noindex, nofollow">
+    <!-- فحص تسجيل الدخول المبكر -->
+    <script>
+        (function(){
+            var cid = sessionStorage.getItem('companyId') || localStorage.getItem('companyId')
+                   || new URLSearchParams(window.location.search).get('companyId');
+            var logged = sessionStorage.getItem('isLoggedIn');
+            if (!cid && !logged) { window.location.replace('login.html'); }
+        })();
+    </script>
+    <title data-i18n="acc_title">الحسابات والرواتب — Link Call</title>
     <!-- Security Protection -->
     <script src="protection.js?v=1.0" defer></script>
-    <title data-i18n="acc_title">الحسابات والرواتب — Link Call</title>
+    <style>body{opacity:0;transition:opacity .2s ease}</style>
     <style>
         /* ─── Reset & Variables ─────────────────────────────────── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -591,6 +601,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // دعم ?companyId= كبارامتر URL أيضاً
     const urlP = new URLSearchParams(location.search);
     companyId = urlP.get('companyId') || sessionStorage.getItem('companyId') || '';
+    document.body.style.opacity = '1'; // إظهار الصفحة
 
     if (!companyId) {
         document.querySelector('.container').innerHTML = `

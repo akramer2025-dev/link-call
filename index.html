@@ -6,6 +6,17 @@
     <meta name="author" content="Eng. Akram Elmasry">
     <meta name="copyright" content="© 2024-2026 ENG. AKRAM ELMASRY. All Rights Reserved.">
     <meta name="robots" content="noindex, nofollow">
+    <!-- فحص تسجيل الدخول المبكر — يمنع وميض الصفحة لغير المسجلين -->
+    <script>
+        (function(){
+            var p = new URLSearchParams(window.location.search);
+            if (!sessionStorage.getItem('isLoggedIn') && p.get('autoLogin') !== 'true') {
+                window.location.replace('login.html');
+            }
+        })();
+    </script>
+    <!-- منع الوميض عند تحميل الصفحة -->
+    <style>body{opacity:0;transition:opacity .2s ease}</style>
     <title>Link Call</title>
     <link rel="icon" type="image/png" href="icon-512.png?v=3">
     <link rel="apple-touch-icon" href="icon-512.png?v=3">
@@ -817,9 +828,12 @@
         // التحقق من تسجيل الدخول (إلا إذا جاء من CRM)
         const urlParams = new URLSearchParams(window.location.search);
         const autoLogin = urlParams.get('autoLogin');
-        
+
         if (!sessionStorage.getItem('isLoggedIn') && autoLogin !== 'true') {
-            window.location.href = 'login.html';
+            window.location.replace('login.html');
+        } else {
+            // إظهار الصفحة بعد التحقق (منع الوميض)
+            document.body.style.opacity = '1';
         }
     </script>
     <!-- App Script - REST API Mode -->

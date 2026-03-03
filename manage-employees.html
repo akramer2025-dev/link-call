@@ -6,6 +6,14 @@
     <meta name="author" content="Eng. Akram Elmasry">
     <meta name="copyright" content="© 2024-2026 ENG. AKRAM ELMASRY. All Rights Reserved.">
     <meta name="robots" content="noindex, nofollow">
+    <!-- فحص تسجيل الدخول المبكر -->
+    <script>
+        (function(){
+            var cid = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            if (!cid) { window.location.replace('login.html'); }
+        })();
+    </script>
+    <style>body{opacity:0;transition:opacity .2s ease}</style>
     <title data-i18n="emp_page_title">إدارة الموظفين - Link Call</title>
     <!-- Security Protection -->
     <script src="protection.js?v=1.0" defer></script>
@@ -1176,6 +1184,7 @@
             // الحصول على معلومات الشركة من sessionStorage
             companyId = sessionStorage.getItem('companyId');
             const companyName = sessionStorage.getItem('companyName');
+            document.body.style.opacity = '1'; // إظهار الصفحة
 
             if (!companyId) {
                 showAlert('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً', 'error');

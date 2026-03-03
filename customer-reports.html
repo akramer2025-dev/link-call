@@ -6,6 +6,15 @@
     <meta name="author" content="Eng. Akram Elmasry">
     <meta name="copyright" content="© 2024-2026 ENG. AKRAM ELMASRY. All Rights Reserved.">
     <meta name="robots" content="noindex, nofollow">
+    <!-- فحص تسجيل الدخول المبكر -->
+    <script>
+        (function(){
+            var cid = sessionStorage.getItem('companyId') || localStorage.getItem('companyId')
+                   || new URLSearchParams(window.location.search).get('companyId');
+            if (!cid) { window.location.replace('login.html'); }
+        })();
+    </script>
+    <style>body{opacity:0;transition:opacity .2s ease}</style>
     <title>تقرير العميل - Link Call</title>
     <!-- Security Protection -->
     <script src="protection.js?v=1.0" defer></script>
@@ -368,6 +377,7 @@ let employeesMap   = {};
 
 /* ─────────────────── Init ─────────────────── */
 window.addEventListener('DOMContentLoaded', async () => {
+    document.body.style.opacity = '1'; // إظهار الصفحة
     if (!COMPANY_ID) {
         alert('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً');
         window.location.href = 'login.html';

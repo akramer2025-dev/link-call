@@ -3,9 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- فحص تسجيل الدخول المبكر -->
+    <script>
+        (function(){
+            var cid = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
+            if (!cid) { window.location.replace('login.html'); }
+        })();
+    </script>
+    <style>body{opacity:0;transition:opacity .2s ease}</style>
     <title>نظام إدارة العملاء CRM - Link Call</title>
     <link rel="icon" type="image/png" href="icon-512.png?v=3">
+    <!-- Security Protection -->
+    <script src="protection.js?v=1.0" defer></script>
     <!-- SheetJS Library for Excel Import -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -1653,6 +1664,7 @@
             const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
             const employeeId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
             const userRole   = sessionStorage.getItem('userRole')   || localStorage.getItem('userRole') || 'agent';
+            document.body.style.opacity = '1'; // إظهار الصفحة
 
             const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true' || localStorage.getItem('isCompanyAdmin') === 'true';
             _currentAssignedTo = (userRole === 'admin' || userRole === 'company-admin' || userRole === 'supervisor' || isCompanyAdmin) ? 'admin' : (employeeId || 'unknown');

@@ -1181,10 +1181,81 @@ function renderCompanies() {
                 <button class="btn-view" onclick="viewCompany('${company.id}')">👁️ عرض</button>
                 <button class="btn-edit" onclick="editCompany('${company.id}')">✏️ تعديل</button>
                 <button class="btn-twilio" onclick="openTwilioSetup('${company.id}', '${(company.name || '').replace(/'/g, "\\'")}')">📞 Twilio</button>
+                <button class="btn-balance" onclick="openSetBalance('${company.id}', '${(company.name || '').replace(/'/g, "\\'")}')">💰 رصيد</button>
                 ${company.id !== 'default' ? `<button class="btn-delete" onclick="deleteCompany('${company.id}')">🗑️ حذف</button>` : ''}
             </div>
         </div>
     `).join('');
+}
+
+// =========================================
+// إدارة رصيد الشركات
+// =========================================
+function openSetBalance(companyId, companyName) {
+    document.getElementById('balance-modal-company-id').value   = companyId;
+    document.getElementById('balance-modal-company-name').textContent = companyName;
+    document.getElementById('balance-modal-amount').value        = '';
+    document.getElementById('balance-modal-msg').textContent     = '';
+    document.getElementById('balance-modal-msg').style.display   = 'none';
+
+    // جيب الرصيد الحالي
+    fetch(`${baseUrl}/api/companies/balance?companyId=${companyId}`)
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById('balance-modal-current').textContent =
+                d.success ? `الرصيد الحالي: $${parseFloat(d.balance).toFixed(2)}` : 'الرصيد الحالي: غير محدد';
+        })
+        .catch(() => { document.getElementById('balance-modal-current').textContent = ''; });
+
+    document.getElementById('set-balance-modal').style.display = 'flex';
+}
+
+function closeSetBalance() {
+    document.getElementById('set-balance-modal').style.display = 'none';
+}
+
+async function saveCompanyBalance() {
+    const companyId = document.getElementById('balance-modal-company-id').value;
+    const amount    = parseFloat(document.getElementById('balance-modal-amount').value);
+    const msgEl     = document.getElementById('balance-modal-msg');
+
+    if (isNaN(amount) || amount < 0) {
+        msgEl.style.display = 'block';
+        msgEl.style.background = '#fee2e2';
+        msgEl.style.color      = '#dc2626';
+        msgEl.textContent      = '⚠️ أدخل مبلغاً صحيحاً';
+        return;
+    }
+
+    const btn = document.getElementById('balance-modal-save-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ جاري الحفظ...';
+
+    try {
+        const r = await fetch(`${baseUrl}/api/companies/set-balance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ companyId, balance: amount, adminKey: 'LINKCALL_ADMIN_2024' })
+        });
+        const d = await r.json();
+        if (d.success) {
+            msgEl.style.display = 'block';
+            msgEl.style.background = '#d1fae5';
+            msgEl.style.color      = '#065f46';
+            msgEl.textContent      = `✅ تم تحديث الرصيد إلى $${parseFloat(d.balance).toFixed(2)}`;
+            document.getElementById('balance-modal-current').textContent = `الرصيد الحالي: $${parseFloat(d.balance).toFixed(2)}`;
+        } else {
+            throw new Error(d.error || 'فشل الحفظ');
+        }
+    } catch (e) {
+        msgEl.style.display = 'block';
+        msgEl.style.background = '#fee2e2';
+        msgEl.style.color      = '#dc2626';
+        msgEl.textContent      = '❌ ' + e.message;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 حفظ الرصيد';
+    }
 }
 
 // تحديث إحصائيات الشركات

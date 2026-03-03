@@ -1807,6 +1807,11 @@ input:checked + .slider:before {
     color: white;
 }
 
+.company-actions .btn-balance {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    color: white;
+}
+
 .company-actions .btn-delete {
     background: var(--danger-color);
     color: white;

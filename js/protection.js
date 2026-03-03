@@ -357,8 +357,9 @@
     // ==================== حماية من Scraping ====================
     const originalOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function(method, url) {
-        this.setRequestHeader('X-Protection-Token', generateProtectionToken());
-        return originalOpen.apply(this, arguments);
+        const result = originalOpen.apply(this, arguments);
+        try { this.setRequestHeader('X-Protection-Token', generateProtectionToken()); } catch(e) {}
+        return result;
     };
 
     // ==================== منع Print Screen ====================
@@ -389,8 +390,7 @@
     // ==================== حماية المتغيرات العامة ====================
     Object.freeze(PROTECTION_CONFIG);
     
-    // منع تعديل دوال الحماية
-    Object.freeze(Object.prototype);
+    // منع تعديل دوال الحماية (تم إزالة Object.freeze(Object.prototype) لأنه يكسر SDKs خارجية)
     
     // حماية localStorage من التلاعب
     const originalSetItem = Storage.prototype.setItem;

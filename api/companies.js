@@ -464,10 +464,6 @@ module.exports.login = async (req, res) => {
             if (company.status !== 'active') {
                 return res.status(403).json({ success: false, error: 'حسابك غير نشط. الرجاء التواصل مع الدعم الفني' });
             }
-            // تحديث آخر تسجيل دخول
-            const idx = companiesData.companies.findIndex(c => c.id === company.id);
-            companiesData.companies[idx].lastLoginAt = new Date().toISOString();
-            await saveCompaniesData(companiesData);
             logActivity('company_login', company.id);
             return res.json({
                 success: true,

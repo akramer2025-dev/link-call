@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الحسابات والرواتب — Link Call</title>
+    <title data-i18n="acc_title">الحسابات والرواتب — Link Call</title>
     <style>
         /* ─── Reset & Variables ─────────────────────────────────── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,7 +25,9 @@
             --border:        rgba(124,58,237,.2);
             --radius:        12px;
         }
-        html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-main); color: var(--text-main); direction: rtl; }
+        html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-main); color: var(--text-main); }
+        html[dir="ltr"], html[dir="ltr"] body { direction: ltr; text-align: left; }
+        html[dir="rtl"], html[dir="rtl"] body { direction: rtl; text-align: right; }
         body { display: flex; flex-direction: column; min-height: 100vh; }
         a { color: inherit; text-decoration: none; }
         button { cursor: pointer; font-family: inherit; }
@@ -33,6 +35,8 @@
         input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
         select option { background: #1a1529; }
         textarea { resize: vertical; min-height: 70px; }
+
+        .nav-pill.lang-btn.active { background: rgba(124,58,237,.35); color: var(--accent-light); border-color: rgba(124,58,237,.5); }
 
         /* ─── Page Layout ────────────────────────────────────────── */
         .page-header {
@@ -194,11 +198,15 @@
 
 <!-- ═══════════════════ HEADER ═══════════════════ -->
 <header class="page-header no-print">
-    <h1>💰 الحسابات والرواتب</h1>
+    <h1 data-i18n="acc_title">💰 الحسابات والرواتب</h1>
     <div class="header-nav">
-        <a href="admin.html" class="nav-pill back">⬅️ لوحة المطور</a>
-        <button class="nav-pill" onclick="window.print()">🖨️ طباعة</button>
-        <button class="nav-pill" id="export-csv-btn">📥 تصدير CSV</button>
+        <a href="admin.html" class="nav-pill back" data-i18n="acc_back">⬅️ لوحة المطور</a>
+        <button class="nav-pill" onclick="window.print()" data-i18n="acc_print">🖨️ طباعة</button>
+        <button class="nav-pill" id="export-csv-btn" data-i18n="acc_export_csv">📥 تصدير CSV</button>
+        <div style="display:flex;gap:4px;margin-right:8px;">
+            <button class="nav-pill lang-btn" data-lang="ar" onclick="i18n.setLang('ar')">ع</button>
+            <button class="nav-pill lang-btn" data-lang="en" onclick="i18n.setLang('en')">EN</button>
+        </div>
     </div>
 </header>
 
@@ -209,56 +217,56 @@
         <div class="stat-card red">
             <span class="stat-icon">📤</span>
             <div class="stat-val" id="stat-out">—</div>
-            <div class="stat-lbl">إجمالي الصرف</div>
+            <div class="stat-lbl" data-i18n="acc_stat_out">إجمالي الصرف</div>
         </div>
         <div class="stat-card green">
             <span class="stat-icon">📥</span>
             <div class="stat-val" id="stat-in">—</div>
-            <div class="stat-lbl">إجمالي القبض</div>
+            <div class="stat-lbl" data-i18n="acc_stat_in">إجمالي القبض</div>
         </div>
         <div class="stat-card blue">
             <span class="stat-icon">⚖️</span>
             <div class="stat-val" id="stat-balance">—</div>
-            <div class="stat-lbl">الرصيد الصافي</div>
+            <div class="stat-lbl" data-i18n="acc_stat_balance">الرصيد الصافي</div>
         </div>
         <div class="stat-card purple">
             <span class="stat-icon">👥</span>
             <div class="stat-val" id="stat-salaries">—</div>
-            <div class="stat-lbl">مجموع الرواتب المصروفة</div>
+            <div class="stat-lbl" data-i18n="acc_stat_salaries">مجموع الرواتب المصروفة</div>
         </div>
     </div>
 
     <!-- ═════════ TABS ═════════════════════════════════════════════ -->
     <div class="tabs no-print">
-        <button class="tab-btn active" data-tab="payments">📤 سندات الصرف</button>
-        <button class="tab-btn" data-tab="receipts">📥 سندات القبض</button>
-        <button class="tab-btn" data-tab="salaries">👥 الرواتب</button>
-        <button class="tab-btn" data-tab="reports">📊 التقارير</button>
+        <button class="tab-btn active" data-tab="payments" data-i18n="acc_tab_payments">📤 سندات الصرف</button>
+        <button class="tab-btn" data-tab="receipts" data-i18n="acc_tab_receipts">📥 سندات القبض</button>
+        <button class="tab-btn" data-tab="salaries" data-i18n="acc_tab_salaries">👥 الرواتب</button>
+        <button class="tab-btn" data-tab="reports" data-i18n="acc_tab_reports">📊 التقارير</button>
     </div>
 
     <!-- ═══════ TAB: سندات الصرف ═══════════════════════════════════ -->
     <div class="tab-panel active" id="tab-payments">
         <div class="table-header">
-            <h3>📤 سندات الصرف</h3>
+            <h3 data-i18n="acc_payments_title">📤 سندات الصرف</h3>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <div class="search-bar">
-                    <input type="text" id="search-payments" placeholder="بحث...">
+                    <input type="text" id="search-payments" data-i18n-placeholder="acc_search_ph" placeholder="بحث...">
                 </div>
-                <button class="btn-primary" onclick="openVoucherModal('payment')">➕ سند صرف جديد</button>
+                <button class="btn-primary" onclick="openVoucherModal('payment')" data-i18n="acc_btn_new_payment">➕ سند صرف جديد</button>
             </div>
         </div>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>رقم السند</th>
-                        <th>التاريخ</th>
-                        <th>المستلم</th>
-                        <th>الوصف</th>
-                        <th>التصنيف</th>
-                        <th>المبلغ</th>
-                        <th>الحالة</th>
-                        <th>إجراءات</th>
+                        <th data-i18n="acc_col_voucher_id">رقم السند</th>
+                        <th data-i18n="acc_col_date">التاريخ</th>
+                        <th data-i18n="acc_col_recipient">المستلم</th>
+                        <th data-i18n="acc_col_description">الوصف</th>
+                        <th data-i18n="acc_col_category">التصنيف</th>
+                        <th data-i18n="acc_col_amount">المبلغ</th>
+                        <th data-i18n="acc_col_status">الحالة</th>
+                        <th data-i18n="acc_col_actions">إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="payments-tbody">
@@ -271,26 +279,26 @@
     <!-- ═══════ TAB: سندات القبض ════════════════════════════════════ -->
     <div class="tab-panel" id="tab-receipts">
         <div class="table-header">
-            <h3>📥 سندات القبض</h3>
+            <h3 data-i18n="acc_receipts_title">📥 سندات القبض</h3>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <div class="search-bar">
-                    <input type="text" id="search-receipts" placeholder="بحث...">
+                    <input type="text" id="search-receipts" data-i18n-placeholder="acc_search_ph" placeholder="بحث...">
                 </div>
-                <button class="btn-primary" onclick="openVoucherModal('receipt')">➕ سند قبض جديد</button>
+                <button class="btn-primary" onclick="openVoucherModal('receipt')" data-i18n="acc_btn_new_receipt">➕ سند قبض جديد</button>
             </div>
         </div>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>رقم السند</th>
-                        <th>التاريخ</th>
-                        <th>من (المُودِع)</th>
-                        <th>الوصف</th>
-                        <th>التصنيف</th>
-                        <th>المبلغ</th>
-                        <th>الحالة</th>
-                        <th>إجراءات</th>
+                        <th data-i18n="acc_col_voucher_id">رقم السند</th>
+                        <th data-i18n="acc_col_date">التاريخ</th>
+                        <th data-i18n="acc_col_payer">من (المُودِع)</th>
+                        <th data-i18n="acc_col_description">الوصف</th>
+                        <th data-i18n="acc_col_category">التصنيف</th>
+                        <th data-i18n="acc_col_amount">المبلغ</th>
+                        <th data-i18n="acc_col_status">الحالة</th>
+                        <th data-i18n="acc_col_actions">إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="receipts-tbody">
@@ -303,36 +311,36 @@
     <!-- ═══════ TAB: الرواتب ════════════════════════════════════════ -->
     <div class="tab-panel" id="tab-salaries">
         <div class="table-header">
-            <h3>👥 إدارة الرواتب</h3>
+            <h3 data-i18n="acc_salaries_title">👥 إدارة الرواتب</h3>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <select id="salary-month-filter" style="width:160px;">
-                    <option value="">كل الأشهر</option>
+                    <option value="" data-i18n="acc_all_months">كل الأشهر</option>
                 </select>
             </div>
         </div>
 
         <!-- بطاقات الموظفين لصرف الرواتب -->
-        <div class="form-section-title">💳 صرف رواتب الموظفين</div>
+        <div class="form-section-title" data-i18n="acc_pay_salaries">💳 صرف رواتب الموظفين</div>
         <div class="salary-grid" id="salary-cards-grid">
             <div class="loading">⏳ جاري تحميل الموظفين...</div>
         </div>
 
         <!-- جدول سجل الرواتب -->
-        <div class="form-section-title" style="margin-top:28px;">📋 سجل الرواتب المصروفة</div>
+        <div class="form-section-title" style="margin-top:28px;" data-i18n="acc_salary_history">📋 سجل الرواتب المصروفة</div>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>رقم السجل</th>
-                        <th>الموظف</th>
-                        <th>الشهر</th>
-                        <th>الراتب الأساسي</th>
-                        <th>المكافآت</th>
-                        <th>الخصومات</th>
-                        <th>الصافي</th>
-                        <th>رقم سند الصرف</th>
-                        <th>تاريخ الصرف</th>
-                        <th>إجراءات</th>
+                        <th data-i18n="acc_col_record_id">رقم السجل</th>
+                        <th data-i18n="acc_col_employee">الموظف</th>
+                        <th data-i18n="acc_col_month">الشهر</th>
+                        <th data-i18n="acc_col_base_salary">الراتب الأساسي</th>
+                        <th data-i18n="acc_col_bonuses">المكافآت</th>
+                        <th data-i18n="acc_col_deductions">الخصومات</th>
+                        <th data-i18n="acc_col_net">الصافي</th>
+                        <th data-i18n="acc_col_voucher_ref">رقم سند الصرف</th>
+                        <th data-i18n="acc_col_pay_date">تاريخ الصرف</th>
+                        <th data-i18n="acc_col_actions">إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="salaries-tbody">
@@ -345,11 +353,11 @@
     <!-- ═══════ TAB: التقارير ═══════════════════════════════════════ -->
     <div class="tab-panel" id="tab-reports">
         <div class="table-header">
-            <h3>📊 تقارير مفصلة</h3>
+            <h3 data-i18n="acc_reports_title">📊 تقارير مفصلة</h3>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                 <input type="date" id="rep-start" style="width:150px;">
                 <input type="date" id="rep-end"   style="width:150px;">
-                <button class="btn-primary" onclick="applyReportFilter()">🔍 تطبيق</button>
+                <button class="btn-primary" onclick="applyReportFilter()" data-i18n="acc_apply_filter">🔍 تطبيق</button>
             </div>
         </div>
         <div class="report-grid" id="report-content">
@@ -357,17 +365,17 @@
         </div>
 
         <!-- تقرير مفصل لكل موظف -->
-        <div class="form-section-title" style="margin-top:28px;">👤 تقرير تفصيلي لكل موظف</div>
+        <div class="form-section-title" style="margin-top:28px;" data-i18n="acc_emp_report_title">👤 تقرير تفصيلي لكل موظف</div>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>الموظف</th>
-                        <th>عدد الرواتب المصروفة</th>
-                        <th>إجمالي المكافآت</th>
-                        <th>إجمالي الخصومات</th>
-                        <th>إجمالي الصافي المصروف</th>
-                        <th>آخر صرف</th>
+                        <th data-i18n="acc_col_employee">الموظف</th>
+                        <th data-i18n="acc_col_salary_count">عدد الرواتب المصروفة</th>
+                        <th data-i18n="acc_col_total_bonuses">إجمالي المكافآت</th>
+                        <th data-i18n="acc_col_total_deductions">إجمالي الخصومات</th>
+                        <th data-i18n="acc_col_total_net">إجمالي الصافي المصروف</th>
+                        <th data-i18n="acc_col_last_pay">آخر صرف</th>
                     </tr>
                 </thead>
                 <tbody id="emp-report-tbody">
@@ -385,26 +393,26 @@
 <div class="modal" id="voucher-modal">
     <div class="modal-box">
         <div class="modal-head">
-            <h3 id="voucher-modal-title">📤 سند صرف جديد</h3>
+            <h3 id="voucher-modal-title" data-i18n="acc_modal_payment_title">📤 سند صرف جديد</h3>
             <button class="modal-close" onclick="closeModal('voucher-modal')">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="voucher-type-hidden">
 
-            <div class="form-section-title">بيانات السند</div>
+            <div class="form-section-title" data-i18n="acc_voucher_data">بيانات السند</div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>اسم المستلم / الجهة <span class="req">*</span></label>
+                    <label data-i18n="acc_label_recipient">اسم المستلم / الجهة <span class="req">*</span></label>
                     <input type="text" id="v-recipient" placeholder="الاسم الكامل">
                 </div>
                 <div class="form-group">
-                    <label>المبلغ <span class="req">*</span></label>
+                    <label data-i18n="acc_label_amount">المبلغ <span class="req">*</span></label>
                     <input type="number" id="v-amount" min="0" step="0.01" placeholder="0.00">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>العملة</label>
+                    <label data-i18n="acc_label_currency">العملة</label>
                     <select id="v-currency">
                         <option value="EGP" selected>جنيه مصري (EGP)</option>
                         <option value="SAR">ريال سعودي (SAR)</option>
@@ -414,48 +422,48 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>التاريخ <span class="req">*</span></label>
+                    <label data-i18n="acc_label_date">التاريخ <span class="req">*</span></label>
                     <input type="date" id="v-date">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>نوع المستلم</label>
+                    <label data-i18n="acc_label_recipient_type">نوع المستلم</label>
                     <select id="v-recipient-type">
-                        <option value="employee">موظف</option>
-                        <option value="supplier">مورد</option>
-                        <option value="client">عميل (استرداد)</option>
-                        <option value="other">أخرى</option>
+                        <option value="employee" data-i18n="acc_opt_employee">موظف</option>
+                        <option value="supplier" data-i18n="acc_opt_supplier">مورد</option>
+                        <option value="client" data-i18n="acc_opt_client_refund">عميل (استرداد)</option>
+                        <option value="other" data-i18n="acc_opt_other">أخرى</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>التصنيف</label>
+                    <label data-i18n="acc_label_category">التصنيف</label>
                     <select id="v-category">
-                        <option value="salary">راتب</option>
-                        <option value="bonus">مكافأة</option>
-                        <option value="expense">مصروف تشغيلي</option>
-                        <option value="invoice">فاتورة مورد</option>
-                        <option value="refund">استرداد</option>
-                        <option value="other">أخرى</option>
+                        <option value="salary" data-i18n="acc_opt_salary">راتب</option>
+                        <option value="bonus" data-i18n="acc_opt_bonus">مكافأة</option>
+                        <option value="expense" data-i18n="acc_opt_expense">مصروف تشغيلي</option>
+                        <option value="invoice" data-i18n="acc_opt_invoice">فاتورة مورد</option>
+                        <option value="refund" data-i18n="acc_opt_refund">استرداد</option>
+                        <option value="other" data-i18n="acc_opt_other">أخرى</option>
                     </select>
                 </div>
             </div>
             <div class="form-row full">
                 <div class="form-group">
-                    <label>الوصف / البيان</label>
+                    <label data-i18n="acc_label_description">الوصف / البيان</label>
                     <textarea id="v-description" rows="2" placeholder="وصف تفصيلي للمعاملة"></textarea>
                 </div>
             </div>
             <div class="form-row full">
                 <div class="form-group">
-                    <label>ملاحظات إضافية</label>
+                    <label data-i18n="acc_label_notes">ملاحظات إضافية</label>
                     <input type="text" id="v-notes" placeholder="ملاحظات اختيارية">
                 </div>
             </div>
         </div>
         <div class="modal-foot">
-            <button class="btn-secondary" onclick="closeModal('voucher-modal')">إلغاء</button>
-            <button class="btn-primary" id="voucher-submit-btn" onclick="submitVoucher()">✅ إنشاء السند</button>
+            <button class="btn-secondary" onclick="closeModal('voucher-modal')" data-i18n="cancel">إلغاء</button>
+            <button class="btn-primary" id="voucher-submit-btn" onclick="submitVoucher()" data-i18n="acc_btn_create_voucher">✅ إنشاء السند</button>
         </div>
     </div>
 </div>
@@ -466,31 +474,31 @@
 <div class="modal" id="salary-modal">
     <div class="modal-box">
         <div class="modal-head">
-            <h3>💳 صرف راتب موظف</h3>
+            <h3 data-i18n="acc_modal_salary_title">💳 صرف راتب موظف</h3>
             <button class="modal-close" onclick="closeModal('salary-modal')">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="sal-employee-id">
             <input type="hidden" id="sal-employee-name">
 
-            <div class="form-section-title">بيانات الراتب</div>
+            <div class="form-section-title" data-i18n="acc_salary_data">بيانات الراتب</div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>الموظف</label>
+                    <label data-i18n="acc_label_employee">الموظف</label>
                     <input type="text" id="sal-emp-display" readonly style="background:#111;">
                 </div>
                 <div class="form-group">
-                    <label>الشهر <span class="req">*</span></label>
+                    <label data-i18n="acc_label_month">الشهر <span class="req">*</span></label>
                     <input type="month" id="sal-month">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>الراتب الأساسي <span class="req">*</span></label>
+                    <label data-i18n="acc_label_base_salary">الراتب الأساسي <span class="req">*</span></label>
                     <input type="number" id="sal-base" min="0" step="0.01" placeholder="0.00">
                 </div>
                 <div class="form-group">
-                    <label>العملة</label>
+                    <label data-i18n="acc_label_currency">العملة</label>
                     <select id="sal-currency">
                         <option value="EGP" selected>جنيه مصري (EGP)</option>
                         <option value="SAR">ريال سعودي (SAR)</option>
@@ -501,11 +509,11 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>المكافآت والبدلات</label>
+                    <label data-i18n="acc_label_bonuses">المكافآت والبدلات</label>
                     <input type="number" id="sal-bonuses" min="0" step="0.01" placeholder="0.00" value="0">
                 </div>
                 <div class="form-group">
-                    <label>الخصومات</label>
+                    <label data-i18n="acc_label_deductions">الخصومات</label>
                     <input type="number" id="sal-deductions" min="0" step="0.01" placeholder="0.00" value="0">
                 </div>
             </div>
@@ -514,14 +522,14 @@
             </div>
             <div class="form-row full">
                 <div class="form-group">
-                    <label>ملاحظات</label>
+                    <label data-i18n="acc_label_notes2">ملاحظات</label>
                     <input type="text" id="sal-notes" placeholder="ملاحظة اختيارية">
                 </div>
             </div>
         </div>
         <div class="modal-foot">
-            <button class="btn-secondary" onclick="closeModal('salary-modal')">إلغاء</button>
-            <button class="btn-success" id="salary-submit-btn" onclick="submitSalary()">💳 صرف الراتب</button>
+            <button class="btn-secondary" onclick="closeModal('salary-modal')" data-i18n="cancel">إلغاء</button>
+            <button class="btn-success" id="salary-submit-btn" onclick="submitSalary()" data-i18n="acc_btn_pay_salary">💳 صرف الراتب</button>
         </div>
     </div>
 </div>
@@ -532,22 +540,22 @@
 <div class="modal" id="salary-setting-modal">
     <div class="modal-box" style="max-width:420px;">
         <div class="modal-head">
-            <h3>⚙️ إعداد راتب الموظف</h3>
+            <h3 data-i18n="acc_modal_setting_title">⚙️ إعداد راتب الموظف</h3>
             <button class="modal-close" onclick="closeModal('salary-setting-modal')">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="ss-employee-id">
             <div class="form-group" style="margin-bottom:14px;">
-                <label>الموظف</label>
+                <label data-i18n="acc_label_employee">الموظف</label>
                 <input type="text" id="ss-emp-display" readonly style="background:#111;">
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>الراتب الأساسي الافتراضي</label>
+                    <label data-i18n="acc_label_default_salary">الراتب الأساسي الافتراضي</label>
                     <input type="number" id="ss-base" min="0" step="0.01" placeholder="0.00">
                 </div>
                 <div class="form-group">
-                    <label>العملة</label>
+                    <label data-i18n="acc_label_currency">العملة</label>
                     <select id="ss-currency">
                         <option value="EGP" selected>EGP</option>
                         <option value="SAR">SAR</option>
@@ -558,8 +566,8 @@
             </div>
         </div>
         <div class="modal-foot">
-            <button class="btn-secondary" onclick="closeModal('salary-setting-modal')">إلغاء</button>
-            <button class="btn-primary" onclick="saveSalarySetting()">💾 حفظ الإعداد</button>
+            <button class="btn-secondary" onclick="closeModal('salary-setting-modal')" data-i18n="cancel">إلغاء</button>
+            <button class="btn-primary" onclick="saveSalarySetting()" data-i18n="acc_btn_save_setting">💾 حفظ الإعداد</button>
         </div>
     </div>
 </div>
@@ -594,6 +602,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initTabs();
     initSalaryNetPreview();
+
+    // init i18n
+    if (typeof i18n !== 'undefined') i18n.apply();
 
     // تهيئة تواريخ التقارير
     const today = new Date();
@@ -1174,5 +1185,6 @@ document.addEventListener('click', e => {
     });
 });
 </script>
+<script src="js/i18n.js"></script>
 </body>
 </html>

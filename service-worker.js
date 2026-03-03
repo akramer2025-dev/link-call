@@ -1,13 +1,13 @@
-// Service Worker for Link Call PWA
-const CACHE_NAME = 'link-call-v28';
+﻿// Service Worker for Link Call PWA
+const CACHE_NAME = 'link-call-v29';
 const urlsToCache = [
   '/',
   '/index.html',
   '/login.html',
-  '/style.css',
-  '/login-style.css',
-  '/app.js',
-  '/protection.js',
+  '/css/style.css',
+  '/css/login-style.css',
+  '/js/app.js',
+  '/js/protection.js',
   '/icon-192.png',
   '/icon-512.png',
   '/manifest.json',

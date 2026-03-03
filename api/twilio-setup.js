@@ -99,69 +99,60 @@ module.exports = async (req, res) => {
         if (!accountSid) return res.status(400).json({ error: 'accountSid مطلوب' });
         if (!authToken)  return res.status(400).json({ error: 'authToken مطلوب' });
 
+        // Sanitize: trim whitespace (common copy-paste issue)
+        const cleanSid   = accountSid.trim();
+        const cleanToken = authToken.trim();
+        const cleanApiKey    = (apiKey    || '').trim() || null;
+        const cleanApiSecret = (apiSecret || '').trim() || null;
+        const cleanPhone     = (phoneNumber || '').trim() || null;
+
         // ── 1. Verify company exists ──────────────────────────────────────
         const compSnap = await getDoc(doc(db, 'companies', companyId));
         if (!compSnap.exists()) return res.status(404).json({ error: 'الشركة غير موجودة' });
         const companyName = compSnap.data().companyName || companyId;
 
-        // ── 2. Create TwiML App (this implicitly validates credentials) ──────
-        let twimlAppSid = null;
-        let finalApiKey    = apiKey    || null;
-        let finalApiSecret = apiSecret || null;
-        const client = twilio(accountSid, authToken);
+        // ── 2. Create TwiML App (best-effort, non-blocking) ───────────────
+        let twimlAppSid   = null;
+        let finalApiKey   = cleanApiKey;
+        let finalApiSecret= cleanApiSecret;
+        let setupWarning  = null;
+
         try {
-            // Step A: TwiML App — look for existing then create/update
+            const client = twilio(cleanSid, cleanToken);
             const appFriendlyName = `LinkCall - ${companyName}`;
             const existingApps = await client.applications.list({ friendlyName: appFriendlyName, limit: 1 });
 
             if (existingApps.length > 0) {
                 twimlAppSid = existingApps[0].sid;
-                await client.applications(twimlAppSid).update({
-                    voiceUrl:    VOICE_WEBHOOK_URL,
-                    voiceMethod: 'POST',
-                });
-                console.log(`♻️ twilio-setup: تم تحديث TwiML App موجود ${twimlAppSid}`);
+                await client.applications(twimlAppSid).update({ voiceUrl: VOICE_WEBHOOK_URL, voiceMethod: 'POST' });
+                console.log(`♻️ twilio-setup: TwiML App مُحدَّث ${twimlAppSid}`);
             } else {
-                const app = await client.applications.create({
-                    friendlyName: appFriendlyName,
-                    voiceUrl:     VOICE_WEBHOOK_URL,
-                    voiceMethod:  'POST',
-                });
+                const app = await client.applications.create({ friendlyName: appFriendlyName, voiceUrl: VOICE_WEBHOOK_URL, voiceMethod: 'POST' });
                 twimlAppSid = app.sid;
-                console.log(`✅ twilio-setup: تم إنشاء TwiML App ${twimlAppSid}`);
+                console.log(`✅ twilio-setup: TwiML App جديد ${twimlAppSid}`);
             }
-        } catch (twilioErr) {
-            console.error('❌ twilio-setup TwiML App خطأ:', twilioErr.status, twilioErr.code, twilioErr.message);
-            const isAuth = twilioErr.status === 401 || twilioErr.code === 20003;
-            return res.status(400).json({
-                error:   'فشل إنشاء TwiML App',
-                details: isAuth
-                    ? `بيانات Account SID أو Auth Token غير صحيحة (Twilio code: ${twilioErr.code || twilioErr.status})`
-                    : `${twilioErr.message} (code: ${twilioErr.code || twilioErr.status || 'N/A'})`,
-            });
-        }
 
-        // Step B: Auto-create API Key if not provided (must belong to same account)
-        if (!finalApiKey || !finalApiSecret) {
-            try {
+            // Auto-create API Key if missing
+            if (!finalApiKey || !finalApiSecret) {
                 const newKey = await client.newKeys.create({ friendlyName: `LinkCall-${companyName}` });
                 finalApiKey    = newKey.sid;
                 finalApiSecret = newKey.secret;
-                console.log(`🔑 twilio-setup: تم إنشاء API Key تلقائياً ${finalApiKey}`);
-            } catch (keyErr) {
-                console.warn('⚠️ twilio-setup: فشل إنشاء API Key تلقائياً:', keyErr.message);
-                // Not fatal — token generation will use authToken fallback
+                console.log(`🔑 twilio-setup: API Key تلقائي ${finalApiKey}`);
             }
+        } catch (twilioErr) {
+            // Don't block saving — credentials may still be valid for calls
+            console.error('⚠️ twilio-setup: TwiML App فشل (credentials ستُحفظ):', twilioErr.code, twilioErr.message);
+            setupWarning = `TwiML App لم يُنشأ (${twilioErr.code || twilioErr.status || twilioErr.message}) — يمكن إعادة الحفظ لاحقاً`;
         }
 
-        // ── 3. Save to Firestore ──────────────────────────────────────────
+        // ── 3. Save to Firestore regardless of TwiML App result ──────────
         const twilioCredentials = {
-            accountSid,
-            authToken,
+            accountSid:  cleanSid,
+            authToken:   cleanToken,
             apiKey:      finalApiKey,
             apiSecret:   finalApiSecret,
             twimlAppSid: twimlAppSid || null,
-            phoneNumber: phoneNumber || null,
+            phoneNumber: cleanPhone,
             updatedAt:   new Date().toISOString(),
         };
 
@@ -169,11 +160,14 @@ module.exports = async (req, res) => {
         console.log(`💾 twilio-setup: تم حفظ credentials للشركة ${companyName} (${companyId})`);
 
         return res.status(200).json({
-            success:     true,
+            success:      true,
             twimlAppSid,
-            apiKeyCreated: !apiKey,  // inform admin that a new API Key was auto-created
-            message:     `تم حفظ إعدادات Twilio بنجاح لشركة ${companyName}`,
-            phoneNumber: phoneNumber || null,
+            apiKeyCreated: !cleanApiKey,
+            warning:      setupWarning,
+            message:      setupWarning
+                ? `تم حفظ بيانات Twilio. ملاحظة: ${setupWarning}`
+                : `تم حفظ إعدادات Twilio بنجاح لشركة ${companyName}`,
+            phoneNumber:  cleanPhone,
         });
 
     } catch (error) {

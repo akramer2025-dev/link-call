@@ -1505,14 +1505,16 @@ async function saveTwilioSetup(e) {
 
         resultEl.style.display = 'block';
         if (res.ok && data.success) {
-            resultEl.style.background = 'rgba(16,185,129,0.1)';
-            resultEl.style.border = '1px solid rgba(16,185,129,0.3)';
-            resultEl.style.color = '#059669';
+            const hasWarning = !!data.warning;
+            resultEl.style.background = hasWarning ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)';
+            resultEl.style.border     = hasWarning ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(16,185,129,0.3)';
+            resultEl.style.color      = hasWarning ? '#d97706' : '#059669';
+            const icon = hasWarning ? '⚠️' : '✅';
             const apiKeyNote = data.apiKeyCreated
-                ? `<br><small style="color:#f59e0b;">🔑 تم إنشاء API Key تلقائياً وحفظه (لا تحتاج لإعادة إدخاله)</small>`
+                ? `<br><small style="color:#f59e0b;">🔑 تم إنشاء API Key تلقائياً وحفظه</small>`
                 : '';
             resultEl.innerHTML = `
-                ✅ <strong>${data.message}</strong>${apiKeyNote}<br>
+                ${icon} <strong>${data.message}</strong>${apiKeyNote}<br>
                 <small style="direction:ltr;display:block;margin-top:6px;">
                     TwiML App SID: ${data.twimlAppSid || '—'} &nbsp;|&nbsp; رقم: ${data.phoneNumber || phoneNumber || '—'}
                 </small>

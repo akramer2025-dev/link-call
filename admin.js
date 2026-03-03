@@ -442,7 +442,17 @@ function renderRecentCalls() {
 async function loadEmployees() {
     try {
         const companyId = sessionStorage.getItem('companyId');
-        if (!companyId) { console.warn('⚠️ loadEmployees: companyId غير موجود'); return; }
+        // المطور بدون companyId: يرى رسالة بدلاً من عرض فارغ
+        if (!companyId) {
+            const container = document.getElementById('employees-grid');
+            if (container) container.innerHTML = `
+                <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:12px;">🏢</div>
+                    <p style="font-size:15px;">لعرض موظفي شركة معينة، افتح صفحة تقارير الشركة</p>
+                    <p style="font-size:13px;margin-top:6px;color:#a78bfa;">لإضافة موظف اضغط "➕ إضافة موظف" واختر الشركة من القائمة</p>
+                </div>`;
+            return;
+        }
         const response = await fetch(`${baseUrl}/api/employees-management?companyId=${encodeURIComponent(companyId)}`);
         if (response.ok) {
             const data = await response.json();
@@ -1366,22 +1376,33 @@ document.getElementById('add-company-form')?.addEventListener('submit', async (e
 });
 
 // ========== إدارة الموظفين ==========
-// إضافة موظف جديد
+// إضافة موظف جديد — يدعم مطور (بدون companyId) عبر منسدلة الشركات
 document.getElementById('add-employee-btn')?.addEventListener('click', () => {
-    console.log('🔘 تم الضغط على زر إضافة موظف');
-    const modal = document.getElementById('add-employee-modal');
-    if (modal) {
-        modal.classList.add('active');
-    } else {
-        console.error('❌ لم يتم العثور على modal إضافة الموظف');
+    const companyId = sessionStorage.getItem('companyId');
+    const devRow    = document.getElementById('dev-company-row');
+    const compSel   = document.getElementById('employee-company-select');
+    if (!companyId && devRow && compSel) {
+        devRow.style.display = 'block';
+        if (compSel.options.length <= 1 && allCompanies.length > 0) {
+            compSel.innerHTML = '<option value="">-- اختر شركة --</option>' +
+                allCompanies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+    } else if (devRow) {
+        devRow.style.display = 'none';
     }
+    document.getElementById('add-employee-modal').classList.add('active');
 });
 
 document.getElementById('add-employee-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const companyId = sessionStorage.getItem('companyId');
-    if (!companyId) { alert('❌ لا يوجد companyId في الجلسة، سجّل دخول أولاً'); return; }
+    // مطور: من sessionStorage | مدير شركة: من sessionStorage | مطور بدون companyId: من المنسدلة
+    let companyId = sessionStorage.getItem('companyId');
+    if (!companyId) {
+        const sel = document.getElementById('employee-company-select');
+        companyId = sel ? sel.value.trim() : '';
+    }
+    if (!companyId) { alert('❌ اختر الشركة التابع لها الموظف أولاً'); return; }
 
     // جمع الصلاحيات المحددة
     const permissions = Array.from(

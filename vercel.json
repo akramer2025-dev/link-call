@@ -126,6 +126,10 @@
       "dest": "/api/work-tracking.js"
     },
     {
+      "src": "/api/accounts",
+      "dest": "/api/accounts.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/index.js"
     },

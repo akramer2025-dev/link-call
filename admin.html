@@ -261,6 +261,10 @@
                     <span class="icon">⚙️</span>
                     <span class="text" data-i18n="admin_settings">الإعدادات</span>
                 </a>
+                <a href="accounts.html" class="nav-item" target="_self">
+                    <span class="icon">💰</span>
+                    <span class="text">الحسابات والرواتب</span>
+                </a>
             </nav>
             
             <div class="sidebar-footer">
@@ -702,6 +706,19 @@
                             <button class="close-modal">&times;</button>
                         </div>
                         <form id="add-employee-form">
+
+                            <!-- 🏢 اختيار الشركة (للمطور فقط) -->
+                            <div id="dev-company-row" style="display:none;">
+                                <div class="form-section-title">🏢 الشركة التابع لها الموظف</div>
+                                <div class="form-body">
+                                    <div class="form-group" style="width:100%;">
+                                        <label>اختر الشركة *</label>
+                                        <select id="employee-company-select" style="width:100%;">
+                                            <option value="">-- اختر شركة --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- ⚡ الأدوار السريعة -->
                             <div class="form-section-title">⚡ إعداد سريع بقالب جاهز</div>

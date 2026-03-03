@@ -2008,6 +2008,7 @@ function applyRoleBasedVisibility() {
     const manageEmployeesNavBtn = document.getElementById('manage-employees-nav-btn');
     const companyReportsNavBtn = document.getElementById('company-reports-nav-btn');
     const customerReportsNavBtn = document.getElementById('customer-reports-nav-btn');
+    const accountsNavBtn         = document.getElementById('accounts-nav-btn');
     const companyCrmNavBtn = document.getElementById('company-crm-nav-btn');
     const balanceHeader = document.getElementById('balance-header');
     const balanceSection = document.getElementById('balance-section');
@@ -2025,6 +2026,7 @@ function applyRoleBasedVisibility() {
         if (employeeProfileSection) employeeProfileSection.style.display = 'none';
         if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'none';
         if (customerReportsNavBtn) customerReportsNavBtn.style.display = 'none';
+        if (accountsNavBtn)         accountsNavBtn.style.display         = 'none';
         if (balanceHeader) balanceHeader.style.display = 'flex';
         if (balanceSection) balanceSection.style.display = 'block';
         if (mobileBalance) mobileBalance.style.display = 'flex';
@@ -2040,6 +2042,7 @@ function applyRoleBasedVisibility() {
         if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'flex';
         if (companyReportsNavBtn) companyReportsNavBtn.style.display = 'flex';
         if (customerReportsNavBtn) customerReportsNavBtn.style.display = 'flex';
+        if (accountsNavBtn)         accountsNavBtn.style.display         = 'flex';
         if (companyCrmNavBtn) companyCrmNavBtn.style.display = 'flex';
         // إخفاء رصيد Twilio - غير مناسب لمدير الشركة
         if (balanceHeader) balanceHeader.style.display = 'none';
@@ -2086,6 +2089,8 @@ function applyRoleBasedVisibility() {
             companyReportsNavBtn.style.display  = canViewReports    ? 'flex' : 'none';
         if (customerReportsNavBtn)
             customerReportsNavBtn.style.display = canViewReports    ? 'flex' : 'none';
+        if (accountsNavBtn)
+            accountsNavBtn.style.display        = canViewReports    ? 'flex' : 'none';
         if (companyCrmNavBtn)
             companyCrmNavBtn.style.display      = canViewContacts   ? 'flex' : 'none';
 

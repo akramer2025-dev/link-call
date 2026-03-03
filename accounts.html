@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الحسابات والرواتب — Link Call</title>
+    <style>
+        /* ─── Reset & Variables ─────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-main:       #0f0c1a;
+            --bg-card:       #1a1529;
+            --bg-card-hover: #221d38;
+            --bg-input:      #13102a;
+            --accent:        #7c3aed;
+            --accent-light:  #a78bfa;
+            --accent-glow:   rgba(124,58,237,.25);
+            --success:       #10b981;
+            --danger:        #ef4444;
+            --warning:       #f59e0b;
+            --info:          #3b82f6;
+            --text-main:     #e5e0f8;
+            --text-muted:    #6b7280;
+            --text-secondary:#9ca3af;
+            --border:        rgba(124,58,237,.2);
+            --radius:        12px;
+        }
+        html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-main); color: var(--text-main); direction: rtl; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        a { color: inherit; text-decoration: none; }
+        button { cursor: pointer; font-family: inherit; }
+        input, select, textarea { font-family: inherit; color: var(--text-main); background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; width: 100%; padding: 9px 12px; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        select option { background: #1a1529; }
+        textarea { resize: vertical; min-height: 70px; }
+
+        /* ─── Page Layout ────────────────────────────────────────── */
+        .page-header {
+            background: linear-gradient(135deg,#1a1529,#130d26);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+        }
+        .page-header h1 { font-size: 20px; font-weight: 700; color: var(--text-main); flex: 1; }
+        .header-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+        .nav-pill {
+            padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+            border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary);
+            transition: all .2s;
+        }
+        .nav-pill:hover { background: var(--bg-card-hover); color: var(--text-main); }
+        .nav-pill.back { background: rgba(124,58,237,.15); color: var(--accent-light); border-color: rgba(124,58,237,.3); }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 24px 16px; width: 100%; flex: 1; }
+
+        /* ─── Stats Cards ─────────────────────────────────────────── */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 14px; margin-bottom: 28px; }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 18px 20px; position: relative; overflow: hidden;
+        }
+        .stat-card::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg,var(--card-clr1,.1),transparent); opacity:.08; }
+        .stat-card .stat-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+        .stat-card .stat-val  { font-size: 26px; font-weight: 800; }
+        .stat-card .stat-lbl  { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+        .stat-card.red   { --card-clr1: #ef4444; border-color: rgba(239,68,68,.25); }
+        .stat-card.green { --card-clr1: #10b981; border-color: rgba(16,185,129,.25); }
+        .stat-card.blue  { --card-clr1: #3b82f6; border-color: rgba(59,130,246,.25); }
+        .stat-card.purple{ --card-clr1: #7c3aed; border-color: rgba(124,58,237,.3); }
+        .stat-card.red   .stat-val { color: #f87171; }
+        .stat-card.green .stat-val { color: #34d399; }
+        .stat-card.blue  .stat-val { color: #60a5fa; }
+        .stat-card.purple .stat-val{ color: var(--accent-light); }
+
+        /* ─── Tabs ────────────────────────────────────────────────── */
+        .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 22px; overflow-x: auto; }
+        .tab-btn {
+            padding: 10px 18px; font-size: 14px; font-weight: 600; border: none; background: none;
+            color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px;
+            transition: all .2s; white-space: nowrap;
+        }
+        .tab-btn:hover   { color: var(--text-main); }
+        .tab-btn.active  { color: var(--accent-light); border-bottom-color: var(--accent-light); }
+        .tab-panel       { display: none; }
+        .tab-panel.active{ display: block; }
+
+        /* ─── Table ───────────────────────────────────────────────── */
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+        .table-header h3 { font-size: 16px; font-weight: 700; }
+        .search-bar { position: relative; }
+        .search-bar input { width: 220px; padding: 8px 12px 8px 36px; }
+        .search-bar::before { content:'🔍'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; }
+        .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: #1e1836; }
+        th { padding: 12px 14px; text-align: right; font-weight: 600; color: var(--text-secondary); font-size: 12px; white-space: nowrap; border-bottom: 1px solid var(--border); }
+        tbody tr { border-bottom: 1px solid rgba(124,58,237,.08); transition: background .15s; }
+        tbody tr:hover { background: var(--bg-card-hover); }
+        tbody tr:last-child { border-bottom: none; }
+        td { padding: 11px 14px; vertical-align: middle; }
+        td.mono { direction: ltr; font-feature-settings: 'tnum'; }
+
+        /* ─── Badges ──────────────────────────────────────────────── */
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .badge-payment { background: rgba(239,68,68,.15); color: #f87171; border: 1px solid rgba(239,68,68,.25); }
+        .badge-receipt  { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.25); }
+        .badge-salary   { background: rgba(245,158,11,.15); color: #fbbf24; border: 1px solid rgba(245,158,11,.25); }
+        .badge-pending  { background: rgba(245,158,11,.15); color: #fbbf24; }
+        .badge-paid     { background: rgba(16,185,129,.15); color: #34d399; }
+        .badge-confirmed{ background: rgba(16,185,129,.15); color: #34d399; }
+
+        /* ─── Action buttons ──────────────────────────────────────── */
+        .action-row { display: flex; gap: 6px; justify-content: flex-end; }
+        .btn-icon { background: none; border: 1px solid var(--border); border-radius: 7px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; transition: all .2s; }
+        .btn-icon:hover { background: var(--bg-card-hover); }
+        .btn-icon.del:hover { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.35); }
+        .btn-icon.print:hover { background: rgba(59,130,246,.15); border-color: rgba(59,130,246,.35); }
+
+        .btn-primary {
+            background: linear-gradient(135deg,#7c3aed,#5b21b6); color: #fff; border: none;
+            padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 14px;
+            transition: all .2s;
+        }
+        .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+        .btn-secondary { background: var(--bg-card-hover); color: var(--text-main); border: 1px solid var(--border); padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: all .2s; }
+        .btn-secondary:hover { background: #2a2448; }
+        .btn-success  { background: linear-gradient(135deg,#059669,#047857); color:#fff; border:none; padding:9px 18px; border-radius:8px; font-weight:600; font-size:14px; transition:all .2s; }
+        .btn-success:hover { opacity:.9; }
+
+        /* ─── Modal ───────────────────────────────────────────────── */
+        .modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.6); align-items: center; justify-content: center; padding: 16px; }
+        .modal.active { display: flex; }
+        .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+        .modal-head h3 { font-size: 17px; font-weight: 700; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 22px; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: all .2s; }
+        .modal-close:hover { background: rgba(255,255,255,.08); color: var(--text-main); }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .modal-foot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+        /* ─── Form elements ───────────────────────────────────────── */
+        .form-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .form-row.full { grid-template-columns: 1fr; }
+        .form-group  { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .form-group label span.req { color: #f87171; }
+        .form-section-title { font-size: 12px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+        /* ─── Salary card grid ────────────────────────────────────── */
+        .salary-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 14px; }
+        .salary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+        .salary-card .emp-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .salary-card .emp-role { font-size: 12px; color: var(--accent-light); margin-bottom: 10px; }
+        .salary-card .sal-amount { font-size: 22px; font-weight: 800; color: #34d399; margin: 6px 0; }
+        .salary-card .sal-meta   { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+        .salary-card .sal-actions{ display: flex; gap: 8px; }
+
+        /* ─── Report overview ─────────────────────────────────────── */
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .report-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+        .report-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--accent-light); }
+        .report-row  { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 13px; }
+        .report-row:last-child { border-bottom: none; }
+        .report-row .lbl { color: var(--text-muted); }
+        .report-row .val { font-weight: 600; }
+        .report-row .val.green { color: #34d399; }
+        .report-row .val.red   { color: #f87171; }
+
+        /* ─── Empty state ─────────────────────────────────────────── */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state .es-icon { font-size: 52px; margin-bottom: 14px; display: block; }
+        .empty-state p { font-size: 15px; margin-bottom: 6px; }
+        .empty-state small { font-size: 13px; }
+
+        /* ─── Loading ─────────────────────────────────────────────── */
+        .loading { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+
+        /* ─── Print Voucher preview ───────────────────────────────── */
+        @media print {
+            .no-print { display: none !important; }
+        }
+
+        /* ─── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 680px) {
+            .form-row { grid-template-columns: 1fr; }
+            .report-grid  { grid-template-columns: 1fr; }
+            .stats-grid   { grid-template-columns: 1fr 1fr; }
+            .search-bar input { width: 150px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="page-header no-print">
+    <h1>💰 الحسابات والرواتب</h1>
+    <div class="header-nav">
+        <a href="admin.html" class="nav-pill back">⬅️ لوحة المطور</a>
+        <button class="nav-pill" onclick="window.print()">🖨️ طباعة</button>
+        <button class="nav-pill" id="export-csv-btn">📥 تصدير CSV</button>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- ═════════ STATS ════════════════════════════════════════════ -->
+    <div class="stats-grid" id="stats-grid">
+        <div class="stat-card red">
+            <span class="stat-icon">📤</span>
+            <div class="stat-val" id="stat-out">—</div>
+            <div class="stat-lbl">إجمالي الصرف</div>
+        </div>
+        <div class="stat-card green">
+            <span class="stat-icon">📥</span>
+            <div class="stat-val" id="stat-in">—</div>
+            <div class="stat-lbl">إجمالي القبض</div>
+        </div>
+        <div class="stat-card blue">
+            <span class="stat-icon">⚖️</span>
+            <div class="stat-val" id="stat-balance">—</div>
+            <div class="stat-lbl">الرصيد الصافي</div>
+        </div>
+        <div class="stat-card purple">
+            <span class="stat-icon">👥</span>
+            <div class="stat-val" id="stat-salaries">—</div>
+            <div class="stat-lbl">مجموع الرواتب المصروفة</div>
+        </div>
+    </div>
+
+    <!-- ═════════ TABS ═════════════════════════════════════════════ -->
+    <div class="tabs no-print">
+        <button class="tab-btn active" data-tab="payments">📤 سندات الصرف</button>
+        <button class="tab-btn" data-tab="receipts">📥 سندات القبض</button>
+        <button class="tab-btn" data-tab="salaries">👥 الرواتب</button>
+        <button class="tab-btn" data-tab="reports">📊 التقارير</button>
+    </div>
+
+    <!-- ═══════ TAB: سندات الصرف ═══════════════════════════════════ -->
+    <div class="tab-panel active" id="tab-payments">
+        <div class="table-header">
+            <h3>📤 سندات الصرف</h3>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <div class="search-bar">
+                    <input type="text" id="search-payments" placeholder="بحث...">
+                </div>
+                <button class="btn-primary" onclick="openVoucherModal('payment')">➕ سند صرف جديد</button>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم السند</th>
+                        <th>التاريخ</th>
+                        <th>المستلم</th>
+                        <th>الوصف</th>
+                        <th>التصنيف</th>
+                        <th>المبلغ</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="payments-tbody">
+                    <tr><td colspan="8"><div class="loading">⏳ جاري التحميل...</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══════ TAB: سندات القبض ════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-receipts">
+        <div class="table-header">
+            <h3>📥 سندات القبض</h3>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <div class="search-bar">
+                    <input type="text" id="search-receipts" placeholder="بحث...">
+                </div>
+                <button class="btn-primary" onclick="openVoucherModal('receipt')">➕ سند قبض جديد</button>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم السند</th>
+                        <th>التاريخ</th>
+                        <th>من (المُودِع)</th>
+                        <th>الوصف</th>
+                        <th>التصنيف</th>
+                        <th>المبلغ</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="receipts-tbody">
+                    <tr><td colspan="8"><div class="loading">⏳ جاري التحميل...</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══════ TAB: الرواتب ════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-salaries">
+        <div class="table-header">
+            <h3>👥 إدارة الرواتب</h3>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <select id="salary-month-filter" style="width:160px;">
+                    <option value="">كل الأشهر</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- بطاقات الموظفين لصرف الرواتب -->
+        <div class="form-section-title">💳 صرف رواتب الموظفين</div>
+        <div class="salary-grid" id="salary-cards-grid">
+            <div class="loading">⏳ جاري تحميل الموظفين...</div>
+        </div>
+
+        <!-- جدول سجل الرواتب -->
+        <div class="form-section-title" style="margin-top:28px;">📋 سجل الرواتب المصروفة</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم السجل</th>
+                        <th>الموظف</th>
+                        <th>الشهر</th>
+                        <th>الراتب الأساسي</th>
+                        <th>المكافآت</th>
+                        <th>الخصومات</th>
+                        <th>الصافي</th>
+                        <th>رقم سند الصرف</th>
+                        <th>تاريخ الصرف</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="salaries-tbody">
+                    <tr><td colspan="10"><div class="loading">⏳ جاري التحميل...</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══════ TAB: التقارير ═══════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-reports">
+        <div class="table-header">
+            <h3>📊 تقارير مفصلة</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <input type="date" id="rep-start" style="width:150px;">
+                <input type="date" id="rep-end"   style="width:150px;">
+                <button class="btn-primary" onclick="applyReportFilter()">🔍 تطبيق</button>
+            </div>
+        </div>
+        <div class="report-grid" id="report-content">
+            <div class="loading" style="grid-column:1/-1;">⏳ جاري التحميل...</div>
+        </div>
+
+        <!-- تقرير مفصل لكل موظف -->
+        <div class="form-section-title" style="margin-top:28px;">👤 تقرير تفصيلي لكل موظف</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الموظف</th>
+                        <th>عدد الرواتب المصروفة</th>
+                        <th>إجمالي المكافآت</th>
+                        <th>إجمالي الخصومات</th>
+                        <th>إجمالي الصافي المصروف</th>
+                        <th>آخر صرف</th>
+                    </tr>
+                </thead>
+                <tbody id="emp-report-tbody">
+                    <tr><td colspan="6"><div class="loading">⏳ جاري التحميل...</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL: سند صرف / قبض                               -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal" id="voucher-modal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3 id="voucher-modal-title">📤 سند صرف جديد</h3>
+            <button class="modal-close" onclick="closeModal('voucher-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="voucher-type-hidden">
+
+            <div class="form-section-title">بيانات السند</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>اسم المستلم / الجهة <span class="req">*</span></label>
+                    <input type="text" id="v-recipient" placeholder="الاسم الكامل">
+                </div>
+                <div class="form-group">
+                    <label>المبلغ <span class="req">*</span></label>
+                    <input type="number" id="v-amount" min="0" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>العملة</label>
+                    <select id="v-currency">
+                        <option value="SAR">ريال سعودي (SAR)</option>
+                        <option value="EGP">جنيه مصري (EGP)</option>
+                        <option value="AED">درهم إماراتي (AED)</option>
+                        <option value="USD">دولار أمريكي (USD)</option>
+                        <option value="EUR">يورو (EUR)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>التاريخ <span class="req">*</span></label>
+                    <input type="date" id="v-date">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>نوع المستلم</label>
+                    <select id="v-recipient-type">
+                        <option value="employee">موظف</option>
+                        <option value="supplier">مورد</option>
+                        <option value="client">عميل (استرداد)</option>
+                        <option value="other">أخرى</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>التصنيف</label>
+                    <select id="v-category">
+                        <option value="salary">راتب</option>
+                        <option value="bonus">مكافأة</option>
+                        <option value="expense">مصروف تشغيلي</option>
+                        <option value="invoice">فاتورة مورد</option>
+                        <option value="refund">استرداد</option>
+                        <option value="other">أخرى</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row full">
+                <div class="form-group">
+                    <label>الوصف / البيان</label>
+                    <textarea id="v-description" rows="2" placeholder="وصف تفصيلي للمعاملة"></textarea>
+                </div>
+            </div>
+            <div class="form-row full">
+                <div class="form-group">
+                    <label>ملاحظات إضافية</label>
+                    <input type="text" id="v-notes" placeholder="ملاحظات اختيارية">
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-secondary" onclick="closeModal('voucher-modal')">إلغاء</button>
+            <button class="btn-primary" id="voucher-submit-btn" onclick="submitVoucher()">✅ إنشاء السند</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL: صرف راتب موظف                               -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal" id="salary-modal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>💳 صرف راتب موظف</h3>
+            <button class="modal-close" onclick="closeModal('salary-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="sal-employee-id">
+            <input type="hidden" id="sal-employee-name">
+
+            <div class="form-section-title">بيانات الراتب</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الموظف</label>
+                    <input type="text" id="sal-emp-display" readonly style="background:#111;">
+                </div>
+                <div class="form-group">
+                    <label>الشهر <span class="req">*</span></label>
+                    <input type="month" id="sal-month">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الراتب الأساسي <span class="req">*</span></label>
+                    <input type="number" id="sal-base" min="0" step="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>العملة</label>
+                    <select id="sal-currency">
+                        <option value="SAR">ريال سعودي (SAR)</option>
+                        <option value="EGP">جنيه مصري (EGP)</option>
+                        <option value="AED">درهم إماراتي (AED)</option>
+                        <option value="USD">دولار أمريكي (USD)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>المكافآت والبدلات</label>
+                    <input type="number" id="sal-bonuses" min="0" step="0.01" placeholder="0.00" value="0">
+                </div>
+                <div class="form-group">
+                    <label>الخصومات</label>
+                    <input type="number" id="sal-deductions" min="0" step="0.01" placeholder="0.00" value="0">
+                </div>
+            </div>
+            <div id="sal-net-preview" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);padding:12px;border-radius:8px;margin:10px 0;text-align:center;font-size:16px;font-weight:700;color:#34d399;">
+                الصافي: 0.00
+            </div>
+            <div class="form-row full">
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <input type="text" id="sal-notes" placeholder="ملاحظة اختيارية">
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-secondary" onclick="closeModal('salary-modal')">إلغاء</button>
+            <button class="btn-success" id="salary-submit-btn" onclick="submitSalary()">💳 صرف الراتب</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL: تعديل إعداد راتب الموظف                      -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal" id="salary-setting-modal">
+    <div class="modal-box" style="max-width:420px;">
+        <div class="modal-head">
+            <h3>⚙️ إعداد راتب الموظف</h3>
+            <button class="modal-close" onclick="closeModal('salary-setting-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="ss-employee-id">
+            <div class="form-group" style="margin-bottom:14px;">
+                <label>الموظف</label>
+                <input type="text" id="ss-emp-display" readonly style="background:#111;">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الراتب الأساسي الافتراضي</label>
+                    <input type="number" id="ss-base" min="0" step="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>العملة</label>
+                    <select id="ss-currency">
+                        <option value="SAR">SAR</option>
+                        <option value="EGP">EGP</option>
+                        <option value="AED">AED</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-secondary" onclick="closeModal('salary-setting-modal')">إلغاء</button>
+            <button class="btn-primary" onclick="saveSalarySetting()">💾 حفظ الإعداد</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<script>
+// ═══════════ State ════════════════════════════════════
+const BASE = window.location.origin;
+let companyId     = '';
+let allVouchers   = [];
+let allSalaries   = [];
+let allEmployees  = [];
+let salarySettings= {};
+let stats         = { totalOut: 0, totalIn: 0, balance: 0, totalSalaries: 0 };
+
+// ═══════════ Init ═════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+    // دعم ?companyId= كبارامتر URL أيضاً
+    const urlP = new URLSearchParams(location.search);
+    companyId = urlP.get('companyId') || sessionStorage.getItem('companyId') || '';
+
+    if (!companyId) {
+        document.querySelector('.container').innerHTML = `
+            <div class="empty-state">
+                <span class="es-icon">🔒</span>
+                <p>لم يتم العثور على معرف الشركة</p>
+                <small>سجّل الدخول أولاً أو تأكد من وجود companyId في الجلسة</small>
+                <br><br><a href="login.html" style="color:var(--accent-light);">تسجيل الدخول</a>
+            </div>`;
+        return;
+    }
+
+    initTabs();
+    initSalaryNetPreview();
+
+    // تهيئة تواريخ التقارير
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    document.getElementById('rep-start').value = startOfMonth.toISOString().split('T')[0];
+    document.getElementById('rep-end').value   = today.toISOString().split('T')[0];
+    document.getElementById('v-date').value    = today.toISOString().split('T')[0];
+    document.getElementById('sal-month').value = today.toISOString().slice(0,7);
+
+    await Promise.all([ loadData(), loadEmployeesData() ]);
+    renderAll();
+
+    // فلتر بحث
+    document.getElementById('search-payments').addEventListener('input', () => renderPayments());
+    document.getElementById('search-receipts').addEventListener('input', () => renderReceipts());
+    document.getElementById('salary-month-filter').addEventListener('change', () => renderSalariesTable());
+    document.getElementById('export-csv-btn').addEventListener('click', exportCSV);
+
+    // تحديث preview الصافي
+    ['sal-base','sal-bonuses','sal-deductions'].forEach(id =>
+        document.getElementById(id)?.addEventListener('input', updateNetPreview)
+    );
+});
+
+// ═══════════ Load data ════════════════════════════════
+async function loadData() {
+    try {
+        const r = await fetch(`${BASE}/api/accounts?companyId=${companyId}`);
+        const d = await r.json();
+        if (d.success) {
+            allVouchers    = d.vouchers    || [];
+            allSalaries    = d.salaries    || [];
+            salarySettings = d.salarySettings || {};
+            stats          = d.stats       || stats;
+        }
+    } catch (e) { console.warn('accounts API:', e); }
+}
+
+async function loadEmployeesData() {
+    try {
+        const r = await fetch(`${BASE}/api/employees-management?companyId=${companyId}`);
+        const d = await r.json();
+        if (d.success) allEmployees = d.employees || [];
+    } catch (e) { console.warn('employees API:', e); }
+}
+
+// ═══════════ Render all ═══════════════════════════════
+function renderAll() {
+    renderStats();
+    renderPayments();
+    renderReceipts();
+    renderSalaryCards();
+    renderSalariesTable();
+    renderReports();
+    populateSalaryMonthFilter();
+}
+
+// ═══════════ Stats ════════════════════════════════════
+function fmt(n, cur='SAR') {
+    return Number(n||0).toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + cur;
+}
+function fmtDate(str) {
+    if (!str) return '—';
+    return new Date(str).toLocaleDateString('ar-SA');
+}
+function getCatLabel(c) {
+    const m = { salary:'راتب', bonus:'مكافأة', expense:'مصروف', invoice:'فاتورة', refund:'استرداد', other:'أخرى' };
+    return m[c] || c;
+}
+
+function renderStats() {
+    const payments = allVouchers.filter(v => v.type === 'payment');
+    const receipts = allVouchers.filter(v => v.type === 'receipt');
+    const curPay   = payments[0]?.currency || 'SAR';
+    const curRec   = receipts[0]?.currency || 'SAR';
+    const out  = payments.reduce((s,v) => s + (v.amount||0), 0);
+    const inn  = receipts.reduce((s,v) => s + (v.amount||0), 0);
+    const sal  = allSalaries.reduce((s,v) => s + (v.netPay||0), 0);
+    const bal  = inn - out;
+    document.getElementById('stat-out').textContent      = fmt(out, curPay);
+    document.getElementById('stat-in').textContent       = fmt(inn, curRec);
+    document.getElementById('stat-balance').textContent  = fmt(bal, 'SAR');
+    document.getElementById('stat-balance').style.color  = bal >= 0 ? '#34d399' : '#f87171';
+    document.getElementById('stat-salaries').textContent = fmt(sal, allSalaries[0]?.currency || 'SAR');
+}
+
+// ═══════════ Payments table ══════════════════════════
+function renderPayments() {
+    const q = (document.getElementById('search-payments').value || '').toLowerCase();
+    const rows = allVouchers.filter(v => v.type === 'payment' && (
+        !q || v.id?.toLowerCase().includes(q) || v.recipient?.toLowerCase().includes(q) || (v.description||'').toLowerCase().includes(q)
+    ));
+    const tb = document.getElementById('payments-tbody');
+    if (!rows.length) {
+        tb.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="es-icon">📤</span><p>لا توجد سندات صرف بعد</p><small>اضغط "➕ سند صرف جديد" للإضافة</small></div></td></tr>`;
+        return;
+    }
+    tb.innerHTML = rows.map(v => `
+        <tr>
+            <td class="mono" style="font-weight:700;color:var(--accent-light);">${v.id}</td>
+            <td>${fmtDate(v.date || v.createdAt)}</td>
+            <td>${v.recipient || '—'}</td>
+            <td>${v.description || '—'}</td>
+            <td><span class="badge badge-${v.category ==='salary'?'salary':'payment'}">${getCatLabel(v.category)}</span></td>
+            <td style="font-weight:700;color:#f87171;">${fmt(v.amount, v.currency)}</td>
+            <td><span class="badge badge-${v.status}">${v.status === 'confirmed' ? 'مؤكد' : v.status}</span></td>
+            <td>
+                <div class="action-row">
+                    <button class="btn-icon print" onclick="printVoucher('${v.id}')" title="طباعة">🖨️</button>
+                    <button class="btn-icon del"   onclick="deleteVoucher('${v.id}')" title="حذف">🗑️</button>
+                </div>
+            </td>
+        </tr>`).join('');
+}
+
+// ═══════════ Receipts table ═══════════════════════════
+function renderReceipts() {
+    const q = (document.getElementById('search-receipts').value || '').toLowerCase();
+    const rows = allVouchers.filter(v => v.type === 'receipt' && (
+        !q || v.id?.toLowerCase().includes(q) || v.recipient?.toLowerCase().includes(q) || (v.description||'').toLowerCase().includes(q)
+    ));
+    const tb = document.getElementById('receipts-tbody');
+    if (!rows.length) {
+        tb.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="es-icon">📥</span><p>لا توجد سندات قبض بعد</p><small>اضغط "➕ سند قبض جديد" للإضافة</small></div></td></tr>`;
+        return;
+    }
+    tb.innerHTML = rows.map(v => `
+        <tr>
+            <td class="mono" style="font-weight:700;color:#34d399;">${v.id}</td>
+            <td>${fmtDate(v.date || v.createdAt)}</td>
+            <td>${v.recipient || '—'}</td>
+            <td>${v.description || '—'}</td>
+            <td><span class="badge badge-receipt">${getCatLabel(v.category)}</span></td>
+            <td style="font-weight:700;color:#34d399;">${fmt(v.amount, v.currency)}</td>
+            <td><span class="badge badge-${v.status}">${v.status === 'confirmed' ? 'مؤكد' : v.status}</span></td>
+            <td>
+                <div class="action-row">
+                    <button class="btn-icon print" onclick="printVoucher('${v.id}')" title="طباعة">🖨️</button>
+                    <button class="btn-icon del"   onclick="deleteVoucher('${v.id}')" title="حذف">🗑️</button>
+                </div>
+            </td>
+        </tr>`).join('');
+}
+
+// ═══════════ Salary cards ════════════════════════════
+function renderSalaryCards() {
+    const grid = document.getElementById('salary-cards-grid');
+    if (!allEmployees.length) {
+        grid.innerHTML = `<div class="empty-state"><span class="es-icon">👥</span><p>لا يوجد موظفون</p></div>`;
+        return;
+    }
+    grid.innerHTML = allEmployees.map(emp => {
+        const setting   = salarySettings[String(emp.id)] || {};
+        const base      = setting.baseSalary || 0;
+        const cur       = setting.currency   || 'SAR';
+        const lastSal   = [...allSalaries].filter(s => s.employeeId == emp.id).sort((a,b) => b.paidDate > a.paidDate ? 1 : -1)[0];
+        return `
+        <div class="salary-card">
+            <div class="emp-name">👤 ${emp.name || emp.fullname || emp.username}</div>
+            <div class="emp-role">${emp.title || emp.role || 'موظف'} · ${emp.department || ''}</div>
+            <div class="sal-amount">${fmt(base, cur)}</div>
+            <div class="sal-meta">آخر صرف: ${lastSal ? fmtDate(lastSal.paidDate) + ' (' + lastSal.month + ')' : 'لا يوجد'}</div>
+            <div class="sal-actions">
+                <button class="btn-success" onclick="openSalaryModal(${emp.id},'${emp.name || emp.fullname || ''}')">💳 صرف راتب</button>
+                <button class="btn-secondary" onclick="openSalarySettingModal(${emp.id},'${emp.name || emp.fullname || ''}',${base},'${cur}')">⚙️</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ═══════════ Salaries table ══════════════════════════
+function populateSalaryMonthFilter() {
+    const months = [...new Set(allSalaries.map(s => s.month).filter(Boolean))].sort().reverse();
+    const sel = document.getElementById('salary-month-filter');
+    sel.innerHTML = '<option value="">كل الأشهر</option>' + months.map(m => `<option value="${m}">${m}</option>`).join('');
+}
+
+function renderSalariesTable() {
+    const monthF = document.getElementById('salary-month-filter').value;
+    const rows = allSalaries.filter(s => !monthF || s.month === monthF);
+    const tb = document.getElementById('salaries-tbody');
+    if (!rows.length) {
+        tb.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="es-icon">💳</span><p>لا توجد سجلات رواتب</p></div></td></tr>`;
+        return;
+    }
+    tb.innerHTML = rows.sort((a,b) => b.createdAt > a.createdAt ? 1 : -1).map(s => `
+        <tr>
+            <td class="mono" style="font-weight:700;color:#fbbf24;">${s.id}</td>
+            <td>${s.employeeName || '—'}</td>
+            <td>${s.month || '—'}</td>
+            <td>${fmt(s.baseSalary, s.currency)}</td>
+            <td style="color:#34d399;">+${fmt(s.bonuses||0, s.currency)}</td>
+            <td style="color:#f87171;">-${fmt(s.deductions||0, s.currency)}</td>
+            <td style="font-weight:800;">${fmt(s.netPay, s.currency)}</td>
+            <td class="mono" style="color:var(--accent-light);">${s.voucherId || '—'}</td>
+            <td>${fmtDate(s.paidDate)}</td>
+            <td>
+                <div class="action-row">
+                    ${s.voucherId ? `<button class="btn-icon print" onclick="printVoucherById('${s.voucherId}')" title="طباعة السند">🖨️</button>` : ''}
+                    <button class="btn-icon del" onclick="deleteSalary('${s.id}')" title="حذف">🗑️</button>
+                </div>
+            </td>
+        </tr>`).join('');
+}
+
+// ═══════════ Reports ═════════════════════════════════
+function applyReportFilter() {
+    renderReports();
+}
+
+function renderReports() {
+    const start = document.getElementById('rep-start').value;
+    const end   = document.getElementById('rep-end').value;
+    const inRange = (dateStr) => {
+        if (!start && !end) return true;
+        const d = new Date(dateStr || 0);
+        return (!start || d >= new Date(start)) && (!end || d <= new Date(end + 'T23:59:59'));
+    };
+
+    const pay = allVouchers.filter(v => v.type === 'payment' && inRange(v.date || v.createdAt));
+    const rec = allVouchers.filter(v => v.type === 'receipt' && inRange(v.date || v.createdAt));
+    const sal = allSalaries.filter(s => inRange(s.paidDate || s.createdAt));
+
+    const totalOut = pay.reduce((s,v) => s+(v.amount||0), 0);
+    const totalIn  = rec.reduce((s,v) => s+(v.amount||0), 0);
+    const totalSal = sal.reduce((s,v) => s+(v.netPay||0), 0);
+    const balance  = totalIn - totalOut;
+    const curOut   = pay[0]?.currency || 'SAR';
+    const curIn    = rec[0]?.currency || 'SAR';
+
+    // تجميع المصروفات حسب التصنيف
+    const byCategory = {};
+    pay.forEach(v => { byCategory[v.category] = (byCategory[v.category] || 0) + (v.amount||0); });
+
+    document.getElementById('report-content').innerHTML = `
+        <div class="report-card">
+            <h4>📊 ملخص الفترة (${start || '—'} : ${end || '—'})</h4>
+            <div class="report-row"><span class="lbl">إجمالي الصرف</span><span class="val red">${fmt(totalOut, curOut)}</span></div>
+            <div class="report-row"><span class="lbl">إجمالي القبض</span><span class="val green">${fmt(totalIn, curIn)}</span></div>
+            <div class="report-row"><span class="lbl">الرصيد الصافي</span><span class="val ${balance>=0?'green':'red'}">${fmt(balance, 'SAR')}</span></div>
+            <div class="report-row"><span class="lbl">إجمالي الرواتب المصروفة</span><span class="val red">${fmt(totalSal, sal[0]?.currency||'SAR')}</span></div>
+            <div class="report-row"><span class="lbl">عدد سندات الصرف</span><span class="val">${pay.length}</span></div>
+            <div class="report-row"><span class="lbl">عدد سندات القبض</span><span class="val">${rec.length}</span></div>
+            <div class="report-row"><span class="lbl">عدد سجلات الرواتب</span><span class="val">${sal.length}</span></div>
+        </div>
+        <div class="report-card">
+            <h4>📂 المصروفات حسب التصنيف</h4>
+            ${Object.entries(byCategory).map(([cat, amt]) => `
+                <div class="report-row"><span class="lbl">${getCatLabel(cat)}</span><span class="val red">${fmt(amt, curOut)}</span></div>
+            `).join('') || '<div class="empty-state" style="padding:20px;"><p>لا توجد بيانات</p></div>'}
+        </div>`;
+
+    // تقرير مفصل لكل موظف
+    const empMap = {};
+    sal.forEach(s => {
+        if (!empMap[s.employeeId]) empMap[s.employeeId] = { name: s.employeeName, count: 0, bonuses: 0, deductions: 0, net: 0, last: '' };
+        empMap[s.employeeId].count++;
+        empMap[s.employeeId].bonuses    += (s.bonuses    || 0);
+        empMap[s.employeeId].deductions += (s.deductions || 0);
+        empMap[s.employeeId].net        += (s.netPay     || 0);
+        if (!empMap[s.employeeId].last || s.paidDate > empMap[s.employeeId].last)
+            empMap[s.employeeId].last = s.paidDate;
+    });
+    const empRows = Object.values(empMap);
+    document.getElementById('emp-report-tbody').innerHTML = empRows.length
+        ? empRows.map(e => `
+            <tr>
+                <td>${e.name || '—'}</td>
+                <td style="text-align:center;">${e.count}</td>
+                <td style="color:#34d399;">+${fmt(e.bonuses,'SAR')}</td>
+                <td style="color:#f87171;">-${fmt(e.deductions,'SAR')}</td>
+                <td style="font-weight:800;">${fmt(e.net,'SAR')}</td>
+                <td>${fmtDate(e.last)}</td>
+            </tr>`).join('')
+        : `<tr><td colspan="6"><div class="empty-state" style="padding:30px;"><p>لا توجد بيانات في هذه الفترة</p></div></td></tr>`;
+}
+
+// ═══════════ Voucher modal ════════════════════════════
+function openVoucherModal(type) {
+    document.getElementById('voucher-type-hidden').value = type;
+    document.getElementById('voucher-modal-title').textContent = type === 'payment' ? '📤 سند صرف جديد' : '📥 سند قبض جديد';
+    document.getElementById('v-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('v-recipient').value = '';
+    document.getElementById('v-amount').value = '';
+    document.getElementById('v-description').value = '';
+    document.getElementById('v-notes').value = '';
+    document.getElementById('voucher-modal').classList.add('active');
+}
+
+async function submitVoucher() {
+    const vType = document.getElementById('voucher-type-hidden').value;
+    const recipient  = document.getElementById('v-recipient').value.trim();
+    const amount     = document.getElementById('v-amount').value;
+    if (!recipient || !amount) { alert('❌ الاسم والمبلغ مطلوبان'); return; }
+
+    const btn = document.getElementById('voucher-submit-btn');
+    btn.disabled = true; btn.textContent = '⏳ جاري الإنشاء...';
+    try {
+        const r = await fetch(`${BASE}/api/accounts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action:        'add-voucher',
+                companyId,
+                voucherType:    vType,
+                amount:         parseFloat(amount),
+                currency:       document.getElementById('v-currency').value,
+                recipient,
+                recipientType:  document.getElementById('v-recipient-type').value,
+                description:    document.getElementById('v-description').value,
+                category:       document.getElementById('v-category').value,
+                date:           document.getElementById('v-date').value,
+                notes:          document.getElementById('v-notes').value,
+                createdBy:      sessionStorage.getItem('username') || 'admin'
+            })
+        });
+        const d = await r.json();
+        if (d.success) {
+            allVouchers.push(d.voucher);
+            closeModal('voucher-modal');
+            renderAll();
+            alert(`✅ ${vType === 'payment' ? 'سند الصرف' : 'سند القبض'} رقم ${d.voucher.id} تم إنشاؤه بنجاح`);
+        } else { alert('❌ ' + (d.message || 'خطأ')); }
+    } catch (e) { alert('❌ خطأ في الاتصال'); }
+    finally { btn.disabled = false; btn.textContent = '✅ إنشاء السند'; }
+}
+
+// ═══════════ Salary modal ════════════════════════════
+function openSalaryModal(empId, empName) {
+    document.getElementById('sal-employee-id').value  = empId;
+    document.getElementById('sal-employee-name').value = empName;
+    document.getElementById('sal-emp-display').value  = empName;
+    const setting = salarySettings[String(empId)] || {};
+    document.getElementById('sal-base').value      = setting.baseSalary || '';
+    document.getElementById('sal-currency').value  = setting.currency   || 'SAR';
+    document.getElementById('sal-bonuses').value   = '0';
+    document.getElementById('sal-deductions').value= '0';
+    document.getElementById('sal-notes').value     = '';
+    document.getElementById('sal-month').value     = new Date().toISOString().slice(0,7);
+    updateNetPreview();
+    document.getElementById('salary-modal').classList.add('active');
+}
+
+function updateNetPreview() {
+    const base = parseFloat(document.getElementById('sal-base')?.value || 0);
+    const bon  = parseFloat(document.getElementById('sal-bonuses')?.value || 0);
+    const ded  = parseFloat(document.getElementById('sal-deductions')?.value || 0);
+    const net  = base + bon - ded;
+    const cur  = document.getElementById('sal-currency')?.value || 'SAR';
+    const el = document.getElementById('sal-net-preview');
+    if (el) { el.textContent = `الصافي: ${fmt(net, cur)}`; el.style.color = net >= 0 ? '#34d399' : '#f87171'; }
+}
+
+async function submitSalary() {
+    const empId   = document.getElementById('sal-employee-id').value;
+    const empName = document.getElementById('sal-employee-name').value;
+    const base    = document.getElementById('sal-base').value;
+    const month   = document.getElementById('sal-month').value;
+    if (!base || !month) { alert('❌ الراتب الأساسي والشهر مطلوبان'); return; }
+
+    const btn = document.getElementById('salary-submit-btn');
+    btn.disabled = true; btn.textContent = '⏳ جاري الصرف...';
+    try {
+        const r = await fetch(`${BASE}/api/accounts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action:      'pay-salary',
+                companyId,
+                employeeId:   empId,
+                employeeName: empName,
+                baseSalary:   parseFloat(base),
+                bonuses:      parseFloat(document.getElementById('sal-bonuses').value || 0),
+                deductions:   parseFloat(document.getElementById('sal-deductions').value || 0),
+                currency:     document.getElementById('sal-currency').value,
+                month,
+                notes:        document.getElementById('sal-notes').value,
+                createdBy:    sessionStorage.getItem('username') || 'admin'
+            })
+        });
+        const d = await r.json();
+        if (d.success) {
+            allVouchers.push(d.voucher);
+            allSalaries.push(d.salary);
+            closeModal('salary-modal');
+            renderAll();
+            alert(`✅ تم صرف راتب ${empName}\nالصافي: ${fmt(d.salary.netPay, d.salary.currency)}\nسند صرف: ${d.voucher.id}`);
+        } else { alert('❌ ' + (d.message || 'خطأ')); }
+    } catch (e) { alert('❌ خطأ في الاتصال'); }
+    finally { btn.disabled = false; btn.textContent = '💳 صرف الراتب'; }
+}
+
+// ═══════════ Salary setting modal ════════════════════
+function openSalarySettingModal(empId, empName, base, cur) {
+    document.getElementById('ss-employee-id').value = empId;
+    document.getElementById('ss-emp-display').value = empName;
+    document.getElementById('ss-base').value        = base;
+    document.getElementById('ss-currency').value    = cur || 'SAR';
+    document.getElementById('salary-setting-modal').classList.add('active');
+}
+
+async function saveSalarySetting() {
+    const empId = document.getElementById('ss-employee-id').value;
+    const base  = document.getElementById('ss-base').value;
+    const cur   = document.getElementById('ss-currency').value;
+    try {
+        const r = await fetch(`${BASE}/api/accounts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'save-salary-setting', companyId, employeeId: empId, baseSalary: parseFloat(base||0), currency: cur })
+        });
+        const d = await r.json();
+        if (d.success) {
+            salarySettings[String(empId)] = { baseSalary: parseFloat(base||0), currency: cur };
+            closeModal('salary-setting-modal');
+            renderSalaryCards();
+            alert('✅ تم حفظ إعداد الراتب');
+        } else { alert('❌ ' + d.message); }
+    } catch (e) { alert('❌ خطأ في الاتصال'); }
+}
+
+// ═══════════ Delete ═══════════════════════════════════
+async function deleteVoucher(id) {
+    if (!confirm(`⚠️ هل أنت متأكد من حذف السند ${id}؟`)) return;
+    try {
+        await fetch(`${BASE}/api/accounts?companyId=${companyId}&id=${id}`, { method: 'DELETE' });
+        allVouchers = allVouchers.filter(v => v.id !== id);
+        renderAll();
+    } catch (e) { alert('❌ خطأ في الحذف'); }
+}
+
+async function deleteSalary(id) {
+    if (!confirm(`⚠️ هل أنت متأكد من حذف سجل الراتب ${id}؟\nلن يُحذف سند الصرف المرافق تلقائياً.`)) return;
+    try {
+        await fetch(`${BASE}/api/accounts?companyId=${companyId}&id=${id}&type=salary`, { method: 'DELETE' });
+        allSalaries = allSalaries.filter(s => s.id !== id);
+        renderSalariesTable();
+        renderStats();
+    } catch (e) { alert('❌ خطأ في الحذف'); }
+}
+
+// ═══════════ Print voucher ════════════════════════════
+function printVoucher(voucherId) {
+    const v = allVouchers.find(x => x.id === voucherId);
+    if (v) openPrintWindow(v);
+}
+function printVoucherById(vId) { printVoucher(vId); }
+
+function openPrintWindow(v) {
+    const isPayment  = v.type === 'payment';
+    const typeAr     = isPayment ? 'سند صرف' : 'سند قبض';
+    const typeColor  = isPayment ? '#ef4444' : '#10b981';
+    const compName   = sessionStorage.getItem('companyName') || 'Link Call';
+    const w = window.open('', '_blank', 'width=800,height=600');
+    w.document.write(`<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>${typeAr} رقم ${v.id}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+  body { background: #fff; color: #111; padding: 40px; direction: rtl; }
+  .voucher { max-width: 750px; margin: 0 auto; border: 2px solid ${typeColor}; border-radius: 12px; padding: 36px 40px; position: relative; }
+  .voucher::before { content: ''; position: absolute; top: 0; right: 0; width: 6px; height: 100%; background: ${typeColor}; border-radius: 0 10px 10px 0; }
+  .v-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; border-bottom: 2px dashed #eee; padding-bottom: 20px; }
+  .v-logo h2 { font-size: 22px; color: #7c3aed; font-weight: 800; }
+  .v-logo p  { font-size: 13px; color: #666; margin-top: 4px; }
+  .v-type { text-align: center; }
+  .v-type h1 { font-size: 28px; font-weight: 900; color: ${typeColor}; }
+  .v-type .v-id { font-size: 16px; color: #555; margin-top: 6px; direction: ltr; font-family: monospace; }
+  .v-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; margin-bottom: 22px; }
+  .v-field label { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+  .v-field .val   { font-size: 15px; color: #111; font-weight: 600; padding: 8px 12px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e8e8e8; }
+  .amount-box { background: ${typeColor}; color: #fff; text-align: center; padding: 18px; border-radius: 10px; margin: 16px 0; }
+  .amount-box .amount{ font-size: 34px; font-weight: 900; }
+  .amount-box .lbl   { font-size: 13px; opacity: .85; margin-top: 4px; }
+  .v-desc { border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin-bottom: 18px; font-size: 14px; line-height: 1.6; min-height: 54px; color: #333; }
+  .v-footer { display: flex; justify-content: space-between; margin-top: 32px; border-top: 1px dashed #ccc; padding-top: 20px; }
+  .sign-box { text-align: center; width: 200px; }
+  .sign-box .sign-line { border-bottom: 1px solid #333; margin-bottom: 8px; height: 50px; }
+  .sign-box p { font-size: 12px; color: #666; }
+  .watermark { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%) rotate(-20deg); font-size: 60px; font-weight: 900; color: rgba(124,58,237,.06); pointer-events: none; white-space: nowrap; }
+  @media print { body { padding: 20px; } button { display: none; } }
+</style>
+</head>
+<body>
+<div class="voucher">
+    <div class="watermark">${typeAr}</div>
+    <div class="v-header">
+        <div class="v-logo">
+            <h2>💎 ${compName}</h2>
+            <p>نظام إدارة الحسابات</p>
+        </div>
+        <div class="v-type">
+            <h1>${typeAr}</h1>
+            <div class="v-id"># ${v.id}</div>
+        </div>
+    </div>
+
+    <div class="amount-box">
+        <div class="amount">${Number(v.amount||0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })} ${v.currency || 'SAR'}</div>
+        <div class="lbl">${isPayment ? 'المبلغ المصروف' : 'المبلغ المقبوض'}</div>
+    </div>
+
+    <div class="v-grid">
+        <div class="v-field"><label>${isPayment ? 'صرف إلى' : 'مستلم من'}</label><div class="val">${v.recipient || '—'}</div></div>
+        <div class="v-field"><label>التاريخ</label><div class="val">${new Date(v.date||v.createdAt).toLocaleDateString('ar-SA')}</div></div>
+        <div class="v-field"><label>التصنيف</label><div class="val">${getCatLabel(v.category)}</div></div>
+        <div class="v-field"><label>أنشئ بواسطة</label><div class="val">${v.createdBy || 'admin'}</div></div>
+    </div>
+
+    <div class="v-field" style="margin-bottom:14px;"><label>البيان / الوصف</label>
+        <div class="v-desc">${v.description || 'لا يوجد وصف'}</div>
+    </div>
+    ${v.notes ? `<div class="v-field" style="margin-bottom:14px;"><label>ملاحظات</label><div class="v-desc">${v.notes}</div></div>` : ''}
+
+    <div class="v-footer">
+        <div class="sign-box"><div class="sign-line"></div><p>توقيع المحاسب</p></div>
+        <div class="sign-box"><div class="sign-line"></div><p>${isPayment ? 'توقيع المستلم' : 'توقيع المُودِع'}</p></div>
+        <div class="sign-box"><div class="sign-line"></div><p>اعتماد المدير</p></div>
+    </div>
+</div>
+<br>
+<div style="text-align:center;">
+    <button onclick="window.print()" style="background:#7c3aed;color:#fff;border:none;padding:10px 28px;border-radius:8px;font-size:15px;cursor:pointer;margin:10px;">🖨️ طباعة السند</button>
+    <button onclick="window.close()" style="background:#eee;color:#333;border:none;padding:10px 28px;border-radius:8px;font-size:15px;cursor:pointer;margin:10px;">✖️ إغلاق</button>
+</div>
+<script>function getCatLabel(c){ const m={salary:'راتب',bonus:'مكافأة',expense:'مصروف',invoice:'فاتورة',refund:'استرداد',other:'أخرى'}; return m[c]||c; }<\/script>
+</body></html>`);
+    w.document.close();
+}
+
+// ═══════════ Export CSV ═══════════════════════════════
+function exportCSV() {
+    const headers = ['النوع','رقم السند','التاريخ','الجهة','الوصف','التصنيف','المبلغ','العملة','الحالة'];
+    const rows = allVouchers.map(v => [
+        v.type === 'payment' ? 'صرف' : 'قبض',
+        v.id, v.date || v.createdAt?.split('T')[0],
+        v.recipient, v.description, getCatLabel(v.category),
+        v.amount, v.currency, v.status === 'confirmed' ? 'مؤكد' : v.status
+    ]);
+    const salRows = allSalaries.map(s => [
+        'راتب', s.id, s.paidDate, s.employeeName,
+        `راتب شهر ${s.month}`, 'راتب', s.netPay, s.currency, 'مدفوع'
+    ]);
+    const csv = [headers, ...rows, ...salRows].map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `accounts_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+}
+
+// ═══════════ Tabs ════════════════════════════════════
+function initTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+}
+
+// ═══════════ Utility ═════════════════════════════════
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function initSalaryNetPreview() {
+    // update when salary inputs change
+    setInterval(() => {
+        if (document.getElementById('salary-modal').classList.contains('active')) updateNetPreview();
+    }, 300);
+}
+// Close modals on outside click
+document.addEventListener('click', e => {
+    document.querySelectorAll('.modal.active').forEach(m => {
+        if (e.target === m) m.classList.remove('active');
+    });
+});
+</script>
+</body>
+</html>

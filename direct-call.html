@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Call - ãßÇáãÉ ãÈÇÔÑÉ</title>
+    <meta name="author" content="Eng. Akram Elmasry">
+    <meta name="copyright" content="Â© 2024-2026 ENG. AKRAM ELMASRY. All Rights Reserved.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Link Call - Ø§ØªØµØ§Ù„ Ù…Ø¨Ø§Ø´Ø±</title>
+    <!-- Security Protection -->
+    <script src="protection.js?v=1.0" defer></script>
     <style>
         * {
             margin: 0;
@@ -99,18 +104,18 @@
     <div class="redirect-container">
         <div class="icon">??</div>
         <h1>Link Call</h1>
-        <div class="phone-number" id="phone-display">ÌÇÑí ÇáÊÍãíá...</div>
+        <div class="phone-number" id="phone-display">ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½...</div>
         <div class="loading">
             <div class="loading-bar">
                 <div class="loading-progress"></div>
             </div>
         </div>
-        <div class="message">ÌÇÑí ÊÍÖíÑ ÇáãßÇáãÉ...</div>
+        <div class="message">ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½...</div>
         <div class="error" id="error-message"></div>
     </div>
 
     <script>
-        // ÇáÍÕæá Úáì ãÚÇãáÇÊ URL
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ URL
         const urlParams = new URLSearchParams(window.location.search);
         const phoneNumber = urlParams.get('phone') || urlParams.get('number');
         const employeeId = urlParams.get('employeeId');
@@ -119,22 +124,22 @@
         const phoneDisplay = document.getElementById('phone-display');
         const errorMessage = document.getElementById('error-message');
         
-        // ÇáÊÍÞÞ ãä æÌæÏ ÑÞã ÇáåÇÊÝ
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (!phoneNumber) {
-            errorMessage.textContent = 'ÎØÃ: áã íÊã ÊæÝíÑ ÑÞã ÇáåÇÊÝ';
+            errorMessage.textContent = 'ï¿½ï¿½ï¿½: ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
             errorMessage.style.display = 'block';
-            phoneDisplay.textContent = 'ÑÞã ÛíÑ ãÊæÝÑ';
+            phoneDisplay.textContent = 'ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½';
         } else {
             phoneDisplay.textContent = phoneNumber;
             
-            // ÊÓÌíá ÏÎæá ÊáÞÇÆí æÊÌåíÒ ÇáÌáÓÉ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('username', 'crm_user');
             sessionStorage.setItem('userRole', 'crm');
-            sessionStorage.setItem('fullname', 'ãÓÊÎÏã CRM');
+            sessionStorage.setItem('fullname', 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ CRM');
             sessionStorage.setItem('canViewRecordings', 'false');
             
-            // ÍÝÙ ÈíÇäÇÊ ÇáãæÙÝ ÅÐÇ ßÇäÊ ãæÌæÏÉ
+            // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             if (employeeId) {
                 localStorage.setItem('employeeId', employeeId);
                 sessionStorage.setItem('employeeId', employeeId);
@@ -144,7 +149,7 @@
                 sessionStorage.setItem('fullname', employeeName);
             }
             
-            // ÅÚÇÏÉ ÇáÊæÌíå Åáì ÇáÕÝÍÉ ÇáÑÆíÓíÉ ãÚ ÑÞã ÇáåÇÊÝ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             setTimeout(() => {
                 const redirectUrl = `index.html?autoLogin=true&phone=${encodeURIComponent(phoneNumber)}` +
                     (employeeId ? `&employeeId=${encodeURIComponent(employeeId)}` : '') +

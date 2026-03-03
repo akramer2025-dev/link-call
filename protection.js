@@ -1,6 +1,9 @@
 // ========================================
 // نظام حماية متقدم لتطبيق Link Call
-// Copyright © 2024-2026 Link Call. All rights reserved.
+// Copyright © 2024-2026 ENG. AKRAM ELMASRY. All rights reserved.
+// Product: Link Call — Cloud Call Management Platform
+// Unauthorized copying, reverse engineering, or redistribution
+// of this software is strictly prohibited.
 // ========================================
 
 (function() {
@@ -11,6 +14,13 @@
                        window.location.hostname === '127.0.0.1' ||
                        window.location.hostname === '';
     
+    // ==================== بيان حقوق الملكية في الـ Console ====================
+    console.log(
+        '%c🛡️ Link Call',
+        'color:#7c3aed;font-size:20px;font-weight:bold;',
+        '\n© 2024-2026 ENG. AKRAM ELMASRY. All Rights Reserved.\nUnauthorized use is strictly prohibited.'
+    );
+
     if (isLocalhost) {
         console.log('%c🔓 Protection Disabled (localhost)', 'color: orange; font-size: 14px; font-weight: bold;');
         return; // إيقاف تنفيذ نظام الحماية
@@ -262,7 +272,7 @@
             user-select: none;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         `;
-        watermark.textContent = `© Link Call ${new Date().getFullYear()} | Protected`;
+        watermark.textContent = `© ${new Date().getFullYear()} ENG. AKRAM ELMASRY | Link Call | All Rights Reserved`;
         
         if (document.body) {
             document.body.appendChild(watermark);

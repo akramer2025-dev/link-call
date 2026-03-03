@@ -1,5 +1,5 @@
 ﻿// Service Worker for Link Call PWA
-const CACHE_NAME = 'link-call-v30';
+const CACHE_NAME = 'link-call-v31';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -47,6 +47,12 @@ self.addEventListener('activate', event => {
 
 // اعتراض الطلبات
 self.addEventListener('fetch', event => {
+  // تجاهل الطلبات الخارجية (sdk.twilio.com و غيرها) لتجنب مشاكل CORS
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) {
+    return; // اتركها للمتصفح مباشرة
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {

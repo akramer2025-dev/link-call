@@ -352,7 +352,6 @@ async function initializeApp() {
         const baseUrl = API_BASE_URL;
         const empId = localStorage.getItem('employeeId') || sessionStorage.getItem('employeeId') || 'admin';
         const clientIdentity = `client_${empId}`;
-        const cid = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
         console.log('🆔 Client Identity:', clientIdentity);
         console.log('🔗 Fetching token from:', `${baseUrl}/token`);
         
@@ -365,7 +364,7 @@ async function initializeApp() {
             try {
                 attempts++;
                 console.log(`📡 محاولة ${attempts}/${maxAttempts}...`);
-                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}&companyId=${cid}`, {
+                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2339,10 +2338,7 @@ function displayUserInfo() {
         sidebarUsername.textContent = displayName;
     }
     
-    const roleText = role === 'admin' ? '👑 مطور'
-                   : role === 'owner' ? '🏢 مدير الشركة'
-                   : role === 'agent' || role === 'employee' ? '👤 موظف'
-                   : '👨‍💼 مدير';
+    const roleText = role === 'admin' ? '👑 مطور' : '👨‍💼 مدير';
     
     if (headerRole) {
         headerRole.textContent = roleText;
@@ -2388,15 +2384,7 @@ async function loadAccountBalance() {
         }
         
         const baseUrl = API_BASE_URL;
-        const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
-        
-        // الشركات تستخدم رصيد النظام (companies/balance) - المطور يستخدم Twilio
-        const isCompanyUser = !!companyId && sessionStorage.getItem('userRole') !== 'admin';
-        const balanceUrl = isCompanyUser
-            ? `${baseUrl}/api/companies/balance?companyId=${companyId}`
-            : `${baseUrl}/account/balance?companyId=${companyId}`;
-        
-        const response = await fetch(balanceUrl);
+        const response = await fetch(`${baseUrl}/account/balance`);
         
         if (response.ok) {
             const data = await response.json();
@@ -2406,7 +2394,7 @@ async function loadAccountBalance() {
             
             if (balanceEl) {
                 balanceEl.textContent = balance;
-                if (currencyEl) currencyEl.textContent = data.currency || 'USD';
+                currencyEl.textContent = data.currency || 'USD';
             }
             
             // تحديث الهيدر
@@ -2426,7 +2414,7 @@ async function loadAccountBalance() {
             
             // حالة الحساب
             if (accountStatusEl) {
-                accountStatusEl.textContent = data.accountStatus === 'active' ? '✅ نشط' : '✅ نشط';
+                accountStatusEl.textContent = data.accountStatus === 'active' ? '✅ نشط' : data.accountStatus;
             }
             
             // تحديد حالة الرصيد (منخفض/متوسط/جيد)
@@ -2617,18 +2605,6 @@ if (sidebarAdminBtn) {
         sidebarAdminBtn.style.display = 'flex';
     }
 }
-
-// إظهار أزرار الشركة (CRM - تقارير - حسابات - موظفين) لمديري الشركات
-(function showCompanyNavButtons() {
-    const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
-    const role = sessionStorage.getItem('userRole');
-    // إظهار للمدير (owner) والموظف (agent/employee) ولكن ليس للأدمن (developer)
-    if (companyId && role !== 'admin') {
-        document.querySelectorAll('.company-nav-btn').forEach(function(btn) {
-            btn.style.display = 'flex';
-        });
-    }
-})();
 
 // معالجة زر الحذف
 const deleteBtn = document.getElementById('delete-btn');

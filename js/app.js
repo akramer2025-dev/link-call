@@ -2708,9 +2708,10 @@ async function loadCallHistory() {
         
         // تحميل جهات الاتصال لعرض الأسماء
         const baseUrl = API_BASE_URL;
+        const _histCompanyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
         let contacts = [];
         try {
-            const contactsResponse = await fetch(`${baseUrl}/api/contacts`);
+            const contactsResponse = await fetch(`${baseUrl}/api/contacts?companyId=${_histCompanyId}`);
             const contactsData = await contactsResponse.json();
             contacts = contactsData.contacts || [];
         } catch (err) {
@@ -2783,7 +2784,8 @@ async function loadContacts() {
     
     try {
         const baseUrl = API_BASE_URL;
-        const response = await fetch(`${baseUrl}/api/contacts`);
+        const _companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
+        const response = await fetch(`${baseUrl}/api/contacts?companyId=${_companyId}`);
         const data = await response.json();
         const contacts = data.contacts || [];
         
@@ -2836,10 +2838,11 @@ async function addContact() {
     
     try {
         const baseUrl = API_BASE_URL;
+        const _addCompanyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
         const response = await fetch(`${baseUrl}/api/contacts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, phone })
+            body: JSON.stringify({ companyId: _addCompanyId, name, phone })
         });
         
         const data = await response.json();
@@ -2864,7 +2867,8 @@ async function deleteContact(contactId, contactName) {
     
     try {
         const baseUrl = API_BASE_URL;
-        const response = await fetch(`${baseUrl}/api/contacts?id=${contactId}`, {
+        const _delCompanyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
+        const response = await fetch(`${baseUrl}/api/contacts?companyId=${_delCompanyId}&contactId=${contactId}`, {
             method: 'DELETE'
         });
         

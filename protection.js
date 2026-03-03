@@ -1,9 +1,6 @@
 // ========================================
 // نظام حماية متقدم لتطبيق Link Call
-// Copyright © 2024-2026 ENG. AKRAM ELMASRY. All rights reserved.
-// Product: Link Call — Cloud Call Management Platform
-// Unauthorized copying, reverse engineering, or redistribution
-// of this software is strictly prohibited.
+// Copyright © 2024-2026 Link Call. All rights reserved.
 // ========================================
 
 (function() {
@@ -14,13 +11,6 @@
                        window.location.hostname === '127.0.0.1' ||
                        window.location.hostname === '';
     
-    // ==================== بيان حقوق الملكية في الـ Console ====================
-    console.log(
-        '%c🛡️ Link Call',
-        'color:#7c3aed;font-size:20px;font-weight:bold;',
-        '\n© 2024-2026 ENG. AKRAM ELMASRY. All Rights Reserved.\nUnauthorized use is strictly prohibited.'
-    );
-
     if (isLocalhost) {
         console.log('%c🔓 Protection Disabled (localhost)', 'color: orange; font-size: 14px; font-weight: bold;');
         return; // إيقاف تنفيذ نظام الحماية
@@ -272,7 +262,7 @@
             user-select: none;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         `;
-        watermark.textContent = `© ${new Date().getFullYear()} ENG. AKRAM ELMASRY | Link Call | All Rights Reserved`;
+        watermark.textContent = `© Link Call ${new Date().getFullYear()} | Protected`;
         
         if (document.body) {
             document.body.appendChild(watermark);
@@ -366,26 +356,9 @@
 
     // ==================== حماية من Scraping ====================
     const originalOpen = XMLHttpRequest.prototype.open;
-    const originalSend = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.open = function(method, url) {
-        this._protectionUrl = url;
+        this.setRequestHeader('X-Protection-Token', generateProtectionToken());
         return originalOpen.apply(this, arguments);
-    };
-    XMLHttpRequest.prototype.send = function() {
-        // أضف الـ header فقط للطلبات الداخلية وليس Twilio
-        try {
-            const url = this._protectionUrl || '';
-            const isTwilio = typeof url === 'string' && (
-                url.includes('twilio.com') || 
-                url.includes('twil.io') ||
-                url.includes('chunder.twilio') ||
-                url.includes('media.')
-            );
-            if (!isTwilio && url) {
-                this.setRequestHeader('X-Protection-Token', generateProtectionToken());
-            }
-        } catch(e) {}
-        return originalSend.apply(this, arguments);
     };
 
     // ==================== منع Print Screen ====================
@@ -415,6 +388,9 @@
 
     // ==================== حماية المتغيرات العامة ====================
     Object.freeze(PROTECTION_CONFIG);
+    
+    // منع تعديل دوال الحماية
+    Object.freeze(Object.prototype);
     
     // حماية localStorage من التلاعب
     const originalSetItem = Storage.prototype.setItem;

@@ -173,11 +173,11 @@ async function getEmployeesData() {
     if (process.env.VERCEL && redis) {
         try {
             const data = await redis.get('employees_data');
-            if (data && Array.isArray(data.employees)) {
+            if (data && data.employees && data.employees.length > 0) {
                 console.log('✅ تم جلب البيانات من Redis:', data.employees.length, 'موظف');
                 return data;
             }
-            console.log('⚠️ Redis فارغ أو بيانات غير صالحة، استخدام employees.json');
+            console.log('⚠️ Redis فارغ، استخدام employees.json');
         } catch (error) {
             console.error('❌ خطأ في قراءة Redis:', error);
         }
@@ -210,12 +210,7 @@ async function saveEmployeesData(data) {
             
             // التحقق من الحفظ
             const saved = await redis.get('employees_data');
-            const savedCount = saved?.employees?.length || 0;
-            console.log('✅ تم التحقق: عدد المديرين المحفوظين:', savedCount);
-            
-            if (savedCount !== data.employees.length) {
-                console.error('❌ عدد المديرين المحفوظين لا يطابق:', savedCount, '!=', data.employees.length);
-            }
+            console.log('✅ تم التحقق: عدد المديرين المحفوظين:', saved?.employees?.length || 0);
             
             return true;
         } catch (error) {
@@ -1802,9 +1797,6 @@ app.post('/login', async (req, res) => {
                 username: employee.username,
                 department: employee.department,
                 departmentName: data.departments[employee.department]?.name || '',
-                role: employee.role || 'employee',
-                isTrial: employee.isTrial || false,
-                maxCalls: employee.maxCalls || null,
                 permissions: employee.permissions || {
                     viewOwnRecordings: false,
                     viewAllRecordings: false,

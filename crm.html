@@ -1815,21 +1815,26 @@
         }
         
         async function updateContact() {
-            const contactId = document.getElementById('edit-contact-id').value;
+            const contactId = document.getElementById('edit-contact-id').value.trim();
             const name = document.getElementById('edit-contact-name').value.trim();
             const phone = document.getElementById('edit-contact-phone').value.trim();
             const email = document.getElementById('edit-contact-email').value.trim();
             const country = document.getElementById('edit-contact-country').value.trim();
             const balance = document.getElementById('edit-contact-balance').value.trim();
-            
+
             if (!name || !phone) {
                 alert('⚠️ الاسم ورقم الموبايل مطلوبان!');
                 return;
             }
-            
+            if (!contactId) {
+                alert('⚠️ خطأ: معرف العميل غير محدد، أغلق النافذة وتفتحها مرة أخرى');
+                return;
+            }
+
             const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
             if (!companyId) {
-                alert('⚠️ خطأ في جلب معرف الشركة');
+                alert('⚠️ انتهت جلستك، رجاءً افتح التطبيق من جديد');
+                window.location.href = 'login.html';
                 return;
             }
             
@@ -1862,12 +1867,13 @@
                     hideEditContactModal();
                     loadCRMContacts(); // Reload contacts
                 } else {
-                    const error = await response.json();
-                    alert('❌ خطأ في التحديث: ' + (error.message || 'حاول مرة أخرى'));
+                    const errData = await response.json().catch(() => ({}));
+                    const msg = errData.error || errData.message || 'حاول مرة أخرى';
+                    alert('❌ خطأ في التحديث: ' + msg);
                 }
             } catch (error) {
                 console.error('خطأ في تحديث العميل:', error);
-                alert('❌ خطأ في الاتصال بالسيرفر');
+                alert('❌ خطأ في الاتصال بالسيرفر: ' + error.message);
             }
         }
         

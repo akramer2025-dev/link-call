@@ -1,6 +1,6 @@
 ﻿// معلومات Twilio
 const TWILIO_PHONE_NUMBER = '+13204336644';
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'https://linkcall.akrammostafa.com';
 let currentCallSid = null;
 let callStartTime;
 let callTimer;
@@ -115,7 +115,7 @@ function stopOnlineTracking() {
     
     if (userId) {
         // إرسال طلب تسجيل الخروج
-        navigator.sendBeacon(`${API_BASE_URL}/track-logout`, new Blob([JSON.stringify({ userId })], { type: 'application/json' }));
+        navigator.sendBeacon(`${API_BASE_URL}/track-logout`, JSON.stringify({ userId }));
     }
 }
 
@@ -364,9 +364,7 @@ async function initializeApp() {
             try {
                 attempts++;
                 console.log(`📡 محاولة ${attempts}/${maxAttempts}...`);
-                const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
-                const tokenUrl = `${baseUrl}/token?identity=${clientIdentity}${companyId ? '&companyId=' + encodeURIComponent(companyId) : ''}`;
-                response = await fetch(tokenUrl, {
+                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -374,16 +372,7 @@ async function initializeApp() {
                 });
                 
                 if (!response.ok) {
-                    // Read JSON body to get hint if available
-                    let errBody = {};
-                    try { errBody = await response.json(); } catch(_) {}
-                    const hintMsg = errBody.hint ? `\n\n${errBody.hint}` : '';
-                    const errMsg  = errBody.error || `HTTP ${response.status}`;
-                    // 400 = config error, no point retrying
-                    if (response.status === 400) {
-                        throw new Error(`⚙️ ${errMsg}${hintMsg}`);
-                    }
-                    throw new Error(`HTTP ${response.status}: ${errMsg}${hintMsg}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 data = await response.json();
@@ -646,7 +635,6 @@ async function makeCall() {
         const params = {
             To: formattedNumber,
             employeeId: employeeId,
-            companyId: sessionStorage.getItem('companyId') || '',
             callerId: selectedCallerId
         };
         
@@ -687,8 +675,6 @@ async function makeCall() {
                 updateCallStatus('لم يتم الرد');
             }
             endCall();
-            // تحديث الرصيد بعد 15 ثانية (وقت كافي للتسجيل وخصم Twilio)
-            setTimeout(() => loadAccountBalance(), 15000);
         });
         
         currentCall.on('cancel', () => {
@@ -859,78 +845,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // تصفية خيارات الاتصال بناءً على صلاحيات الموظف
     filterCallerIdOptions();
-
-    // تحميل جهات الاتصال مسبقاً لضمان ظهور الأسماء في سجل المكالمات
-    setTimeout(() => {
-        const companyId = sessionStorage.getItem('companyId');
-        if (companyId && (!_cachedContacts || _cachedContacts.length === 0)) {
-            fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`)
-                .then(r => r.json())
-                .then(d => {
-                    if (d.contacts && d.contacts.length > 0) {
-                        _cachedContacts = d.contacts;
-                        console.log(`✅ جهات الاتصال محملة مسبقاً: ${_cachedContacts.length}`);
-                    }
-                })
-                .catch(() => {});
-        }
-    }, 1500);
-    
-    // معالجة الاتصال من CRM أو روابط خارجية
-    setTimeout(() => {
-        // Check URL search params (?call=)
-        const searchParams = new URLSearchParams(window.location.search);
-        const callParam = searchParams.get('call');
-        
-        // Check hash (#dialpad?call=)
-        const hash = window.location.hash;
-        const hashMatch = hash.match(/[?&]call=([^&]+)/);
-        const hashCallParam = hashMatch ? decodeURIComponent(hashMatch[1]) : null;
-        
-        const phoneToCall = callParam || hashCallParam;
-        
-        // فتح قسم محدد عبر openSection=call-history|recordings
-        const openSection = searchParams.get('openSection');
-        if (openSection === 'call-history' && callHistoryBtn) {
-            hideAllSections();
-            removeAllActiveStates();
-            callHistoryList.classList.remove('hidden');
-            callHistoryBtn.classList.add('active');
-            loadCallHistory();
-        } else if (openSection === 'recordings' && recordingsBtn) {
-            hideAllSections();
-            removeAllActiveStates();
-            recordingsList.classList.remove('hidden');
-            recordingsBtn.classList.add('active');
-            loadRecordings();
-        }
-
-        if (phoneToCall) {
-            console.log('📞 طلب اتصال من CRM:', phoneToCall);
-            
-            // فتح dialpad
-            hideAllSections();
-            removeAllActiveStates();
-            dialpad.classList.remove('hidden');
-            dialpadBtn.classList.add('active');
-            
-            // ملء رقم الهاتف
-            phoneNumber = phoneToCall;
-            displayNumber.textContent = phoneToCall;
-            
-            // اختياري: بدء المكالمة تلقائياً بعد ثانية
-            setTimeout(() => {
-                if (confirm(`هل تريد الاتصال بـ ${phoneToCall}؟`)) {
-                    makeCall();
-                }
-            }, 500);
-            
-            // تنظيف URL
-            if (callParam) {
-                window.history.replaceState({}, '', window.location.pathname + window.location.hash.split('?')[0]);
-            }
-        }
-    }, 1000);
 });
 
 // تصفية خيارات رقم المتصل بناءً على الصلاحيات
@@ -939,15 +853,10 @@ function filterCallerIdOptions() {
     if (!callerIdSelect) return;
     
     const userRole = sessionStorage.getItem('userRole');
-    const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
     
-    // المطور و مدير الشركة لديهم كل الصلاحيات
-    if (userRole === 'admin' && !isCompanyAdmin) {
-        console.log('🔓 المطور لديه كل صلاحيات الاتصال');
-        return;
-    }
-    if (userRole === 'company-admin' || isCompanyAdmin) {
-        console.log('🔓 مدير الشركة لديه كل صلاحيات الاتصال');
+    // المطور لديه كل الصلاحيات
+    if (userRole === 'admin') {
+        console.log('🔓 المدير لديه كل صلاحيات الاتصال');
         return;
     }
     
@@ -1048,14 +957,13 @@ async function endCall() {
         const callDurationText = callDuration.textContent;
         const [minutes, seconds] = callDurationText.split(':').map(Number);
         const totalSeconds = (minutes * 60) + seconds;
-        const callWasAnswered = totalSeconds > 0;
         
         saveCallToHistory({
             to: phoneNumber,
             direction: 'outbound',
-            status: callWasAnswered ? 'completed' : 'no-answer',
+            status: 'completed',
             startTime: new Date().toISOString(),
-            duration: totalSeconds  // حفظ بالثواني دائماً
+            duration: callDurationText
         });
         
         // تسجيل المكالمة في سجل العمل
@@ -1131,10 +1039,8 @@ function stopCallTimer() {
         callTimer = null;
         
         // 🔒 تسجيل استخدام الدقائق
-        // 🔒 تسجيل استخدام الدقائق
-        const callSeconds = callStartTime ? Math.floor((Date.now() - callStartTime) / 1000) : 0;
-        if (callSeconds > 0) {
-            const minutesUsed = Math.ceil(callSeconds / 60); // تقريب لأعلى دقيقة
+        if (callDuration > 0) {
+            const minutesUsed = Math.ceil(callDuration / 60); // تقريب لأعلى دقيقة
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             
             if (userData.id && userData.companyId) {
@@ -1342,31 +1248,20 @@ async function loadRecordings() {
         
         const baseUrl = API_BASE_URL;
         const employeeId = localStorage.getItem('employeeId');
-        const companyId = sessionStorage.getItem('companyId'); // للشركات
-        const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
         
-        console.log('📋 جلب التسجيلات - employeeId:', employeeId, 'companyId:', companyId, 'userRole:', userRole, 'canViewAll:', canViewAll);
+        console.log('📋 جلب التسجيلات - employeeId:', employeeId, 'userRole:', userRole, 'canViewAll:', canViewAll);
         
         // بناء URL مع المعاملات
         let url = `${baseUrl}/recordings`;
         const params = new URLSearchParams();
-
-        // companyId مطلوب دائماً للـ API
-        if (companyId) {
-            params.append('companyId', companyId);
-        }
-
-        // تحديد نطاق التسجيلات
-        if (isCompanyAdmin || canViewAll || userRole === 'admin') {
-            // مدير الشركة أو من لديه صلاحية رؤية الكل
-            params.append('viewAll', 'true');
-            console.log('🏢 جلب جميع تسجيلات الشركة:', companyId);
-        } else if (employeeId) {
-            // الموظف يرى تسجيلاته فقط
+        
+        // إذا كان مدير وليس لديه صلاحية رؤية الكل
+        if (employeeId && !canViewAll && userRole !== 'admin') {
             params.append('employeeId', employeeId);
-            console.log('🔒 فلترة التسجيلات للموظف:', employeeId);
+            console.log('🔒 فلترة التسجيلات للمدير:', employeeId);
         } else {
             params.append('viewAll', 'true');
+            console.log('🌐 عرض جميع التسجيلات');
         }
         
         if (params.toString()) {
@@ -1403,27 +1298,7 @@ async function loadRecordings() {
             });
         }
         console.log('👥 تم تحميل بيانات', Object.keys(window.employeesMap).length, 'مدير');
-
-        // ─── تعبئة فلتر الموظف + إظهاره للمدير ───
-        const isAdminOrManager = (userRole === 'admin') || (sessionStorage.getItem('isCompanyAdmin') === 'true');
-        const filterBar = document.getElementById('recordings-filter-bar');
-        if (isAdminOrManager && filterBar) {
-            filterBar.style.display = 'flex';
-            const sel = document.getElementById('rec-emp-filter');
-            if (sel) {
-                sel.innerHTML = '<option value="">كل الموظفين</option>';
-                // جمع الموظفين الموجودين فعلاً في التسجيلات
-                const empIds = [...new Set(recordings.map(r => r.employeeId).filter(Boolean))];
-                empIds.forEach(eid => {
-                    const name = window.employeesMap[eid] || window.employeesMap[String(eid)] || eid;
-                    const opt = document.createElement('option');
-                    opt.value = eid;
-                    opt.textContent = name;
-                    sel.appendChild(opt);
-                });
-            }
-        }
-
+        
         displayRecordings();
         updateRecordingsBadge(recordings.length);
         
@@ -1445,32 +1320,19 @@ function updateRecordingsBadge(count) {
     }
 }
 
-// فلتر التسجيلات بالموظف المختار
-function applyRecordingsFilter() {
-    displayRecordings();
-}
-
 // عرض التسجيلات
 function displayRecordings() {
     recordingsContainer.innerHTML = '';
-
-    // فلترة الموظف
-    const sel = document.getElementById('rec-emp-filter');
-    const filterEmpId = sel ? sel.value : '';
-    let list = recordings;
-    if (filterEmpId) {
-        list = recordings.filter(r => String(r.employeeId) === String(filterEmpId));
-    }
-
-    if (list.length === 0) {
-        recordingsContainer.innerHTML = '<p style="text-align:center;color:#666;padding:20px">لا توجد تسجيلات</p>';
+    
+    if (recordings.length === 0) {
+        recordingsContainer.innerHTML = '<p style="text-align: center; color: #666;">لا توجد تسجيلات</p>';
         return;
     }
-
+    
     // الحصول على اسم المستخدم الحالي
     const currentUser = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'غير معروف';
-
-    list.forEach((recording, index) => {
+    
+    recordings.forEach((recording, index) => {
         const item = document.createElement('div');
         item.className = 'recording-item';
         
@@ -1494,11 +1356,9 @@ function displayRecordings() {
         
         // الحصول على اسم المدير من employeeId
         console.log(`👤 employeeId للتسجيل ${index + 1}:`, recording.employeeId);
-        const employeeName = recording.employeeId && String(recording.employeeId).startsWith('company-')
-            ? '👑 مدير الشركة'
-            : (window.employeesMap && recording.employeeId
-                ? (window.employeesMap[recording.employeeId] || window.employeesMap[String(recording.employeeId)] || recording.employeeId)
-                : 'غير معروف');
+        const employeeName = window.employeesMap && recording.employeeId 
+            ? (window.employeesMap[recording.employeeId] || window.employeesMap[String(recording.employeeId)] || 'غير معروف')
+            : 'غير معروف';
         console.log(`✅ اسم الموظف للتسجيل ${index + 1}:`, employeeName);
         
         // حساب المدة بالدقائق والثواني
@@ -1517,14 +1377,13 @@ function displayRecordings() {
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                     <span style="font-size: 24px;">📞</span>
                     <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
                             <div class="recording-number" style="font-weight: bold; font-size: 16px; color: #333;">
                                 ${phoneNumber}
                             </div>
                             <button onclick="copyPhoneNumber('${phoneNumber}')" style="background: linear-gradient(135deg, #5ec4d4, #1e3a5f); color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px; transition: all 0.3s;" title="نسخ الرقم">
                                 📋 نسخ
                             </button>
-                            ${phoneNumber && phoneNumber !== 'غير محدد' ? `<a href="customer-reports.html?phone=${encodeURIComponent(recording.to||'')}&companyId=${encodeURIComponent(sessionStorage.getItem('companyId')||'')}" style="background:linear-gradient(135deg,#5ec4d4,#1e88a8);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:3px;">📊 تقرير العميل</a>` : ''}
                         </div>
                         <div style="font-size: 12px; color: #666;">
                             بواسطة: ${employeeName}
@@ -1874,7 +1733,6 @@ if (dialpadBtn) {
         removeAllActiveStates();
         dialpad.classList.remove('hidden');
         dialpadBtn.classList.add('active');
-        applyRoleBasedVisibility();
     });
 }
 
@@ -1885,7 +1743,6 @@ if (callHistoryBtn) {
         removeAllActiveStates();
         callHistoryList.classList.remove('hidden');
         callHistoryBtn.classList.add('active');
-        applyRoleBasedVisibility();
         loadCallHistory();
     });
 }
@@ -1897,7 +1754,6 @@ if (contactsBtn) {
         removeAllActiveStates();
         contactsList.classList.remove('hidden');
         contactsBtn.classList.add('active');
-        applyRoleBasedVisibility();
         loadContacts();
     });
 }
@@ -1909,28 +1765,17 @@ if (recordingsBtn) {
         removeAllActiveStates();
         recordingsList.classList.remove('hidden');
         recordingsBtn.classList.add('active');
-        applyRoleBasedVisibility();
         loadRecordings();
     });
 }
 
 if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
-        console.log('⚙️ تم النقر على زر الإعدادات');
+        console.log('Settings clicked');
         hideAllSections();
         removeAllActiveStates();
         settingsPanel.classList.remove('hidden');
         settingsBtn.classList.add('active');
-        
-        // إعادة تطبيق الصلاحيات لضمان ظهور الأقسام الصحيحة
-        applyRoleBasedVisibility();
-        // تطبيق مرة ثانية بعد تأخير بسيط (لضمان ظهور الأقسام في جميع المتصفحات)
-        setTimeout(() => applyRoleBasedVisibility(), 50);
-        
-        // تحميل قائمة الموظفين
-        setTimeout(() => {
-            loadEmployeesList();
-        }, 100);
     });
 }
 
@@ -1980,16 +1825,6 @@ if (logoutBtn) {
             
             sessionStorage.removeItem('isLoggedIn');
             sessionStorage.removeItem('username');
-            sessionStorage.removeItem('userRole');
-            sessionStorage.removeItem('isCompanyAdmin');
-            sessionStorage.removeItem('companyId');
-            sessionStorage.removeItem('companyName');
-            sessionStorage.removeItem('fullname');
-            sessionStorage.removeItem('permissions');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('isCompanyAdmin');
-            localStorage.removeItem('companyId');
-            localStorage.removeItem('companyName');
             window.location.href = 'login.html';
         }
     });
@@ -2004,137 +1839,32 @@ function checkAdminAccess() {
 }
 
 // إخفاء/إظهار الأقسام حسب الصلاحية
-function applyRoleBasedVisibility() {
-    const userRole     = sessionStorage.getItem('userRole')     || localStorage.getItem('userRole')     || '';
-    const isCompanyAdmin = (sessionStorage.getItem('isCompanyAdmin') || localStorage.getItem('isCompanyAdmin') || 'false') === 'true';
-    const employeesSection = document.getElementById('employees-section');
-    const adminAccountSection = document.getElementById('admin-account-section');
-    const adminAudioSection = document.getElementById('admin-audio-section');
-    const employeeProfileSection = document.getElementById('employee-profile-section');
-    const pricingSection = document.getElementById('pricing-section');
-    const adminPanelSection = document.getElementById('admin-panel-section');
-    const adminDashboardSection = document.getElementById('admin-dashboard-section');
-    const companyAdminSection = document.getElementById('company-admin-section');
-    const manageEmployeesNavBtn = document.getElementById('manage-employees-nav-btn');
-    const companyReportsNavBtn = document.getElementById('company-reports-nav-btn');
-    const customerReportsNavBtn = document.getElementById('customer-reports-nav-btn');
-    const accountsNavBtn         = document.getElementById('accounts-nav-btn');
-    const companyCrmNavBtn = document.getElementById('company-crm-nav-btn');
-    const balanceHeader = document.getElementById('balance-header');
-    const balanceSection = document.getElementById('balance-section');
-    const mobileBalance = document.getElementById('mobile-balance');
+const userRole = sessionStorage.getItem('userRole');
+const employeesSection = document.getElementById('employees-section');
+const adminAccountSection = document.getElementById('admin-account-section');
+const adminAudioSection = document.getElementById('admin-audio-section');
+const employeeProfileSection = document.getElementById('employee-profile-section');
+const pricingSection = document.getElementById('pricing-section');
 
-    if (userRole === 'admin' && !isCompanyAdmin) {
-        // المطور يرى إدارة المديرين والإعدادات والتسعيرة
-        if (employeesSection) employeesSection.style.display = 'block';
-        if (adminAccountSection) adminAccountSection.style.display = 'block';
-        if (adminAudioSection) adminAudioSection.style.display = 'block';
-        if (pricingSection) pricingSection.style.display = 'block';
-        if (adminPanelSection) adminPanelSection.style.display = 'block';
-        if (adminDashboardSection) adminDashboardSection.style.display = 'block';
-        if (companyAdminSection) companyAdminSection.style.display = 'none';
-        if (employeeProfileSection) employeeProfileSection.style.display = 'none';
-        if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'none';
-        if (customerReportsNavBtn) customerReportsNavBtn.style.display = 'none';
-        if (accountsNavBtn)         accountsNavBtn.style.display         = 'none';
-        if (balanceHeader) balanceHeader.style.display = 'flex';
-        if (balanceSection) balanceSection.style.display = 'block';
-        if (mobileBalance) mobileBalance.style.display = 'flex';
-    } else if (userRole === 'company-admin' || isCompanyAdmin) {
-        // مدير الشركة
-        if (employeesSection) employeesSection.style.display = 'none';
-        if (adminAccountSection) adminAccountSection.style.display = 'none';
-        if (adminAudioSection) adminAudioSection.style.display = 'none';
-        if (pricingSection) pricingSection.style.display = 'none';
-        if (adminPanelSection) adminPanelSection.style.display = 'none';
-        if (adminDashboardSection) adminDashboardSection.style.display = 'none';
-        if (companyAdminSection) companyAdminSection.style.display = 'block';
-        if (manageEmployeesNavBtn) manageEmployeesNavBtn.style.display = 'flex';
-        if (companyReportsNavBtn) companyReportsNavBtn.style.display = 'flex';
-        if (customerReportsNavBtn) customerReportsNavBtn.style.display = 'flex';
-        if (accountsNavBtn)         accountsNavBtn.style.display         = 'flex';
-        if (companyCrmNavBtn) companyCrmNavBtn.style.display = 'flex';
-        // إخفاء رصيد Twilio - غير مناسب لمدير الشركة
-        if (balanceHeader) balanceHeader.style.display = 'none';
-        if (balanceSection) balanceSection.style.display = 'none';
-        if (mobileBalance) mobileBalance.style.display = 'none';
-        if (employeeProfileSection) {
-            employeeProfileSection.style.display = 'block';
-            loadEmployeeProfile();
-        }
-    } else {
-        // ─── موظف الشركة ─── الصلاحيات تحدد ما يراه
-        const permsRaw = sessionStorage.getItem('permissions');
-        let perms = [];
-        try {
-            const parsed = JSON.parse(permsRaw || '[]');
-            perms = Array.isArray(parsed) ? parsed : [];
-        } catch(e) { perms = []; }
-
-        const canMakeCalls      = perms.includes('make_calls');
-        const canViewContacts   = perms.includes('view_contacts');
-        const canViewCalls      = perms.includes('view_calls');
-        const canViewRecordings = perms.includes('listen_recordings');
-        const canViewReports    = perms.includes('view_reports');
-        const canManageEmployees= perms.includes('manage_employees');
-
-        console.log('👤 موظف الشركة - الصلاحيات:', perms);
-
-        // إخفاء كل أقسام إدارة المطور / مدير الشركة
-        if (employeesSection)       employeesSection.style.display       = 'none';
-        if (adminAccountSection)    adminAccountSection.style.display    = 'none';
-        if (adminAudioSection)      adminAudioSection.style.display      = 'none';
-        if (pricingSection)         pricingSection.style.display         = 'none';
-        if (adminPanelSection)      adminPanelSection.style.display      = 'none';
-        if (adminDashboardSection)  adminDashboardSection.style.display  = 'none';
-        if (companyAdminSection)    companyAdminSection.style.display    = 'none';
-        if (balanceHeader)          balanceHeader.style.display          = 'none';
-        if (balanceSection)         balanceSection.style.display         = 'none';
-        if (mobileBalance)          mobileBalance.style.display          = 'none';
-
-        // ── أزرار التنقل الجانبية ─ حسب الصلاحيات فقط ──
-        if (manageEmployeesNavBtn)
-            manageEmployeesNavBtn.style.display = canManageEmployees ? 'flex' : 'none';
-        if (companyReportsNavBtn)
-            companyReportsNavBtn.style.display  = canViewReports    ? 'flex' : 'none';
-        if (customerReportsNavBtn)
-            customerReportsNavBtn.style.display = canViewReports    ? 'flex' : 'none';
-        if (accountsNavBtn)
-            accountsNavBtn.style.display        = canViewReports    ? 'flex' : 'none';
-        if (companyCrmNavBtn)
-            companyCrmNavBtn.style.display      = canViewContacts   ? 'flex' : 'none';
-
-        // ── أزرار القائمة الرئيسية ─ حسب الصلاحيات ──
-        const contactsBtn    = document.getElementById('contacts-btn');
-        const callHistoryBtn = document.getElementById('call-history-btn');
-        const recordingsBtn  = document.getElementById('recordings-btn');
-
-        if (contactsBtn)    contactsBtn.style.display    = canViewContacts   ? 'flex' : 'none';
-        if (callHistoryBtn) callHistoryBtn.style.display = canViewCalls      ? 'flex' : 'none';
-        if (recordingsBtn)  recordingsBtn.style.display  = canViewRecordings ? 'flex' : 'none';
-
-        // ── الديالر: اخفِه إن لم يكن لديه صلاحية الاتصال ──
-        const dialpadEl = document.getElementById('dialpad');
-        if (dialpadEl) dialpadEl.style.display = canMakeCalls ? 'flex' : 'none';
-
-        // ── رسالة ترحيب إن لم يكن لديه أي صلاحية ──
-        if (!canMakeCalls && perms.length === 0) {
-            console.warn('⚠️ الموظف ليس لديه أي صلاحيات مضافة بعد');
-        }
-
-        // ── الملف الشخصي دائماً ظاهر ──
-        if (employeeProfileSection) {
-            employeeProfileSection.style.display = 'block';
-            loadEmployeeProfile();
-        }
+if (userRole === 'admin') {
+    // المطور يرى إدارة المديرين والإعدادات والتسعيرة
+    if (employeesSection) employeesSection.style.display = 'block';
+    if (adminAccountSection) adminAccountSection.style.display = 'block';
+    if (adminAudioSection) adminAudioSection.style.display = 'block';
+    if (pricingSection) pricingSection.style.display = 'block';
+    if (employeeProfileSection) employeeProfileSection.style.display = 'none';
+} else {
+    // المدير يرى فقط تعديل ملفه الشخصي
+    if (employeesSection) employeesSection.style.display = 'none';
+    if (adminAccountSection) adminAccountSection.style.display = 'none';
+    if (adminAudioSection) adminAudioSection.style.display = 'none';
+    if (pricingSection) pricingSection.style.display = 'none';
+    if (employeeProfileSection) {
+        employeeProfileSection.style.display = 'block';
+        // تحميل بيانات المدير
+        loadEmployeeProfile();
     }
 }
-
-// تطبيق الصلاحيات عند تحميل الصفحة
-applyRoleBasedVisibility();
-
-// إعادة تطبيق الصلاحيات عند الرجوع إلى الصفحة (يشمل bfcache وإعادة التحميل)
-window.addEventListener('pageshow', () => applyRoleBasedVisibility());
 
 // جلب المديرين من localStorage
 function getEmployees() {
@@ -2567,6 +2297,16 @@ async function updateEmployee(employeeId) {
 window.openEditEmployeeModal = openEditEmployeeModal;
 window.updateEmployee = updateEmployee;
 
+// تحميل قائمة المديرين عند فتح الإعدادات
+if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+        console.log('⚙️ تم النقر على زر الإعدادات');
+        setTimeout(() => {
+            loadEmployeesList();
+        }, 100); // انتظار قصير للتأكد من ظهور الـ container
+    });
+}
+
 // تحميل القائمة عند تحميل الصفحة
 setTimeout(() => {
     loadEmployeesList();
@@ -2596,23 +2336,7 @@ function displayUserInfo() {
         sidebarUsername.textContent = displayName;
     }
     
-    // تحديد النص بناءً على نوع الحساب
-    const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
-    const ROLE_NAMES_AR = {
-        'agent':      '👤 موظف',
-        'supervisor': '👔 مشرف',
-        'viewer':     '👁️ مراقب',
-        'manager':    '👨‍💼 مدير'
-    };
-    let roleText;
-    if (role === 'company-admin' || isCompanyAdmin) {
-        roleText = '🏢 مدير شركة';
-    } else if (role === 'admin') {
-        roleText = '👑 مطور';
-    } else {
-        // الموظف — نعرض اسم دوره بالعربي
-        roleText = ROLE_NAMES_AR[role] || ('👤 ' + (role || 'موظف'));
-    }
+    const roleText = role === 'admin' ? '👑 مطور' : '👨‍💼 مدير';
     
     if (headerRole) {
         headerRole.textContent = roleText;
@@ -2622,10 +2346,10 @@ function displayUserInfo() {
         sidebarRole.textContent = roleText;
     }
     
-    // إظهار زر لوحة التحكم للمطور فقط (وليس مدير الشركة)
+    // إظهار زر لوحة التحكم للأدمن فقط
     const adminLinkBtn = document.getElementById('admin-link-btn');
     if (adminLinkBtn) {
-        if ((role === 'admin' && !isCompanyAdmin) || username === 'akram') {
+        if (role === 'admin' || username === 'akram') {
             adminLinkBtn.style.display = 'flex';
         } else {
             adminLinkBtn.style.display = 'none';
@@ -2636,11 +2360,6 @@ function displayUserInfo() {
 // تحميل معلومات المستخدم عند فتح الصفحة
 displayUserInfo();
 
-// إعادة عرض اسم الدور عند تغيير اللغة
-document.addEventListener('langChanged', () => {
-    displayUserInfo();
-});
-
 // ========== جلب رصيد الحساب ==========
 let rechargeUrl = 'https://console.twilio.com/us1/billing/manage-billing/billing-overview';
 
@@ -2650,70 +2369,19 @@ async function loadAccountBalance() {
     const statusEl = document.getElementById('balance-status');
     const accountStatusEl = document.getElementById('account-status');
     const balanceDisplay = document.querySelector('.balance-display');
-
+    
     // عناصر الهيدر
     const headerBalanceEl = document.getElementById('header-balance');
     const headerBalanceContainer = document.getElementById('balance-header');
     const sidebarBalanceEl = document.getElementById('sidebar-balance');
-
+    
     try {
         if (balanceEl) {
             balanceEl.textContent = '...';
-            if (statusEl) statusEl.textContent = 'جاري التحميل...';
+            statusEl.textContent = 'جاري التحميل...';
         }
-
+        
         const baseUrl = API_BASE_URL;
-        const companyId = sessionStorage.getItem('companyId');
-
-        // إذا كان مدير شركة أو موظف شركة → اقرأ رصيد الشركة من API الخاص بنا
-        if (companyId) {
-            const r = await fetch(`${baseUrl}/api/companies/balance?companyId=${companyId}`);
-            if (r.ok) {
-                const d = await r.json();
-                if (d.success) {
-                    const balance = parseFloat(d.balance || 0).toFixed(2);
-                    if (balanceEl)        balanceEl.textContent = balance;
-                    if (currencyEl)      currencyEl.textContent = 'USD';
-                    if (headerBalanceEl) headerBalanceEl.textContent = balance;
-                    if (sidebarBalanceEl) sidebarBalanceEl.textContent = balance;
-                    if (accountStatusEl) accountStatusEl.textContent = '\u2705 نشط';
-                    if (balanceDisplay)  balanceDisplay.classList.remove('balance-low','balance-medium','balance-good');
-                    if (headerBalanceContainer) headerBalanceContainer.classList.remove('low','medium');
-                    if (parseFloat(balance) < 5) {
-                        if (statusEl) statusEl.textContent = '\u26a0\ufe0f الرصيد منخفض!';
-                        if (balanceDisplay) balanceDisplay.classList.add('balance-low');
-                        if (headerBalanceContainer) headerBalanceContainer.classList.add('low');
-                    } else if (parseFloat(balance) < 20) {
-                        if (statusEl) statusEl.textContent = '\ud83d\udca1 الرصيد متوسط';
-                        if (balanceDisplay) balanceDisplay.classList.add('balance-medium');
-                        if (headerBalanceContainer) headerBalanceContainer.classList.add('medium');
-                    } else {
-                        if (statusEl) statusEl.textContent = '\u2705 الرصيد جيد';
-                        if (balanceDisplay) balanceDisplay.classList.add('balance-good');
-                    }
-                    // تحديث اسم الشركة والمدير تلقائياً لو كان مخزّن بشكل خاطئ
-                    if (d.companyName) {
-                        sessionStorage.setItem('companyName', d.companyName);
-                        const el = document.getElementById('companyName');
-                        if (el) el.textContent = d.companyName;
-                    }
-                    if (d.adminName) {
-                        const storedName = sessionStorage.getItem('fullname') || '';
-                        if (storedName.includes('?') || storedName.includes('￿d')) {
-                            sessionStorage.setItem('fullname', d.adminName);
-                            const hEl = document.getElementById('header-username');
-                            const sEl = document.getElementById('sidebar-username');
-                            if (hEl) hEl.textContent = d.adminName;
-                            if (sEl) sEl.textContent = d.adminName;
-                        }
-                    }
-                    console.log('💰 الرصيد الحالي:', balance, 'USD');
-                    return;
-                }
-            }
-        }
-
-        // fallback → رصيد Twilio (للمطور الرئيسي فقط)
         const response = await fetch(`${baseUrl}/account/balance`);
         
         if (response.ok) {
@@ -2908,16 +2576,8 @@ async function performLogout() {
         sessionStorage.removeItem('isLoggedIn');
         sessionStorage.removeItem('username');
         sessionStorage.removeItem('userRole');
-        sessionStorage.removeItem('isCompanyAdmin');
-        sessionStorage.removeItem('companyId');
-        sessionStorage.removeItem('companyName');
         sessionStorage.removeItem('fullname');
         sessionStorage.removeItem('permissions');
-        // مسح النسخة الاحتياطية في localStorage
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('isCompanyAdmin');
-        localStorage.removeItem('companyId');
-        localStorage.removeItem('companyName');
         window.location.href = 'login.html';
     }
 }
@@ -2934,14 +2594,12 @@ if (sidebarLogoutBtn) {
     sidebarLogoutBtn.addEventListener('click', performLogout);
 }
 
-// إظهار زر لوحة التحكم في القائمة الجانبية للمطور فقط
+// إظهار زر لوحة التحكم في القائمة الجانبية للأدمن
 const sidebarAdminBtn = document.getElementById('sidebar-admin-btn');
 if (sidebarAdminBtn) {
     const role = sessionStorage.getItem('userRole');
-    const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
     const username = sessionStorage.getItem('username');
-    // فقط المطور (وليس مدير الشركة) يرى لوحة التحكم
-    if ((role === 'admin' && !isCompanyAdmin) || username === 'akram') {
+    if (role === 'admin' || username === 'akram') {
         sidebarAdminBtn.style.display = 'flex';
     }
 }
@@ -2972,51 +2630,22 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// حفظ المكالمة في السجل المحلي + Firestore
+// حفظ المكالمة في السجل المحلي
 function saveCallToHistory(call) {
     try {
-        // 1) حفظ محلي فوري
         const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
-        calls.unshift(call);
-        if (calls.length > 100) calls.splice(100);
-        localStorage.setItem('callHistory', JSON.stringify(calls));
-        updateCallHistoryBadge();
-
-        // 2) حفظ في Firestore عبر API (للمزامنة بين الأجهزة)
-        const companyId = sessionStorage.getItem('companyId');
-        const employeeId = localStorage.getItem('employeeId') || sessionStorage.getItem('username') || 'unknown';
-        const employeeName = sessionStorage.getItem('fullname') || sessionStorage.getItem('username') || 'unknown';
-        if (companyId) {
-            // البحث عن اسم جهة الاتصال من الكاش
-            let contactName = null;
-            if (_cachedContacts && _cachedContacts.length > 0) {
-                const cleanTo = (call.to || '').replace(/[\s\-+(). -]/g, '');
-                const tail   = s => s.length >= 9 ? s.slice(-9) : s;
-                const found  = _cachedContacts.find(c => {
-                    const cp = (c.phone || '').replace(/[\s\-+(). -]/g, '');
-                    return cp === cleanTo ||
-                           cp.includes(cleanTo) ||
-                           cleanTo.includes(cp) ||
-                           (cleanTo.length >= 7 && tail(cp) === tail(cleanTo));
-                });
-                if (found) contactName = found.name;
-            }
-            fetch(`${API_BASE_URL}/api/call-history`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    companyId,
-                    callData: {
-                        ...call,
-                        employeeId,
-                        employeeName,
-                        contactName: contactName || null,
-                        sid: `call_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
-                    }
-                })
-            }).catch(err => console.warn('⚠️ تعذر حفظ المكالمة في Firestore:', err.message));
+        calls.unshift(call); // إضافة في البداية
+        
+        // الاحتفاظ بآخر 100 مكالمة فقط
+        if (calls.length > 100) {
+            calls.splice(100);
         }
+        
+        localStorage.setItem('callHistory', JSON.stringify(calls));
         console.log('✅ تم حفظ المكالمة في السجل');
+        
+        // تحديث الـ badge
+        updateCallHistoryBadge();
     } catch (error) {
         console.error('خطأ في حفظ المكالمة:', error);
     }
@@ -3045,191 +2674,95 @@ function updateCallHistoryBadge() {
 // استدعاء تحديث الـ badge عند تحميل الصفحة
 setTimeout(updateCallHistoryBadge, 500);
 
-// تحميل سجل المكالمات من Firestore (للمزامنة بين الأجهزة)
+// تحميل سجل المكالمات
 async function loadCallHistory() {
-    const container = document.getElementById('call-history-container');
-    if (!container) return;
-    container.innerHTML = '<p style="text-align:center;color:#aaa;padding:20px">⏳ جاري التحميل...</p>';
     try {
-        const companyId = sessionStorage.getItem('companyId');
-        const userRole   = sessionStorage.getItem('userRole');
-        const isAdmin    = sessionStorage.getItem('isCompanyAdmin') === 'true' || userRole === 'admin';
-        const employeeId = localStorage.getItem('employeeId');
-
-        // ─── جلب المكالمات من Firestore ───
-        let calls = [];
-        if (companyId) {
-            const params = new URLSearchParams({ companyId });
-            if (!isAdmin && employeeId) params.append('employeeId', employeeId);
-            const resp = await fetch(`${API_BASE_URL}/api/call-history?${params}`);
-            const data = await resp.json();
-            calls = data.calls || [];
-            console.log(`📞 سجل المكالمات: ${calls.length} مكالمة من Firestore`);
+        // تحميل المكالمات من localStorage بدلاً من السيرفر
+        const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
+        
+        // تحميل جهات الاتصال لعرض الأسماء
+        const baseUrl = API_BASE_URL;
+        let contacts = [];
+        try {
+            const contactsResponse = await fetch(`${baseUrl}/api/contacts`);
+            const contactsData = await contactsResponse.json();
+            contacts = contactsData.contacts || [];
+        } catch (err) {
+            console.log('لم يتم تحميل جهات الاتصال');
         }
-
-        // ─── fallback: localStorage إذا كانت Firestore فارغة ───
-        if (calls.length === 0) {
-            calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
-        }
-
-        // ─── جهات الاتصال لعرض الأسماء ───
-        let contacts = _cachedContacts || [];
-        if (contacts.length === 0 && companyId) {
-            try {
-                const cr = await fetch(`${API_BASE_URL}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
-                const cd = await cr.json();
-                contacts = cd.contacts || [];
-            } catch (_) {}
-        }
-
+        
+        const container = document.getElementById('call-history-container');
         container.innerHTML = '';
+        
         if (calls.length === 0) {
-            container.innerHTML = `<div class="empty-state"><div class="empty-icon">📞</div><p>لا توجد مكالمات حتى الآن</p></div>`;
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📞</div>
+                    <p>لا توجد مكالمات حتى الآن</p>
+                </div>
+            `;
             return;
         }
-
-        calls.sort((a, b) => new Date(b.startTime || b.createdAt || 0) - new Date(a.startTime || a.createdAt || 0));
-
+        
+        // ترتيب المكالمات من الأحدث للأقدم
+        calls.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        
         calls.forEach(call => {
-            const dateStr = call.startTime || call.createdAt;
-            const formattedDate = dateStr ? new Date(dateStr).toLocaleString('ar-EG') : '—';
-            const durationRaw = call.duration;
-            let durationText = call.status === 'no-answer' ? '🔕 لم يرد' : 'لم تكتمل';
-            if (durationRaw !== undefined && durationRaw !== null) {
-                let sec;
-                if (typeof durationRaw === 'number') {
-                    sec = durationRaw;
-                } else if (typeof durationRaw === 'string' && durationRaw.includes(':')) {
-                    // تنسيق قديم "MM:SS" - تحويل لثواني
-                    const parts = durationRaw.split(':').map(Number);
-                    sec = (parts[0] * 60) + (parts[1] || 0);
-                } else {
-                    sec = parseInt(durationRaw) || 0;
-                }
-                if (sec > 0) {
-                    const m = Math.floor(sec / 60), s = sec % 60;
-                    durationText = m > 0 ? `${m} د ${s} ث` : `${s} ث`;
-                }
-            }
-
-            const callType   = call.direction === 'inbound' ? '📥 واردة' : '📤 صادرة';
+            const date = new Date(call.startTime);
+            const formattedDate = date.toLocaleString('ar-EG');
+            const duration = call.duration ? `${call.duration} ثانية` : 'لم تكتمل';
+            
+            const callType = call.direction === 'inbound' ? '📥 واردة' : '📤 صادرة';
             const statusColor = call.status === 'completed' ? '#4ECDC4' : '#FF6B6B';
-            const toNum = call.to || '';
-
-            // اسم جهة الاتصال — يُعطى الأولوية لـ contactName المحفوظ في Firestore
-            let displayName = toNum;
-            let isContact   = false;
-
-            // دالة مطابقة محسّنة (تستخدم آخر 9 أرقام كاحتياط)
-            const matchContact = (num, list) => {
-                const clean = (num || '').replace(/[\s\-+(). -]/g, '');
-                if (clean.length < 5) return null;
-                const tail = s => s.length >= 9 ? s.slice(-9) : s;
-                return list.find(c => {
-                    const cp = (c.phone || '').replace(/[\s\-+(). -]/g, '');
-                    return cp === clean ||
-                           cp.includes(clean) ||
-                           clean.includes(cp) ||
-                           (clean.length >= 7 && tail(cp) === tail(clean));
-                }) || null;
-            };
-
-            if (call.contactName) {
-                displayName = `👤 ${call.contactName}`;
-                isContact = true;
-            } else if (contacts.length > 0) {
-                const found = matchContact(toNum, contacts);
-                if (found) { displayName = `👤 ${found.name}`; isContact = true; }
+            
+            // البحث عن اسم جهة الاتصال
+            let displayName = call.to;
+            const contact = contacts.find(c => {
+                const cleanContactPhone = c.phone.replace(/[\s-+]/g, '');
+                const cleanCallPhone = call.to.replace(/[\s-+]/g, '');
+                return cleanContactPhone.includes(cleanCallPhone) || cleanCallPhone.includes(cleanContactPhone);
+            });
+            
+            if (contact) {
+                displayName = `👤 ${contact.name}`;
             }
-
-            // اسم الموظف (يعالج مدير الشركة الذي empId يبدأ بـ company-)
-            const empName = call.employeeName
-                || (call.employeeId && String(call.employeeId).startsWith('company-') ? '👑 مدير الشركة' : null)
-                || (window.employeesMap && call.employeeId ? window.employeesMap[call.employeeId] : null)
-                || '';
-
+            
             const item = document.createElement('div');
             item.className = 'call-item';
-            // link لصفحة تقرير العميل
-            const customerReportUrl = `customer-reports.html?phone=${encodeURIComponent(toNum)}&name=${encodeURIComponent(displayName.replace(/^👤\s*/,''))}&companyId=${encodeURIComponent(companyId || '')}`;
             item.innerHTML = `
                 <div class="call-item-info">
-                    <div class="call-item-number" style="${isContact ? 'color:#5ec4d4;font-weight:600;' : ''}">${displayName}</div>
-                    ${isContact ? `<div style="font-size:12px;color:#999">${toNum}</div>` : ''}
-                    ${empName ? `<div style="font-size:12px;color:#a0aab4">👤 ${empName}</div>` : ''}
+                    <div class="call-item-number" style="${contact ? 'color: #5ec4d4; font-weight: 600;' : ''}">${displayName}</div>
+                    ${!contact ? `<div style="font-size: 12px; color: #999;">${call.to}</div>` : ''}
                     <div class="call-item-details">
                         <span class="call-item-type">${callType}</span>
                         <span>${formattedDate}</span>
-                        <span style="color:${statusColor}">${durationText}</span>
+                        <span style="color: ${statusColor}">${duration}</span>
                     </div>
                 </div>
                 <div class="call-item-actions">
-                    <button class="play-btn" onclick="dialNumber('${toNum}')">📞 اتصال</button>
-                    ${toNum ? `<a href="${customerReportUrl}" style="display:inline-flex;align-items:center;gap:4px;padding:7px 12px;background:linear-gradient(135deg,#5ec4d4,#1e88a8);color:white;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;transition:opacity .2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">📊 تقرير العميل</a>` : ''}
+                    <button class="play-btn" onclick="dialNumber('${call.to}')">📞 اتصال</button>
                 </div>
             `;
             container.appendChild(item);
         });
     } catch (error) {
         console.error('خطأ في تحميل سجل المكالمات:', error);
-        container.innerHTML = '<p style="text-align:center;color:#f44336;padding:20px">⚠ خطأ في تحميل السجل</p>';
     }
 }
 
 // تحميل جهات الاتصال
 // تحميل جهات الاتصال
-// cache للبحث السريع بدون طلب API جديد
-let _cachedContacts = [];
-
-// Simple Mobile-Style Contact Rendering
-function _renderContactItem(contact) {
-    const item = document.createElement('div');
-    item.className = 'contact-item';
-    
-    const initial = (contact.name || '?').charAt(0).toUpperCase();
-    const cid = contact._id || contact.id || contact.contactId || '';
-    const safeId = cid.toString().replace(/'/g, '');
-    const safeName = (contact.name || '').replace(/'/g, '&#39;');
-    const safePhone = String(contact.phone || '').replace(/'/g, '');
-    
-    // تحديد لون الـ avatar بناءً على أول حرف
-    const colors = ['#667eea', '#764ba2', '#5ec4d4', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140'];
-    const colorIndex = initial.charCodeAt(0) % colors.length;
-    const avatarColor = colors[colorIndex];
-    
-    item.innerHTML = `
-        <div class="contact-avatar" style="background: ${avatarColor};">${initial}</div>
-        <div class="contact-info">
-            <div class="contact-name">${contact.name || 'بدون اسم'}</div>
-            <div class="contact-phone">${contact.phone || '-'}</div>
-        </div>
-        <div class="contact-actions">
-            <button class="contact-action-btn edit-btn" onclick="editContact('${safeId}')" title="تعديل">✏️</button>
-            <button class="contact-action-btn call-btn" onclick="callContact('${safePhone}')" title="اتصال">📞</button>
-        </div>
-    `;
-    
-    return item;
-}
-
 async function loadContacts() {
     const container = document.getElementById('contacts-container');
-    const companyId = sessionStorage.getItem('companyId');
-
-    if (!companyId) {
-        console.warn('⚠️ loadContacts: لا يوجد companyId في sessionStorage');
-        return;
-    }
-
+    
     try {
         const baseUrl = API_BASE_URL;
-        const response = await fetch(`${baseUrl}/api/contacts?companyId=${encodeURIComponent(companyId)}`);
+        const response = await fetch(`${baseUrl}/api/contacts`);
         const data = await response.json();
         const contacts = data.contacts || [];
-        _cachedContacts = contacts; // cache للبحث
-
+        
         container.innerHTML = '';
-
+        
         if (contacts.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -3240,475 +2773,79 @@ async function loadContacts() {
             `;
             return;
         }
-
-        // عرض جهات الاتصال بتصميم موبايل بسيط
+        
         contacts.forEach(contact => {
-            container.appendChild(_renderContactItem(contact));
+            const item = document.createElement('div');
+            item.className = 'contact-item';
+            const initial = contact.name.charAt(0).toUpperCase();
+            
+            item.innerHTML = `
+                <div class="contact-avatar">${initial}</div>
+                <div class="contact-info">
+                    <div class="contact-name">${contact.name}</div>
+                    <div class="contact-phone">${contact.phone}</div>
+                </div>
+                <div class="contact-actions">
+                    <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="اتصال">📞</button>
+                    <button class="contact-delete-btn" onclick="deleteContact(${contact.id}, '${contact.name}')" title="حذف" style="background: linear-gradient(135deg, #fa709a, #fee140); color: white; width: 35px; height: 35px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; transition: all 0.2s;">🗑️</button>
+                </div>
+            `;
+            container.appendChild(item);
         });
         
-        console.log('✅ تم تحميل', contacts.length, 'جهة اتصال للشركة', companyId);
+        console.log('✅ تم تحميل', contacts.length, 'جهة اتصال');
     } catch (error) {
         console.error('خطأ في تحميل جهات الاتصال:', error);
         container.innerHTML = '<p style="text-align: center; color: #f44336;">خطأ في تحميل جهات الاتصال</p>';
     }
 }
 
-// ─── Sort & Filter Functions for Excel-like CRM ───────────────────────────────
-let _currentSortColumn = null;
-let _currentSortDirection = 'asc'; // 'asc' or 'desc'
-
-function sortContactsBy(column) {
-    if (!_cachedContacts || _cachedContacts.length === 0) return;
-    
-    // تبديل الاتجاه إذا كان نفس العمود
-    if (_currentSortColumn === column) {
-        _currentSortDirection = _currentSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-        _currentSortColumn = column;
-        _currentSortDirection = 'asc';
-    }
-    
-    // نسخ الـ array وترتيبه
-    const sorted = [..._cachedContacts].sort((a, b) => {
-        let valA, valB;
-        
-        switch(column) {
-            case 'name':
-                valA = (a.name || '').toLowerCase();
-                valB = (b.name || '').toLowerCase();
-                break;
-            case 'phone':
-                valA = a.phone || '';
-                valB = b.phone || '';
-                break;
-            case 'email':
-                valA = (a.email || '').toLowerCase();
-                valB = (b.email || '').toLowerCase();
-                break;
-            case 'country':
-                const notesA = a.notes || '';
-                const notesB = b.notes || '';
-                const matchA = notesA.match(/Country:\s*([^|]+)/);
-                const matchB = notesB.match(/Country:\s*([^|]+)/);
-                valA = (matchA ? matchA[1].trim() : '').toLowerCase();
-                valB = (matchB ? matchB[1].trim() : '').toLowerCase();
-                break;
-            case 'balance':
-                const bNotesA = a.notes || '';
-                const bNotesB = b.notes || '';
-                const bMatchA = bNotesA.match(/Balance:\s*(.+)/);
-                const bMatchB = bNotesB.match(/Balance:\s*(.+)/);
-                valA = bMatchA ? parseFloat(bMatchA[1].replace(/[^0-9.-]/g, '')) || 0 : 0;
-                valB = bMatchB ? parseFloat(bMatchB[1].replace(/[^0-9.-]/g, '')) || 0 : 0;
-                break;
-            case 'date':
-                valA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                valB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                break;
-            default:
-                return 0;
-        }
-        
-        if (valA < valB) return _currentSortDirection === 'asc' ? -1 : 1;
-        if (valA > valB) return _currentSortDirection === 'asc' ? 1 : -1;
-        return 0;
-    });
-    
-    // إعادة رسم الجدول
-    const container = document.getElementById('contacts-container');
-    const table = container.querySelector('.contacts-table');
-    if (!table) return;
-    
-    const tbody = table.querySelector('tbody');
-    tbody.innerHTML = '';
-    sorted.forEach((contact, index) => tbody.appendChild(_renderContactItem(contact, index)));
-    
-    // تحديث أيقونة السهم
-    table.querySelectorAll('.sort-icon').forEach(icon => {
-        icon.textContent = '⬍';
-        icon.style.opacity = '0.5';
-    });
-    const activeHeader = table.querySelector(`th.sortable[onclick*="${column}"] .sort-icon`);
-    if (activeHeader) {
-        activeHeader.textContent = _currentSortDirection === 'asc' ? '▲' : '▼';
-        activeHeader.style.opacity = '1';
-    }
-}
-
-// ─── Premium CRM Functions ────────────────────────────────────────────────────
-// عرض تفاصيل جهة الاتصال
-function viewContactDetails(contactId) {
-    const contact = _cachedContacts.find(c => (c._id || c.id || c.contactId) === contactId);
-    if (!contact) {
-        alert('لم يتم العثور على جهة الاتصال');
-        return;
-    }
-    
-    const notes = contact.notes || '';
-    const countryMatch = notes.match(/Country:\s*([^|]+)/);
-    const balanceMatch = notes.match(/Balance:\s*(.+)/);
-    const country = countryMatch ? countryMatch[1].trim() : '-';
-    const balance = balanceMatch ? balanceMatch[1].trim() : '-';
-    
-    const detailsHTML = `
-        <strong>📋 تفاصيل جهة الاتصال</strong><br><br>
-        <strong>الاسم:</strong> ${contact.name || '-'}<br>
-        <strong>الموبايل:</strong> ${contact.phone || '-'}<br>
-        <strong>البريد:</strong> ${contact.email || '-'}<br>
-        <strong>البلد:</strong> ${country}<br>
-        <strong>الرصيد:</strong> ${balance}<br>
-        <strong>عدد المكالمات:</strong> ${contact.totalCalls || 0}<br>
-        <strong>آخر مكالمة:</strong> ${contact.lastCallDate ? new Date(contact.lastCallDate).toLocaleDateString('ar-EG') : 'لا توجد'}<br>
-        <strong>ملاحظات:</strong> ${notes}<br>
-    `;
-    
-    alert(detailsHTML.replace(/<br>/g, '\n').replace(/<strong>|<\/strong>/g, ''));
-}
-
-// عرض ملفات جهة الاتصال (placeholder)
-function viewContactFiles(contactId) {
-    alert('🗂️ قريباً: عرض ملفات جهة الاتصال\n\nهذه الميزة قيد التطوير');
-}
-
-// فتح واتساب
-function openWhatsApp(phone) {
-    if (!phone) {
-        alert('رقم الهاتف غير متوفر');
-        return;
-    }
-    
-    // تنظيف رقم الهاتف من الرموز غير الرقمية
-    const cleanPhone = phone.replace(/[^0-9+]/g, '');
-    const whatsappURL = `https://wa.me/${cleanPhone}`;
-    
-    window.open(whatsappURL, '_blank');
-    console.log('📱 فتح واتساب:', cleanPhone);
-}
-
-// تحديث تصنيف جهة الاتصال
-async function updateContactCategory(contactId, category) {
-    if (!category) return;
-    
-    const contact = _cachedContacts.find(c => (c._id || c.id || c.contactId) === contactId);
-    if (!contact) return;
-    
-    try {
-        const companyId = sessionStorage.getItem('companyId');
-        const updatedBy = sessionStorage.getItem('username') || 'unknown';
-        
-        // إضافة التصنيف للـ tags
-        const tags = contact.tags || [];
-        if (!tags.includes(category)) {
-            tags.push(category);
-        }
-        
-        const response = await fetch(`${API_BASE_URL}/api/contacts`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                companyId, 
-                contactId, 
-                tags,
-                updatedBy 
-            })
-        });
-        
-        if (response.ok) {
-            console.log('✅ تم تحديث التصنيف:', category);
-            // تحديث الـ cache
-            contact.tags = tags;
-        } else {
-            console.error('❌ فشل تحديث التصنيف');
-        }
-    } catch (error) {
-        console.error('خطأ في تحديث التصنيف:', error);
-    }
-}
-
-// ─── Export to Excel (CSV) ────────────────────────────────────────────────────
-function exportContactsToExcel() {
-    if (!_cachedContacts || _cachedContacts.length === 0) {
-        alert('لا توجد جهات اتصال للتصدير');
-        return;
-    }
-    
-    // تحضير البيانات
-    const headers = ['الاسم', 'الموبايل', 'البريد الإلكتروني', 'البلد', 'الرصيد', 'تاريخ الإضافة', 'ملاحظات'];
-    const rows = _cachedContacts.map(contact => {
-        const notes = contact.notes || '';
-        const countryMatch = notes.match(/Country:\s*([^|]+)/);
-        const balanceMatch = notes.match(/Balance:\s*(.+)/);
-        const country = countryMatch ? countryMatch[1].trim() : '';
-        const balance = balanceMatch ? balanceMatch[1].trim() : '';
-        const date = contact.createdAt ? new Date(contact.createdAt).toLocaleDateString('ar-EG') : '';
-        
-        return [
-            contact.name || '',
-            contact.phone || '',
-            contact.email || '',
-            country,
-            balance,
-            date,
-            notes
-        ];
-    });
-    
-    // تحويل إلى CSV
-    const csvContent = [
-        headers.join(','),
-        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\\n');
-    
-    // تحميل الملف
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    const companyName = sessionStorage.getItem('companyName') || 'Company';
-    const filename = `contacts_${companyName}_${new Date().toISOString().slice(0,10)}.csv`;
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    console.log('✅ تم تصدير', _cachedContacts.length, 'جهة اتصال إلى', filename);
-}
-
-// ─── Import from Excel ────────────────────────────────────────────────────────
-function importContactsFromExcel() {
-    const input = document.getElementById('excel-import-input');
-    if (!input) return;
-    
-    input.click();
-}
-
 // إضافة جهة اتصال
-// ─── مودال إضافة جهة اتصال ───────────────────────────────────────────────────
-function addContact() {
-    // مسح القيم والأخطاء
-    ['nc-name','nc-phone','nc-email','nc-notes'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-    });
-    ['nc-name-err','nc-phone-err','nc-error-banner'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-    const btn = document.getElementById('nc-submit-btn');
-    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
-    document.getElementById('nc-submit-text').textContent = 'حفظ جهة الاتصال';
-    document.getElementById('nc-submit-icon').textContent = '✓';
-
-    // إظهار المودال
-    const modal = document.getElementById('add-contact-modal');
-    modal.style.display = 'flex';
-    setTimeout(() => { const el = document.getElementById('nc-name'); if (el) el.focus(); }, 80);
-}
-
-function closeAddContactModal() {
-    const modal = document.getElementById('add-contact-modal');
-    if (modal) modal.style.display = 'none';
-}
-
-// إغلاق عند النقر خارج المودال
-document.getElementById('add-contact-modal')?.addEventListener('click', function(e) {
-    if (e.target === this) closeAddContactModal();
-});
-
-async function submitAddContact() {
-    // تنظيف سابق
-    ['nc-name-err','nc-phone-err','nc-error-banner'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-
-    const name  = (document.getElementById('nc-name')?.value  || '').trim();
-    const phone = (document.getElementById('nc-phone')?.value || '').trim();
-    const email = (document.getElementById('nc-email')?.value || '').trim();
-    const notes = (document.getElementById('nc-notes')?.value || '').trim();
-
-    let valid = true;
-    if (!name)  { document.getElementById('nc-name-err').style.display  = 'block'; valid = false; }
-    if (!phone) { document.getElementById('nc-phone-err').style.display = 'block'; valid = false; }
-    if (!valid) return;
-
-    const companyId = sessionStorage.getItem('companyId');
-    const addedBy   = sessionStorage.getItem('username') || 'unknown';
-
-    if (!companyId) {
-        showContactError('لم يتم العثور على معلومات الشركة. يرجى تسجيل الدخول أولاً');
-        return;
-    }
-
-    // حالة التحميل
-    const btn = document.getElementById('nc-submit-btn');
-    btn.disabled = true;
-    btn.style.opacity = '0.7';
-    document.getElementById('nc-submit-text').textContent = 'جاري الحفظ...';
-    document.getElementById('nc-submit-icon').textContent = '⏳';
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/contacts`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ companyId, name, phone, email: email || null, notes: notes || '', addedBy, device: 'web' })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            document.getElementById('nc-submit-text').textContent = 'تمت الإضافة!';
-            document.getElementById('nc-submit-icon').textContent = '✅';
-            btn.style.background = 'linear-gradient(135deg,#43e97b,#38f9d7)';
-            btn.style.opacity = '1';
-            setTimeout(() => {
-                closeAddContactModal();
-                loadContacts();
-            }, 900);
-        } else {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            document.getElementById('nc-submit-text').textContent = 'حفظ جهة الاتصال';
-            document.getElementById('nc-submit-icon').textContent = '✓';
-            showContactError(data.error || 'فشل في إضافة جهة الاتصال');
-        }
-    } catch (error) {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        document.getElementById('nc-submit-text').textContent = 'حفظ جهة الاتصال';
-        document.getElementById('nc-submit-icon').textContent = '✓';
-        showContactError('خطأ في الاتصال بالخادم: ' + error.message);
-    }
-}
-
-function showContactError(msg) {
-    const el = document.getElementById('nc-error-banner');
-    if (el) { el.textContent = '⚠ ' + msg; el.style.display = 'block'; }
-}
-
-
-
-// حذف جهة اتصال (soft delete - لا تُمسح من Firestore)
-// تعديل جهة اتصال
-function editContact(contactId) {
-    const contact = _cachedContacts.find(c => (c._id || c.id || c.contactId) === contactId);
-    if (!contact) {
-        alert('لم يتم العثور على جهة الاتصال');
-        return;
-    }
+async function addContact() {
+    const name = prompt('أدخل اسم جهة الاتصال:');
+    if (!name) return;
     
-    // ملء البيانات الحالية في المودال
-    document.getElementById('nc-name').value = contact.name || '';
-    document.getElementById('nc-phone').value = contact.phone || '';
-    document.getElementById('nc-email').value = contact.email || '';
-    document.getElementById('nc-notes').value = contact.notes || '';
+    const phone = prompt('أدخل رقم الهاتف:');
+    if (!phone) return;
     
-    // تغيير زر الحفظ إلى تحديث
-    const submitBtn = document.getElementById('nc-submit-btn');
-    submitBtn.onclick = () => submitUpdateContact(contactId);
-    document.getElementById('nc-submit-text').textContent = 'تحديث جهة الاتصال';
-    document.getElementById('nc-submit-icon').textContent = '✓';
-    
-    // إظهار المودال
-    document.getElementById('add-contact-modal').style.display = 'flex';
-    setTimeout(() => document.getElementById('nc-name').focus(), 80);
-}
-
-// حفظ التعديلات
-async function submitUpdateContact(contactId) {
-    ['nc-name-err','nc-phone-err','nc-error-banner'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-
-    const name  = (document.getElementById('nc-name')?.value  || '').trim();
-    const phone = (document.getElementById('nc-phone')?.value || '').trim();
-    const email = (document.getElementById('nc-email')?.value || '').trim();
-    const notes = (document.getElementById('nc-notes')?.value || '').trim();
-
-    let valid = true;
-    if (!name)  { document.getElementById('nc-name-err').style.display  = 'block'; valid = false; }
-    if (!phone) { document.getElementById('nc-phone-err').style.display = 'block'; valid = false; }
-    if (!valid) return;
-
-    const companyId = sessionStorage.getItem('companyId');
-    const updatedBy = sessionStorage.getItem('username') || 'unknown';
-
-    if (!companyId) {
-        showContactError('لم يتم العثور على معلومات الشركة');
-        return;
-    }
-
-    const btn = document.getElementById('nc-submit-btn');
-    btn.disabled = true;
-    btn.style.opacity = '0.7';
-    document.getElementById('nc-submit-text').textContent = 'جاري التحديث...';
-    document.getElementById('nc-submit-icon').textContent = '⏳';
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/contacts`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                companyId, 
-                contactId, 
-                name, 
-                phone, 
-                email: email || null, 
-                notes: notes || '', 
-                updatedBy 
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            document.getElementById('nc-submit-text').textContent = 'تم التحديث!';
-            document.getElementById('nc-submit-icon').textContent = '✅';
-            setTimeout(() => {
-                closeAddContactModal();
-                loadContacts();
-                // إعادة زر الحفظ للوضع الطبيعي
-                btn.onclick = submitAddContact;
-                document.getElementById('nc-submit-text').textContent = 'حفظ جهة الاتصال';
-            }, 1200);
-        } else {
-            throw new Error(data.error || 'فشل في التحديث');
-        }
-    } catch (error) {
-        console.error('خطأ في تحديث جهة الاتصال:', error);
-        showContactError(error.message || 'فشل في تحديث جهة الاتصال');
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        document.getElementById('nc-submit-text').textContent = 'تحديث جهة الاتصال';
-        document.getElementById('nc-submit-icon').textContent = '✓';
-    }
-}
-
-async function deleteContact(contactId, contactName) {
-    if (!confirm(`هل تريد حذف ${contactName}؟`)) return;
-
-    const companyId = sessionStorage.getItem('companyId');
-    const deletedBy = sessionStorage.getItem('username') || 'unknown';
-
-    if (!companyId) {
-        alert('لم يتم العثور على معلومات الشركة');
-        return;
-    }
-
     try {
         const baseUrl = API_BASE_URL;
-        const response = await fetch(
-            `${baseUrl}/api/contacts?companyId=${encodeURIComponent(companyId)}&contactId=${encodeURIComponent(contactId)}&deletedBy=${encodeURIComponent(deletedBy)}`,
-            { method: 'DELETE' }
-        );
-
+        const response = await fetch(`${baseUrl}/api/contacts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone })
+        });
+        
         const data = await response.json();
-
+        
         if (response.ok && data.success) {
-            console.log('✅ تم حذف جهة الاتصال (soft delete)');
+            console.log('✅ تمت إضافة جهة الاتصال');
+            loadContacts();
+        } else {
+            throw new Error(data.error || 'فشل في إضافة جهة الاتصال');
+        }
+    } catch (error) {
+        console.error('خطأ في إضافة جهة الاتصال:', error);
+        alert('فشل في إضافة جهة الاتصال: ' + error.message);
+    }
+}
+
+// حذف جهة اتصال
+async function deleteContact(contactId, contactName) {
+    if (!confirm(`هل تريد حذف ${contactName}؟`)) {
+        return;
+    }
+    
+    try {
+        const baseUrl = API_BASE_URL;
+        const response = await fetch(`${baseUrl}/api/contacts?id=${contactId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            console.log('✅ تم حذف جهة الاتصال');
             loadContacts();
         } else {
             throw new Error(data.error || 'فشل في حذف جهة الاتصال');
@@ -3745,170 +2882,37 @@ if (addContactBtn) {
     addContactBtn.addEventListener('click', addContact);
 }
 
-// معالجة زر تصدير Excel
-const exportExcelBtn = document.getElementById('export-excel-btn');
-if (exportExcelBtn) {
-    exportExcelBtn.addEventListener('click', exportContactsToExcel);
-}
-
-// معالجة زر استيراد Excel
-const importExcelBtn = document.getElementById('import-excel-btn');
-if (importExcelBtn) {
-    importExcelBtn.addEventListener('click', importContactsFromExcel);
-}
-
-// معالجة ملف Excel المستورد
-const excelImportInput = document.getElementById('excel-import-input');
-if (excelImportInput) {
-    excelImportInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                const text = event.target.result;
-                const lines = text.split('\n');
-                const contacts = [];
-                
-                // تخطي الهيدر والبدء من السطر الثاني
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    
-                    // فصل بـ tab أو comma
-                    const cells = line.includes('\t') ? line.split('\t') : line.split(',');
-                    if (cells.length < 2) continue;
-                    
-                    const [email, name, lastName, phone, country, balance] = cells.map(c => c.trim().replace(/^"|"$/g, ''));
-                    
-                    if (name && phone) {
-                        contacts.push({
-                            name: lastName ? `${name} ${lastName}` : name,
-                            phone: phone,
-                            email: email || null,
-                            notes: `Country: ${country || '-'} | Balance: ${balance || '0'}`,
-                            tags: [country || 'Unknown', 'Excel Import']
-                        });
-                    }
-                }
-                
-                if (contacts.length === 0) {
-                    alert('لم يتم العثور على جهات اتصال صالحة في الملف');
-                    return;
-                }
-                
-                // تأكيد قبل الاستيراد
-                const confirmed = confirm(`هل تريد استيراد ${contacts.length} جهة اتصال؟`);
-                if (!confirmed) return;
-                
-                // استيراد باستخدام API
-                const companyId = sessionStorage.getItem('companyId');
-                const addedBy = sessionStorage.getItem('username') || 'Excel Import';
-                let successCount = 0;
-                let errorCount = 0;
-                
-                // show loading indicator
-                const container = document.getElementById('contacts-container');
-                container.innerHTML = '<p style="text-align:center;color:#fff;padding:30px">⏳ جاري الاستيراد...</p>';
-                
-                for (const contact of contacts) {
-                    try {
-                        const response = await fetch(`${API_BASE_URL}/api/contacts`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ ...contact, companyId, addedBy, device: 'web' })
-                        });
-                        
-                        if (response.ok) {
-                            successCount++;
-                        } else {
-                            errorCount++;
-                        }
-                        
-                        // تأخير صغير لتجنب الـ rate limiting
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    } catch (err) {
-                        console.error('خطأ في استيراد جهة اتصال:', err);
-                        errorCount++;
-                    }
-                }
-                
-                alert(`تم الاستيراد بنجاح!\n✅ نجح: ${successCount}\n❌ فشل: ${errorCount}`);
-                loadContacts(); // إعادة تحميل القائمة
-                
-            } catch (error) {
-                console.error('خطأ في قراءة الملف:', error);
-                alert('خطأ في قراءة الملف. تأكد من صيغة الملف.');
-            }
-        };
-        
-        reader.readAsText(file);
-        e.target.value = ''; // reset input
-    });
-}
-
-// البحث في جهات الاتصال — يعمل على الـ cache المحلي (بدون طلب API جديد)
+// البحث في جهات الاتصال
 const contactSearch = document.getElementById('contact-search');
 if (contactSearch) {
     contactSearch.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase().trim();
-        const container  = document.getElementById('contacts-container');
-
-        if (!searchTerm) {
-            // البحث فارغ → أعد عرض الكل
-            loadContacts(); // إعادة رسم الجدول الكامل
-            return;
-        }
-
-        // البحث في كل الحقول: name, phone, email, country, balance, notes
-        const filtered = _cachedContacts.filter(c => {
-            const notes = c.notes || '';
-            const countryMatch = notes.match(/Country:\s*([^|]+)/);
-            const balanceMatch = notes.match(/Balance:\s*(.+)/);
-            const country = countryMatch ? countryMatch[1].trim().toLowerCase() : '';
-            const balance = balanceMatch ? balanceMatch[1].trim().toLowerCase() : '';
-            
-            return (
-                (c.name  || '').toLowerCase().includes(searchTerm) ||
-                (c.phone || '').includes(searchTerm) ||
-                (c.email || '').toLowerCase().includes(searchTerm) ||
-                country.includes(searchTerm) ||
-                balance.includes(searchTerm) ||
-                notes.toLowerCase().includes(searchTerm)
-            );
-        });
-
-        container.innerHTML = '';
-        if (filtered.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:#888;padding:30px">لا نتائج للبحث</p>';
-            return;
-        }
+        const searchTerm = e.target.value.toLowerCase();
+        const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+        const filtered = contacts.filter(c => 
+            c.name.toLowerCase().includes(searchTerm) || 
+            c.phone.includes(searchTerm)
+        );
         
-        // إنشاء جدول للنتائج المفَلترة
-        const table = document.createElement('table');
-        table.className = 'contacts-table';
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th class="col-number">#</th>
-                    <th class="col-avatar">الصورة</th>
-                    <th class="col-name">الاسم</th>
-                    <th class="col-phone">الموبايل</th>
-                    <th class="col-email">البريد الإلكتروني</th>
-                    <th class="col-country">البلد</th>
-                    <th class="col-balance">الرصيد</th>
-                    <th class="col-rating">التقييم</th>
-                    <th class="col-category">التصنيف</th>
-                    <th class="col-date">تاريخ الإضافة</th>
-                    <th class="col-actions">الإجراءات</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        `;
-        const tbody = table.querySelector('tbody');
-        filtered.forEach((c, index) => tbody.appendChild(_renderContactItem(c, index)));
-        container.appendChild(table);
+        const container = document.getElementById('contacts-container');
+        container.innerHTML = '';
+        
+        filtered.forEach(contact => {
+            const item = document.createElement('div');
+            item.className = 'contact-item';
+            const initial = contact.name.charAt(0).toUpperCase();
+            
+            item.innerHTML = `
+                <div class="contact-avatar">${initial}</div>
+                <div class="contact-info">
+                    <div class="contact-name">${contact.name}</div>
+                    <div class="contact-phone">${contact.phone}</div>
+                </div>
+                <div class="contact-actions">
+                    <button class="contact-call-btn" onclick="callContact('${contact.phone}')" title="اتصال">📞</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
     });
 }
 
@@ -3940,9 +2944,7 @@ window.addEventListener('beforeunload', async (e) => {
                 employeeName: employeeName
             });
             
-            // استخدام Blob مع application/json حتى يتم parse الـ body صح
-            const blob = new Blob([data], { type: 'application/json' });
-            navigator.sendBeacon(`${baseUrl}/work-tracking`, blob);
+            navigator.sendBeacon(`${baseUrl}/work-tracking`, data);
         }
     } catch (error) {
         console.error('خطأ في تسجيل وقت الخروج:', error);
@@ -3968,8 +2970,7 @@ document.addEventListener('visibilitychange', async () => {
                     }
                 });
                 
-                const blob = new Blob([data], { type: 'application/json' });
-                navigator.sendBeacon(`${baseUrl}/work-tracking`, blob);
+                navigator.sendBeacon(`${baseUrl}/work-tracking`, data);
             }
         } catch (error) {
             console.error('خطأ في تسجيل إخفاء التطبيق:', error);
@@ -4236,7 +3237,6 @@ if (generateReportBtn) {
 }
 
 // إخفاء زر تقارير العمل عن غير المطورين
-const userRole = sessionStorage.getItem('userRole');
 if (userRole !== 'admin' && workReportsBtn) {
     workReportsBtn.style.display = 'none';
 }

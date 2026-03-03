@@ -2,12 +2,17 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <!-- تحويل فوري لصفحة تسجيل الدخول -->
+    <script>
+        var isLoggedIn = sessionStorage.getItem('isLoggedIn') || localStorage.getItem('employeeId');
+        if (isLoggedIn) {
+            window.location.replace('index.html');
+        } else {
+            window.location.replace('login.html');
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Call - منصة إدارة المكالمات السحابية</title>
-    <!-- Security Protection -->
-    <script src="protection.js?v=1.0" defer></script>
-    <!-- i18n -->
-    <script src="js/i18n.js"></script>
+    <title>Link Call</title>
     <meta name="description" content="منصة Link Call - أفضل حل لإدارة المكالمات السحابية للشركات والمؤسسات">
     <meta name="keywords" content="مكالمات سحابية, إدارة المكالمات, call center, أكرم مصطفى">
     <meta name="author" content="Eng. Akram Mostafa">

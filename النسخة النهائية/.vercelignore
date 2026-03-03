@@ -1,6 +1,0 @@
-.env
-.env.local
-node_modules
-.git
-*.log
-employees.json

@@ -1980,6 +1980,16 @@ if (logoutBtn) {
             
             sessionStorage.removeItem('isLoggedIn');
             sessionStorage.removeItem('username');
+            sessionStorage.removeItem('userRole');
+            sessionStorage.removeItem('isCompanyAdmin');
+            sessionStorage.removeItem('companyId');
+            sessionStorage.removeItem('companyName');
+            sessionStorage.removeItem('fullname');
+            sessionStorage.removeItem('permissions');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('isCompanyAdmin');
+            localStorage.removeItem('companyId');
+            localStorage.removeItem('companyName');
             window.location.href = 'login.html';
         }
     });
@@ -1995,8 +2005,8 @@ function checkAdminAccess() {
 
 // إخفاء/إظهار الأقسام حسب الصلاحية
 function applyRoleBasedVisibility() {
-    const userRole = sessionStorage.getItem('userRole');
-    const isCompanyAdmin = sessionStorage.getItem('isCompanyAdmin') === 'true';
+    const userRole     = sessionStorage.getItem('userRole')     || localStorage.getItem('userRole')     || '';
+    const isCompanyAdmin = (sessionStorage.getItem('isCompanyAdmin') || localStorage.getItem('isCompanyAdmin') || 'false') === 'true';
     const employeesSection = document.getElementById('employees-section');
     const adminAccountSection = document.getElementById('admin-account-section');
     const adminAudioSection = document.getElementById('admin-audio-section');
@@ -2122,6 +2132,9 @@ function applyRoleBasedVisibility() {
 
 // تطبيق الصلاحيات عند تحميل الصفحة
 applyRoleBasedVisibility();
+
+// إعادة تطبيق الصلاحيات عند الرجوع إلى الصفحة (يشمل bfcache وإعادة التحميل)
+window.addEventListener('pageshow', () => applyRoleBasedVisibility());
 
 // جلب المديرين من localStorage
 function getEmployees() {
@@ -2895,8 +2908,16 @@ async function performLogout() {
         sessionStorage.removeItem('isLoggedIn');
         sessionStorage.removeItem('username');
         sessionStorage.removeItem('userRole');
+        sessionStorage.removeItem('isCompanyAdmin');
+        sessionStorage.removeItem('companyId');
+        sessionStorage.removeItem('companyName');
         sessionStorage.removeItem('fullname');
         sessionStorage.removeItem('permissions');
+        // مسح النسخة الاحتياطية في localStorage
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('isCompanyAdmin');
+        localStorage.removeItem('companyId');
+        localStorage.removeItem('companyName');
         window.location.href = 'login.html';
     }
 }

@@ -355,6 +355,11 @@
                                 sessionStorage.setItem('employeeId',   emp.id.toString());
                                 localStorage.setItem('employeeId',     emp.id.toString());
                                 localStorage.setItem('employeeName',   emp.name);
+                                // نسخة احتياطية في localStorage
+                                localStorage.setItem('userRole',      emp.role || 'employee');
+                                localStorage.setItem('isCompanyAdmin','false');
+                                localStorage.setItem('companyId',     co.id);
+                                localStorage.setItem('companyName',   co.companyName);
                                 // الصلاحيات
                                 const perms = emp.permissions || [];
                                 sessionStorage.setItem('permissions',             JSON.stringify(perms));
@@ -375,6 +380,11 @@
                                 sessionStorage.setItem('employeeId',  'company-' + companyData.company.id);
                                 localStorage.setItem('employeeId',    'company-' + companyData.company.id);
                                 localStorage.setItem('employeeName',  companyData.company.adminName || companyData.company.companyName);
+                                // نسخة احتياطية في localStorage لمنع فقدان الدور عند التنقل
+                                localStorage.setItem('userRole',      'company-admin');
+                                localStorage.setItem('isCompanyAdmin','true');
+                                localStorage.setItem('companyId',     companyData.company.id);
+                                localStorage.setItem('companyName',   companyData.company.companyName);
                                 sessionStorage.setItem('canViewOwnRecordings', 'true');
                                 sessionStorage.setItem('canViewAllRecordings', 'true');
                                 sessionStorage.setItem('canDeleteRecordings',  'true');

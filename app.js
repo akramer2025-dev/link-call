@@ -687,6 +687,8 @@ async function makeCall() {
                 updateCallStatus('لم يتم الرد');
             }
             endCall();
+            // تحديث الرصيد بعد 15 ثانية (وقت كافي للتسجيل وخصم Twilio)
+            setTimeout(() => loadAccountBalance(), 15000);
         });
         
         currentCall.on('cancel', () => {
@@ -1113,8 +1115,10 @@ function stopCallTimer() {
         callTimer = null;
         
         // 🔒 تسجيل استخدام الدقائق
-        if (callDuration > 0) {
-            const minutesUsed = Math.ceil(callDuration / 60); // تقريب لأعلى دقيقة
+        // 🔒 تسجيل استخدام الدقائق
+        const callSeconds = callStartTime ? Math.floor((Date.now() - callStartTime) / 1000) : 0;
+        if (callSeconds > 0) {
+            const minutesUsed = Math.ceil(callSeconds / 60); // تقريب لأعلى دقيقة
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             
             if (userData.id && userData.companyId) {

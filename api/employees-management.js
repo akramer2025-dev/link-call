@@ -186,6 +186,60 @@ async function deleteEmployee(req, res) {
     }
 }
 
+// POST /api/employees-management/minutes/record
+async function recordMinutes(req, res) {
+    const { employeeId, minutesUsed, callId, callType } = req.body || {};
+    if (!employeeId || !minutesUsed) return res.status(400).json({ success: false, message: 'employeeId و minutesUsed مطلوبان' });
+
+    const data = await getCompaniesData();
+    let found = null, foundCompany = null;
+    for (const company of data.companies) {
+        const emp = (company.employees || []).find(e => e.id === employeeId || String(e.id) === String(employeeId));
+        if (emp) { found = emp; foundCompany = company; break; }
+    }
+    if (!found || !foundCompany) return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+
+    found.minutesUsed   = (found.minutesUsed   || 0) + parseInt(minutesUsed, 10);
+    foundCompany.employees = foundCompany.employees.map(e =>
+        (e.id === employeeId || String(e.id) === String(employeeId)) ? found : e
+    );
+    await saveCompaniesData(data);
+
+    const minutesAllocated = found.minutesAllocated || 0;
+    const minutesRemaining = minutesAllocated > 0 ? Math.max(0, minutesAllocated - found.minutesUsed) : Infinity;
+    const accountActive    = minutesAllocated === 0 || minutesRemaining > 0;
+
+    console.log(`⏱️ recordMinutes: موظف ${employeeId} → ${found.minutesUsed} دق مستخدمة`);
+    return res.status(200).json({
+        success: true,
+        usage: { minutesUsed: found.minutesUsed, minutesAllocated, minutesRemaining: minutesRemaining === Infinity ? null : minutesRemaining, accountActive }
+    });
+}
+
+// GET /api/employees-management/minutes/{employeeId}/check
+async function checkMinutes(req, res) {
+    const url = req.url || '';
+    const match = url.match(/\/minutes\/([^\/\?]+)\/check/);
+    const employeeId = match ? match[1] : null;
+    if (!employeeId) return res.status(400).json({ success: false, message: 'employeeId مطلوب' });
+
+    const data = await getCompaniesData();
+    let found = null;
+    for (const company of data.companies) {
+        const emp = (company.employees || []).find(e => e.id === employeeId || String(e.id) === String(employeeId));
+        if (emp) { found = emp; break; }
+    }
+    if (!found) return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+
+    const minutesAllocated = found.minutesAllocated || 0;
+    const minutesUsed      = found.minutesUsed      || 0;
+    const minutesRemaining = minutesAllocated > 0 ? Math.max(0, minutesAllocated - minutesUsed) : null;
+    const available        = minutesAllocated === 0 || minutesRemaining > 0;
+    const reason           = !available ? 'no_minutes' : (found.active === false ? 'account_inactive' : null);
+
+    return res.status(200).json({ success: true, available, minutesRemaining, minutesUsed, minutesAllocated, reason });
+}
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -195,6 +249,8 @@ module.exports = async (req, res) => {
     const url = req.url || '';
     try {
         if (method === 'GET' && url.includes('/permissions')) return await getPermissions(req, res);
+        if (method === 'POST' && url.includes('/minutes/record'))  return await recordMinutes(req, res);
+        if (method === 'GET'  && url.includes('/minutes/'))        return await checkMinutes(req, res);
         if (method === 'GET') return await getEmployees(req, res);
         if (method === 'POST') return await addEmployee(req, res);
         if (method === 'PUT') {

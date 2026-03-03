@@ -16,6 +16,14 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'OPTIONS') return res.status(200).end();
 
+    // Body parsing fallback
+    if (req.method !== 'GET' && typeof req.body === 'string') {
+        try { req.body = JSON.parse(req.body); } catch(e) { req.body = {}; }
+    }
+    if (req.method !== 'GET' && (!req.body || typeof req.body !== 'object')) {
+        req.body = {};
+    }
+
     try {
         // ─── GET ───────────────────────────────────────────────────────
         if (req.method === 'GET') {

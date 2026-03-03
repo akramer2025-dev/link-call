@@ -185,7 +185,8 @@ module.exports.getAllCompanies = async (req, res) => {
             twilioEnvPrefix: c.twilioEnvPrefix || null,
             twilioCredentials: c.twilioCredentials
                 ? { accountSid: c.twilioCredentials.accountSid, phoneNumber: c.twilioCredentials.phoneNumber, twimlAppSid: c.twilioCredentials.twimlAppSid, updatedAt: c.twilioCredentials.updatedAt }
-                : null
+                : null,
+            balance: typeof c.balance === 'number' ? c.balance : 121.0
         }));
 
         res.json({

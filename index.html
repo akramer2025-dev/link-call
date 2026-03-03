@@ -99,10 +99,6 @@
             <span class="mobile-title">Link Call</span>
         </div>
         
-        <div class="mobile-balance" id="mobile-balance">
-            <span class="mobile-balance-value" id="mobile-balance-value">--</span>
-            <span class="mobile-balance-currency">$</span>
-        </div>
     </header>
     
     <!-- الخلفية المعتمة -->
@@ -124,11 +120,6 @@
             <div class="sidebar-user-info">
                 <span class="sidebar-username" id="sidebar-username">--</span>
                 <span class="sidebar-role" id="sidebar-role">--</span>
-            </div>
-            <div class="sidebar-balance">
-                <span class="sidebar-balance-icon">💰</span>
-                <span class="sidebar-balance-value" id="sidebar-balance">--</span>
-                <span class="sidebar-balance-currency">$</span>
             </div>
         </div>
         
@@ -248,12 +239,6 @@
                         <img src="icon-192.png?v=2" alt="Link Call" class="header-logo-img">
                     </div>
                     <h1>Link Call</h1>
-                    <div class="user-info-header">
-                        <div class="balance-header" id="balance-header" data-i18n-title="settings_balance_title" title="الرصيد المتاح">
-                            <span class="balance-icon">💰</span>
-                            <span class="balance-header-value" id="header-balance">--</span>
-                            <span class="balance-header-currency">$</span>
-                        </div>
                         <div class="user-badge">
                             <span class="user-icon">👤</span>
                             <div class="user-text">
@@ -501,27 +486,6 @@
                         </div>
                     </div>
 
-                    <!-- قسم الرصيد -->
-                    <div class="settings-section" id="balance-section">
-                        <h4>💰 <span data-i18n="settings_balance_title">رصيد المكالمات</span></h4>
-                        <div class="balance-display">
-                            <div class="balance-amount">
-                                <span class="balance-value" id="account-balance">--</span>
-                                <span class="balance-currency" id="balance-currency">USD</span>
-                            </div>
-                            <div class="balance-status" id="balance-status" data-i18n="settings_loading">جاري التحميل...</div>
-                        </div>
-                        <div class="setting-item">
-                            <span class="setting-label" data-i18n="settings_account_status">حالة الحساب</span>
-                            <span class="setting-value" id="account-status">--</span>
-                        </div>
-                        <button class="recharge-btn" id="recharge-btn" onclick="openRechargeUrl()">
-                            💳 <span data-i18n="settings_recharge">إعادة شحن الرصيد</span>
-                        </button>
-                        <button class="refresh-balance-btn" onclick="loadAccountBalance()">
-                            🔄 <span data-i18n="settings_refresh_balance">تحديث الرصيد</span>
-                        </button>
-                    </div>
 
                     <!-- قسم تسعيرة المكالمات (للمطور فقط) -->
                     <div class="settings-section pricing-section" id="pricing-section" style="display: none;">

@@ -2219,7 +2219,7 @@
             
             const filtered = _cachedContacts.filter(c => 
                 (c.name || '').toLowerCase().includes(query) ||
-                (c.phone || '').includes(query) ||
+                String(c.phone || '').includes(query) ||
                 (c.email || '').toLowerCase().includes(query) ||
                 (c.notes || '').toLowerCase().includes(query)
             );

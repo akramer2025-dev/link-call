@@ -19,90 +19,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
     deferredPrompt = e;
     
     // إظهار زر التثبيت
-    if (installBtn) {
-        installBtn.style.display = 'block';
-        installBtn.classList.add('install-available');
-    }
-});
-
-// عند النقر على زر التثبيت
-if (installBtn) {
-    installBtn.addEventListener('click', async () => {
-        if (!deferredPrompt) {
-            // إذا كان التطبيق مثبت أو لا يدعم PWA
-            alert('التطبيق مثبت بالفعل أو المتصفح لا يدعم التثبيت\n\nلتثبيت التطبيق:\n1. افتح قائمة المتصفح (⋮)\n2. اختر "إضافة إلى الشاشة الرئيسية"');
-            return;
-        }
-        
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        
-        if (outcome === 'accepted') {
-            console.log('✅ PWA: تم قبول التثبيت');
-            installBtn.style.display = 'none';
-        } else {
-            console.log('❌ PWA: تم رفض التثبيت');
-        }
-        
-        deferredPrompt = null;
-    });
-}
-
-// عند اكتمال التثبيت
-window.addEventListener('appinstalled', () => {
-    console.log('✅ PWA: تم تثبيت التطبيق بنجاح!');
-    if (installBtn) {
-        installBtn.style.display = 'none';
-    }
-    deferredPrompt = null;
-});
-
-// التحقق إذا كان التطبيق يعمل كـ PWA مثبت
-if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-    console.log('📱 التطبيق يعمل كـ PWA مثبت');
-}
-
-// ===== تتبع المستخدمين الأونلاين =====
-let heartbeatInterval = null;
-
-// إرسال نبضة للخادم
-async function sendHeartbeat() {
-    const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
-    const userName = sessionStorage.getItem('fullname') || localStorage.getItem('employeeName') || 'مستخدم';
-    
-    if (!userId) return;
-    
-    try {
-        await fetch(`${API_BASE_URL}/heartbeat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, userName })
-        });
-    } catch (error) {
-        console.error('خطأ في إرسال Heartbeat:', error);
-    }
-}
-
-// بدء تتبع المستخدم الأونلاين
-function startOnlineTracking() {
-    const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
-    const userName = sessionStorage.getItem('fullname') || localStorage.getItem('employeeName');
-    
-    if (!userId) return;
-    
-    // تسجيل الدخول
-    fetch(`${API_BASE_URL}/track-login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, userName })
-    }).catch(err => console.error('خطأ في تسجيل الدخول:', err));
-    
-    // إرسال Heartbeat كل 15 ثانية
-    sendHeartbeat();
-    heartbeatInterval = setInterval(sendHeartbeat, 15000);
-    
-    console.log('🟢 بدأ تتبع الأونلاين للمستخدم:', userName);
-}
 
 // إيقاف تتبع المستخدم عند الخروج
 function stopOnlineTracking() {
@@ -364,7 +280,11 @@ async function initializeApp() {
             try {
                 attempts++;
                 console.log(`📡 محاولة ${attempts}/${maxAttempts}...`);
-                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`, {
+                const companyIdForToken = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
+                const tokenUrl = companyIdForToken 
+                    ? `${baseUrl}/token?identity=${clientIdentity}&companyId=${encodeURIComponent(companyIdForToken)}`
+                    : `${baseUrl}/token?identity=${clientIdentity}`;
+                response = await fetch(tokenUrl, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -3243,22 +3163,5 @@ if (userRole !== 'admin' && workReportsBtn) {
     workReportsBtn.style.display = 'none';
 }
 
-// ===== تحديث الرصيد تلقائياً كل 5 ثواني =====
-let balanceRefreshInterval = null;
-
-function startBalanceAutoRefresh() {
-    // تحديث فوري
-    loadAccountBalance();
-    
-    // تحديث كل 5 ثواني
-    balanceRefreshInterval = setInterval(() => {
-        loadAccountBalance();
-    }, 5000);
-    
-    console.log('✅ تحديث الرصيد التلقائي مفعّل - كل 5 ثواني');
-}
-
-// بدء تحديث الرصيد عند تحميل الصفحة
-startBalanceAutoRefresh();
 
 console.log('✅ التطبيق يعمل بشكل مستمر - لا يوجد تسجيل خروج تلقائي');

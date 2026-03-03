@@ -196,13 +196,19 @@
             // محاولة تسجيل دخول عبر نظام الشركات
             try {
                 const baseUrl = API_BASE_URL;
+                console.log('🔐 محاولة تسجيل الدخول...');
+                console.log('📡 URL:', `${baseUrl}/api/companies/login`);
+                console.log('👤 Username:', username);
+                
                 const response = await fetch(`${baseUrl}/api/companies/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 
+                console.log('📊 Response status:', response.status);
                 const data = await response.json();
+                console.log('📦 Response data:', JSON.stringify(data));
                 
                 if (response.ok && data.success) {
                     sessionStorage.setItem('isLoggedIn', 'true');
@@ -267,15 +273,17 @@
 
                 } else {
                     hideLoading();
-                    errorMessage.textContent = '⚠️ ' + (data.error || 'اسم المستخدم أو كلمة المرور غير صحيحة');
+                    const errMsg = data.error || 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                    console.error('❌ Login failed:', errMsg, '| Status:', response.status);
+                    errorMessage.textContent = '⚠️ ' + errMsg;
                     errorMessage.classList.remove('hidden');
                     loginForm.classList.add('shake');
                     setTimeout(() => loginForm.classList.remove('shake'), 500);
                 }
             } catch (error) {
                 hideLoading();
-                console.error('❌ خطأ في تسجيل الدخول:', error);
-                errorMessage.textContent = '⚠️ خطأ في الاتصال بالخادم';
+                console.error('❌ خطأ في تسجيل الدخول:', error.message, error);
+                errorMessage.textContent = '⚠️ خطأ في الاتصال بالخادم: ' + error.message;
                 errorMessage.classList.remove('hidden');
                 loginForm.classList.add('shake');
                 setTimeout(() => loginForm.classList.remove('shake'), 500);

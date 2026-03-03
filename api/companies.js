@@ -434,7 +434,13 @@ module.exports.deleteCompany = async (req, res) => {
 // POST /api/companies/login - Company OR Employee login
 module.exports.login = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        // Parse body manually as fallback (Vercel sometimes needs this)
+        let body = req.body;
+        if (typeof body === 'string') {
+            try { body = JSON.parse(body); } catch(e) { body = {}; }
+        }
+        if (!body || typeof body !== 'object') body = {};
+        const { username, password } = body;
 
         if (!username || !password) {
             return res.status(400).json({
@@ -528,7 +534,7 @@ module.exports.login = async (req, res) => {
 
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ success: false, error: 'حدث خطأ أثناء تسجيل الدخول' });
+        res.status(500).json({ success: false, error: 'خطأ: ' + error.message });
     }
 };
 
@@ -732,6 +738,14 @@ module.exports = async (req, res) => {
     
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
+    }
+
+    // Ensure req.body is parsed (fallback for Vercel edge cases)
+    if (req.method !== 'GET' && typeof req.body === 'string') {
+        try { req.body = JSON.parse(req.body); } catch(e) { req.body = {}; }
+    }
+    if (req.method !== 'GET' && (!req.body || typeof req.body !== 'object')) {
+        req.body = {};
     }
 
     try {

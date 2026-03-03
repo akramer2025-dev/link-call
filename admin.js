@@ -1062,7 +1062,9 @@ async function loadCompanies() {
                 isActive: c.status === 'active',
                 employeesCount: c.employeesCount || 0,
                 createdAt: c.createdAt || '',
-                twilioPhone: c.twilioPhone || ''
+                twilioPhone: c.twilioPhone || '',
+                twilioEnvPrefix: c.twilioEnvPrefix || null,
+                twilioCredentials: c.twilioCredentials || null
             }));
             renderCompanies();
             updateCompaniesStats();

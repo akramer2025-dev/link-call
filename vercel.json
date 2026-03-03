@@ -66,6 +66,10 @@
       "dest": "/api/companies.js"
     },
     {
+      "src": "/api/companies",
+      "dest": "/api/companies.js"
+    },
+    {
       "src": "/api/companies/(.*)",
       "dest": "/api/companies.js"
     },

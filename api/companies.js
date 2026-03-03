@@ -165,7 +165,7 @@ module.exports.getAllCompanies = async (req, res) => {
     try {
         const companiesData = await getCompaniesData();
         
-        // Remove sensitive data
+        // Remove sensitive data (password, verificationToken) but keep Twilio + plan info
         const companies = companiesData.companies.map(c => ({
             id: c.id,
             companyName: c.companyName,
@@ -179,7 +179,13 @@ module.exports.getAllCompanies = async (req, res) => {
             employeesCount: c.employeesCount,
             callsCount: c.callsCount,
             createdAt: c.createdAt,
-            lastLoginAt: c.lastLoginAt
+            lastLoginAt: c.lastLoginAt,
+            // Twilio info needed for admin dashboard
+            twilioPhone: c.twilioPhone || null,
+            twilioEnvPrefix: c.twilioEnvPrefix || null,
+            twilioCredentials: c.twilioCredentials
+                ? { accountSid: c.twilioCredentials.accountSid, phoneNumber: c.twilioCredentials.phoneNumber, twimlAppSid: c.twilioCredentials.twimlAppSid, updatedAt: c.twilioCredentials.updatedAt }
+                : null
         }));
 
         res.json({

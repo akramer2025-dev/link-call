@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "link-call",
   "functions": {
     "api/voice.js": {
       "maxDuration": 25
@@ -10,21 +9,11 @@
     },
     "api/twilio-setup.js": {
       "maxDuration": 30
+    },
+    "api/companies.js": {
+      "maxDuration": 30
     }
   },
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "."
-      }
-    }
-  ],
   "routes": [
     {
       "src": "/(.*\\.(css|js|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webmanifest))",

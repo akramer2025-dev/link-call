@@ -130,7 +130,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 // 🔥 DEBUG: طباعة معلومات في بداية التحميل
-console.log('🔥 app.js loaded - Version: 2.0.20260304b');
+console.log('🔥 app.js loaded - Version: 2.0.20260304c');
 console.log('🔥 Current URL:', window.location.href);
 
 // عناصر الواجهة
@@ -431,6 +431,25 @@ async function initializeApp() {
                 }, 1500); // تأخير 1.5 ثانية
             }
         });
+
+        // 🔄 تجديد Token تلقائياً قبل انتهائه بـ 30 ثانية
+        device.on('tokenWillExpire', async () => {
+            console.log('⏰ Token على وشك الانتهاء — جاري التجديد...');
+            try {
+                const cidR = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
+                const empIdR = localStorage.getItem('employeeId') || sessionStorage.getItem('employeeId') || 'admin';
+                const r = await fetch(`${baseUrl}/token?identity=client_${empIdR}&companyId=${cidR}`);
+                if (r.ok) {
+                    const d = await r.json();
+                    if (d.token) {
+                        device.updateToken(d.token);
+                        console.log('✅ Token جُدِّد تلقائياً');
+                    }
+                }
+            } catch (e) {
+                console.error('❌ فشل تجديد Token:', e.message);
+            }
+        });
         
         device.on('error', (error) => {
             console.error('❌ خطأ في Device:', error);
@@ -444,6 +463,25 @@ async function initializeApp() {
         
         // تسجيل الـ Device
         await device.register();
+
+        // 🔄 تجديد Token دوري كل 45 دقيقة (backup لـ tokenWillExpire)
+        setInterval(async () => {
+            if (!device) return;
+            try {
+                const cidP = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
+                const empIdP = localStorage.getItem('employeeId') || sessionStorage.getItem('employeeId') || 'admin';
+                const rp = await fetch(`${baseUrl}/token?identity=client_${empIdP}&companyId=${cidP}`);
+                if (rp.ok) {
+                    const dp = await rp.json();
+                    if (dp.token) {
+                        device.updateToken(dp.token);
+                        console.log('🔄 Token جُدِّد دورياً (45 دقيقة)');
+                    }
+                }
+            } catch (ep) {
+                console.warn('⚠️ فشل التجديد الدوري للـ Token:', ep.message);
+            }
+        }, 45 * 60 * 1000); // كل 45 دقيقة
         
         // تحميل التسجيلات
         loadRecordings();

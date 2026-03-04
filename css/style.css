@@ -4523,7 +4523,7 @@ input:checked + .slider:before {
         flex: 1 !important;
         min-height: 0 !important;        /* مهم جداً - يتيح التقلص */
         width: 100% !important;
-        padding: 10px !important;
+        padding: 4px !important;
         box-sizing: border-box !important;
         display: flex !important;
         flex-direction: column !important;
@@ -4547,7 +4547,7 @@ input:checked + .slider:before {
         width: 100% !important;
         max-width: 440px !important;
         margin: 0 auto !important;
-        padding: 10px 8px 6px !important;
+        padding: 6px 8px 6px !important;
         box-sizing: border-box !important;
         background: rgba(255,255,255,0.05) !important;
         border: 1px solid rgba(94,196,212,0.2) !important;

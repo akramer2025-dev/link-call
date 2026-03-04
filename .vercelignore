@@ -8,9 +8,6 @@ backups/
 data/
 docs/
 scripts/
-server.js
-admin.js
-app.js
 check-shahd.js
 check-shahd2.js
 delete-all-contacts.js

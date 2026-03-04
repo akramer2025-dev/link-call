@@ -2851,5 +2851,16 @@ app.get('/my-company', async (req, res) => {
 
 console.log('✅ نظام الشركات المتعددة جاهز');
 
+// ─── Forwarded handlers (moved out of api/ to reduce function count) ───
+const accountsHandler = require('../handlers/accounts');
+const callHistoryStandaloneHandler = require('../handlers/call-history');
+const workTrackingStandaloneHandler = require('../handlers/work-tracking');
+
+app.all('/api/accounts', (req, res) => accountsHandler(req, res));
+app.all('/api/accounts/*', (req, res) => accountsHandler(req, res));
+app.all('/api/call-history', (req, res) => callHistoryStandaloneHandler(req, res));
+app.all('/api/call-history/*', (req, res) => callHistoryStandaloneHandler(req, res));
+app.all('/api/work-tracking', (req, res) => workTrackingStandaloneHandler(req, res));
+
 // Export for Vercel serverless
 module.exports = app;

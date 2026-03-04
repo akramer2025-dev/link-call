@@ -226,12 +226,18 @@
                         // الصلاحيات (مصفوفة في النظام الجديد)
                         const permsArr = Array.isArray(emp.permissions) ? emp.permissions : [];
                         const hasPerm = (p) => permsArr.includes(p);
+                        
+                        // حفظ مصفوفة الصلاحيات الجديدة كاملة
+                        sessionStorage.setItem('employeePermissions', JSON.stringify(permsArr));
+                        console.log('🔑 صلاحيات الموظف:', permsArr);
+                        
+                        // التوافق مع النظام القديم
                         const permsObj = {
-                            viewOwnRecordings: hasPerm('viewOwnRecordings'),
-                            viewAllRecordings: hasPerm('viewAllRecordings'),
-                            deleteRecordings:  hasPerm('deleteRecordings'),
-                            editProfile:       hasPerm('editProfile'),
-                            callFromUSA:       hasPerm('callFromUSA'),
+                            viewOwnRecordings: hasPerm('viewOwnRecordings') || hasPerm('listen_recordings'),
+                            viewAllRecordings: hasPerm('viewAllRecordings') || hasPerm('listen_recordings'),
+                            deleteRecordings:  hasPerm('deleteRecordings') || hasPerm('delete_recordings'),
+                            editProfile:       hasPerm('editProfile') || hasPerm('edit_profile'),
+                            callFromUSA:       hasPerm('callFromUSA') || hasPerm('make_calls'),
                             callFromEgypt:     hasPerm('callFromEgypt'),
                             callFromSaudi:     hasPerm('callFromSaudi')
                         };

@@ -2667,16 +2667,49 @@ if (sidebarAdminBtn) {
     }
 }
 
-// إظهار أزرار الشركة (CRM - تقارير - حسابات - موظفين) لمديري الشركات
+// إظهار أزرار الشركة بناءً على الصلاحيات
 (function showCompanyNavButtons() {
     const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId');
     const role = sessionStorage.getItem('userRole');
-    // إظهار للمدير (owner) والموظف (agent/employee) ولكن ليس للأدمن (developer)
-    if (companyId && role !== 'admin') {
+    
+    // الأدمن (developer) لا يرى أزرار الشركة
+    if (!companyId || role === 'admin') return;
+    
+    // المالك (owner) يرى كل شيء
+    if (role === 'owner') {
         document.querySelectorAll('.company-nav-btn').forEach(function(btn) {
             btn.style.display = 'flex';
         });
+        return;
     }
+    
+    // الموظف - نتحقق من الصلاحيات
+    let perms = [];
+    try {
+        perms = JSON.parse(sessionStorage.getItem('employeePermissions') || '[]');
+    } catch(e) { perms = []; }
+    
+    const hasPerm = (p) => perms.includes(p);
+    console.log('🔐 صلاحيات القائمة الجانبية:', perms);
+    
+    // ربط كل زر بالصلاحية المطلوبة
+    const permMap = {
+        'manage-employees-nav-btn':  ['manage_employees', 'view_employees'],
+        'company-reports-nav-btn':   ['view_reports', 'export_reports'],
+        'customer-reports-nav-btn':  ['view_reports', 'export_reports'],
+        'accounts-nav-btn':          ['manage_employees'],  // الحسابات للمديرين فقط
+        'company-crm-nav-btn':       ['view_contacts', 'add_contacts', 'edit_contacts']
+    };
+    
+    Object.keys(permMap).forEach(function(btnId) {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        const requiredPerms = permMap[btnId];
+        const hasAccess = requiredPerms.some(p => hasPerm(p));
+        if (hasAccess) {
+            btn.style.display = 'flex';
+        }
+    });
 })();
 
 // معالجة زر الحذف

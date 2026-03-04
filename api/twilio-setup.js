@@ -94,6 +94,14 @@ module.exports = async (req, res) => {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
+        // ── Body parsing fallback ────────────────────────────────────────
+        if (req.method !== 'GET' && typeof req.body === 'string') {
+            try { req.body = JSON.parse(req.body); } catch(e) { req.body = {}; }
+        }
+        if (req.method !== 'GET' && (!req.body || typeof req.body !== 'object')) {
+            req.body = {};
+        }
+
         const { companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber, twimlAppSid: manualTwimlSid } = req.body || {};
 
         if (!companyId) return res.status(400).json({ error: 'companyId مطلوب' });
@@ -112,38 +120,49 @@ module.exports = async (req, res) => {
         if (!compSnap.exists()) return res.status(404).json({ error: 'الشركة غير موجودة' });
         const companyName = compSnap.data().companyName || companyId;
 
-        // ── 2. Create TwiML App (best-effort, non-blocking) ───────────────
+        // ── 2. Create TwiML App (only if missing!) ───────────────────────
         let twimlAppSid = manualTwimlSid || null;
         let finalApiKey = cleanApiKey;
         let finalApiSecret = cleanApiSecret;
         let setupWarning = null;
 
-        try {
-            const client = twilio(cleanSid, cleanToken);
-            const appFriendlyName = `LinkCall - ${companyName}`;
-            const existingApps = await client.applications.list({ friendlyName: appFriendlyName, limit: 1 });
+        // ⚡ Fast path: إذا كان TwiML App SID و API Key موجودين → حفظ مباشرةً بدون استدعاء Twilio API
+        const hasTwimlApp = !!(twimlAppSid && twimlAppSid.startsWith('AP'));
+        const hasApiKey   = !!(finalApiKey && finalApiSecret);
 
-            if (existingApps.length > 0) {
-                twimlAppSid = existingApps[0].sid;
-                await client.applications(twimlAppSid).update({ voiceUrl: VOICE_WEBHOOK_URL, voiceMethod: 'POST' });
-                console.log(`♻️ twilio-setup: TwiML App مُحدَّث ${twimlAppSid}`);
-            } else {
-                const app = await client.applications.create({ friendlyName: appFriendlyName, voiceUrl: VOICE_WEBHOOK_URL, voiceMethod: 'POST' });
-                twimlAppSid = app.sid;
-                console.log(`✅ twilio-setup: TwiML App جديد ${twimlAppSid}`);
-            }
+        if (!hasTwimlApp || !hasApiKey) {
+            // Slow path: نحتاج نكلم Twilio API لإنشاء TwiML App أو API Key
+            try {
+                const client = twilio(cleanSid, cleanToken);
+                const appFriendlyName = `LinkCall - ${companyName}`;
 
-            // Auto-create API Key if missing
-            if (!finalApiKey || !finalApiSecret) {
-                const newKey = await client.newKeys.create({ friendlyName: `LinkCall-${companyName}` });
-                finalApiKey = newKey.sid;
-                finalApiSecret = newKey.secret;
-                console.log(`🔑 twilio-setup: API Key تلقائي ${finalApiKey}`);
+                if (!hasTwimlApp) {
+                    const existingApps = await client.applications.list({ friendlyName: appFriendlyName, limit: 1 });
+                    if (existingApps.length > 0) {
+                        twimlAppSid = existingApps[0].sid;
+                        await client.applications(twimlAppSid).update({ voiceUrl: VOICE_WEBHOOK_URL, voiceMethod: 'POST' });
+                        console.log(`♻️ twilio-setup: TwiML App مُحدَّث ${twimlAppSid}`);
+                    } else {
+                        const app = await client.applications.create({ friendlyName: appFriendlyName, voiceUrl: VOICE_WEBHOOK_URL, voiceMethod: 'POST' });
+                        twimlAppSid = app.sid;
+                        console.log(`✅ twilio-setup: TwiML App جديد ${twimlAppSid}`);
+                    }
+                }
+
+                // Auto-create API Key if missing
+                if (!hasApiKey) {
+                    const newKey = await client.newKeys.create({ friendlyName: `LinkCall-${companyName}` });
+                    finalApiKey = newKey.sid;
+                    finalApiSecret = newKey.secret;
+                    console.log(`🔑 twilio-setup: API Key تلقائي ${finalApiKey}`);
+                }
+            } catch (twilioErr) {
+                // Don't block saving — credentials may still be valid for calls
+                console.error('⚠️ twilio-setup: TwiML App فشل (credentials ستُحفظ):', twilioErr.code, twilioErr.message);
+                setupWarning = `TwiML App لم يُنشأ (${twilioErr.code || twilioErr.status || twilioErr.message}) — يمكن إعادة الحفظ لاحقاً`;
             }
-        } catch (twilioErr) {
-            // Don't block saving — credentials may still be valid for calls
-            console.error('⚠️ twilio-setup: TwiML App فشل (credentials ستُحفظ):', twilioErr.code, twilioErr.message);
-            setupWarning = `TwiML App لم يُنشأ (${twilioErr.code || twilioErr.status || twilioErr.message}) — يمكن إعادة الحفظ لاحقاً`;
+        } else {
+            console.log(`⚡ twilio-setup: TwiML App و API Key موجودان — حفظ مباشر بدون Twilio API`);
         }
 
         // ── 3. Save to Firestore regardless of TwiML App result ──────────

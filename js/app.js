@@ -130,7 +130,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 // 🔥 DEBUG: طباعة معلومات في بداية التحميل
-console.log('🔥 app.js loaded - Version: 2.0.20251218');
+console.log('🔥 app.js loaded - Version: 2.0.20260304');
 console.log('🔥 Current URL:', window.location.href);
 
 // عناصر الواجهة

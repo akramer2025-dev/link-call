@@ -4821,3 +4821,25 @@ input:checked + .slider:before {
     }
 
 }
+
+/* ═══════════════════════════════════════════════════════
+   GLOBAL LAYOUT FIX — ضمان الترتيب العمودي على كل الشاشات
+   ═══════════════════════════════════════════════════════ */
+.main-content {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.header {
+    width: 100% !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+}
+
+.header-top {
+    width: 100% !important;
+}
+
+.dialpad {
+    width: 100% !important;
+}

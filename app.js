@@ -46,7 +46,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 // 🔥 DEBUG: طباعة معلومات في بداية التحميل
-console.log('🔥 app.js loaded - Version: 2.0.20251218');
+console.log('🔥 app.js loaded - Version: 2.0.20260304');
 console.log('🔥 Current URL:', window.location.href);
 
 // عناصر الواجهة
@@ -268,7 +268,9 @@ async function initializeApp() {
         const baseUrl = API_BASE_URL;
         const empId = localStorage.getItem('employeeId') || sessionStorage.getItem('employeeId') || 'admin';
         const clientIdentity = `client_${empId}`;
+        const cid = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
         console.log('🆔 Client Identity:', clientIdentity);
+        console.log('🏢 Company ID للتوكن:', cid);
         console.log('🔗 Fetching token from:', `${baseUrl}/token`);
         
         // محاولة الحصول على Token مع retry
@@ -280,11 +282,7 @@ async function initializeApp() {
             try {
                 attempts++;
                 console.log(`📡 محاولة ${attempts}/${maxAttempts}...`);
-                const companyIdForToken = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
-                const tokenUrl = companyIdForToken 
-                    ? `${baseUrl}/token?identity=${clientIdentity}&companyId=${encodeURIComponent(companyIdForToken)}`
-                    : `${baseUrl}/token?identity=${clientIdentity}`;
-                response = await fetch(tokenUrl, {
+                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}&companyId=${cid}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'

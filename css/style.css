@@ -4485,19 +4485,105 @@ input:checked + .slider:before {
     */
 @media (max-width: 768px) {
 
-    /*  إخفاء هيدر الديسكتوب  */
-    .header,
-    .header-top,
-    .header h1,
-    .header-logo-container,
-    .header-logo-img,
-    .user-badge,
-    .logout-header-btn,
-    .admin-link-btn,
+    /*  هيدر الموبايل — في المنتصف فوق الأرقام  */
+    .header {
+        display: block !important;
+        text-align: center !important;
+        margin: 0 0 12px 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .header-top {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .header-logo-container {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 52px !important;
+        height: 52px !important;
+    }
+
+    .header-logo-img {
+        display: block !important;
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 50% !important;
+        border: 2px solid rgba(99,102,241,0.5) !important;
+    }
+
+    .header h1 {
+        display: block !important;
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        color: #fff !important;
+        margin: 0 !important;
+        text-align: center !important;
+    }
+
+    .user-badge {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        background: rgba(99,102,241,0.15) !important;
+        border: 1px solid rgba(99,102,241,0.3) !important;
+        border-radius: 20px !important;
+        padding: 4px 14px !important;
+    }
+
+    .user-icon { font-size: 14px !important; }
+
+    .user-name-header {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: #fff !important;
+    }
+
+    .user-role-header {
+        font-size: 11px !important;
+        color: rgba(165,180,252,0.8) !important;
+    }
+
+    .user-text {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 4px !important;
+        align-items: center !important;
+    }
+
+    .logout-header-btn {
+        display: flex !important;
+        position: absolute !important;
+        top: 62px !important;
+        left: 12px !important;
+        background: rgba(239,68,68,0.15) !important;
+        border: 1px solid rgba(239,68,68,0.3) !important;
+        border-radius: 8px !important;
+        padding: 5px 10px !important;
+        font-size: 12px !important;
+        color: #fca5a5 !important;
+        cursor: pointer !important;
+    }
+
+    .logout-text { display: inline !important; }
+
+    .admin-link-btn {
+        display: none !important;
+    }
+
     .user-info-header {
         display: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
     }
 
     /*  تضبيط الحاوية  */

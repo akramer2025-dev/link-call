@@ -32,7 +32,7 @@
     <!-- Security Protection -->
     <script src="js/protection.js?v=1.0" defer></script>
     
-    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/style.css?v=7">
     <!-- Twilio Voice SDK v2.11 from unpkg -->
     <script src="https://unpkg.com/@twilio/voice-sdk@2.11.2/dist/twilio.min.js"></script>
 </head>
@@ -98,7 +98,14 @@
             <img src="icon-192.png?v=2" alt="Link Call" class="mobile-logo">
             <span class="mobile-title">Link Call</span>
         </div>
-        
+        <div class="mobile-header-user">
+            <span class="mobile-header-username" id="mobile-header-username">--</span>
+        </div>
+        <div class="mobile-balance" id="mobile-balance-container">
+            <span>💰</span>
+            <span class="mobile-balance-value" id="mobile-header-balance">--</span>
+            <span class="mobile-balance-currency">$</span>
+        </div>
     </header>
     
     <!-- الخلفية المعتمة -->
@@ -802,7 +809,7 @@
     </script>
     <!-- App Script - REST API Mode -->
     <script src="js/i18n.js"></script>
-    <script src="js/app.js?v=17"></script>
+    <script src="js/app.js?v=18"></script>
     
     <script>
         // إنشاء النجوم المتحركة

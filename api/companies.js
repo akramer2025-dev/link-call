@@ -483,11 +483,21 @@ module.exports.login = async (req, res) => {
         // ─── 2. هل هو موظف في إحدى الشركات؟ ───
         let foundEmployee = null;
         let foundCompany  = null;
+
+        // normalize: استبدل المسافات بـ underscore للمقارنة
+        const usernameNorm = usernameTrimmed.replace(/\s+/g, '_');
+
         for (const c of companiesData.companies) {
-            const emp = (c.employees || []).find(
-                e => !e._deleted && e.active !== false &&
-                     (e.username || '').toLowerCase() === usernameTrimmed
-            );
+            const emp = (c.employees || []).find(e => {
+                if (e._deleted || e.active === false) return false;
+                const stored = (e.username || '').toLowerCase();
+                const storedNorm = stored.replace(/\s+/g, '_');
+                // مطابقة مرنة: بالمسافة أو بـ underscore
+                return stored === usernameTrimmed
+                    || stored === usernameNorm
+                    || storedNorm === usernameTrimmed
+                    || storedNorm === usernameNorm;
+            });
             if (emp) { foundEmployee = emp; foundCompany = c; break; }
         }
 

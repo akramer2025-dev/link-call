@@ -130,7 +130,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 // 🔥 DEBUG: طباعة معلومات في بداية التحميل
-console.log('🔥 app.js loaded - Version: 2.0.20260304');
+console.log('🔥 app.js loaded - Version: 2.0.20260304b');
 console.log('🔥 Current URL:', window.location.href);
 
 // عناصر الواجهة
@@ -2327,6 +2327,7 @@ function displayUserInfo() {
     const headerRole = document.getElementById('header-role');
     const sidebarUsername = document.getElementById('sidebar-username');
     const sidebarRole = document.getElementById('sidebar-role');
+    const mobileHeaderUsername = document.getElementById('mobile-header-username');
     
     const displayName = fullname || username || 'مستخدم';
     console.log('✅ عرض الاسم:', displayName);
@@ -2337,6 +2338,10 @@ function displayUserInfo() {
     
     if (sidebarUsername) {
         sidebarUsername.textContent = displayName;
+    }
+
+    if (mobileHeaderUsername) {
+        mobileHeaderUsername.textContent = displayName;
     }
     
     const roleText = role === 'admin' ? '👑 مطور'
@@ -2380,6 +2385,7 @@ async function loadAccountBalance() {
     const headerBalanceEl = document.getElementById('header-balance');
     const headerBalanceContainer = document.getElementById('balance-header');
     const sidebarBalanceEl = document.getElementById('sidebar-balance');
+    const mobileBalanceEl = document.getElementById('mobile-header-balance');
     
     try {
         if (balanceEl) {
@@ -2417,6 +2423,11 @@ async function loadAccountBalance() {
             // تحديث القائمة الجانبية
             if (sidebarBalanceEl) {
                 sidebarBalanceEl.textContent = balance;
+            }
+
+            // تحديث هيدر الموبايل
+            if (mobileBalanceEl) {
+                mobileBalanceEl.textContent = balance;
             }
             
             // حفظ رابط الشحن

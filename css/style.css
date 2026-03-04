@@ -303,25 +303,41 @@ body::after {
         z-index: 997;
         border-bottom: 1px solid rgba(94, 196, 212, 0.2);
         box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        gap: 8px;
     }
     
     .mobile-brand {
         display: flex;
         align-items: center;
         gap: 8px;
+        flex-shrink: 0;
     }
     
     .mobile-logo {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
     }
     
     .mobile-title {
-        font-size: 1.1em;
+        font-size: 0.95em;
         font-weight: 600;
         color: white;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .mobile-header-user {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .mobile-header-username {
+        font-size: 0.75em;
+        color: rgba(255, 255, 255, 0.75);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
     }
     
     .mobile-balance {
@@ -329,19 +345,20 @@ body::after {
         align-items: center;
         gap: 3px;
         background: linear-gradient(135deg, rgba(94, 196, 212, 0.2), rgba(30, 58, 95, 0.3));
-        padding: 6px 10px;
+        padding: 5px 8px;
         border-radius: 20px;
         border: 1px solid rgba(94, 196, 212, 0.3);
+        flex-shrink: 0;
     }
     
     .mobile-balance-value {
-        font-size: 0.9em;
+        font-size: 0.85em;
         font-weight: 600;
         color: #5ec4d4;
     }
     
     .mobile-balance-currency {
-        font-size: 0.75em;
+        font-size: 0.7em;
         color: rgba(94, 196, 212, 0.8);
     }
 }

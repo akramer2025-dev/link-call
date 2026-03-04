@@ -53,6 +53,10 @@
       "dest": "/api/$1.js"
     },
     {
+      "src": "/api/twilio-setup",
+      "dest": "/api/companies.js"
+    },
+    {
       "src": "/api/recording-status",
       "dest": "/api/recordings.js"
     },

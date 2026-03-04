@@ -741,7 +741,7 @@ module.exports = async (req, res) => {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -758,6 +758,11 @@ module.exports = async (req, res) => {
     try {
         const url = req.url || '';
         const method = req.method;
+
+        // ─── Twilio Setup routes (merged from twilio-setup.js) ───
+        if (url.includes('/twilio-setup')) {
+            return handleTwilioSetup(req, res);
+        }
 
         // Route the request based on URL and method
         if (url.includes('/balance') && method === 'GET') {
@@ -806,3 +811,120 @@ module.exports.initFromFile = _initFromFile;
 module.exports.getBalance = _getBalance;
 module.exports.deductBalance = _deductBalance;
 module.exports.setBalance = _setBalance;
+
+// ═══════════════════════════════════════════════════════════════════════
+// Twilio Setup Handler (merged from twilio-setup.js)
+// ═══════════════════════════════════════════════════════════════════════
+const VOICE_WEBHOOK_URL = 'https://linkcall.akrammostafa.com/api/voice';
+
+async function handleTwilioSetup(req, res) {
+    const authHeader = req.headers.authorization || '';
+    const adminToken = process.env.ADMIN_SECRET || 'linkcall-super-admin-2024';
+    if (!authHeader.includes(adminToken)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const twilio = require('twilio');
+        const { getDb } = require('../utils/firebase');
+        const { doc, getDoc, updateDoc } = require('firebase/firestore');
+        const db = getDb();
+
+        if (req.method === 'GET') {
+            const companyId = req.query.companyId;
+            if (!companyId) return res.status(400).json({ error: 'companyId required' });
+            const snap = await getDoc(doc(db, 'companies', companyId));
+            if (!snap.exists()) return res.status(404).json({ error: 'Company not found' });
+            const tc = snap.data().twilioCredentials || null;
+            if (!tc) return res.status(200).json({ configured: false });
+            return res.status(200).json({
+                configured: true,
+                accountSid: tc.accountSid,
+                authToken: tc.authToken ? tc.authToken.substring(0, 6) + '••••••••••••••••••••••••••' : null,
+                apiKey: tc.apiKey,
+                apiSecret: tc.apiSecret ? tc.apiSecret.substring(0, 6) + '••••••••' : null,
+                twimlAppSid: tc.twimlAppSid,
+                phoneNumber: tc.phoneNumber,
+                updatedAt: tc.updatedAt,
+            });
+        }
+
+        if (req.method === 'DELETE') {
+            const companyId = req.query.companyId;
+            if (!companyId) return res.status(400).json({ error: 'companyId required' });
+            const snap = await getDoc(doc(db, 'companies', companyId));
+            if (!snap.exists()) return res.status(404).json({ error: 'Company not found' });
+            await updateDoc(doc(db, 'companies', companyId), { twilioCredentials: null });
+            return res.status(200).json({ success: true, message: 'تم إزالة إعدادات Twilio' });
+        }
+
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: 'Method not allowed' });
+        }
+
+        const { companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber, twimlAppSid: manualTwimlSid } = req.body || {};
+        if (!companyId) return res.status(400).json({ error: 'companyId مطلوب' });
+        if (!accountSid) return res.status(400).json({ error: 'accountSid مطلوب' });
+        if (!authToken) return res.status(400).json({ error: 'authToken مطلوب' });
+
+        const cleanSid = accountSid.trim();
+        const cleanToken = authToken.trim();
+        const cleanApiKey = (apiKey || '').trim() || null;
+        const cleanApiSecret = (apiSecret || '').trim() || null;
+        const cleanPhone = (phoneNumber || '').trim() || null;
+
+        const compSnap = await getDoc(doc(db, 'companies', companyId));
+        if (!compSnap.exists()) return res.status(404).json({ error: 'الشركة غير موجودة' });
+        const companyName = compSnap.data().companyName || companyId;
+
+        let twimlAppSid = manualTwimlSid || null;
+        let finalApiKey = cleanApiKey;
+        let finalApiSecret = cleanApiSecret;
+        let setupWarning = null;
+
+        const hasTwimlApp = !!(twimlAppSid && twimlAppSid.startsWith('AP'));
+        const hasApiKey = !!(finalApiKey && finalApiSecret);
+
+        if (!hasTwimlApp || !hasApiKey) {
+            try {
+                const client = twilio(cleanSid, cleanToken);
+                const appFriendlyName = `LinkCall - ${companyName}`;
+                if (!hasTwimlApp) {
+                    const existingApps = await client.applications.list({ friendlyName: appFriendlyName, limit: 1 });
+                    if (existingApps.length > 0) {
+                        twimlAppSid = existingApps[0].sid;
+                        await client.applications(twimlAppSid).update({ voiceUrl: VOICE_WEBHOOK_URL, voiceMethod: 'POST' });
+                    } else {
+                        const app = await client.applications.create({ friendlyName: appFriendlyName, voiceUrl: VOICE_WEBHOOK_URL, voiceMethod: 'POST' });
+                        twimlAppSid = app.sid;
+                    }
+                }
+                if (!hasApiKey) {
+                    const newKey = await client.newKeys.create({ friendlyName: `LinkCall-${companyName}` });
+                    finalApiKey = newKey.sid;
+                    finalApiSecret = newKey.secret;
+                }
+            } catch (twilioErr) {
+                console.error('⚠️ twilio-setup error:', twilioErr.code, twilioErr.message);
+                setupWarning = `TwiML App لم يُنشأ (${twilioErr.code || twilioErr.message})`;
+            }
+        }
+
+        const twilioCredentials = {
+            accountSid: cleanSid, authToken: cleanToken,
+            apiKey: finalApiKey, apiSecret: finalApiSecret,
+            twimlAppSid: twimlAppSid || null, phoneNumber: cleanPhone,
+            updatedAt: new Date().toISOString(),
+        };
+        await updateDoc(doc(db, 'companies', companyId), { twilioCredentials });
+
+        return res.status(200).json({
+            success: true, twimlAppSid, apiKeyCreated: !cleanApiKey, warning: setupWarning,
+            message: setupWarning ? `تم حفظ بيانات Twilio. ملاحظة: ${setupWarning}` : `تم حفظ إعدادات Twilio بنجاح لشركة ${companyName}`,
+            phoneNumber: cleanPhone,
+        });
+    } catch (error) {
+        console.error('❌ twilio-setup error:', error);
+        return res.status(500).json({ error: error.message });
+    }
+}

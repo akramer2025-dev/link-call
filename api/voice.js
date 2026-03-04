@@ -1,5 +1,23 @@
 const twilio = require('twilio');
 
+// ⏱️ زيادة timeout الـ function لـ 30 ثانية (Vercel config)
+module.exports.config = { maxDuration: 30 };
+
+// 🗄️ Cache بسيط للـ credentials (5 دقائق) — يمنع Firestore read في كل مكالمة
+const _credsCache = new Map();
+async function getCachedCredentials(companyId) {
+    const getTwilioCredentials = require('../utils/getTwilioCredentials');
+    const cacheKey = companyId || '__default__';
+    const cached   = _credsCache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < 5 * 60 * 1000) {
+        console.log('⚡ voice.js: credentials من cache');
+        return cached.data;
+    }
+    const data = await getTwilioCredentials(companyId);
+    _credsCache.set(cacheKey, { data, ts: Date.now() });
+    return data;
+}
+
 // 🔥 دالة لتنسيق الأرقام المصرية والسعودية تلقائياً
 function formatPhoneNumber(phoneNumber) {
     // تنظيف الرقم من المسافات والأحرف الخاصة
@@ -114,26 +132,31 @@ module.exports = async (req, res) => {
 
         console.log('📥 voice.js body:', { callTo, employeeId, companyId, callSid });
 
-        // إذا لم يكن هناك رقم هدف، نرجع TwiML خطأ مباشرة
         if (!callTo) {
-            console.error('❌ voice.js: لا يوجد رقم To في الطلب! body:', JSON.stringify(req.body));
+            console.error('❌ voice.js: لا يوجد رقم To في الطلب!');
             const twimlErr = new twilio.twiml.VoiceResponse();
             twimlErr.say({ language: 'ar-SA' }, 'خطأ: لم يتم تحديد رقم الهاتف.');
             res.setHeader('Content-Type', 'text/xml');
             return res.status(200).send(twimlErr.toString());
         }
 
-        // تنسيق رقم الهاتف لإضافة كود مصر تلقائياً
         const formattedCallTo = formatPhoneNumber(callTo);
 
-        console.log('📞 مكالمة جديدة:', { callSid, to: callTo, formattedTo: formattedCallTo, employeeId, companyId });
+        // ── 🚀 تشغيل Firestore بالتوازي لتسريع الرد ──────────────────────
+        const { getDb } = require('../utils/firebase');
+        const { doc, getDoc, setDoc } = require('firebase/firestore');
+        const db = getDb();
 
-        // ── جلب credentials الشركة (Firestore أولاً ← ENV prefix ← default) ──
-        const getTwilioCredentials = require('../utils/getTwilioCredentials');
-        const creds             = await getTwilioCredentials(companyId);
+        // الطلبين المهمين معاً في نفس الوقت (credentials محملة من cache)
+        const [creds, disableRecordingSnap] = await Promise.all([
+            getCachedCredentials(companyId),
+            companyId
+                ? getDoc(doc(db, 'companies', companyId)).catch(() => null)
+                : Promise.resolve(null)
+        ]);
+
         const callerPhoneNumber = creds.phoneNumber;
 
-        // إذا لم يكن هناك رقم هاتف، نرجع خطأ واضح
         if (!callerPhoneNumber) {
             console.error(`❌ voice.js: callerPhoneNumber غير محدد! companyId=${companyId}`);
             const twimlErr = new twilio.twiml.VoiceResponse();
@@ -141,51 +164,34 @@ module.exports = async (req, res) => {
             res.setHeader('Content-Type', 'text/xml');
             return res.status(200).send(twimlErr.toString());
         }
-        // للتسجيل: هل لدينا credentials شركة منفصلة؟
-        const companyTwilio = (creds.accountSid && creds.accountSid !== process.env.TWILIO_ACCOUNT_SID)
-            ? { accountSid: creds.accountSid, authToken: creds.authToken }
-            : null;
-        console.log(`✅ voice.js: callerPhone=${callerPhoneNumber} | شركة=${companyId} | credentialsمنفصلة=${!!companyTwilio}`);
 
-        // حفظ callSid → companyId في Firestore للخصم لاحقاً
+        console.log(`✅ voice.js: callerPhone=${callerPhoneNumber} | شركة=${companyId}`);
+
+        // ── حفظ active_calls بدون انتظار (fire-and-forget) ───────────────
         if (callSid && companyId) {
-            try {
-                const { getDb } = require('../utils/firebase');
-                const { doc, setDoc } = require('firebase/firestore');
-                await setDoc(doc(getDb(), 'active_calls', callSid), {
-                    companyId,
-                    employeeId,
-                    callerPhone: callerPhoneNumber,
-                    startedAt: new Date().toISOString()
-                });
-            } catch (e) { console.error('⚠️ حفظ active_calls فشل:', e.message); }
-        }
-        
-        const twiml = new twilio.twiml.VoiceResponse();
-        
-        // التحقق هل التسجيل معطّل لهذه الشركة (لتخفيض التكلفة)
-        let recordingEnabled = true;
-        if (companyId) {
-            try {
-                const { getDb } = require('../utils/firebase');
-                const { doc, getDoc } = require('firebase/firestore');
-                const snap = await getDoc(doc(getDb(), 'companies', companyId));
-                if (snap.exists() && snap.data().disableRecording === true) {
-                    recordingEnabled = false;
-                    console.log(`🔇 التسجيل معطّل لشركة: ${companyId}`);
-                }
-            } catch (e) { /* fallback: تسجيل مفعّل */ }
+            setDoc(doc(db, 'active_calls', callSid), {
+                companyId, employeeId,
+                callerPhone: callerPhoneNumber,
+                startedAt: new Date().toISOString()
+            }).catch(e => console.error('⚠️ حفظ active_calls فشل:', e.message));
         }
 
-        // ─── بناء URL مطلق لـ recording callback مع تضمين companyId و employeeId ───
-        // أسباب استخدام URL مطلق + query params:
-        //   1. بعض Twilio plans لا ترسل ParentCallSid في recording callback
-        //   2. القيم مضمنة في URL تضمن معرفة الشركة حتى لو فشل active_calls
+        // ── التحقق من حالة التسجيل ───────────────────────────────────────
+        let recordingEnabled = true;
+        if (disableRecordingSnap && disableRecordingSnap.exists && disableRecordingSnap.exists()) {
+            if (disableRecordingSnap.data().disableRecording === true) {
+                recordingEnabled = false;
+                console.log(`🔇 التسجيل معطّل لشركة: ${companyId}`);
+            }
+        }
+
+        // ── بناء TwiML ────────────────────────────────────────────────────
         const baseCallbackUrl = 'https://linkcall.akrammostafa.com';
         const recordingCbUrl = companyId
             ? `${baseCallbackUrl}/api/recording-status?companyId=${encodeURIComponent(companyId)}&employeeId=${encodeURIComponent(employeeId)}`
             : `${baseCallbackUrl}/api/recording-status`;
 
+        const twiml = new twilio.twiml.VoiceResponse();
         const dial = twiml.dial({
             callerId: callerPhoneNumber,
             ...(recordingEnabled ? {
@@ -194,15 +200,12 @@ module.exports = async (req, res) => {
                 recordingStatusCallbackEvent: 'completed'
             } : {})
         });
-        
-        if (formattedCallTo) {
-            dial.number(formattedCallTo);
-        } else {
-            dial.client('default_client');
-        }
+
+        dial.number(formattedCallTo);
 
         res.setHeader('Content-Type', 'text/xml');
         res.status(200).send(twiml.toString());
+
     } catch (error) {
         console.error('خطأ في voice:', error);
         res.status(500).json({ error: error.message });

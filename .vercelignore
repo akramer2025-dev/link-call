@@ -4,3 +4,17 @@ node_modules
 .git
 *.log
 employees.json
+backups/
+data/
+docs/
+scripts/
+server.js
+admin.js
+app.js
+check-shahd.js
+check-shahd2.js
+delete-all-contacts.js
+fix-employee-usernames.js
+fix-name.js
+update-jamjoum-twilio.js
+fix-activate-employees.js

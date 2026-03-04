@@ -722,6 +722,218 @@ module.exports.setBalance = async (req, res) => {
     }
 };
 
+// ─── Employees Management (merged from employees-management.js) ───
+const availablePermissions = [
+    { id: 'view_calls', name: 'عرض المكالمات', category: 'calls' },
+    { id: 'make_calls', name: 'إجراء المكالمات', category: 'calls' },
+    { id: 'listen_recordings', name: 'الاستماع للتسجيلات', category: 'calls' },
+    { id: 'download_recordings', name: 'تحميل التسجيلات', category: 'calls' },
+    { id: 'delete_recordings', name: 'حذف التسجيلات', category: 'calls' },
+    { id: 'view_contacts', name: 'عرض جهات الاتصال', category: 'contacts' },
+    { id: 'add_contacts', name: 'إضافة جهات اتصال', category: 'contacts' },
+    { id: 'edit_contacts', name: 'تعديل جهات الاتصال', category: 'contacts' },
+    { id: 'delete_contacts', name: 'حذف جهات الاتصال', category: 'contacts' },
+    { id: 'view_reports', name: 'عرض التقارير', category: 'reports' },
+    { id: 'export_reports', name: 'تصدير التقارير', category: 'reports' },
+    { id: 'manage_employees', name: 'إدارة الموظفين', category: 'admin' },
+    { id: 'view_employees', name: 'عرض الموظفين', category: 'admin' },
+    { id: 'view_dashboard', name: 'عرض لوحة التحكم', category: 'general' },
+    { id: 'edit_profile', name: 'تعديل الملف الشخصي', category: 'general' }
+];
+
+async function emp_getPermissions(req, res) {
+    res.json({ success: true, permissions: availablePermissions });
+}
+
+async function emp_getEmployees(req, res) {
+    try {
+        const { companyId } = req.query;
+        if (!companyId) return res.status(400).json({ success: false, message: 'companyId مطلوب' });
+        const data = await getCompaniesData();
+        const company = data.companies.find(c => c.id === companyId);
+        if (!company) return res.status(404).json({ success: false, message: 'الشركة غير موجودة' });
+        const activeEmployees = (company.employees || []).filter(e => !e._deleted);
+        res.json({ success: true, employees: activeEmployees });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+async function emp_addEmployee(req, res) {
+    try {
+        const { companyId, name, username, email, phone, title, role, permissions, minutesAllocated, password, active } = req.body;
+        if (!companyId || !name || !username) {
+            return res.status(400).json({ success: false, message: 'companyId و name و username مطلوبة' });
+        }
+        const data = await getCompaniesData();
+        const company = data.companies.find(c => c.id === companyId);
+        if (!company) return res.status(404).json({ success: false, message: 'الشركة غير موجودة: ' + companyId });
+        if (!company.employees) company.employees = [];
+        if (company.employees.find(e => e.username === username)) {
+            return res.status(400).json({ success: false, message: 'اسم المستخدم موجود بالفعل' });
+        }
+        const maxId = company.employees.reduce((max, e) => Math.max(max, e.id || 0), 0);
+        const newEmployee = {
+            id: maxId + 1, companyId, name, username,
+            password: password || 'Aa123456',
+            email: email || '', phone: phone || '', title: title || '',
+            role: role || 'agent', permissions: permissions || [],
+            minutesAllocated: minutesAllocated || 0, minutesUsed: 0,
+            active: active !== false, createdAt: new Date().toISOString()
+        };
+        company.employees.push(newEmployee);
+        company.employeesCount = company.employees.length;
+        const saved = await saveCompaniesData(data);
+        if (!saved) return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات في قاعدة البيانات' });
+        res.json({ success: true, employee: newEmployee });
+    } catch (error) {
+        console.error('emp_addEmployee error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+async function emp_updateEmployee(req, res) {
+    try {
+        const { id } = req.params;
+        const { name, email, phone, title, role, permissions, minutesAllocated, password, active } = req.body;
+        const data = await getCompaniesData();
+        let found = null;
+        for (const company of data.companies) {
+            const emp = (company.employees || []).find(e => e.id === parseInt(id));
+            if (emp) { found = emp; break; }
+        }
+        if (!found) return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+        if (name) found.name = name;
+        if (email !== undefined) found.email = email;
+        if (phone !== undefined) found.phone = phone;
+        if (title !== undefined) found.title = title;
+        if (role) found.role = role;
+        if (permissions !== undefined) found.permissions = permissions;
+        if (minutesAllocated !== undefined) found.minutesAllocated = minutesAllocated;
+        if (password) found.password = password;
+        if (active !== undefined) found.active = active;
+        found.updatedAt = new Date().toISOString();
+        const saved = await saveCompaniesData(data);
+        if (!saved) return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات' });
+        res.json({ success: true, employee: found });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+async function emp_deleteEmployee(req, res) {
+    try {
+        const { id } = req.params;
+        const deletedBy = req.query.deletedBy || req.body?.deletedBy || 'manager';
+        const data = await getCompaniesData();
+        let found = null, foundCompanyId = null;
+        for (const company of data.companies) {
+            const emp = (company.employees || []).find(e => e.id === parseInt(id) && !e._deleted);
+            if (emp) { found = emp; foundCompanyId = company.id; break; }
+        }
+        if (!found) return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+        try {
+            const { getDb } = require('../utils/firebase');
+            const { doc: fbDoc, setDoc: fbSetDoc } = require('firebase/firestore');
+            const archiveDb = getDb();
+            const archiveId = `${foundCompanyId}_employee_${found.id}_${Date.now()}`;
+            await fbSetDoc(fbDoc(archiveDb, 'deleted_archive', archiveId), {
+                originalCollection: `companies/${foundCompanyId}/employees`,
+                companyId: foundCompanyId, subcollection: 'employees',
+                data: found, deletedBy, deletedAt: new Date().toISOString()
+            });
+        } catch (archiveErr) {
+            console.error('⚠️ Archive error:', archiveErr.message);
+        }
+        for (const company of data.companies) {
+            const emp = (company.employees || []).find(e => e.id === parseInt(id));
+            if (emp) {
+                emp._deleted = true;
+                emp._deletedAt = new Date().toISOString();
+                emp._deletedBy = deletedBy;
+                emp.active = false;
+                company.employeesCount = company.employees.filter(e => !e._deleted).length;
+                break;
+            }
+        }
+        const saved = await saveCompaniesData(data);
+        if (!saved) return res.status(500).json({ success: false, message: 'فشل في حفظ البيانات' });
+        res.json({ success: true, message: 'تم حذف الموظف بنجاح (محفوظ في الأرشيف)' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+async function emp_recordMinutes(req, res) {
+    const { employeeId, minutesUsed, callId, callType } = req.body || {};
+    if (!employeeId || !minutesUsed) return res.status(400).json({ success: false, message: 'employeeId و minutesUsed مطلوبان' });
+    const data = await getCompaniesData();
+    let found = null, foundCompany = null;
+    for (const company of data.companies) {
+        const emp = (company.employees || []).find(e => e.id === employeeId || String(e.id) === String(employeeId));
+        if (emp) { found = emp; foundCompany = company; break; }
+    }
+    if (!found || !foundCompany) return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+    found.minutesUsed = (found.minutesUsed || 0) + parseInt(minutesUsed, 10);
+    foundCompany.employees = foundCompany.employees.map(e =>
+        (e.id === employeeId || String(e.id) === String(employeeId)) ? found : e
+    );
+    await saveCompaniesData(data);
+    const minutesAllocated = found.minutesAllocated || 0;
+    const minutesRemaining = minutesAllocated > 0 ? Math.max(0, minutesAllocated - found.minutesUsed) : Infinity;
+    const accountActive = minutesAllocated === 0 || minutesRemaining > 0;
+    return res.status(200).json({
+        success: true,
+        usage: { minutesUsed: found.minutesUsed, minutesAllocated, minutesRemaining: minutesRemaining === Infinity ? null : minutesRemaining, accountActive }
+    });
+}
+
+async function emp_checkMinutes(req, res) {
+    const url = req.url || '';
+    const match = url.match(/\/minutes\/([^\/\?]+)\/check/);
+    const employeeId = match ? match[1] : null;
+    if (!employeeId) return res.status(400).json({ success: false, message: 'employeeId مطلوب' });
+    const data = await getCompaniesData();
+    let found = null;
+    for (const company of data.companies) {
+        const emp = (company.employees || []).find(e => e.id === employeeId || String(e.id) === String(employeeId));
+        if (emp) { found = emp; break; }
+    }
+    if (!found) return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+    const minutesAllocated = found.minutesAllocated || 0;
+    const minutesUsed = found.minutesUsed || 0;
+    const minutesRemaining = minutesAllocated > 0 ? Math.max(0, minutesAllocated - minutesUsed) : null;
+    const available = minutesAllocated === 0 || minutesRemaining > 0;
+    const reason = !available ? 'no_minutes' : (found.active === false ? 'account_inactive' : null);
+    return res.status(200).json({ success: true, available, minutesRemaining, minutesUsed, minutesAllocated, reason });
+}
+
+async function handleEmployeesManagement(req, res) {
+    const method = req.method;
+    const url = req.url || '';
+    try {
+        if (method === 'GET' && url.includes('/permissions')) return await emp_getPermissions(req, res);
+        if (method === 'POST' && url.includes('/minutes/record')) return await emp_recordMinutes(req, res);
+        if (method === 'GET' && url.includes('/minutes/')) return await emp_checkMinutes(req, res);
+        if (method === 'GET') return await emp_getEmployees(req, res);
+        if (method === 'POST') return await emp_addEmployee(req, res);
+        if (method === 'PUT') {
+            const m = url.match(/\/(\d+)(?:\?|$)/);
+            req.params = { id: m ? m[1] : '0' };
+            return await emp_updateEmployee(req, res);
+        }
+        if (method === 'DELETE') {
+            const m = url.match(/\/(\d+)(?:\?|$)/);
+            req.params = { id: m ? m[1] : '0' };
+            return await emp_deleteEmployee(req, res);
+        }
+        res.status(404).json({ success: false, message: 'Endpoint not found' });
+    } catch (error) {
+        console.error('Fatal employees API error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 // Save handlers before module.exports is overwritten
 const _register = module.exports.register;
 const _getAllCompanies = module.exports.getAllCompanies;
@@ -758,6 +970,11 @@ module.exports = async (req, res) => {
     try {
         const url = req.url || '';
         const method = req.method;
+
+        // ─── Employees Management routes (merged from employees-management.js) ───
+        if (url.includes('/employees-management')) {
+            return handleEmployeesManagement(req, res);
+        }
 
         // ─── Twilio Setup routes (merged from twilio-setup.js) ───
         if (url.includes('/twilio-setup')) {

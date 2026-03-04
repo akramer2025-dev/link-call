@@ -25,6 +25,8 @@
   ],
   "rewrites": [
     { "source": "/api/companies/:path*", "destination": "/api/companies" },
+    { "source": "/api/employees-management/:path*", "destination": "/api/companies" },
+    { "source": "/api/employees-management", "destination": "/api/companies" },
     { "source": "/api/employees/:path*", "destination": "/api/index" },
     { "source": "/api/twilio-setup", "destination": "/api/companies" },
     { "source": "/api/recording-status", "destination": "/api/recordings" },

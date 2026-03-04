@@ -2711,61 +2711,27 @@ input:checked + .slider:before {
         flex-direction: column !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        padding-top: 70px !important;
+        padding-top: 56px !important;
     }
     
     .main-content {
         width: 100% !important;
-        padding: 15px !important;
+        padding: 12px !important;
         overflow-y: auto;
-        min-height: calc(100vh - 70px);
+        min-height: calc(100vh - 56px);
     }
     
-    .header {
-        padding: 10px 15px !important;
-        flex-wrap: wrap;
-        background: linear-gradient(135deg, rgba(10, 22, 40, 0.98), rgba(30, 58, 95, 0.95));
-    }
-    
-    .header-top {
-        display: flex;
-        flex-direction: row;
-        gap: 12px;
-        align-items: center !important;
-        justify-content: center;
-        width: 100%;
-    }
-    
-    /* الشعار والعنوان في سطر واحد */
-    .header-logo-container {
-        margin-bottom: 0 !important;
-        width: 45px !important;
-        height: 45px !important;
-    }
-    
-    .header-logo-img {
-        width: 45px !important;
-        height: 45px !important;
-    }
-    
-    .header h1 {
-        font-size: 1.5em !important;
-        text-align: center;
-        margin: 0 !important;
-    }
-    
-    /* إخفاء معلومات المستخدم في الهيدر على الموبايل - موجودة في القائمة الجانبية */
+    /* ⭐ إخفاء الهيدر الكبير على الموبايل — mobile-header يجيب كل المعلومات */
+    .header,
+    .header-top,
+    .header-logo-container,
+    .header-logo-img,
+    .header h1,
+    .user-badge,
+    .logout-header-btn,
+    .admin-link-btn,
     .user-info-header {
         display: none !important;
-    }
-    
-    .user-info {
-        font-size: 0.85em !important;
-    }
-    
-    .logout-btn {
-        padding: 8px 15px !important;
-        font-size: 13px !important;
     }
     
     .nav-item {
@@ -2847,16 +2813,48 @@ input:checked + .slider:before {
         font-size: 0.95em !important;
     }
     
+    /* ⭐ لوحة الأرقام — موبايل احترافي */
+    .dialpad {
+        width: 100% !important;
+        max-width: 400px !important;
+        margin: 0 auto !important;
+        padding: 10px 8px !important;
+    }
+
+    .number-pad {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        width: 100% !important;
+        gap: 10px !important;
+        margin-bottom: 14px !important;
+    }
+
+    .num-btn {
+        width: 100% !important;
+        height: 68px !important;
+        border-radius: 16px !important;
+        font-size: 22px !important;
+        padding: 0 !important;
+    }
+
+    .num-btn .number {
+        font-size: 22px !important;
+    }
+
+    .num-btn .letters {
+        font-size: 8px !important;
+    }
+
     /* شاشة عرض الرقم في الموبايل */
     .phone-display {
-        min-height: 70px !important;
-        padding: 20px 15px !important;
-        margin-bottom: 15px !important;
-        border-radius: 20px !important;
+        min-height: 68px !important;
+        padding: 16px 15px !important;
+        margin-bottom: 12px !important;
+        border-radius: 18px !important;
     }
     
     .phone-number {
-        font-size: 26px !important;
+        font-size: 28px !important;
         letter-spacing: 3px !important;
     }
     
@@ -2865,14 +2863,17 @@ input:checked + .slider:before {
         padding: 10px 15px !important;
     }
     
-    .phone-input-container input {
-        font-size: 16px !important;
-        padding: 12px !important;
-    }
-    
+    /* ⭐ زر الاتصال — أكبر وأوضح */
     .call-btn {
-        padding: 15px !important;
-        font-size: 16px !important;
+        width: 80px !important;
+        height: 80px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        font-size: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 10px auto !important;
     }
     
     .checkbox-group {
@@ -2937,33 +2938,51 @@ input:checked + .slider:before {
     
     .container {
         border-radius: 0 !important;
-        padding-top: 60px !important;
+        padding-top: 56px !important;
     }
     
     .main-content {
         padding: 8px !important;
+        min-height: calc(100vh - 56px) !important;
+    }
+
+    /* ⭐ إخفاء الهيدر الكبير على الموبايل الصغير - mobile-header يغني عنه */
+    .header,
+    .header-top,
+    .header-logo-container,
+    .header-logo-img,
+    .header h1,
+    .user-badge,
+    .logout-header-btn,
+    .admin-link-btn {
+        display: none !important;
     }
     
-    .header h1 {
-        font-size: 1.2em !important;
+    /* ⭐ لوحة الأرقام للأجهزة الصغيرة */
+    .dialpad {
+        padding: 8px 6px !important;
+    }
+
+    .number-pad {
+        gap: 8px !important;
+    }
+
+    .num-btn {
+        height: 62px !important;
+        border-radius: 14px !important;
     }
     
-    .header-logo-container {
-        width: 38px !important;
-        height: 38px !important;
+    .call-btn {
+        width: 75px !important;
+        height: 75px !important;
+        font-size: 30px !important;
     }
-    
-    .header-logo-img {
-        width: 38px !important;
-        height: 38px !important;
-    }
-    
+
     /* شاشة عرض الرقم في الموبايل الصغير */
     .phone-display {
-        padding: 18px 15px !important;
-        min-height: 70px !important;
-        margin-bottom: 15px !important;
-        border-radius: 20px !important;
+        min-height: 62px !important;
+        padding: 14px !important;
+        margin-bottom: 10px !important;
     }
     
     .phone-number {
@@ -2974,12 +2993,6 @@ input:checked + .slider:before {
     .delete-btn {
         font-size: 18px !important;
         padding: 10px 14px !important;
-    }
-    
-    .key {
-        width: 60px !important;
-        height: 60px !important;
-        font-size: 20px !important;
     }
     
     .num-btn {
@@ -4000,7 +4013,7 @@ input:checked + .slider:before {
 /* تصغير حجم التطبيق على الهاتف */
 @media (max-width: 600px) {
     body {
-        font-size: 12px;
+        font-size: 13px;
     }
     
     .hamburger-menu {
@@ -4010,27 +4023,21 @@ input:checked + .slider:before {
         height: 38px;
     }
     
-    .header {
-        padding: 5px 8px !important;
-    }
-    
-    .header h1 {
-        font-size: 0.95em !important;
-    }
-    
-    .header-logo-container {
-        width: 35px !important;
-        height: 35px !important;
-    }
-    
-    .header-logo-img {
-        width: 35px !important;
-        height: 35px !important;
+    /* ⭐ إخفاء الهيدر الكبير - mobile-header يغني عنه */
+    .header,
+    .header-top,
+    .header-logo-container,
+    .header-logo-img,
+    .header h1,
+    .user-badge,
+    .logout-header-btn,
+    .admin-link-btn {
+        display: none !important;
     }
     
     /* الشريط الجانبي يبقى مخفي مع الهامبرجر */
     .sidebar {
-        padding-top: 60px !important;
+        padding-top: 56px !important;
     }
     
     .menu-item {
@@ -4058,15 +4065,15 @@ input:checked + .slider:before {
     
     /* تصغير لوحة الاتصال */
     .dialpad {
-        padding: 12px !important;
+        padding: 8px 6px !important;
         border-radius: 18px !important;
     }
     
     /* شاشة عرض الرقم */
     .phone-display {
-        padding: 15px 12px !important;
-        min-height: 60px !important;
-        margin-bottom: 12px !important;
+        padding: 14px 12px !important;
+        min-height: 58px !important;
+        margin-bottom: 10px !important;
         border-radius: 15px !important;
     }
     

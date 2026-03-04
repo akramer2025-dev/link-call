@@ -109,7 +109,7 @@ module.exports = async (req, res) => {
 
         const callTo     = req.body.To;
         const employeeId = req.body.employeeId || 'unknown';
-        let   companyId  = req.body.companyId  || null;
+        const companyId  = req.body.companyId  || null;
         const callSid    = req.body.CallSid;
 
         console.log('📥 voice.js body:', { callTo, employeeId, companyId, callSid });
@@ -125,31 +125,6 @@ module.exports = async (req, res) => {
 
         // تنسيق رقم الهاتف لإضافة كود مصر تلقائياً
         const formattedCallTo = formatPhoneNumber(callTo);
-
-        // ── Fallback: استخراج companyId من employeeId إذا لم يُرسل من العميل ──
-        if (!companyId && employeeId && employeeId !== 'unknown') {
-            try {
-                const { getDb }         = require('../utils/firebase');
-                const { collection, query, where, getDocs } = require('firebase/firestore');
-                const empSnap = await getDocs(
-                    query(collection(getDb(), 'employees'), where('username', '==', employeeId))
-                );
-                if (!empSnap.empty) {
-                    companyId = empSnap.docs[0].data().companyId || null;
-                    console.log(`🔍 voice.js: استخرجنا companyId من employeeId: ${companyId}`);
-                }
-                // fallback: search across companies subcollections via users collection
-                if (!companyId) {
-                    const usrSnap = await getDocs(
-                        query(collection(getDb(), 'users'), where('username', '==', employeeId))
-                    );
-                    if (!usrSnap.empty) {
-                        companyId = usrSnap.docs[0].data().companyId || null;
-                        console.log(`🔍 voice.js: استخرجنا companyId من users: ${companyId}`);
-                    }
-                }
-            } catch (e) { console.warn('⚠️ voice.js fallback lookup:', e.message); }
-        }
 
         console.log('📞 مكالمة جديدة:', { callSid, to: callTo, formattedTo: formattedCallTo, employeeId, companyId });
 

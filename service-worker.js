@@ -1,5 +1,5 @@
 ﻿// Service Worker for Link Call PWA
-const CACHE_NAME = 'link-call-v45';
+const CACHE_NAME = 'link-call-v46';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -73,15 +73,27 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // CSS و JS: network-first دائماً (عشان نضمن أحدث إصدار)
+  if (url.pathname.endsWith('.css') || url.pathname.endsWith('.js')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   // باقي الملفات: cache-first
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // إرجاع من الذاكرة أو جلب من الشبكة
         return response || fetch(event.request);
       })
       .catch(() => {
-        // في حالة عدم الاتصال
         if (event.request.destination === 'document') {
           return caches.match('/index.html');
         }

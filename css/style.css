@@ -4605,6 +4605,9 @@ input:checked + .slider:before {
     .main-content {
         padding: 10px 12px 20px !important;
         background: transparent !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
     }
 
     /*  لوحة الأرقام  */

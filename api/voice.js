@@ -85,9 +85,6 @@ function formatPhoneNumber(phoneNumber) {
     return cleanNumber;
 }
 
-// Vercel serverless config — prevent timeout on Firestore + Twilio API calls
-module.exports.config = { maxDuration: 25 };
-
 module.exports = async (req, res) => {
     // إعدادات CORS
     res.setHeader('Access-Control-Allow-Origin', '*');

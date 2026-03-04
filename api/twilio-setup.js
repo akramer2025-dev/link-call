@@ -20,8 +20,6 @@ const twilio = require('twilio');
 
 const VOICE_WEBHOOK_URL = 'https://linkcall.akrammostafa.com/api/voice';
 
-// Vercel serverless function config — increase timeout for Twilio API calls
-module.exports.config = { maxDuration: 30 };
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');

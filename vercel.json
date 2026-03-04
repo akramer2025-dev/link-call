@@ -1,6 +1,17 @@
 {
   "version": 2,
   "name": "link-call",
+  "functions": {
+    "api/voice.js": {
+      "maxDuration": 25
+    },
+    "api/token.js": {
+      "maxDuration": 15
+    },
+    "api/twilio-setup.js": {
+      "maxDuration": 30
+    }
+  },
   "builds": [
     {
       "src": "api/**/*.js",

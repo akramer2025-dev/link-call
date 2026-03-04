@@ -1,8 +1,5 @@
 const twilio = require('twilio');
 
-// Vercel serverless config — Firestore lookup may be slow on cold start
-module.exports.config = { maxDuration: 15 };
-
 module.exports = async (req, res) => {
     // إعدادات CORS
     res.setHeader('Access-Control-Allow-Origin', '*');

@@ -170,9 +170,11 @@
                 localStorage.setItem('employeeId', 'admin');
                 localStorage.setItem('employeeName', 'المطور الرئيسي');
                 
-                // تسجيل وقت دخول المطور
+                // تسجيل وقت دخول المطور (مع timeout 3 ثوانٍ)
                 try {
                     const baseUrl = API_BASE_URL;
+                    const ctrl = new AbortController();
+                    const tId = setTimeout(() => ctrl.abort(), 3000);
                     await fetch(`${baseUrl}/work-tracking`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -180,8 +182,10 @@
                             action: 'login',
                             employeeId: 'admin',
                             employeeName: 'المطور الرئيسي'
-                        })
+                        }),
+                        signal: ctrl.signal
                     });
+                    clearTimeout(tId);
                 } catch (error) {
                     console.error('خطأ في تسجيل وقت الدخول:', error);
                 }
@@ -257,15 +261,19 @@
                         sessionStorage.setItem('canCallFromSaudi',     permsObj.callFromSaudi     ? 'true' : 'false');
                     }
                     
-                    // تسجيل وقت الدخول
+                    // تسجيل وقت الدخول (مع timeout 3 ثوانٍ حتى لا يعطل التحويل)
                     try {
                         const empId   = localStorage.getItem('employeeId')   || username;
                         const empName = localStorage.getItem('employeeName') || username;
+                        const wtCtrl = new AbortController();
+                        const wtTimeout = setTimeout(() => wtCtrl.abort(), 3000);
                         await fetch(`${baseUrl}/work-tracking`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action: 'login', employeeId: empId, employeeName: empName })
+                            body: JSON.stringify({ action: 'login', employeeId: empId, employeeName: empName }),
+                            signal: wtCtrl.signal
                         });
+                        clearTimeout(wtTimeout);
                     } catch (e) { /* غير حرج */ }
                     
                     loginBtn.classList.add('success');

@@ -4612,6 +4612,11 @@ input:checked + .slider:before {
         align-items: stretch !important;
     }
 
+    /* إخفاء زر حالة الاتصال على الموبايل */
+    .connection-status {
+        display: none !important;
+    }
+
     /*  لوحة الأرقام  */
     .dialpad {
         background: transparent !important;

@@ -4477,3 +4477,314 @@ input:checked + .slider:before {
 .install-banner-close:hover {
     opacity: 1;
 }
+
+/* ═══════════════════════════════════════════════════════
+   ████  MOBILE PROFESSIONAL OVERRIDE  ████
+   تصميم احترافي كامل للموبايل - يلغي الشفافية
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+    /* ── الجسم والخلفية ─────────────────────────────── */
+    body {
+        background: #0a1628 !important;
+        align-items: flex-start !important;
+        padding: 0 !important;
+    }
+
+    /* ── الحاوية الرئيسية ───────────────────────────── */
+    .container {
+        background: #0d1b2a !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 100vh !important;
+        height: auto !important;
+        max-height: none !important;
+        padding-top: 56px !important;
+        position: relative !important;
+    }
+
+    /* ── المحتوى الرئيسي ────────────────────────────── */
+    .main-content {
+        background: transparent !important;
+        width: 100% !important;
+        padding: 12px 12px 20px !important;
+        min-height: calc(100vh - 56px) !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* ── إخفاء هيدر الديسكتوب نهائياً ──────────────── */
+    .header, .header-top, .header h1,
+    .header-logo-container, .header-logo-img,
+    .user-badge, .logout-header-btn, .admin-link-btn {
+        display: none !important;
+    }
+
+    /* ── لوحة الأرقام ───────────────────────────────── */
+    .dialpad {
+        background: rgba(255, 255, 255, 0.04) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: 1px solid rgba(94, 196, 212, 0.15) !important;
+        border-radius: 20px !important;
+        padding: 16px 12px 20px !important;
+        width: 100% !important;
+        max-width: 420px !important;
+        margin: 0 auto !important;
+        box-shadow: none !important;
+    }
+
+    /* ── شاشة عرض الرقم ─────────────────────────────── */
+    .phone-display {
+        background: rgba(94, 196, 212, 0.08) !important;
+        border: 1.5px solid rgba(94, 196, 212, 0.25) !important;
+        border-radius: 14px !important;
+        min-height: 62px !important;
+        padding: 14px 16px !important;
+        margin-bottom: 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+    }
+
+    .phone-display.empty {
+        display: none !important;
+    }
+
+    .phone-number {
+        font-size: 26px !important;
+        color: #ffffff !important;
+        letter-spacing: 3px !important;
+        text-shadow: 0 0 10px rgba(94, 196, 212, 0.5) !important;
+    }
+
+    /* ── شبكة الأزرار ───────────────────────────────── */
+    .number-pad {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+        width: 100% !important;
+        margin-bottom: 14px !important;
+        direction: rtl !important;
+    }
+
+    /* ── أزرار الأرقام — خلفية ظاهرة ───────────────── */
+    .num-btn {
+        width: 100% !important;
+        height: 68px !important;
+        background: rgba(255, 255, 255, 0.10) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        border-radius: 14px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        padding: 0 !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    .num-btn:active {
+        background: rgba(94, 196, 212, 0.3) !important;
+        border-color: rgba(94, 196, 212, 0.6) !important;
+        transform: scale(0.95) !important;
+    }
+
+    .num-btn .number {
+        font-size: 22px !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
+        line-height: 1.1 !important;
+    }
+
+    .num-btn .letters {
+        font-size: 8px !important;
+        color: rgba(255, 255, 255, 0.55) !important;
+        letter-spacing: 1px !important;
+    }
+
+    /* ── زر الاتصال ─────────────────────────────────── */
+    .call-btn {
+        width: 80px !important;
+        height: 80px !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+        border: none !important;
+        color: white !important;
+        font-size: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 8px auto 0 !important;
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4) !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .call-btn:active {
+        transform: scale(0.93) !important;
+        box-shadow: 0 3px 10px rgba(34, 197, 94, 0.3) !important;
+    }
+
+    .call-btn:disabled {
+        background: linear-gradient(135deg, #4b5563, #374151) !important;
+        box-shadow: none !important;
+        opacity: 0.6 !important;
+    }
+
+    /* ── زر الحذف ───────────────────────────────────── */
+    .delete-btn {
+        background: rgba(239, 68, 68, 0.25) !important;
+        border: 1px solid rgba(239, 68, 68, 0.4) !important;
+        color: #fca5a5 !important;
+        border-radius: 10px !important;
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+    }
+
+    /* ── selector رقم الاتصال ───────────────────────── */
+    .caller-id-selector {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(94, 196, 212, 0.2) !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        margin: 10px 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        align-items: center !important;
+    }
+
+    .caller-id-selector label {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-size: 13px !important;
+    }
+
+    .caller-id-dropdown {
+        background: rgba(13, 27, 42, 0.9) !important;
+        border: 1px solid rgba(94, 196, 212, 0.3) !important;
+        border-radius: 10px !important;
+        color: #ffffff !important;
+        padding: 10px 14px !important;
+        font-size: 14px !important;
+        width: 100% !important;
+    }
+
+    .confirm-call-btn {
+        background: linear-gradient(135deg, #5ec4d4, #1e88a8) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        color: white !important;
+        padding: 10px 20px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        width: 100% !important;
+        cursor: pointer !important;
+    }
+
+    /* ── شاشة المكالمة ───────────────────────────────── */
+    .call-screen {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(94, 196, 212, 0.15) !important;
+        border-radius: 20px !important;
+        padding: 24px 16px !important;
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    .call-info {
+        margin-bottom: 20px !important;
+    }
+
+    .call-status {
+        font-size: 15px !important;
+        color: #5ec4d4 !important;
+        margin-bottom: 8px !important;
+    }
+
+    .call-number {
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+    }
+
+    .call-duration {
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        color: #22c55e !important;
+        margin-top: 10px !important;
+    }
+
+    .call-controls {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .control-btn {
+        background: rgba(255, 255, 255, 0.10) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        border-radius: 14px !important;
+        color: white !important;
+        padding: 12px 4px !important;
+        font-size: 10px !important;
+        cursor: pointer !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    .control-btn .icon { font-size: 20px !important; }
+    .control-btn .label { font-size: 10px !important; color: rgba(255,255,255,0.7) !important; }
+
+    .control-btn.end-call {
+        background: rgba(239, 68, 68, 0.25) !important;
+        border-color: rgba(239, 68, 68, 0.4) !important;
+    }
+
+    /* ── سجل المكالمات وجهات الاتصال ───────────────── */
+    .call-history-list h2,
+    .contacts-list h2,
+    .recordings-list h2,
+    .settings-panel h2 {
+        color: #ffffff !important;
+        font-size: 16px !important;
+        margin-bottom: 12px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 1px solid rgba(94, 196, 212, 0.2) !important;
+    }
+
+    /* ── Modal ───────────────────────────────────────── */
+    .modal-content {
+        background: #0d1b2a !important;
+        border: 1px solid rgba(94, 196, 212, 0.2) !important;
+        width: 95% !important;
+        max-width: 95% !important;
+        margin: 10px auto !important;
+        padding: 16px !important;
+    }
+
+    /* ── نص القائمة السريعة ──────────────────────────── */
+    .quick-dial {
+        color: rgba(255, 255, 255, 0.4) !important;
+        font-size: 11px !important;
+        text-align: center !important;
+        margin-top: 8px !important;
+    }
+}

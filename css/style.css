@@ -4490,7 +4490,7 @@ input:checked + .slider:before {
     .header {
         display: block !important;
         text-align: center !important;
-        margin: 0 0 12px 0 !important;
+        margin: 0 0 6px 0 !important;
         padding: 0 !important;
         background: transparent !important;
         border: none !important;
@@ -4502,7 +4502,7 @@ input:checked + .slider:before {
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 6px !important;
+        gap: 2px !important;
         padding: 0 !important;
         margin: 0 !important;
     }
@@ -4511,21 +4511,21 @@ input:checked + .slider:before {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        width: 52px !important;
-        height: 52px !important;
+        width: 38px !important;
+        height: 38px !important;
     }
 
     .header-logo-img {
         display: block !important;
-        width: 52px !important;
-        height: 52px !important;
+        width: 38px !important;
+        height: 38px !important;
         border-radius: 50% !important;
         border: 2px solid rgba(99,102,241,0.5) !important;
     }
 
     .header h1 {
         display: block !important;
-        font-size: 20px !important;
+        font-size: 16px !important;
         font-weight: 700 !important;
         color: #fff !important;
         margin: 0 !important;
@@ -4536,11 +4536,11 @@ input:checked + .slider:before {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 6px !important;
+        gap: 4px !important;
         background: rgba(99,102,241,0.15) !important;
         border: 1px solid rgba(99,102,241,0.3) !important;
         border-radius: 20px !important;
-        padding: 4px 14px !important;
+        padding: 3px 10px !important;
     }
 
     .user-icon { font-size: 14px !important; }
@@ -4605,7 +4605,7 @@ input:checked + .slider:before {
     }
 
     .main-content {
-        padding: 10px 12px 20px !important;
+        padding: 2px 12px 20px !important;
         background: transparent !important;
         display: flex !important;
         flex-direction: column !important;

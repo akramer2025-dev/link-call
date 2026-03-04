@@ -3060,6 +3060,23 @@ document.addEventListener('visibilitychange', async () => {
 // تهيئة التطبيق عند التحميل
 initializeApp();
 
+// ===== AUTO-SCROLL TO DIALPAD ON MOBILE =====
+// على الموبايل، الصفحة تفتح من تحت علشان الأرقام تكون ظاهرة مباشرة
+(function autoScrollMobile() {
+    if (window.innerWidth <= 768) {
+        // ننتظر لحظة علشان الصفحة تتحمل كاملة
+        setTimeout(() => {
+            const dialpad = document.getElementById('dialpad');
+            if (dialpad) {
+                dialpad.scrollIntoView({ behavior: 'instant', block: 'end' });
+                // بعدها نعمل scroll لآخر الصفحة
+                window.scrollTo(0, document.body.scrollHeight);
+                console.log('📱 تم التمرير للأرقام تلقائياً');
+            }
+        }, 300);
+    }
+})();
+
 // تسجيل وقت الدخول للموظفين من CRM
 if (autoLogin === 'true' && empId && empName) {
     const baseUrl = API_BASE_URL;

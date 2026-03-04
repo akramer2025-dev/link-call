@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "vercel-build": "echo Build complete"
+    "vercel-build": "rm -rf dist && mkdir -p dist/css dist/js && cp *.html dist/ 2>/dev/null; cp -r css/* dist/css/ 2>/dev/null; cp -r js/* dist/js/ 2>/dev/null; cp manifest.json service-worker.js dist/ 2>/dev/null; cp icon-*.png favicon.png dist/ 2>/dev/null; echo Build complete"
   },
   "keywords": [
     "twilio",

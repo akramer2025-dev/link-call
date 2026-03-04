@@ -4523,11 +4523,11 @@ input:checked + .slider:before {
 
     /*  لوحة الأرقام  */
     .dialpad {
-        background: rgba(255,255,255,0.04) !important;
-        border: 1px solid rgba(99,102,241,0.3) !important;
-        border-radius: 20px !important;
-        padding: 14px 12px !important;
-        box-shadow: 0 4px 30px rgba(0,0,0,0.4) !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 4px 0 !important;
+        box-shadow: none !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
         align-items: center !important;

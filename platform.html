@@ -7,8 +7,6 @@
         var isLoggedIn = sessionStorage.getItem('isLoggedIn') || localStorage.getItem('employeeId');
         if (isLoggedIn) {
             window.location.replace('index.html');
-        } else {
-            window.location.replace('login.html');
         }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

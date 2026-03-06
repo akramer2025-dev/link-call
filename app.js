@@ -8,6 +8,16 @@ let isRecording = false;
 let callCheckInterval = null;
 let phoneNumber = ''; // متغير لتخزين رقم الهاتف
 
+// ===== تنظيف القيم القديمة (employeeId كان يُخزن كبريد إلكتروني) =====
+(function migrateOldEmployeeId() {
+    const stored = localStorage.getItem('employeeId');
+    if (stored && stored.includes('@')) {
+        localStorage.removeItem('employeeId');
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+    }
+})();
+
 // ===== PWA تثبيت التطبيق =====
 let deferredPrompt;
 const installBtn = document.getElementById('install-app-btn');
@@ -2390,7 +2400,8 @@ function loadEmployeeProfile() {
         fetch(`${baseUrl}/employees`)
             .then(res => res.json())
             .then(data => {
-                const employee = data.employees.find(emp => emp.id === parseInt(employeeId));
+                const empIdNum = parseInt(employeeId);
+                const employee = !isNaN(empIdNum) ? data.employees.find(emp => emp.id === empIdNum) : null;
                 if (employee) {
                     document.getElementById('profile-fullname').value = employee.name || '';
                     document.getElementById('profile-phone').value = employee.phone || '';
@@ -2434,7 +2445,7 @@ if (updateProfileBtn) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    employeeId: parseInt(employeeId),
+                    employeeId: isNaN(parseInt(employeeId)) ? employeeId : parseInt(employeeId),
                     username,
                     currentPassword,
                     newName: newFullname,

@@ -411,12 +411,25 @@ body::after {
     z-index: 999;
     transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: 1px solid rgba(0, 229, 255, 0.1);
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 229, 255, 0.5) rgba(13, 17, 23, 0.3);
+    overflow-y: overlay;
+    scrollbar-width: none;
 }
 
-/* ��� ���������: ��������� ���� ������ */
+.sidebar:hover {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 229, 255, 0.5) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+}
+
+.sidebar:hover::-webkit-scrollbar {
+    width: 6px;
+}
+
+/* على الديسكتوب: السايدبار ظاهر دايماً */
 @media (min-width: 1025px) {
     .sidebar {
         right: 0 !important;
@@ -429,24 +442,18 @@ body::after {
     }
 }
 
-/* ����� ���� ������� ������� �������� */
-.sidebar::-webkit-scrollbar {
-    width: 6px;
+/* تخصيص سكرول السايدبار للويبكت */
+.sidebar:hover::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-.sidebar::-webkit-scrollbar-track {
-    background: rgba(13, 17, 23, 0.3);
+.sidebar:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 229, 255, 0.4);
     border-radius: 3px;
 }
 
-.sidebar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(0, 229, 255, 0.6), rgba(0, 188, 212, 0.8));
-    border-radius: 3px;
-    transition: background 0.3s ease;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(0, 229, 255, 0.8), rgba(0, 188, 212, 1));
+.sidebar:hover::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 229, 255, 0.7);
 }
 
 .sidebar.active {

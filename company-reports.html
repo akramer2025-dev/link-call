@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -31,7 +31,7 @@
             height: 100%;
             background: linear-gradient(135deg, 
                 rgba(10, 22, 40, 0.95) 0%, 
-                rgba(30, 58, 95, 0.90) 50%, 
+                rgba(0, 188, 212, 0.90) 50%, 
                 rgba(10, 22, 40, 0.95) 100%);
             z-index: 0;
             pointer-events: none;
@@ -45,9 +45,9 @@
             top: 0;
             left: 0;
             background-image: 
-                radial-gradient(2px 2px at 20px 30px, rgba(94, 196, 212, 0.6), transparent),
-                radial-gradient(2px 2px at 60px 70px, rgba(94, 196, 212, 0.4), transparent),
-                radial-gradient(1px 1px at 50px 50px, rgba(94, 196, 212, 0.5), transparent);
+                radial-gradient(2px 2px at 20px 30px, rgba(0, 229, 255, 0.6), transparent),
+                radial-gradient(2px 2px at 60px 70px, rgba(0, 229, 255, 0.4), transparent),
+                radial-gradient(1px 1px at 50px 50px, rgba(0, 229, 255, 0.5), transparent);
             background-repeat: repeat;
             background-size: 300px 200px;
             animation: starsAnimation 100s linear infinite;
@@ -72,17 +72,17 @@
             background: rgba(255, 255, 255, 0.98);
             padding: 25px 35px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(94, 196, 212, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(0, 229, 255, 0.1);
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(94, 196, 212, 0.2);
+            border: 1px solid rgba(0, 229, 255, 0.2);
         }
 
         .header h1 {
-            color: #1e3a5f;
+            color: #00BCD4;
             font-size: 32px;
             display: flex;
             align-items: center;
@@ -90,7 +90,7 @@
         }
 
         .back-btn {
-            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #1e88a8 100%);
             color: white;
             padding: 12px 30px;
             border: none;
@@ -101,12 +101,12 @@
             transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
-            box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
         }
 
         .back-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(94, 196, 212, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 229, 255, 0.5);
         }
 
         .filters {
@@ -116,7 +116,7 @@
             box-shadow: 0 5px 20px rgba(0,0,0,0.2);
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(94, 196, 212, 0.2);
+            border: 1px solid rgba(0, 229, 255, 0.2);
         }
 
         .filters-row {
@@ -130,7 +130,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #1e3a5f;
+            color: #00BCD4;
             font-size: 14px;
         }
 
@@ -148,12 +148,12 @@
         .filter-group input:focus,
         .filter-group select:focus {
             outline: none;
-            border-color: #5ec4d4;
-            box-shadow: 0 0 15px rgba(94, 196, 212, 0.2);
+            border-color: #00E5FF;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
         }
 
         .apply-filters-btn {
-            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #1e88a8 100%);
             color: white;
             padding: 12px 40px;
             border: none;
@@ -162,12 +162,12 @@
             font-size: 16px;
             font-weight: bold;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
         }
 
         .apply-filters-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(94, 196, 212, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 229, 255, 0.5);
         }
 
         .stats-grid {
@@ -183,7 +183,7 @@
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.2);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(94, 196, 212, 0.15);
+            border: 1px solid rgba(0, 229, 255, 0.15);
             transition: all 0.3s;
         }
 
@@ -212,7 +212,7 @@
         .stat-value {
             font-size: 36px;
             font-weight: bold;
-            color: #1e3a5f;
+            color: #00BCD4;
             margin-bottom: 5px;
         }
 
@@ -234,11 +234,11 @@
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.2);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(94, 196, 212, 0.15);
+            border: 1px solid rgba(0, 229, 255, 0.15);
         }
 
         .chart-card h3 {
-            color: #1e3a5f;
+            color: #00BCD4;
             margin-bottom: 20px;
             font-size: 20px;
             display: flex;
@@ -252,7 +252,7 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(94, 196, 212, 0.2);
+            border: 1px solid rgba(0, 229, 255, 0.2);
         }
 
         .employees-table {
@@ -262,7 +262,7 @@
         }
 
         .employees-table thead {
-            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #1e88a8 100%);
         }
 
         .employees-table th {
@@ -279,7 +279,7 @@
         }
 
         .employees-table tr:hover {
-            background: rgba(94, 196, 212, 0.05);
+            background: rgba(0, 229, 255, 0.05);
         }
 
         .progress-bar {
@@ -331,7 +331,7 @@
         }
 
         .call-analytics-table thead {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2d5986 100%);
+            background: linear-gradient(135deg, #00BCD4 0%, #2d5986 100%);
         }
 
         .call-analytics-table th {
@@ -349,7 +349,7 @@
         }
 
         .call-analytics-table tr:hover {
-            background: rgba(94, 196, 212, 0.05);
+            background: rgba(0, 229, 255, 0.05);
         }
 
         /* Floating nav */
@@ -366,9 +366,9 @@
             width: 46px;
             height: 46px;
             border-radius: 50%;
-            background: rgba(30, 58, 95, 0.9);
+            background: rgba(0, 188, 212, 0.9);
             color: white;
-            border: 2px solid rgba(94, 196, 212, 0.5);
+            border: 2px solid rgba(0, 229, 255, 0.5);
             cursor: pointer;
             font-size: 18px;
             display: flex;
@@ -380,7 +380,7 @@
         }
 
         .float-nav-btn:hover {
-            background: rgba(94, 196, 212, 0.8);
+            background: rgba(0, 229, 255, 0.8);
             transform: scale(1.1);
         }
 
@@ -455,7 +455,7 @@
                 <span>📊</span> تقارير وتحليلات الموظفين
             </h1>
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                <a href="index.html?openSection=call-history" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:10px 20px;border-radius:25px;text-decoration:none;font-weight:bold;font-size:14px;">📋 سجل المكالمات</a>
+                <a href="index.html?openSection=call-history" style="background:linear-gradient(135deg,#00E5FF,#00BCD4);color:white;padding:10px 20px;border-radius:25px;text-decoration:none;font-weight:bold;font-size:14px;">📋 سجل المكالمات</a>
                 <a href="index.html?openSection=recordings"   style="background:linear-gradient(135deg,#f093fb,#f5576c);color:white;padding:10px 20px;border-radius:25px;text-decoration:none;font-weight:bold;font-size:14px;">🎙️ المحفوظات</a>
                 <a href="accounts.html" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:10px 20px;border-radius:25px;text-decoration:none;font-weight:bold;font-size:14px;">💰 الحسابات</a>
                 <a href="index.html" class="back-btn">⬅️ الرئيسية</a>
@@ -464,7 +464,7 @@
 
         <!-- Filters -->
         <div class="filters">
-            <h3 style="color: #1e3a5f; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <h3 style="color: #00BCD4; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <span>🔍</span> فلترة التقارير
             </h3>
             <div class="filters-row">
@@ -582,7 +582,7 @@
         <!-- Employees Details Table -->
         <div class="employees-table-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: #1e3a5f; font-size: 22px; display: flex; align-items: center; gap: 10px;">
+                <h3 style="color: #00BCD4; font-size: 22px; display: flex; align-items: center; gap: 10px;">
                     <span>📋</span> تفاصيل أداء الموظفين
                 </h3>
             </div>
@@ -608,7 +608,7 @@
         <!-- Call Analytics Per Employee -->
         <div class="employees-table-container" style="margin-top: 30px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                <h3 style="color: #1e3a5f; font-size: 22px; display: flex; align-items: center; gap: 10px;">
+                <h3 style="color: #00BCD4; font-size: 22px; display: flex; align-items: center; gap: 10px;">
                     <span>📞</span> تحليل المكالمات لكل موظف
                 </h3>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -764,9 +764,9 @@
             document.getElementById('employeeDetailCard').innerHTML = `
                 <div style="background:rgba(255,255,255,0.98);border-radius:15px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,0.3);border:2px solid rgba(94,196,212,0.3);">
                     <div style="display:flex;align-items:center;gap:20px;margin-bottom:25px;flex-wrap:wrap;">
-                        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#5ec4d4,#1e88a8);display:flex;align-items:center;justify-content:center;font-size:32px;">👤</div>
+                        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#00E5FF,#1e88a8);display:flex;align-items:center;justify-content:center;font-size:32px;">👤</div>
                         <div>
-                            <h2 style="color:#1e3a5f;font-size:26px;">${emp.name}</h2>
+                            <h2 style="color:#00BCD4;font-size:26px;">${emp.name}</h2>
                             <div style="color:#6b7280;font-size:14px;">${emp.username || ''} — ${emp.title || 'موظف'}</div>
                         </div>
                         <span style="margin-right:auto;background:${emp.active ? '#d1fae5' : '#fee2e2'};color:${emp.active ? '#065f46' : '#991b1b'};padding:6px 18px;border-radius:20px;font-weight:bold;font-size:14px;">${emp.active ? '✅ نشط' : '❌ غير نشط'}</span>
@@ -811,11 +811,11 @@
             document.getElementById('callLogSection').innerHTML = `
                 <div style="background:rgba(255,255,255,0.98);border-radius:15px;padding:25px;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-                        <h3 style="color:#1e3a5f;font-size:20px;">📋 سجل مكالمات ${emp.name} <span style="font-size:14px;background:#dbeafe;color:#1e40af;padding:4px 12px;border-radius:20px;">${calls.length} مكالمة</span></h3>
+                        <h3 style="color:#00BCD4;font-size:20px;">📋 سجل مكالمات ${emp.name} <span style="font-size:14px;background:#dbeafe;color:#1e40af;padding:4px 12px;border-radius:20px;">${calls.length} مكالمة</span></h3>
                         <button onclick="exportCallLog()" style="padding:9px 20px;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:bold;font-size:13px;">📥 تصدير</button>
                     </div>
                     <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;min-width:600px;">
-                        <thead style="background:linear-gradient(135deg,#1e3a5f,#2d5986);"><tr>
+                        <thead style="background:linear-gradient(135deg,#00BCD4,#2d5986);"><tr>
                             <th style="padding:12px;text-align:right;color:white;font-size:13px;">#</th>
                             <th style="padding:12px;text-align:right;color:white;font-size:13px;">رقم الهاتف</th>
                             <th style="padding:12px;text-align:right;color:white;font-size:13px;">التاريخ</th>

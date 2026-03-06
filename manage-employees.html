@@ -33,14 +33,14 @@
         }
         
         ::-webkit-scrollbar-track {
-            background: #1e2433;
+            background: #161B22;
             border-radius: 10px;
         }
         
         ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #00BCD4 100%);
             border-radius: 10px;
-            border: 2px solid #1e2433;
+            border: 2px solid #161B22;
         }
         
         ::-webkit-scrollbar-thumb:hover {
@@ -49,7 +49,7 @@
         
         * {
             scrollbar-width: thin;
-            scrollbar-color: #667eea #1e2433;
+            scrollbar-color: #00E5FF #161B22;
         }
 
         body {
@@ -71,7 +71,7 @@
             height: 100%;
             background: linear-gradient(135deg, 
                 rgba(10, 22, 40, 0.95) 0%, 
-                rgba(30, 58, 95, 0.90) 50%, 
+                rgba(0, 188, 212, 0.90) 50%, 
                 rgba(10, 22, 40, 0.95) 100%);
             z-index: 0;
             pointer-events: none;
@@ -85,11 +85,11 @@
             top: 0;
             left: 0;
             background-image: 
-                radial-gradient(2px 2px at 20px 30px, rgba(94, 196, 212, 0.6), transparent),
-                radial-gradient(2px 2px at 60px 70px, rgba(94, 196, 212, 0.4), transparent),
-                radial-gradient(1px 1px at 50px 50px, rgba(94, 196, 212, 0.5), transparent),
-                radial-gradient(1px 1px at 130px 80px, rgba(94, 196, 212, 0.3), transparent),
-                radial-gradient(2px 2px at 90px 10px, rgba(94, 196, 212, 0.6), transparent);
+                radial-gradient(2px 2px at 20px 30px, rgba(0, 229, 255, 0.6), transparent),
+                radial-gradient(2px 2px at 60px 70px, rgba(0, 229, 255, 0.4), transparent),
+                radial-gradient(1px 1px at 50px 50px, rgba(0, 229, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(0, 229, 255, 0.3), transparent),
+                radial-gradient(2px 2px at 90px 10px, rgba(0, 229, 255, 0.6), transparent);
             background-repeat: repeat;
             background-size: 300px 200px;
             animation: starsAnimation 100s linear infinite;
@@ -114,17 +114,17 @@
             background: rgba(255, 255, 255, 0.98);
             padding: 20px 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(94, 196, 212, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(0, 229, 255, 0.1);
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(94, 196, 212, 0.2);
+            border: 1px solid rgba(0, 229, 255, 0.2);
         }
 
         .header h1 {
-            color: #1e3a5f;
+            color: #00BCD4;
             font-size: 28px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -136,12 +136,12 @@
         }
 
         .company-name {
-            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #1e88a8 100%);
             color: white;
             padding: 10px 20px;
             border-radius: 25px;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
         }
 
         .btn-add {
@@ -173,18 +173,18 @@
             background: rgba(255, 255, 255, 0.98);
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2), 0 0 15px rgba(94, 196, 212, 0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2), 0 0 15px rgba(0, 229, 255, 0.1);
             display: flex;
             align-items: center;
             gap: 20px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(94, 196, 212, 0.15);
+            border: 1px solid rgba(0, 229, 255, 0.15);
             transition: all 0.3s;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 25px rgba(94, 196, 212, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 25px rgba(0, 229, 255, 0.2);
         }
 
         .stat-icon {
@@ -213,9 +213,9 @@
             background: rgba(255, 255, 255, 0.98);
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(94, 196, 212, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(0, 229, 255, 0.1);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(94, 196, 212, 0.2);
+            border: 1px solid rgba(0, 229, 255, 0.2);
         }
 
         .toolbar {
@@ -243,8 +243,8 @@
 
         .search-box input:focus {
             outline: none;
-            border-color: #5ec4d4;
-            box-shadow: 0 0 15px rgba(94, 196, 212, 0.3);
+            border-color: #00E5FF;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
         }
 
         .filter-buttons {
@@ -263,10 +263,10 @@
         }
 
         .filter-btn.active {
-            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #1e88a8 100%);
             color: white;
-            border-color: #5ec4d4;
-            box-shadow: 0 4px 10px rgba(94, 196, 212, 0.3);
+            border-color: #00E5FF;
+            box-shadow: 0 4px 10px rgba(0, 229, 255, 0.3);
         }
 
         .employees-table {
@@ -473,7 +473,7 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #00E5FF;
         }
 
         .form-row {
@@ -491,7 +491,7 @@
         }
 
         .permissions-category h4 {
-            color: #667eea;
+            color: #00E5FF;
             margin-bottom: 10px;
             font-size: 16px;
         }
@@ -546,14 +546,14 @@
         }
 
         .role-card:hover {
-            border-color: #5ec4d4;
-            box-shadow: 0 4px 15px rgba(94, 196, 212, 0.2);
+            border-color: #00E5FF;
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
         }
 
         .role-card.selected {
-            border-color: #5ec4d4;
-            background: rgba(94, 196, 212, 0.1);
-            box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
+            border-color: #00E5FF;
+            background: rgba(0, 229, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
         }
 
         .role-card h5 {
@@ -567,7 +567,7 @@
         }
 
         .btn-submit {
-            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #1e88a8 100%);
             color: white;
             padding: 15px 40px;
             border: none;
@@ -577,12 +577,12 @@
             font-weight: bold;
             width: 100%;
             transition: all 0.3s;
-            box-shadow: 0 5px 20px rgba(94, 196, 212, 0.4);
+            box-shadow: 0 5px 20px rgba(0, 229, 255, 0.4);
         }
 
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(94, 196, 212, 0.6);
+            box-shadow: 0 10px 30px rgba(0, 229, 255, 0.6);
         }
 
         .alert {
@@ -640,7 +640,7 @@
         .lang-btn {
             background: transparent;
             border: none;
-            color: #1e3a5f;
+            color: #00BCD4;
             padding: 4px 10px;
             border-radius: 15px;
             cursor: pointer;
@@ -650,7 +650,7 @@
             opacity: 0.6;
         }
         .lang-btn.active {
-            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #1e88a8 100%);
             color: white;
             opacity: 1;
         }
@@ -658,7 +658,7 @@
 
         /* Back button */
         .back-btn {
-            background: linear-gradient(135deg, #5ec4d4 0%, #1e88a8 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #1e88a8 100%);
             color: white;
             padding: 9px 22px;
             border: none;
@@ -669,11 +669,11 @@
             text-decoration: none;
             display: inline-block;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(94, 196, 212, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
         }
         .back-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(94, 196, 212, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 229, 255, 0.5);
         }
 
         /* Floating nav */
@@ -689,9 +689,9 @@
             width: 46px;
             height: 46px;
             border-radius: 50%;
-            background: rgba(30, 58, 95, 0.9);
+            background: rgba(0, 188, 212, 0.9);
             color: white;
-            border: 2px solid rgba(94, 196, 212, 0.5);
+            border: 2px solid rgba(0, 229, 255, 0.5);
             cursor: pointer;
             font-size: 18px;
             display: flex;
@@ -702,7 +702,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         .float-nav-btn:hover {
-            background: rgba(94, 196, 212, 0.8);
+            background: rgba(0, 229, 255, 0.8);
             transform: scale(1.1);
         }
 
@@ -1008,7 +1008,7 @@
             <!-- قسم الصلاحيات التفصيلية -->
             <div style="border: 2px solid #e8f4f8; border-radius: 12px; padding: 16px; margin-bottom: 20px; background: #f8fcfe;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
-                    <h3 style="margin: 0; color: #1e3a5f; font-size: 15px; font-weight: 700;">🔑 صلاحيات التطبيق</h3>
+                    <h3 style="margin: 0; color: #00BCD4; font-size: 15px; font-weight: 700;">🔑 صلاحيات التطبيق</h3>
                     <div style="display: flex; gap: 6px;">
                         <button type="button" onclick="selectAllPerms(true)"
                                 style="padding: 5px 12px; background: #10b981; color: white; border: none; border-radius: 7px; font-size: 12px; cursor: pointer; font-weight: 600;">✅ تحديد الكل</button>
@@ -1120,10 +1120,10 @@
         function buildPermissionsHTML(containerId) {
             return PERMISSION_SECTIONS.map(section => `
                 <div style="background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 12px;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding-bottom: 8px; border-bottom: 1px solid #f3f4f6; margin-bottom: 8px; font-weight: 700; color: #1e3a5f; font-size: 14px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding-bottom: 8px; border-bottom: 1px solid #f3f4f6; margin-bottom: 8px; font-weight: 700; color: #00BCD4; font-size: 14px;">
                         <input type="checkbox" class="section-check" data-section="${section.id}"
                                onchange="toggleSectionPerms('${section.id}', this.checked, '${containerId}')"
-                               style="width: 16px; height: 16px; accent-color: #5ec4d4; cursor: pointer;">
+                               style="width: 16px; height: 16px; accent-color: #00E5FF; cursor: pointer;">
                         ${section.icon} ${section.name}
                     </label>
                     <div style="display: flex; flex-direction: column; gap: 5px;">

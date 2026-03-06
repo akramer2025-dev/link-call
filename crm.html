@@ -22,11 +22,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary-color: #667eea;
-            --accent-color: #764ba2;
+            --primary-color: #00E5FF;
+            --accent-color: #00BCD4;
             --bg-dark: #0a1628;
-            --bg-card: #1a1f2e;
-            --bg-input: #1e2433;
+            --bg-card: #0D1117;
+            --bg-input: #161B22;
             --text-primary: #ccd6f6;
             --text-secondary: #a8b2d1;
             --border-color: rgba(255, 255, 255, 0.08);
@@ -40,14 +40,14 @@
         }
         
         ::-webkit-scrollbar-track {
-            background: #1e2433;
+            background: #161B22;
             border-radius: 10px;
         }
         
         ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00E5FF 0%, #00BCD4 100%);
             border-radius: 10px;
-            border: 2px solid #1e2433;
+            border: 2px solid #161B22;
         }
         
         ::-webkit-scrollbar-thumb:hover {
@@ -57,7 +57,7 @@
         /* For Firefox */
         * {
             scrollbar-width: thin;
-            scrollbar-color: #667eea #1e2433;
+            scrollbar-color: #00E5FF #161B22;
         }
         
         * {
@@ -113,7 +113,7 @@
         .slide-1 {
             background: linear-gradient(135deg, 
                 rgba(10, 22, 40, 0.95) 0%, 
-                rgba(102, 126, 234, 0.3) 30%,
+                rgba(0, 229, 255, 0.3) 30%,
                 rgba(118, 75, 162, 0.3) 70%,
                 rgba(10, 22, 40, 0.95) 100%);
         }
@@ -121,8 +121,8 @@
         .slide-2 {
             background: linear-gradient(120deg,
                 rgba(10, 22, 40, 0.95) 0%,
-                rgba(94, 196, 212, 0.25) 40%,
-                rgba(102, 126, 234, 0.25) 60%,
+                rgba(0, 229, 255, 0.25) 40%,
+                rgba(0, 229, 255, 0.25) 60%,
                 rgba(10, 22, 40, 0.95) 100%);
         }
         
@@ -130,7 +130,7 @@
             background: linear-gradient(150deg,
                 rgba(10, 22, 40, 0.95) 0%,
                 rgba(118, 75, 162, 0.35) 25%,
-                rgba(102, 126, 234, 0.25) 75%,
+                rgba(0, 229, 255, 0.25) 75%,
                 rgba(10, 22, 40, 0.95) 100%);
         }
         
@@ -142,11 +142,11 @@
             top: 0;
             left: 0;
             background-image: 
-                radial-gradient(2px 2px at 20px 30px, rgba(102, 126, 234, 0.4), transparent),
-                radial-gradient(2px 2px at 60px 70px, rgba(94, 196, 212, 0.3), transparent),
+                radial-gradient(2px 2px at 20px 30px, rgba(0, 229, 255, 0.4), transparent),
+                radial-gradient(2px 2px at 60px 70px, rgba(0, 229, 255, 0.3), transparent),
                 radial-gradient(1px 1px at 50px 50px, rgba(255, 255, 255, 0.2), transparent),
                 radial-gradient(1px 1px at 130px 80px, rgba(118, 75, 162, 0.3), transparent),
-                radial-gradient(2px 2px at 90px 10px, rgba(102, 126, 234, 0.3), transparent);
+                radial-gradient(2px 2px at 90px 10px, rgba(0, 229, 255, 0.3), transparent);
             background-size: 200px 200px;
             background-position: 0 0, 40px 60px, 130px 270px, 70px 100px, 150px 50px;
             animation: bgAnimation 60s linear infinite;
@@ -182,7 +182,7 @@
         .crm-title {
             font-size: 24px;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #00E5FF, #00BCD4);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -207,14 +207,14 @@
         }
         
         .btn-back {
-            background: linear-gradient(135deg, #5ec4d4, #1e88a8);
+            background: linear-gradient(135deg, #00E5FF, #1e88a8);
             color: white;
             text-decoration: none;
         }
         
         .btn-back:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(94, 196, 212, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 229, 255, 0.4);
         }
         
         .btn-add {
@@ -228,13 +228,13 @@
         }
         
         .btn-import {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #00E5FF, #00BCD4);
             color: white;
         }
         
         .btn-import:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 229, 255, 0.4);
         }
         
         .btn-export {
@@ -302,7 +302,7 @@
         
         .stat-card:hover {
             transform: translateY(-2px);
-            border-color: rgba(102, 126, 234, 0.3);
+            border-color: rgba(0, 229, 255, 0.3);
         }
         
         .stat-icon {
@@ -315,7 +315,7 @@
             font-size: 24px;
         }
         
-        .stat-icon.blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .stat-icon.blue { background: linear-gradient(135deg, #00E5FF, #00BCD4); }
         .stat-icon.green { background: linear-gradient(135deg, #43e97b, #38f9d7); }
         .stat-icon.orange { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
         .stat-icon.red { background: linear-gradient(135deg, #f56565, #c53030); }
@@ -363,7 +363,7 @@
         
         .filter-select:focus {
             outline: none;
-            border-color: rgba(102, 126, 234, 0.6);
+            border-color: rgba(0, 229, 255, 0.6);
         }
         
         .search-section {
@@ -390,8 +390,8 @@
         
         .search-box input:focus {
             outline: none;
-            border-color: rgba(102, 126, 234, 0.6);
-            background: #252b3d;
+            border-color: rgba(0, 229, 255, 0.6);
+            background: #161B22;
         }
         
         .search-icon {
@@ -416,8 +416,8 @@
         }
         
         .contacts-table thead {
-            background: #252b3d;
-            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+            background: #161B22;
+            border-bottom: 2px solid rgba(0, 229, 255, 0.3);
         }
         
         .contacts-table th {
@@ -435,17 +435,17 @@
         }
         
         .contacts-table tbody tr {
-            background: #1e2433;
+            background: #161B22;
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         }
         
         .contacts-table tbody tr:nth-child(even) {
-            background: #1a1f2e;
+            background: #0D1117;
         }
         
         .contacts-table tbody tr:hover {
-            background: #252b3d;
-            box-shadow: inset 0 0 0 1px rgba(102, 126, 234, 0.3);
+            background: #161B22;
+            box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.3);
         }
         
         .contacts-table td {
@@ -477,7 +477,7 @@
             border: 2px solid var(--bg-card);
         }
         
-        .avatar-gradient-1 { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .avatar-gradient-1 { background: linear-gradient(135deg, #00E5FF, #00BCD4); }
         .avatar-gradient-2 { background: linear-gradient(135deg, #f093fb, #f5576c); }
         .avatar-gradient-3 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
         .avatar-gradient-4 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
@@ -531,7 +531,7 @@
             top: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background: #1a1f2e;
+            background: #0D1117;
             border: 1px solid rgba(245,101,101,0.4);
             border-radius: 10px;
             z-index: 9999;
@@ -569,7 +569,7 @@
         }
         .multi-delete-modal-overlay.show { display: flex; }
         .multi-delete-modal {
-            background: #1a1f2e;
+            background: #0D1117;
             border-radius: 16px;
             padding: 30px;
             width: 420px;
@@ -666,13 +666,13 @@
         }
         
         .sortable:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(0, 229, 255, 0.1);
         }
         
         .sort-indicator {
             margin-right: 5px;
             font-size: 10px;
-            color: #667eea;
+            color: #00E5FF;
         }
         
         /* Responsive Design */
@@ -775,7 +775,7 @@
         }
         
         .progress-content {
-            background: #1a1f2e;
+            background: #0D1117;
             padding: 40px;
             border-radius: 12px;
             width: 90%;
@@ -796,7 +796,7 @@
         }
         
         .progress-bar-container {
-            background: #1e2433;
+            background: #161B22;
             border-radius: 10px;
             height: 30px;
             margin: 20px 0;
@@ -826,7 +826,7 @@
         .progress-results {
             margin-top: 20px;
             padding: 15px;
-            background: #1e2433;
+            background: #161B22;
             border-radius: 8px;
             font-size: 13px;
         }
@@ -854,7 +854,7 @@
         }
         
         .distribution-content {
-            background: #1a1f2e;
+            background: #0D1117;
             padding: 30px;
             border-radius: 12px;
             width: 90%;
@@ -865,7 +865,7 @@
         }
         
         .employee-distribution-item {
-            background: #1e2433;
+            background: #161B22;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 10px;
@@ -895,7 +895,7 @@
             width: 120px;
             padding: 10px;
             border-radius: 8px;
-            border: 1px solid rgba(102, 126, 234, 0.3);
+            border: 1px solid rgba(0, 229, 255, 0.3);
             background: #0d1117;
             color: #ccd6f6;
             font-size: 16px;
@@ -904,11 +904,11 @@
         }
         
         .distribution-summary {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(0, 229, 255, 0.1);
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
-            border: 1px solid rgba(102, 126, 234, 0.3);
+            border: 1px solid rgba(0, 229, 255, 0.3);
         }
         
         .distribution-summary-item {
@@ -1017,7 +1017,7 @@
                 <option value="2">2 نجوم</option>
                 <option value="1">1 نجمة</option>
             </select>
-            <button class="crm-btn" onclick="resetFilters()" style="background:#1e2433;color:#a8b2d1;margin-right:auto;">
+            <button class="crm-btn" onclick="resetFilters()" style="background:#161B22;color:#a8b2d1;margin-right:auto;">
                 🔄 إعادة تعيين
             </button>
         </div>
@@ -1042,19 +1042,19 @@
     
     <!-- Add Contact Modal -->
     <div id="add-contact-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;">
-        <div style="background:#1a1f2e;padding:30px;border-radius:12px;width:90%;max-width:500px;border:1px solid rgba(255,255,255,0.1);">
+        <div style="background:#0D1117;padding:30px;border-radius:12px;width:90%;max-width:500px;border:1px solid rgba(255,255,255,0.1);">
             <h2 style="color:#ccd6f6;margin-bottom:20px;">➕ إضافة عميل جديد</h2>
             <div style="display:flex;flex-direction:column;gap:15px;">
-                <input type="text" id="new-contact-name" placeholder="الاسم *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
-                <input type="text" id="new-contact-phone" placeholder="رقم الموبايل *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
-                <input type="email" id="new-contact-email" placeholder="البريد الإلكتروني" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
-                <input type="text" id="new-contact-country" placeholder="البلد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
-                <input type="text" id="new-contact-balance" placeholder="الرصيد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="text" id="new-contact-name" placeholder="الاسم *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
+                <input type="text" id="new-contact-phone" placeholder="رقم الموبايل *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
+                <input type="email" id="new-contact-email" placeholder="البريد الإلكتروني" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
+                <input type="text" id="new-contact-country" placeholder="البلد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
+                <input type="text" id="new-contact-balance" placeholder="الرصيد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
                 <div style="display:flex;gap:10px;margin-top:10px;">
                     <button onclick="saveNewContact()" style="flex:1;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,#43e97b,#38f9d7);color:white;font-weight:700;cursor:pointer;">
                         ✓ حفظ
                     </button>
-                    <button onclick="hideAddContactModal()" style="flex:1;padding:12px;border:none;border-radius:8px;background:#1e2433;color:#a8b2d1;font-weight:700;cursor:pointer;">
+                    <button onclick="hideAddContactModal()" style="flex:1;padding:12px;border:none;border-radius:8px;background:#161B22;color:#a8b2d1;font-weight:700;cursor:pointer;">
                         ✕ إلغاء
                     </button>
                 </div>
@@ -1064,20 +1064,20 @@
     
     <!-- Edit Contact Modal -->
     <div id="edit-contact-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;">
-        <div style="background:#1a1f2e;padding:30px;border-radius:12px;width:90%;max-width:500px;border:1px solid rgba(255,255,255,0.1);">
+        <div style="background:#0D1117;padding:30px;border-radius:12px;width:90%;max-width:500px;border:1px solid rgba(255,255,255,0.1);">
             <h2 style="color:#ccd6f6;margin-bottom:20px;">✏️ تعديل العميل</h2>
             <input type="hidden" id="edit-contact-id">
             <div style="display:flex;flex-direction:column;gap:15px;">
-                <input type="text" id="edit-contact-name" placeholder="الاسم *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
-                <input type="text" id="edit-contact-phone" placeholder="رقم الموبايل *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
-                <input type="email" id="edit-contact-email" placeholder="البريد الإلكتروني" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
-                <input type="text" id="edit-contact-country" placeholder="البلد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
-                <input type="text" id="edit-contact-balance" placeholder="الرصيد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;">
+                <input type="text" id="edit-contact-name" placeholder="الاسم *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
+                <input type="text" id="edit-contact-phone" placeholder="رقم الموبايل *" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
+                <input type="email" id="edit-contact-email" placeholder="البريد الإلكتروني" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
+                <input type="text" id="edit-contact-country" placeholder="البلد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
+                <input type="text" id="edit-contact-balance" placeholder="الرصيد" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;">
                 <div style="display:flex;gap:10px;margin-top:10px;">
                     <button onclick="updateContact()" style="flex:1;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:white;font-weight:700;cursor:pointer;">
                         ✓ حفظ التعديلات
                     </button>
-                    <button onclick="hideEditContactModal()" style="flex:1;padding:12px;border:none;border-radius:8px;background:#1e2433;color:#a8b2d1;font-weight:700;cursor:pointer;">
+                    <button onclick="hideEditContactModal()" style="flex:1;padding:12px;border:none;border-radius:8px;background:#161B22;color:#a8b2d1;font-weight:700;cursor:pointer;">
                         ✕ إلغاء
                     </button>
                 </div>
@@ -1087,16 +1087,16 @@
     
     <!-- Notes Modal -->
     <div id="notes-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;">
-        <div style="background:#1a1f2e;padding:30px;border-radius:12px;width:90%;max-width:600px;border:1px solid rgba(255,255,255,0.1);">
-            <h2 style="color:#ccd6f6;margin-bottom:20px;">📝 ملاحظات - <span id="note-contact-name" style="color:#667eea;"></span></h2>
+        <div style="background:#0D1117;padding:30px;border-radius:12px;width:90%;max-width:600px;border:1px solid rgba(255,255,255,0.1);">
+            <h2 style="color:#ccd6f6;margin-bottom:20px;">📝 ملاحظات - <span id="note-contact-name" style="color:#00E5FF;"></span></h2>
             <input type="hidden" id="note-contact-id">
             <div style="display:flex;flex-direction:column;gap:15px;">
-                <textarea id="contact-notes" rows="6" placeholder="اكتب ملاحظاتك هنا..." style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#1e2433;color:#ccd6f6;resize:vertical;font-family:inherit;"></textarea>
+                <textarea id="contact-notes" rows="6" placeholder="اكتب ملاحظاتك هنا..." style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#161B22;color:#ccd6f6;resize:vertical;font-family:inherit;"></textarea>
                 <div style="display:flex;gap:10px;margin-top:10px;">
-                    <button onclick="saveContactNotes()" style="flex:1;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;cursor:pointer;">
+                    <button onclick="saveContactNotes()" style="flex:1;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,#00E5FF,#00BCD4);color:white;font-weight:700;cursor:pointer;">
                         ✓ حفظ الملاحظات
                     </button>
-                    <button onclick="hideNotesModal()" style="flex:1;padding:12px;border:none;border-radius:8px;background:#1e2433;color:#a8b2d1;font-weight:700;cursor:pointer;">
+                    <button onclick="hideNotesModal()" style="flex:1;padding:12px;border:none;border-radius:8px;background:#161B22;color:#a8b2d1;font-weight:700;cursor:pointer;">
                         ✕ إلغاء
                     </button>
                 </div>
@@ -1130,13 +1130,13 @@
             </div>
             
             <div style="display:flex;gap:10px;margin-top:20px;">
-                <button onclick="startImportWithDistribution()" style="flex:1;padding:14px;border:none;border-radius:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;cursor:pointer;font-size:15px;">
+                <button onclick="startImportWithDistribution()" style="flex:1;padding:14px;border:none;border-radius:8px;background:linear-gradient(135deg,#00E5FF,#00BCD4);color:white;font-weight:700;cursor:pointer;font-size:15px;">
                     ✓ بدء الاستيراد مع التوزيع
                 </button>
                 <button onclick="startImportWithoutDistribution()" style="flex:1;padding:14px;border:none;border-radius:8px;background:linear-gradient(135deg,#43e97b,#38f9d7);color:white;font-weight:700;cursor:pointer;font-size:15px;">
                     استيراد بدون توزيع
                 </button>
-                <button onclick="closeDistributionModal()" style="padding:14px 20px;border:none;border-radius:8px;background:#1e2433;color:#a8b2d1;font-weight:700;cursor:pointer;">
+                <button onclick="closeDistributionModal()" style="padding:14px 20px;border:none;border-radius:8px;background:#161B22;color:#a8b2d1;font-weight:700;cursor:pointer;">
                     ✕ إلغاء
                 </button>
             </div>
@@ -1153,7 +1153,7 @@
             </div>
             <div class="progress-text" id="progress-text">جاري التحضير...</div>
             <div class="progress-results" id="progress-results" style="display:none;"></div>
-            <button onclick="closeProgressModal()" id="close-progress-btn" style="display:none;margin-top:20px;padding:12px 30px;border:none;border-radius:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;cursor:pointer;">
+            <button onclick="closeProgressModal()" id="close-progress-btn" style="display:none;margin-top:20px;padding:12px 30px;border:none;border-radius:8px;background:linear-gradient(135deg,#00E5FF,#00BCD4);color:white;font-weight:700;cursor:pointer;">
                 إغلاق
             </button>
         </div>
@@ -1648,7 +1648,7 @@
                 const loadMoreBtn = document.createElement('div');
                 loadMoreBtn.style.cssText = 'text-align:center;padding:20px;';
                 loadMoreBtn.innerHTML = `
-                    <button onclick="loadMoreContacts()" style="padding:12px 40px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;cursor:pointer;font-size:15px;font-weight:bold;">
+                    <button onclick="loadMoreContacts()" style="padding:12px 40px;background:linear-gradient(135deg,#00E5FF,#00BCD4);color:white;border:none;border-radius:25px;cursor:pointer;font-size:15px;font-weight:bold;">
                         ⬇️ تحميل المزيد (${_allContacts.length} / ${_totalContacts})
                     </button>
                 `;
@@ -2557,7 +2557,7 @@
                 `;
                 
                 if (distribution) {
-                    resultsHTML += '<div style="color:#667eea;margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">📊 التوزيع على الموظفين:</div>';
+                    resultsHTML += '<div style="color:#00E5FF;margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">📊 التوزيع على الموظفين:</div>';
                     distribution.forEach(dist => {
                         resultsHTML += `<div style="color:#8892b0;font-size:13px;margin-top:5px;">• ${dist.employeeName}: ${dist.count} جهة اتصال</div>`;
                     });
@@ -2670,7 +2670,7 @@
                     <div class="error-count">✗ فشل: ${totalErrors}</div>
                 `;
                 if (distribution) {
-                    resultsHTML += '<div style="color:#667eea;margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">📊 التوزيع على الموظفين:</div>';
+                    resultsHTML += '<div style="color:#00E5FF;margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">📊 التوزيع على الموظفين:</div>';
                     distribution.forEach(d => resultsHTML += `<div style="color:#8892b0;font-size:13px;margin-top:5px;">• ${d.employeeName}: ${d.count} جهة اتصال</div>`);
                 }
                 resultsHTML += `<div style="color:#ccd6f6;margin-top:15px;font-weight:700;">إجمالي الملف: ${contacts.length} جهة اتصال</div>`;
@@ -2815,13 +2815,13 @@
 
     <!-- Clear All Modal -->
     <div id="clearAllModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;justify-content:center;align-items:center;">
-        <div style="background:#1a1f2e;border:1px solid rgba(239,68,68,0.4);border-radius:16px;padding:35px;max-width:440px;width:90%;">
+        <div style="background:#0D1117;border:1px solid rgba(239,68,68,0.4);border-radius:16px;padding:35px;max-width:440px;width:90%;">
             <h2 style="color:#ef4444;margin-bottom:10px;font-size:22px;">⚠️ تحذير — مسح جميع العملاء</h2>
             <p style="color:#a8b2d1;margin-bottom:20px;font-size:14px;line-height:1.7;">هذا الإجراء سيقوم بمسح <strong style="color:white" id="clearAllCount">0</strong> جهة اتصال. البيانات لن تُحذف نهائياً بل ستُؤرشف.<br>أدخل كلمة مرور الأدمن للتأكيد:</p>
             <input type="password" id="clearAllPassword" placeholder="كلمة مرور الأدمن" style="width:100%;padding:12px 15px;border:2px solid rgba(239,68,68,0.3);border-radius:10px;background:#0a1628;color:white;font-size:16px;margin-bottom:15px;">
             <div id="clearAllError" style="color:#ef4444;font-size:13px;margin-bottom:15px;display:none;"></div>
             <div style="display:flex;gap:10px;">
-                <button onclick="document.getElementById('clearAllModal').style.display='none'" style="flex:1;padding:12px;background:#1e2433;color:#a8b2d1;border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;font-size:15px;">إلغاء</button>
+                <button onclick="document.getElementById('clearAllModal').style.display='none'" style="flex:1;padding:12px;background:#161B22;color:#a8b2d1;border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;font-size:15px;">إلغاء</button>
                 <button onclick="executeClearAll()" style="flex:1;padding:12px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:bold;">🗑️ مسح الكل</button>
             </div>
         </div>
@@ -2841,7 +2841,7 @@
             width: 46px;
             height: 46px;
             border-radius: 50%;
-            background: rgba(102, 126, 234, 0.85);
+            background: rgba(0, 229, 255, 0.85);
             color: white;
             border: 2px solid rgba(255,255,255,0.2);
             cursor: pointer;
@@ -2854,7 +2854,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
         .float-nav-btn:hover {
-            background: rgba(102, 126, 234, 1);
+            background: rgba(0, 229, 255, 1);
             transform: scale(1.1);
         }
         @media (max-width: 768px) { .float-nav { bottom: 15px; left: 15px; } }

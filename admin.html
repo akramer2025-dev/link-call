@@ -264,13 +264,13 @@
                     <span class="icon">⚙️</span>
                     <span class="text" data-i18n="admin_settings">الإعدادات</span>
                 </a>
+                <a href="#" class="nav-item" data-section="minutes-report">
+                    <span class="icon">⏱️</span>
+                    <span class="text">تقرير الدقائق</span>
+                </a>
                 <a href="accounts.html" class="nav-item" target="_self">
                     <span class="icon">💰</span>
                     <span class="text">الحسابات والرواتب</span>
-                </a>
-                <a href="super-admin.html" class="nav-item" target="_self">
-                    <span class="icon">🏢</span>
-                    <span class="text">لوحة تحكم المنصة</span>
                 </a>
             </nav>
             
@@ -293,7 +293,7 @@
                 </div>
                 <div class="header-left">
                     <div class="search-box">
-                        <input type="text" data-i18n-placeholder="admin_search_placeholder" placeholder="بحث..." id="global-search" autocomplete="nope">
+                        <input type="text" data-i18n-placeholder="admin_search_placeholder" placeholder="بحث..." id="global-search" autocomplete="off">
                         <span class="search-icon">🔍</span>
                     </div>
                     <div class="lang-switcher">
@@ -438,7 +438,7 @@
                 <!-- Modal إضافة شركة - تصميم احترافي -->
                 <div class="modal" id="add-company-modal">
                     <div class="modal-content" style="max-width: 750px; max-height: 90vh; overflow-y: auto;">
-                        <div class="modal-header" style="background: linear-gradient(135deg, #00E5FF 0%, #00BCD4 100%); color: white; padding: 25px; border-radius: 15px 15px 0 0; margin: -20px -20px 25px -20px;">
+                        <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px 15px 0 0; margin: -20px -20px 25px -20px;">
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <div style="background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
                                     🏢
@@ -454,15 +454,15 @@
                         <form id="add-company-form" style="padding: 0 20px 20px;">
                             <!-- معلومات الشركة -->
                             <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                                <h4 style="color: #00E5FF; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
-                                    <span style="background: linear-gradient(135deg, #00E5FF 0%, #00BCD4 100%); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">1</span>
+                                <h4 style="color: #667eea; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center; gap: 10px;">
+                                    <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">1</span>
                                     معلومات الشركة الأساسية
                                 </h4>
                                 
                                 <div style="display: grid; gap: 15px;">
                                     <div class="form-group" style="margin: 0;">
                                         <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
-                                            <span style="color: #00E5FF;">🏢</span> اسم الشركة <span style="color: #e74c3c;">*</span>
+                                            <span style="color: #667eea;">🏢</span> اسم الشركة <span style="color: #e74c3c;">*</span>
                                         </label>
                                         <input type="text" id="company-name" required placeholder="مثال: شركة النجاح للتسويق" 
                                                style="width: 100%; padding: 12px 15px; border: 2px solid #e0e6f0; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
@@ -471,7 +471,7 @@
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                         <div class="form-group" style="margin: 0;">
                                             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
-                                                <span style="color: #00E5FF;">📞</span> رقم الهاتف
+                                                <span style="color: #667eea;">📞</span> رقم الهاتف
                                             </label>
                                             <input type="tel" id="company-phone" placeholder="+966 5x xxx xxxx" 
                                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e6f0; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
@@ -479,7 +479,7 @@
                                         
                                         <div class="form-group" style="margin: 0;">
                                             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
-                                                <span style="color: #00E5FF;">📧</span> البريد الإلكتروني
+                                                <span style="color: #667eea;">📧</span> البريد الإلكتروني
                                             </label>
                                             <input type="email" id="company-email" placeholder="info@company.com" 
                                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e6f0; border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white;">
@@ -575,7 +575,7 @@
                                 <button type="button" class="btn-secondary close-modal" style="flex: 1; padding: 14px; border: 2px solid #dfe6e9; background: white; color: #2d3436; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
                                     إلغاء
                                 </button>
-                                <button type="submit" class="btn-primary" style="flex: 2; padding: 14px; background: linear-gradient(135deg, #00E5FF 0%, #00BCD4 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);">
+                                <button type="submit" class="btn-primary" style="flex: 2; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
                                     ✅ إنشاء الشركة الآن
                                 </button>
                             </div>
@@ -592,23 +592,23 @@
                     
                     .subscription-card input:checked + .subscription-card,
                     .subscription-card:has(input:checked) {
-                        border-color: #00E5FF !important;
-                        background: linear-gradient(135deg, rgba(0, 229, 255, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%) !important;
-                        box-shadow: 0 4px 20px rgba(0, 229, 255, 0.3) !important;
+                        border-color: #667eea !important;
+                        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%) !important;
+                        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3) !important;
                     }
                     
                     /* تحسين حقول الإدخال */
                     #add-company-form input:focus,
                     #add-company-form select:focus {
                         outline: none;
-                        border-color: #00E5FF !important;
-                        box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1) !important;
+                        border-color: #667eea !important;
+                        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
                     }
                     
                     /* تحسين الأزرار */
                     .btn-primary:hover {
                         transform: translateY(-2px);
-                        box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4) !important;
+                        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
                     }
                     
                     .btn-secondary:hover {
@@ -627,8 +627,8 @@
                     document.querySelectorAll('.subscription-card').forEach(card => {
                         card.addEventListener('click', function() {
                             document.querySelectorAll('.subscription-card').forEach(c => c.style.borderColor = '#e0e6f0');
-                            this.style.borderColor = '#00E5FF';
-                            this.style.background = 'linear-gradient(135deg, rgba(0, 229, 255, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
+                            this.style.borderColor = '#667eea';
+                            this.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
                             document.getElementById('company-subscription').value = this.dataset.plan;
                         });
                     });
@@ -692,7 +692,7 @@
                 </div>
                 
                 <!-- تنبيه حماية البيانات -->
-                <div style="background: linear-gradient(135deg, #00E5FF 0%, #00BCD4 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
                     <div style="font-size: 32px;">🔐</div>
                     <div style="flex: 1;">
                         <strong style="font-size: 16px; display: block; margin-bottom: 5px;">🛡️ حماية البيانات مفعّلة</strong>
@@ -752,7 +752,7 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>اسم المستخدم (للدخول) *</label>
-                                        <input type="text" id="employee-username" required placeholder="مثال: ahmed123" autocomplete="nope">
+                                        <input type="text" id="employee-username" required placeholder="مثال: ahmed123" autocomplete="off">
                                     </div>
                                     <div class="form-group">
                                         <label>كلمة المرور *</label>
@@ -858,6 +858,75 @@
                 </div>
             </section>
 
+            <!-- قسم تقرير الدقائق -->
+            <section class="section" id="minutes-report-section">
+                <div class="section-header">
+                    <h2>⏱️ تقرير الدقائق والمكالمات</h2>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                        <input type="date" id="mr-start-date" style="padding:7px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;">
+                        <span style="color:#888;">إلى</span>
+                        <input type="date" id="mr-end-date" style="padding:7px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;">
+                        <button onclick="loadMinutesReport()" style="background:linear-gradient(135deg,#5ec4d4,#1e3a5f);color:white;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">🔄 تحديث</button>
+                        <button onclick="exportMinutesReport()" style="background:linear-gradient(135deg,#10b981,#065f46);color:white;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">📥 تصدير CSV</button>
+                    </div>
+                </div>
+
+                <!-- بطاقات الملخص -->
+                <div id="mr-summary-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;"></div>
+
+                <!-- جدول لكل موظف -->
+                <div style="background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);padding:20px;margin-bottom:24px;">
+                    <h3 style="margin:0 0 16px;font-size:16px;color:#1e3a5f;">📊 ملخص حسب الموظف</h3>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                            <thead>
+                                <tr style="background:#f8fafc;">
+                                    <th style="padding:10px 14px;text-align:right;border-bottom:2px solid #e2e8f0;color:#4a5568;">الموظف</th>
+                                    <th style="padding:10px 14px;text-align:center;border-bottom:2px solid #e2e8f0;color:#4a5568;">عدد المكالمات</th>
+                                    <th style="padding:10px 14px;text-align:center;border-bottom:2px solid #e2e8f0;color:#4a5568;">إجمالي الدقائق</th>
+                                    <th style="padding:10px 14px;text-align:center;border-bottom:2px solid #e2e8f0;color:#4a5568;">إجمالي الثواني</th>
+                                    <th style="padding:10px 14px;text-align:center;border-bottom:2px solid #e2e8f0;color:#4a5568;">متوسط المكالمة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mr-employee-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- جدول تفصيلي لكل مكالمة -->
+                <div style="background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);padding:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                        <h3 style="margin:0;font-size:16px;color:#1e3a5f;">📋 تفاصيل جميع المكالمات</h3>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <select id="mr-employee-filter" onchange="renderMRTable()" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;">
+                                <option value="">جميع الموظفين</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                            <thead>
+                                <tr style="background:#f8fafc;">
+                                    <th style="padding:9px 12px;text-align:right;border-bottom:2px solid #e2e8f0;color:#4a5568;">#</th>
+                                    <th style="padding:9px 12px;text-align:right;border-bottom:2px solid #e2e8f0;color:#4a5568;">التاريخ والوقت</th>
+                                    <th style="padding:9px 12px;text-align:right;border-bottom:2px solid #e2e8f0;color:#4a5568;">الموظف</th>
+                                    <th style="padding:9px 12px;text-align:right;border-bottom:2px solid #e2e8f0;color:#4a5568;">الرقم المتصل به</th>
+                                    <th style="padding:9px 12px;text-align:center;border-bottom:2px solid #e2e8f0;color:#4a5568;">المدة</th>
+                                    <th style="padding:9px 12px;text-align:center;border-bottom:2px solid #e2e8f0;color:#4a5568;">الثواني</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mr-calls-table-body"></tbody>
+                        </table>
+                    </div>
+                    <div id="mr-pagination" style="display:flex;justify-content:center;gap:6px;margin-top:16px;flex-wrap:wrap;"></div>
+                </div>
+
+                <div id="mr-loading" style="text-align:center;padding:60px;display:none;">
+                    <div style="font-size:40px;margin-bottom:12px;">⏳</div>
+                    <p style="color:#888;">جاري تحميل البيانات...</p>
+                </div>
+            </section>
+
             <!-- قسم التحليلات -->
             <section class="section" id="analytics-section">
                 <div class="section-header">
@@ -953,7 +1022,7 @@
                             <label style="font-weight:600;">اسم المدير</label>
                             <input type="text" id="edit-admin-name" placeholder="اسم المدير" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:6px;">
                         </div>
-                        <button onclick="saveCompanyProfile()" style="margin-top:12px; width:100%; padding:8px; background:#00E5FF; color:white; border:none; border-radius:8px; cursor:pointer; font-size:0.875rem;">
+                        <button onclick="saveCompanyProfile()" style="margin-top:12px; width:100%; padding:8px; background:#6366f1; color:white; border:none; border-radius:8px; cursor:pointer; font-size:0.875rem;">
                             💾 حفظ التعديلات
                         </button>
                         <div id="profile-save-msg" style="display:none; margin-top:8px; padding:8px; background:#d1fae5; color:#065f46; border-radius:6px; text-align:center; font-size:0.85rem;"></div>
@@ -1097,9 +1166,9 @@
             width: 46px;
             height: 46px;
             border-radius: 50%;
-            background: rgba(0, 188, 212, 0.9);
+            background: rgba(30, 58, 95, 0.9);
             color: white;
-            border: 2px solid rgba(0, 229, 255, 0.5);
+            border: 2px solid rgba(94, 196, 212, 0.5);
             cursor: pointer;
             font-size: 18px;
             display: flex;
@@ -1110,7 +1179,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         .float-nav-btn:hover {
-            background: rgba(0, 229, 255, 0.8);
+            background: rgba(94, 196, 212, 0.8);
             transform: scale(1.1);
         }
         @media (max-width: 768px) {
@@ -1218,7 +1287,7 @@
                             إلغاء
                         </button>
                         <button type="submit" id="twilio-save-btn"
-                                style="padding:10px 28px; background:linear-gradient(135deg,#00E5FF,#00BCD4); color:white; border:none; border-radius:8px; font-size:14px; cursor:pointer; font-weight:700; min-width:120px;">
+                                style="padding:10px 28px; background:linear-gradient(135deg,#667eea,#764ba2); color:white; border:none; border-radius:8px; font-size:14px; cursor:pointer; font-weight:700; min-width:120px;">
                             💾 حفظ الإعداد
                         </button>
                     </div>

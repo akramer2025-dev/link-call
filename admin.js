@@ -116,7 +116,8 @@ function initNavigation() {
                 'analytics': 'التحليلات',
                 'transcripts': 'تحويل الصوت إلى نص',
                 'missed': 'المكالمات الفائتة',
-                'settings': 'إعدادات النظام'
+                'settings': 'إعدادات النظام',
+                'minutes-report': 'تقرير الدقائق والمكالمات'
             };
             document.getElementById('page-title').textContent = titles[targetSection] || 'لوحة التحكم';
             
@@ -126,6 +127,8 @@ function initNavigation() {
             } else if (targetSection === 'settings') {
                 loadBalance();
                 loadCompanyProfile();
+            } else if (targetSection === 'minutes-report') {
+                loadMinutesReport();
             }
             
             // إغلاق القائمة الجانبية في الهاتف عند اختيار قسم
@@ -1071,6 +1074,267 @@ document.getElementById('global-search')?.addEventListener('input', (e) => {
     renderCallsTable(1);
     allCalls = originalCalls;
 });
+
+// ========== تقرير الدقائق ==========
+let mrAllRecordings = [];  // كل التسجيلات من Firestore
+let mrFiltered = [];        // بعد الفلتر
+let mrCurrentPage = 1;
+const MR_PAGE_SIZE = 25;
+
+// تحميل التسجيلات من Firestore
+async function loadMinutesReport() {
+    const companyId = sessionStorage.getItem('companyId');
+    if (!companyId) {
+        alert('⚠️ لا يوجد companyId في الجلسة. سجّل دخول كمدير شركة أولاً.');
+        return;
+    }
+
+    const loadingEl = document.getElementById('mr-loading');
+    if (loadingEl) loadingEl.style.display = 'block';
+
+    try {
+        const url = `${baseUrl}/api/recordings?companyId=${encodeURIComponent(companyId)}&limit=500`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        mrAllRecordings = (data.recordings || []).map(r => ({
+            ...r,
+            _date: new Date(r.createdAt || r.dateCreated || 0)
+        }));
+
+        // تحميل أسماء الموظفين إذا لم تكن محملة
+        if (!allEmployees.length) await loadEmployees();
+
+        applyMRFilters();
+    } catch (err) {
+        console.error('خطأ في تحميل تقرير الدقائق:', err);
+        alert('❌ فشل تحميل البيانات: ' + err.message);
+    } finally {
+        if (loadingEl) loadingEl.style.display = 'none';
+    }
+}
+
+// تطبيق فلتر التاريخ
+function applyMRFilters() {
+    const startVal = document.getElementById('mr-start-date')?.value;
+    const endVal   = document.getElementById('mr-end-date')?.value;
+
+    mrFiltered = mrAllRecordings.filter(r => {
+        if (startVal && r._date < new Date(startVal)) return false;
+        if (endVal   && r._date > new Date(endVal + 'T23:59:59')) return false;
+        return true;
+    });
+
+    mrCurrentPage = 1;
+    renderMRSummaryCards();
+    renderMREmployeeTable();
+    populateMREmployeeFilter();
+    renderMRTable();
+}
+
+// اسم الموظف من ID
+function getMREmployeeName(employeeId) {
+    if (!employeeId || employeeId === 'unknown') return 'غير معروف';
+    const emp = allEmployees.find(e =>
+        String(e.id) === String(employeeId) ||
+        e.username === employeeId ||
+        e.email === employeeId
+    );
+    return emp ? (emp.name || emp.fullname || emp.username) : (String(employeeId));
+}
+
+// بطاقات الملخص العلوية
+function renderMRSummaryCards() {
+    const container = document.getElementById('mr-summary-cards');
+    if (!container) return;
+
+    const totalCalls   = mrFiltered.length;
+    const totalSeconds = mrFiltered.reduce((s, r) => s + (parseInt(r.duration) || 0), 0);
+    const totalMins    = Math.floor(totalSeconds / 60);
+    const totalSecs    = totalSeconds % 60;
+    const avgSeconds   = totalCalls > 0 ? Math.round(totalSeconds / totalCalls) : 0;
+    const avgMins      = Math.floor(avgSeconds / 60);
+    const avgSecs      = avgSeconds % 60;
+
+    // عدد الموظفين المشاركين
+    const uniqueEmployees = new Set(mrFiltered.map(r => r.employeeId || 'unknown')).size;
+
+    container.innerHTML = `
+        <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:12px;padding:20px;text-align:center;">
+            <div style="font-size:32px;font-weight:700;">${totalCalls}</div>
+            <div style="font-size:13px;opacity:0.9;margin-top:4px;">📞 إجمالي المكالمات</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#f093fb,#f5576c);color:white;border-radius:12px;padding:20px;text-align:center;">
+            <div style="font-size:32px;font-weight:700;">${totalMins}</div>
+            <div style="font-size:13px;opacity:0.9;margin-top:4px;">⏱️ إجمالي الدقائق</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:white;border-radius:12px;padding:20px;text-align:center;">
+            <div style="font-size:32px;font-weight:700;">${totalSecs}</div>
+            <div style="font-size:13px;opacity:0.9;margin-top:4px;">🕐 ثواني إضافية</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:white;border-radius:12px;padding:20px;text-align:center;">
+            <div style="font-size:32px;font-weight:700;">${avgMins}:${String(avgSecs).padStart(2,'0')}</div>
+            <div style="font-size:13px;opacity:0.9;margin-top:4px;">📊 متوسط المكالمة</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#fa709a,#fee140);color:white;border-radius:12px;padding:20px;text-align:center;">
+            <div style="font-size:32px;font-weight:700;">${uniqueEmployees}</div>
+            <div style="font-size:13px;opacity:0.9;margin-top:4px;">👥 موظفين مشاركين</div>
+        </div>
+    `;
+}
+
+// جدول ملخص الموظفين
+function renderMREmployeeTable() {
+    const tbody = document.getElementById('mr-employee-table-body');
+    if (!tbody) return;
+
+    // تجميع حسب الموظف
+    const empMap = {};
+    mrFiltered.forEach(r => {
+        const id  = r.employeeId || 'unknown';
+        const name = getMREmployeeName(id);
+        if (!empMap[id]) empMap[id] = { name, calls: 0, totalSecs: 0 };
+        empMap[id].calls++;
+        empMap[id].totalSecs += parseInt(r.duration) || 0;
+    });
+
+    const rows = Object.values(empMap).sort((a, b) => b.totalSecs - a.totalSecs);
+
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:#888;">لا توجد بيانات</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = rows.map((emp, i) => {
+        const mins = Math.floor(emp.totalSecs / 60);
+        const secs = emp.totalSecs % 60;
+        const avgS  = emp.calls > 0 ? Math.round(emp.totalSecs / emp.calls) : 0;
+        const avgM  = Math.floor(avgS / 60);
+        const avgSc = avgS % 60;
+        const rowBg = i % 2 === 0 ? '#fff' : '#f9fafb';
+        return `
+            <tr style="background:${rowBg};">
+                <td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;font-weight:600;color:#1e3a5f;">${emp.name}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;text-align:center;">
+                    <span style="background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:20px;font-weight:600;">${emp.calls}</span>
+                </td>
+                <td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;text-align:center;font-weight:700;color:#7c3aed;">${mins} د ${secs} ث</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;text-align:center;color:#059669;">${emp.totalSecs} ث</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;text-align:center;color:#6b7280;">${avgM} د ${avgSc} ث</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ملء فلتر الموظفين
+function populateMREmployeeFilter() {
+    const sel = document.getElementById('mr-employee-filter');
+    if (!sel) return;
+    const ids = new Set(mrFiltered.map(r => r.employeeId || 'unknown'));
+    const current = sel.value;
+    sel.innerHTML = '<option value="">جميع الموظفين</option>';
+    ids.forEach(id => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = getMREmployeeName(id);
+        sel.appendChild(opt);
+    });
+    sel.value = current;
+}
+
+// عرض جدول المكالمات التفصيلي
+function renderMRTable(page) {
+    if (page) mrCurrentPage = page;
+    const empFilter = document.getElementById('mr-employee-filter')?.value || '';
+    const rows = mrFiltered.filter(r => !empFilter || (r.employeeId || 'unknown') === empFilter);
+
+    const tbody = document.getElementById('mr-calls-table-body');
+    const pgDiv = document.getElementById('mr-pagination');
+    if (!tbody) return;
+
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:#888;">لا توجد مكالمات للعرض</td></tr>`;
+        if (pgDiv) pgDiv.innerHTML = '';
+        return;
+    }
+
+    const totalPages = Math.ceil(rows.length / MR_PAGE_SIZE);
+    const start = (mrCurrentPage - 1) * MR_PAGE_SIZE;
+    const pageRows = rows.slice(start, start + MR_PAGE_SIZE);
+
+    tbody.innerHTML = pageRows.map((r, i) => {
+        const dur    = parseInt(r.duration) || 0;
+        const mins   = Math.floor(dur / 60);
+        const secs   = dur % 60;
+        const durTxt = mins > 0 ? `${mins} د ${secs} ث` : `${secs} ث`;
+        const rowBg  = i % 2 === 0 ? '#fff' : '#f9fafb';
+        const dateObj = r._date;
+        const dateFmt = isNaN(dateObj) ? '—' : dateObj.toLocaleDateString('ar-EG', { year:'numeric', month:'short', day:'numeric' });
+        const timeFmt = isNaN(dateObj) ? '' : dateObj.toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' });
+        const phone   = (r.to || '').replace(/^\+/, '') || '—';
+        const empName = getMREmployeeName(r.employeeId);
+        const durColor = dur === 0 ? '#f87171' : dur > 180 ? '#059669' : '#d97706';
+
+        return `
+            <tr style="background:${rowBg};">
+                <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#888;font-size:12px;">${start + i + 1}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">
+                    <div style="font-weight:600;font-size:13px;">${dateFmt}</div>
+                    <div style="color:#888;font-size:11px;">${timeFmt}</div>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">
+                    <span style="background:#ede9fe;color:#6d28d9;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:600;">${empName}</span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;direction:ltr;font-size:13px;color:#1e3a5f;font-weight:600;">${phone}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center;">
+                    <span style="font-weight:700;color:${durColor};">${durTxt}</span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:#6b7280;font-size:12px;">${dur} ث</td>
+            </tr>
+        `;
+    }).join('');
+
+    // Pagination
+    if (pgDiv) {
+        let pg = '';
+        if (mrCurrentPage > 1) pg += `<button onclick="renderMRTable(${mrCurrentPage-1})" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;background:white;">السابق</button>`;
+        for (let p = Math.max(1, mrCurrentPage-2); p <= Math.min(totalPages, mrCurrentPage+2); p++) {
+            const active = p === mrCurrentPage ? 'background:#1e3a5f;color:white;' : 'background:white;';
+            pg += `<button onclick="renderMRTable(${p})" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;${active}">${p}</button>`;
+        }
+        if (mrCurrentPage < totalPages) pg += `<button onclick="renderMRTable(${mrCurrentPage+1})" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;background:white;">التالي</button>`;
+        pgDiv.innerHTML = `<span style="color:#888;font-size:12px;align-self:center;">${rows.length} مكالمة | صفحة ${mrCurrentPage} من ${totalPages}</span> ${pg}`;
+    }
+}
+
+// تصدير CSV
+function exportMinutesReport() {
+    if (!mrFiltered.length) {
+        alert('لا توجد بيانات للتصدير');
+        return;
+    }
+    const header = ['#', 'التاريخ', 'الوقت', 'الموظف', 'الرقم', 'المدة (ث)', 'الدقائق', 'الثواني'];
+    const rows = mrFiltered.map((r, i) => {
+        const d = r._date;
+        const dur = parseInt(r.duration) || 0;
+        return [
+            i + 1,
+            isNaN(d) ? '' : d.toLocaleDateString('en-CA'),
+            isNaN(d) ? '' : d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}),
+            getMREmployeeName(r.employeeId),
+            (r.to || '').replace(/^\+/, ''),
+            dur,
+            Math.floor(dur / 60),
+            dur % 60
+        ];
+    });
+
+    const csv = [header, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `تقرير-الدقائق-${new Date().toLocaleDateString('en-CA')}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+}
 
 // ========== إدارة الشركات ==========
 let allCompanies = [];

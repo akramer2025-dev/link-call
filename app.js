@@ -576,19 +576,15 @@ async function makeCall() {
         currentCall.on('accept', () => {
             console.log('📞 تم إنشاء المكالمة - جاري الاتصال...');
             updateCallStatus('جاري الاتصال... 📞');
-            // لا نبدأ العداد هنا - ننتظر العميل يرد
         });
         
         currentCall.on('ringing', () => {
             console.log('📞 الرنين...');
             updateCallStatus('رنين... 🔔');
-            // بدء العداد عند الرنين (SDK v2.x لا يدعم connected event)
-            if (!callTimer) startCallTimer();
         });
         
-        // هذا الحدث لا يُطلق في SDK v2.x للمكالمات الصادرة
-        // تم الانتقال لبدء العداد في ringing event
-        currentCall.on('connected', () => {
+        // SDK v2.x: الحدث الصحيح هو 'connect' (بدون d) - يُطلق عندما يرد العميل
+        currentCall.on('connect', () => {
             console.log('✅ العميل رد على المكالمة - بدء العداد');
             updateCallStatus('متصل ✅');
             if (!callTimer) startCallTimer();

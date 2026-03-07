@@ -2606,25 +2606,60 @@ setTimeout(updateCallHistoryBadge, 500);
 
 // تحميل سجل المكالمات
 async function loadCallHistory() {
+    const container = document.getElementById('call-history-container');
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:#888;">⏳ جاري التحميل...</div>`;
+
     try {
-        // تحميل المكالمات من localStorage بدلاً من السيرفر
-        const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
-        
-        // تحميل جهات الاتصال لعرض الأسماء
         const baseUrl = API_BASE_URL;
-        let contacts = [];
-        try {
-            const contactsResponse = await fetch(`${baseUrl}/api/contacts`);
-            const contactsData = await contactsResponse.json();
-            contacts = contactsData.contacts || [];
-        } catch (err) {
-            console.log('لم يتم تحميل جهات الاتصال');
-        }
-        
-        const container = document.getElementById('call-history-container');
+        const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
+
+        // ── تحميل جهات الاتصال والتسجيلات بالتوازي ──
+        const [contactsResult, recordingsResult] = await Promise.allSettled([
+            fetch(`${baseUrl}/api/contacts`).then(r => r.json()),
+            companyId
+                ? fetch(`${baseUrl}/api/recordings?companyId=${encodeURIComponent(companyId)}&limit=200`).then(r => r.json())
+                : Promise.resolve({ recordings: [] })
+        ]);
+
+        const contacts   = contactsResult.status  === 'fulfilled' ? (contactsResult.value.contacts   || []) : [];
+        const recordings = recordingsResult.status === 'fulfilled' ? (recordingsResult.value.recordings || []) : [];
+
+        // ── تحويل التسجيلات إلى تنسيق موحّد ──
+        const firestoreCalls = recordings.map(r => ({
+            to:        r.to || '',
+            direction: 'outbound',
+            status:    'completed',
+            startTime: r.createdAt || r.dateCreated || new Date().toISOString(),
+            durationSec: parseInt(r.duration) || 0,
+            _source: 'firestore'
+        }));
+
+        // ── المكالمات من localStorage (بعد دمج المدة الصحيحة) ──
+        const localCalls = JSON.parse(localStorage.getItem('callHistory') || '[]').map(c => {
+            const parts = (c.duration || '00:00').split(':').map(Number);
+            const durationSec = ((parts[0] || 0) * 60) + (parts[1] || 0);
+            return { ...c, durationSec, _source: 'local' };
+        });
+
+        // ── دمج: إذا فيه تسجيل Firestore للنفس الرقم والتوقيت المقارب، استخدم المدة منه ──
+        const merged = [...firestoreCalls];
+        localCalls.forEach(lc => {
+            const lcTime  = new Date(lc.startTime).getTime();
+            const lcPhone = (lc.to || '').replace(/\D/g, '').slice(-9);
+            const exists  = firestoreCalls.some(fc => {
+                const fcPhone = (fc.to || '').replace(/\D/g, '').slice(-9);
+                const timeDiff = Math.abs(new Date(fc.startTime).getTime() - lcTime);
+                return fcPhone === lcPhone && timeDiff < 5 * 60 * 1000; // 5 دقائق
+            });
+            if (!exists) merged.push(lc);
+        });
+
+        // ── ترتيب من الأحدث للأقدم ──
+        merged.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+
         container.innerHTML = '';
-        
-        if (calls.length === 0) {
+
+        if (merged.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">📞</div>
@@ -2633,48 +2668,46 @@ async function loadCallHistory() {
             `;
             return;
         }
-        
-        // ترتيب المكالمات من الأحدث للأقدم
-        calls.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-        
-        calls.forEach(call => {
+
+        merged.forEach(call => {
             const date = new Date(call.startTime);
             const formattedDate = date.toLocaleString('ar-EG');
-            // تنسيق المدة: القيمة محفوظة كـ "MM:SS" مثل "01:23"
-            let duration = 'لم تكتمل';
-            if (call.duration && call.duration !== '00:00' && call.duration !== '0:00') {
-                const parts = call.duration.split(':').map(Number);
-                const mins = parts[0] || 0;
-                const secs = parts[1] || 0;
-                const total = mins * 60 + secs;
-                duration = mins > 0 ? `${mins} د ${secs} ث` : `${total} ث`;
+
+            // ── تنسيق المدة ──
+            const sec = call.durationSec || 0;
+            let durationDisplay;
+            if (sec <= 0) {
+                durationDisplay = `<span style="color:#f87171;">لم يتم الرد</span>`;
+            } else {
+                const m = Math.floor(sec / 60);
+                const s = sec % 60;
+                const txt = m > 0 ? `${m} د ${s} ث` : `${s} ث`;
+                durationDisplay = `<span style="color:#4ECDC4;font-weight:600;">⏱️ ${txt}</span>`;
             }
-            
-            const callType = call.direction === 'inbound' ? '📥 واردة' : '📤 صادرة';
-            const statusColor = call.status === 'completed' ? '#4ECDC4' : '#FF6B6B';
-            
-            // البحث عن اسم جهة الاتصال
-            let displayName = call.to;
+
+            const callType    = call.direction === 'inbound' ? '📥 واردة' : '📤 صادرة';
+            const cleanPhone  = (call.to || '').replace(/^\+/, '');
+
+            // ── البحث عن اسم جهة الاتصال ──
+            let displayName = cleanPhone || 'غير معروف';
             const contact = contacts.find(c => {
-                const cleanContactPhone = c.phone.replace(/[\s-+]/g, '');
-                const cleanCallPhone = call.to.replace(/[\s-+]/g, '');
-                return cleanContactPhone.includes(cleanCallPhone) || cleanCallPhone.includes(cleanContactPhone);
+                const cp = c.phone.replace(/\D/g, '').slice(-9);
+                const pp = (call.to || '').replace(/\D/g, '').slice(-9);
+                return cp === pp && pp.length >= 7;
             });
-            
-            if (contact) {
-                displayName = `👤 ${contact.name}`;
-            }
-            
+            const nameHtml = contact
+                ? `<div class="call-item-number" style="color:#5ec4d4;font-weight:600;">👤 ${contact.name}</div><div style="font-size:12px;color:#999;">${cleanPhone}</div>`
+                : `<div class="call-item-number">${cleanPhone || 'غير معروف'}</div>`;
+
             const item = document.createElement('div');
             item.className = 'call-item';
             item.innerHTML = `
                 <div class="call-item-info">
-                    <div class="call-item-number" style="${contact ? 'color: #5ec4d4; font-weight: 600;' : ''}">${displayName}</div>
-                    ${!contact ? `<div style="font-size: 12px; color: #999;">${call.to}</div>` : ''}
+                    ${nameHtml}
                     <div class="call-item-details">
                         <span class="call-item-type">${callType}</span>
                         <span>${formattedDate}</span>
-                        <span style="color: ${statusColor}">${duration}</span>
+                        ${durationDisplay}
                     </div>
                 </div>
                 <div class="call-item-actions">
@@ -2683,8 +2716,10 @@ async function loadCallHistory() {
             `;
             container.appendChild(item);
         });
+
     } catch (error) {
         console.error('خطأ في تحميل سجل المكالمات:', error);
+        container.innerHTML = `<p style="text-align:center;color:#f44336;padding:20px;">خطأ في تحميل السجل</p>`;
     }
 }
 

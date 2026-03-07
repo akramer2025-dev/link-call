@@ -582,13 +582,16 @@ async function makeCall() {
         currentCall.on('ringing', () => {
             console.log('📞 الرنين...');
             updateCallStatus('رنين... 🔔');
+            // بدء العداد عند الرنين (SDK v2.x لا يدعم connected event)
+            if (!callTimer) startCallTimer();
         });
         
-        // هذا الحدث يُطلق عندما يرد العميل فعلياً - نبدأ العداد هنا
+        // هذا الحدث لا يُطلق في SDK v2.x للمكالمات الصادرة
+        // تم الانتقال لبدء العداد في ringing event
         currentCall.on('connected', () => {
             console.log('✅ العميل رد على المكالمة - بدء العداد');
             updateCallStatus('متصل ✅');
-            startCallTimer(); // بدء العداد فقط عند رد العميل
+            if (!callTimer) startCallTimer();
             
             // 🔒 تسجيل المكالمة للحساب التجريبي
             recordTrialCall();
@@ -2641,7 +2644,15 @@ async function loadCallHistory() {
         calls.forEach(call => {
             const date = new Date(call.startTime);
             const formattedDate = date.toLocaleString('ar-EG');
-            const duration = call.duration ? `${call.duration} ثانية` : 'لم تكتمل';
+            // تنسيق المدة: القيمة محفوظة كـ "MM:SS" مثل "01:23"
+            let duration = 'لم تكتمل';
+            if (call.duration && call.duration !== '00:00' && call.duration !== '0:00') {
+                const parts = call.duration.split(':').map(Number);
+                const mins = parts[0] || 0;
+                const secs = parts[1] || 0;
+                const total = mins * 60 + secs;
+                duration = mins > 0 ? `${mins} د ${secs} ث` : `${total} ث`;
+            }
             
             const callType = call.direction === 'inbound' ? '📥 واردة' : '📤 صادرة';
             const statusColor = call.status === 'completed' ? '#4ECDC4' : '#FF6B6B';

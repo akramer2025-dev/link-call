@@ -61,6 +61,7 @@ module.exports = async (req, res) => {
                 apiSecret: tc.apiSecret ? tc.apiSecret.substring(0, 6) + '••••••••' : null,
                 twimlAppSid: tc.twimlAppSid,
                 phoneNumber: tc.phoneNumber,
+                whatsappNumber: tc.whatsappNumber,
                 updatedAt: tc.updatedAt,
             });
         }
@@ -102,7 +103,7 @@ module.exports = async (req, res) => {
             req.body = {};
         }
 
-        const { companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber, twimlAppSid: manualTwimlSid } = req.body || {};
+        const { companyId, accountSid, authToken, apiKey, apiSecret, phoneNumber, whatsappNumber, twimlAppSid: manualTwimlSid } = req.body || {};
 
         if (!companyId) return res.status(400).json({ error: 'companyId مطلوب' });
         if (!accountSid) return res.status(400).json({ error: 'accountSid مطلوب' });
@@ -114,6 +115,7 @@ module.exports = async (req, res) => {
         const cleanApiKey = (apiKey || '').trim() || null;
         const cleanApiSecret = (apiSecret || '').trim() || null;
         const cleanPhone = (phoneNumber || '').trim() || null;
+        const cleanWhatsapp = (whatsappNumber || '').trim() || null;
 
         // ── 1. Verify company exists ──────────────────────────────────────
         const compSnap = await getDoc(doc(db, 'companies', companyId));
@@ -173,6 +175,7 @@ module.exports = async (req, res) => {
             apiSecret: finalApiSecret,
             twimlAppSid: twimlAppSid || null,
             phoneNumber: cleanPhone,
+            whatsappNumber: cleanWhatsapp,
             updatedAt: new Date().toISOString(),
         };
 
@@ -188,6 +191,7 @@ module.exports = async (req, res) => {
                 ? `تم حفظ بيانات Twilio. ملاحظة: ${setupWarning}`
                 : `تم حفظ إعدادات Twilio بنجاح لشركة ${companyName}`,
             phoneNumber: cleanPhone,
+            whatsappNumber: cleanWhatsapp,
         });
 
     } catch (error) {

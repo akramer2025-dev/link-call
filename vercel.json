@@ -1,225 +1,80 @@
 {
   "version": 2,
-  "name": "link-call",
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "."
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*\\.(css|js|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webmanifest))",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/(platform|login|admin|register-company|super-admin|direct-call|test-crm-integration)\\.html",
-      "headers": {
-        "Cache-Control": "public, max-age=0, must-revalidate"
-      }
-    },
-    {
-      "src": "/api/companies/register",
-      "methods": [
-        "POST"
-      ],
-      "dest": "/api/companies.js"
-    },
-    {
-      "src": "/api/companies/login",
-      "methods": [
-        "POST"
-      ],
-      "dest": "/api/companies.js"
-    },
-    {
-      "src": "/api/companies/(.*)",
-      "dest": "/api/companies.js"
-    },
-    {
-      "src": "/api/employees/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/(voice|token|recordings|recording-status|call-history|contacts|work-tracking|call-status)",
-      "dest": "/api/$1.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1.js"
-    },
-    {
-      "src": "/token",
-      "dest": "/api/token.js"
-    },
-    {
-      "src": "/voice",
-      "dest": "/api/voice.js"
-    },
-    {
-      "src": "/recordings",
-      "dest": "/api/recordings.js"
-    },
-    {
-      "src": "/recordings/(.*)",
-      "dest": "/api/recordings.js"
-    },
-    {
-      "src": "/recording/(.*)",
-      "dest": "/api/recordings.js"
-    },
-    {
-      "src": "/work-tracking",
-      "dest": "/api/work-tracking.js"
-    },
-    {
-      "src": "/call-history",
-      "dest": "/api/call-history.js"
-    },
-    {
-      "src": "/contacts",
-      "dest": "/api/contacts.js"
-    },
-    {
-      "src": "/contacts/(.*)",
-      "dest": "/api/contacts.js"
-    },
-    {
-      "src": "/companies",
-      "dest": "/api/companies.js"
-    },
-    {
-      "src": "/companies/(.*)",
-      "dest": "/api/companies.js"
-    },
-    {
-      "src": "/login",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/employees",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/employees/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/account/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/heartbeat",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/track-login",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/track-logout",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/online-users",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/update-profile",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/my-company",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/admin/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/init-kv",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/debug/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/make-direct-call",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/outgoing-call",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/end-call",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/start-recording",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/stop-recording",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/delete-recording/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/call-status/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/settings",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/plivo-(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/zadarma-(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
+  "framework": null,
   "headers": [
+    {
+      "source": "/(.*\\.(?:css|js|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webmanifest))",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(platform|login|admin|register-company|super-admin|direct-call|test-crm-integration)\\.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/api/companies/:path*", "destination": "/api/companies" },
+    { "source": "/api/employees-management/:path*", "destination": "/api/companies" },
+    { "source": "/api/employees-management", "destination": "/api/companies" },
+    { "source": "/api/employees/:path*", "destination": "/api/index" },
+    { "source": "/api/twilio-setup", "destination": "/api/companies" },
+    { "source": "/api/recording-status", "destination": "/api/recordings" },
+    { "source": "/api/recording-proxy", "destination": "/api/recordings" },
+
+    { "source": "/token", "destination": "/api/token" },
+    { "source": "/voice", "destination": "/api/voice" },
+    { "source": "/api/whatsapp/:path*", "destination": "/api/whatsapp" },
+    { "source": "/api/whatsapp", "destination": "/api/whatsapp" },
+    { "source": "/recordings/:path*", "destination": "/api/recordings" },
+    { "source": "/recordings", "destination": "/api/recordings" },
+    { "source": "/recording/:path*", "destination": "/api/recordings" },
+    { "source": "/api/accounts", "destination": "/api/index" },
+    { "source": "/api/accounts/:path*", "destination": "/api/index" },
+    { "source": "/api/work-tracking", "destination": "/api/index" },
+    { "source": "/api/call-history", "destination": "/api/index" },
+    { "source": "/api/call-history/:path*", "destination": "/api/index" },
+    { "source": "/work-tracking", "destination": "/api/index" },
+    { "source": "/call-history", "destination": "/api/index" },
+    { "source": "/contacts/:path*", "destination": "/api/contacts" },
+    { "source": "/contacts", "destination": "/api/contacts" },
+    { "source": "/companies/:path*", "destination": "/api/companies" },
+    { "source": "/companies", "destination": "/api/companies" },
+
+    { "source": "/login", "destination": "/api/index" },
+    { "source": "/employees/:path*", "destination": "/api/index" },
+    { "source": "/employees", "destination": "/api/index" },
+    { "source": "/account/:path*", "destination": "/api/index" },
+    { "source": "/heartbeat", "destination": "/api/index" },
+    { "source": "/track-login", "destination": "/api/index" },
+    { "source": "/track-logout", "destination": "/api/index" },
+    { "source": "/online-users", "destination": "/api/index" },
+    { "source": "/update-profile", "destination": "/api/index" },
+    { "source": "/my-company", "destination": "/api/index" },
+    { "source": "/admin/:path*", "destination": "/api/index" },
+    { "source": "/init-kv", "destination": "/api/index" },
+    { "source": "/debug/:path*", "destination": "/api/index" },
+    { "source": "/make-direct-call", "destination": "/api/index" },
+    { "source": "/outgoing-call", "destination": "/api/index" },
+    { "source": "/end-call", "destination": "/api/index" },
+    { "source": "/start-recording", "destination": "/api/index" },
+    { "source": "/stop-recording", "destination": "/api/index" },
+    { "source": "/delete-recording/:path*", "destination": "/api/index" },
+    { "source": "/call-status/:path*", "destination": "/api/index" },
+    { "source": "/settings", "destination": "/api/index" },
+    { "source": "/plivo-:path*", "destination": "/api/index" },
+    { "source": "/zadarma-:path*", "destination": "/api/index" }
   ],
   "env": {
     "NODE_ENV": "production"

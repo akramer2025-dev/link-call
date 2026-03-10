@@ -10,7 +10,19 @@
     <script>
         (function(){
             var p = new URLSearchParams(window.location.search);
-            if (!sessionStorage.getItem('isLoggedIn') && p.get('autoLogin') !== 'true') {
+            var isLoggedIn = sessionStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn');
+            
+            // استعادة البيانات من localStorage إذا لم تكن موجودة في sessionStorage
+            if (!sessionStorage.getItem('isLoggedIn') && localStorage.getItem('isLoggedIn')) {
+                sessionStorage.setItem('isLoggedIn', localStorage.getItem('isLoggedIn'));
+                if (localStorage.getItem('userRole')) sessionStorage.setItem('userRole', localStorage.getItem('userRole'));
+                if (localStorage.getItem('username')) sessionStorage.setItem('username', localStorage.getItem('username'));
+                if (localStorage.getItem('employeeName')) sessionStorage.setItem('fullname', localStorage.getItem('employeeName'));
+                if (localStorage.getItem('companyId')) sessionStorage.setItem('companyId', localStorage.getItem('companyId'));
+                if (localStorage.getItem('employeeId')) sessionStorage.setItem('employeeId', localStorage.getItem('employeeId'));
+            }
+            
+            if (!isLoggedIn && p.get('autoLogin') !== 'true') {
                 window.location.replace('login.html');
             }
         })();
@@ -852,8 +864,9 @@
         // التحقق من تسجيل الدخول (إلا إذا جاء من CRM)
         const urlParams = new URLSearchParams(window.location.search);
         const autoLogin = urlParams.get('autoLogin');
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn');
 
-        if (!sessionStorage.getItem('isLoggedIn') && autoLogin !== 'true') {
+        if (!isLoggedIn && autoLogin !== 'true') {
             window.location.replace('login.html');
         } else {
             // إظهار الصفحة بعد التحقق (منع الوميض)

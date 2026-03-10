@@ -167,6 +167,11 @@
                 sessionStorage.setItem('userRole', 'admin');
                 sessionStorage.setItem('fullname', 'المطور الرئيسي');
                 sessionStorage.setItem('canViewRecordings', 'true');
+                
+                // حفظ في localStorage للبقاء بعد الـ refresh
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userRole', 'admin');
+                localStorage.setItem('username', username);
                 localStorage.setItem('employeeId', 'admin');
                 localStorage.setItem('employeeName', 'المطور الرئيسي');
                 
@@ -200,6 +205,7 @@
                 
                 if (response.ok && data.success) {
                     sessionStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('isLoggedIn', 'true'); // حفظ حالة تسجيل الدخول
                     
                     if (!data.isEmployee) {
                         // ─── مدير الشركة (صاحب الحساب) ───
@@ -207,6 +213,10 @@
                         sessionStorage.setItem('userRole', 'owner');
                         sessionStorage.setItem('fullname', data.company.adminName);
                         sessionStorage.setItem('companyId', data.company.id);
+                        
+                        // حفظ في localStorage
+                        localStorage.setItem('userRole', 'owner');
+                        localStorage.setItem('username', data.company.username);
                         localStorage.setItem('companyId', data.company.id);
                         localStorage.setItem('employeeId', data.company.username);
                         localStorage.setItem('employeeName', data.company.adminName);
@@ -218,8 +228,12 @@
                         sessionStorage.setItem('userRole', emp.role || 'agent');
                         sessionStorage.setItem('fullname', emp.name);
                         sessionStorage.setItem('companyId', cmp.id);
-                        localStorage.setItem('companyId', cmp.id);
                         sessionStorage.setItem('employeeId', emp.id.toString());
+                        
+                        // حفظ في localStorage
+                        localStorage.setItem('userRole', emp.role || 'agent');
+                        localStorage.setItem('username', emp.username);
+                        localStorage.setItem('companyId', cmp.id);
                         localStorage.setItem('employeeId', emp.id.toString());
                         localStorage.setItem('employeeName', emp.name);
 

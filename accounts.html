@@ -11,7 +11,15 @@
         (function(){
             var cid = sessionStorage.getItem('companyId') || localStorage.getItem('companyId')
                    || new URLSearchParams(window.location.search).get('companyId');
-            var logged = sessionStorage.getItem('isLoggedIn');
+            var logged = sessionStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn');
+            
+            // استعادة البيانات من localStorage
+            if (!sessionStorage.getItem('isLoggedIn') && localStorage.getItem('isLoggedIn')) {
+                sessionStorage.setItem('isLoggedIn', localStorage.getItem('isLoggedIn'));
+                if (localStorage.getItem('userRole')) sessionStorage.setItem('userRole', localStorage.getItem('userRole'));
+                if (localStorage.getItem('username')) sessionStorage.setItem('username', localStorage.getItem('username'));
+            }
+            
             if (!cid && !logged) { window.location.replace('login.html'); }
         })();
     </script>

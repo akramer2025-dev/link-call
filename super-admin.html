@@ -7,6 +7,13 @@
     <meta name="copyright" content="© 2024-2026 ENG. AKRAM ELMASRY. All Rights Reserved.">
     <meta name="robots" content="noindex, nofollow">
     <title>لوحة تحكم المنصة - Super Admin</title>
+    <!-- Auth Guard -->
+    <script>
+        (function(){
+            var role = sessionStorage.getItem('userRole');
+            if (role !== 'admin') { window.location.replace('login.html'); }
+        })();
+    </script>
     <!-- Security Protection -->
     <script src="js/protection.js?v=1.0" defer></script>
     <style>
@@ -445,11 +452,14 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <div class="logo">
-                <span>🏢</span>
-                <div>
-                    <div>لوحة تحكم المنصة</div>
-                    <div style="font-size: 12px; opacity: 0.8;">www.akrammostafa.com</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <a href="admin.html" style="color: white; text-decoration: none; font-size: 22px; opacity: 0.8;" title="العودة للوحة الإدارة">🔙</a>
+                <div class="logo">
+                    <span>🏢</span>
+                    <div>
+                        <div>لوحة تحكم المنصة</div>
+                        <div style="font-size: 12px; opacity: 0.8;">www.akrammostafa.com</div>
+                    </div>
                 </div>
             </div>
             <div class="user-info">

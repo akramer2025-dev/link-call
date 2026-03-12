@@ -1,0 +1,61 @@
+# ملفات يجب عدم رفعها إلى Hostinger
+# Do not upload these files to Hostinger
+
+# Node modules (سيتم تثبيتها على السيرفر)
+node_modules/
+package-lock.json
+
+# Git
+.git/
+.gitignore
+
+# Backups
+backups/
+*.backup
+*.bak
+
+# Development files
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Test files
+test-*.js
+check-*.js
+
+# Environment (سيتم رفعه يدوياً بشكل آمن)
+# .env
+
+# Migration scripts (سنحتاجها على السيرفر)
+# migrate-firebase-to-mysql.js
+# setup-hostinger-database.js
+
+# Documentation
+*.md
+CHANGELOG.md
+TODO.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Temporary
+temp/
+tmp/
+*.tmp
+
+# Old files
+*.old
+*-old.*
+index.html.backup
+
+# Database files
+*.sql
+!hostinger-import.sql
+
+# Large files
+del.json
+lr.txt
+login-result.txt

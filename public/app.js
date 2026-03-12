@@ -8,16 +8,6 @@ let isRecording = false;
 let callCheckInterval = null;
 let phoneNumber = ''; // متغير لتخزين رقم الهاتف
 
-// ===== تنظيف القيم القديمة (employeeId كان يُخزن كبريد إلكتروني) =====
-(function migrateOldEmployeeId() {
-    const stored = localStorage.getItem('employeeId');
-    if (stored && stored.includes('@')) {
-        localStorage.removeItem('employeeId');
-        sessionStorage.clear();
-        window.location.href = 'login.html';
-    }
-})();
-
 // ===== PWA تثبيت التطبيق =====
 let deferredPrompt;
 const installBtn = document.getElementById('install-app-btn');
@@ -29,6 +19,90 @@ window.addEventListener('beforeinstallprompt', (e) => {
     deferredPrompt = e;
     
     // إظهار زر التثبيت
+    if (installBtn) {
+        installBtn.style.display = 'block';
+        installBtn.classList.add('install-available');
+    }
+});
+
+// عند النقر على زر التثبيت
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) {
+            // إذا كان التطبيق مثبت أو لا يدعم PWA
+            alert('التطبيق مثبت بالفعل أو المتصفح لا يدعم التثبيت\n\nلتثبيت التطبيق:\n1. افتح قائمة المتصفح (⋮)\n2. اختر "إضافة إلى الشاشة الرئيسية"');
+            return;
+        }
+        
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+            console.log('✅ PWA: تم قبول التثبيت');
+            installBtn.style.display = 'none';
+        } else {
+            console.log('❌ PWA: تم رفض التثبيت');
+        }
+        
+        deferredPrompt = null;
+    });
+}
+
+// عند اكتمال التثبيت
+window.addEventListener('appinstalled', () => {
+    console.log('✅ PWA: تم تثبيت التطبيق بنجاح!');
+    if (installBtn) {
+        installBtn.style.display = 'none';
+    }
+    deferredPrompt = null;
+});
+
+// التحقق إذا كان التطبيق يعمل كـ PWA مثبت
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    console.log('📱 التطبيق يعمل كـ PWA مثبت');
+}
+
+// ===== تتبع المستخدمين الأونلاين =====
+let heartbeatInterval = null;
+
+// إرسال نبضة للخادم
+async function sendHeartbeat() {
+    const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
+    const userName = sessionStorage.getItem('fullname') || localStorage.getItem('employeeName') || 'مستخدم';
+    
+    if (!userId) return;
+    
+    try {
+        await fetch(`${API_BASE_URL}/heartbeat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, userName })
+        });
+    } catch (error) {
+        console.error('خطأ في إرسال Heartbeat:', error);
+    }
+}
+
+// بدء تتبع المستخدم الأونلاين
+function startOnlineTracking() {
+    const userId = sessionStorage.getItem('employeeId') || localStorage.getItem('employeeId');
+    const userName = sessionStorage.getItem('fullname') || localStorage.getItem('employeeName');
+    
+    if (!userId) return;
+    
+    // تسجيل الدخول
+    fetch(`${API_BASE_URL}/track-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, userName })
+    }).catch(err => console.error('خطأ في تسجيل الدخول:', err));
+    
+    // إرسال Heartbeat كل 15 ثانية
+    sendHeartbeat();
+    heartbeatInterval = setInterval(sendHeartbeat, 15000);
+    
+    console.log('🟢 بدأ تتبع الأونلاين للمستخدم:', userName);
+}
 
 // إيقاف تتبع المستخدم عند الخروج
 function stopOnlineTracking() {
@@ -56,7 +130,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 // 🔥 DEBUG: طباعة معلومات في بداية التحميل
-console.log('🔥 app.js loaded - Version: 2.0.20260304');
+console.log('🔥 app.js loaded - Version: 2.0.20251218');
 console.log('🔥 Current URL:', window.location.href);
 
 // عناصر الواجهة
@@ -278,9 +352,7 @@ async function initializeApp() {
         const baseUrl = API_BASE_URL;
         const empId = localStorage.getItem('employeeId') || sessionStorage.getItem('employeeId') || 'admin';
         const clientIdentity = `client_${empId}`;
-        const cid = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
         console.log('🆔 Client Identity:', clientIdentity);
-        console.log('🏢 Company ID للتوكن:', cid);
         console.log('🔗 Fetching token from:', `${baseUrl}/token`);
         
         // محاولة الحصول على Token مع retry
@@ -292,7 +364,7 @@ async function initializeApp() {
             try {
                 attempts++;
                 console.log(`📡 محاولة ${attempts}/${maxAttempts}...`);
-                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}&companyId=${cid}`, {
+                response = await fetch(`${baseUrl}/token?identity=${clientIdentity}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -560,15 +632,13 @@ async function makeCall() {
         }
         // ============ نهاية Zadarma ============
         
-        const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
         const params = {
             To: formattedNumber,
             employeeId: employeeId,
-            callerId: selectedCallerId,
-            companyId: companyId
+            callerId: selectedCallerId
         };
         
-        console.log('👤 معرف المدير للمكالمة:', employeeId, '| شركة:', companyId);
+        console.log('👤 معرف المدير للمكالمة:', employeeId);
         
         currentCall = await device.connect({ params });
         
@@ -576,6 +646,7 @@ async function makeCall() {
         currentCall.on('accept', () => {
             console.log('📞 تم إنشاء المكالمة - جاري الاتصال...');
             updateCallStatus('جاري الاتصال... 📞');
+            // لا نبدأ العداد هنا - ننتظر العميل يرد
         });
         
         currentCall.on('ringing', () => {
@@ -583,11 +654,11 @@ async function makeCall() {
             updateCallStatus('رنين... 🔔');
         });
         
-        // SDK v2.x: الحدث الصحيح هو 'connect' (بدون d) - يُطلق عندما يرد العميل
-        currentCall.on('connect', () => {
+        // هذا الحدث يُطلق عندما يرد العميل فعلياً - نبدأ العداد هنا
+        currentCall.on('connected', () => {
             console.log('✅ العميل رد على المكالمة - بدء العداد');
             updateCallStatus('متصل ✅');
-            if (!callTimer) startCallTimer();
+            startCallTimer(); // بدء العداد فقط عند رد العميل
             
             // 🔒 تسجيل المكالمة للحساب التجريبي
             recordTrialCall();
@@ -2399,8 +2470,7 @@ function loadEmployeeProfile() {
         fetch(`${baseUrl}/employees`)
             .then(res => res.json())
             .then(data => {
-                const empIdNum = parseInt(employeeId);
-                const employee = !isNaN(empIdNum) ? data.employees.find(emp => emp.id === empIdNum) : null;
+                const employee = data.employees.find(emp => emp.id === parseInt(employeeId));
                 if (employee) {
                     document.getElementById('profile-fullname').value = employee.name || '';
                     document.getElementById('profile-phone').value = employee.phone || '';
@@ -2444,7 +2514,7 @@ if (updateProfileBtn) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    employeeId: isNaN(parseInt(employeeId)) ? employeeId : parseInt(employeeId),
+                    employeeId: parseInt(employeeId),
                     username,
                     currentPassword,
                     newName: newFullname,
@@ -2606,45 +2676,25 @@ setTimeout(updateCallHistoryBadge, 500);
 
 // تحميل سجل المكالمات
 async function loadCallHistory() {
-    const container = document.getElementById('call-history-container');
-    container.innerHTML = `<div style="text-align:center;padding:30px;color:#888;">⏳ جاري التحميل...</div>`;
-
     try {
-        const baseUrl  = API_BASE_URL;
-        const companyId = sessionStorage.getItem('companyId') || localStorage.getItem('companyId') || '';
-
-        // ── 1. المصدر الأساسي: localStorage (كل المكالمات موجودة هنا) ──
-        const localCalls = JSON.parse(localStorage.getItem('callHistory') || '[]');
-
-        // ── 2. جلب التسجيلات من Firestore لإثراء المدة فقط (غير إلزامي) ──
-        let recordingMap = {}; // phone-9digits → durationSec
-        if (companyId) {
-            try {
-                const resp = await fetch(`${baseUrl}/api/recordings?companyId=${encodeURIComponent(companyId)}&limit=300`);
-                if (resp.ok) {
-                    const data = await resp.json();
-                    (data.recordings || []).forEach(r => {
-                        const phone = (r.to || '').replace(/\D/g, '').slice(-9);
-                        const dur   = parseInt(r.duration) || 0;
-                        const key   = phone + '_' + (r.createdAt || '').slice(0, 16); // دقة دقيقة
-                        if (dur > 0 && phone) recordingMap[key] = dur;
-                    });
-                }
-            } catch (e) {
-                console.warn('⚠️ تعذر جلب التسجيلات من Firestore:', e.message);
-            }
-        }
-
-        // ── 3. جهات الاتصال ──
+        // تحميل المكالمات من localStorage بدلاً من السيرفر
+        const calls = JSON.parse(localStorage.getItem('callHistory') || '[]');
+        
+        // تحميل جهات الاتصال لعرض الأسماء
+        const baseUrl = API_BASE_URL;
         let contacts = [];
         try {
-            const cr = await fetch(`${baseUrl}/api/contacts`);
-            if (cr.ok) contacts = (await cr.json()).contacts || [];
-        } catch (e) { /* مش مهم */ }
-
+            const contactsResponse = await fetch(`${baseUrl}/api/contacts`);
+            const contactsData = await contactsResponse.json();
+            contacts = contactsData.contacts || [];
+        } catch (err) {
+            console.log('لم يتم تحميل جهات الاتصال');
+        }
+        
+        const container = document.getElementById('call-history-container');
         container.innerHTML = '';
-
-        if (localCalls.length === 0) {
+        
+        if (calls.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">📞</div>
@@ -2653,59 +2703,40 @@ async function loadCallHistory() {
             `;
             return;
         }
-
-        // ── 4. ترتيب من الأحدث للأقدم ──
-        localCalls.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-
-        localCalls.forEach(call => {
-            const date         = new Date(call.startTime);
+        
+        // ترتيب المكالمات من الأحدث للأقدم
+        calls.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        
+        calls.forEach(call => {
+            const date = new Date(call.startTime);
             const formattedDate = date.toLocaleString('ar-EG');
-
-            // حساب المدة: أولاً من localStorage، ثم من Firestore
-            let durationSec = 0;
-            const parts = (call.duration || '00:00').split(':').map(Number);
-            durationSec = ((parts[0] || 0) * 60) + (parts[1] || 0);
-
-            // محاولة إيجاد مدة أدق من Firestore
-            if (durationSec === 0 && companyId) {
-                const phone = (call.to || '').replace(/\D/g, '').slice(-9);
-                const minute = date.toISOString().slice(0, 16);
-                const key    = phone + '_' + minute;
-                if (recordingMap[key]) durationSec = recordingMap[key];
-            }
-
-            let durationDisplay;
-            if (durationSec <= 0) {
-                durationDisplay = `<span style="color:#f87171;">لم يتم الرد</span>`;
-            } else {
-                const m   = Math.floor(durationSec / 60);
-                const s   = durationSec % 60;
-                const txt = m > 0 ? `${m} د ${s} ث` : `${s} ث`;
-                durationDisplay = `<span style="color:#4ECDC4;font-weight:600;">⏱️ ${txt}</span>`;
-            }
-
-            const callType   = call.direction === 'inbound' ? '📥 واردة' : '📤 صادرة';
-            const cleanPhone = (call.to || '').replace(/^\+/, '');
-
+            const duration = call.duration ? `${call.duration} ثانية` : 'لم تكتمل';
+            
+            const callType = call.direction === 'inbound' ? '📥 واردة' : '📤 صادرة';
+            const statusColor = call.status === 'completed' ? '#4ECDC4' : '#FF6B6B';
+            
+            // البحث عن اسم جهة الاتصال
+            let displayName = call.to;
             const contact = contacts.find(c => {
-                const cp = c.phone.replace(/\D/g, '').slice(-9);
-                const pp = (call.to || '').replace(/\D/g, '').slice(-9);
-                return cp === pp && pp.length >= 7;
+                const cleanContactPhone = c.phone.replace(/[\s-+]/g, '');
+                const cleanCallPhone = call.to.replace(/[\s-+]/g, '');
+                return cleanContactPhone.includes(cleanCallPhone) || cleanCallPhone.includes(cleanContactPhone);
             });
-
-            const nameHtml = contact
-                ? `<div class="call-item-number" style="color:#5ec4d4;font-weight:600;">👤 ${contact.name}</div><div style="font-size:12px;color:#999;">${cleanPhone}</div>`
-                : `<div class="call-item-number">${cleanPhone || 'غير معروف'}</div>`;
-
+            
+            if (contact) {
+                displayName = `👤 ${contact.name}`;
+            }
+            
             const item = document.createElement('div');
             item.className = 'call-item';
             item.innerHTML = `
                 <div class="call-item-info">
-                    ${nameHtml}
+                    <div class="call-item-number" style="${contact ? 'color: #5ec4d4; font-weight: 600;' : ''}">${displayName}</div>
+                    ${!contact ? `<div style="font-size: 12px; color: #999;">${call.to}</div>` : ''}
                     <div class="call-item-details">
                         <span class="call-item-type">${callType}</span>
                         <span>${formattedDate}</span>
-                        ${durationDisplay}
+                        <span style="color: ${statusColor}">${duration}</span>
                     </div>
                 </div>
                 <div class="call-item-actions">
@@ -2714,10 +2745,8 @@ async function loadCallHistory() {
             `;
             container.appendChild(item);
         });
-
     } catch (error) {
         console.error('خطأ في تحميل سجل المكالمات:', error);
-        container.innerHTML = `<p style="text-align:center;color:#f44336;padding:20px;">خطأ في تحميل السجل</p>`;
     }
 }
 
@@ -2951,23 +2980,6 @@ document.addEventListener('visibilitychange', async () => {
 
 // تهيئة التطبيق عند التحميل
 initializeApp();
-
-// ===== AUTO-SCROLL TO DIALPAD ON MOBILE =====
-// على الموبايل، الصفحة تفتح من تحت علشان الأرقام تكون ظاهرة مباشرة
-(function autoScrollMobile() {
-    if (window.innerWidth <= 768) {
-        // ننتظر لحظة علشان الصفحة تتحمل كاملة
-        setTimeout(() => {
-            const dialpad = document.getElementById('dialpad');
-            if (dialpad) {
-                dialpad.scrollIntoView({ behavior: 'instant', block: 'end' });
-                // بعدها نعمل scroll لآخر الصفحة
-                window.scrollTo(0, document.body.scrollHeight);
-                console.log('📱 تم التمرير للأرقام تلقائياً');
-            }
-        }, 300);
-    }
-})();
 
 // تسجيل وقت الدخول للموظفين من CRM
 if (autoLogin === 'true' && empId && empName) {
@@ -3229,5 +3241,22 @@ if (userRole !== 'admin' && workReportsBtn) {
     workReportsBtn.style.display = 'none';
 }
 
+// ===== تحديث الرصيد تلقائياً كل 5 ثواني =====
+let balanceRefreshInterval = null;
+
+function startBalanceAutoRefresh() {
+    // تحديث فوري
+    loadAccountBalance();
+    
+    // تحديث كل 5 ثواني
+    balanceRefreshInterval = setInterval(() => {
+        loadAccountBalance();
+    }, 5000);
+    
+    console.log('✅ تحديث الرصيد التلقائي مفعّل - كل 5 ثواني');
+}
+
+// بدء تحديث الرصيد عند تحميل الصفحة
+startBalanceAutoRefresh();
 
 console.log('✅ التطبيق يعمل بشكل مستمر - لا يوجد تسجيل خروج تلقائي');

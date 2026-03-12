@@ -1,24 +1,21 @@
-# Link Call - htaccess Configuration
-# For Apache servers
+# Link Call - Hostinger Configuration
+# For Hostinger Apache servers
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /linkcall/
     
     # Force HTTPS
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
     
-    # Redirect root to login page
-    RewriteRule ^$ login.html [L]
-    RewriteRule ^index$ login.html [L]
-    
-    # API routes - pass through to Node.js backend
+    # Serve static files from public directory
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^api/(.*)$ http://localhost:3000/api/$1 [P,L]
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public/$1 [L]
     
-    # Handle 404 errors
-    ErrorDocument 404 /linkcall/login.html
+    # Default page
+    DirectoryIndex index.html login.html
 </IfModule>
 
 # Security Headers

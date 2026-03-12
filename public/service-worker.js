@@ -1,13 +1,13 @@
 ﻿// Service Worker for Link Call PWA
-const CACHE_NAME = 'link-call-v53';
+const CACHE_NAME = 'link-call-v28';
 const urlsToCache = [
   '/',
   '/index.html',
   '/login.html',
-  '/css/style.css',
-  '/css/login-style.css',
-  '/js/app.js',
-  '/js/protection.js',
+  '/style.css',
+  '/login-style.css',
+  '/app.js',
+  '/protection.js',
   '/icon-192.png',
   '/icon-512.png',
   '/manifest.json',
@@ -40,11 +40,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    }).then(() => {
-      // إخبار جميع الصفحات المفتوحة بإعادة التحميل للحصول على الإصدار الجديد
-      return self.clients.matchAll({ type: 'window' }).then(clients => {
-        clients.forEach(client => client.navigate(client.url));
-      });
     })
   );
   return self.clients.claim();
@@ -52,48 +47,14 @@ self.addEventListener('activate', event => {
 
 // اعتراض الطلبات
 self.addEventListener('fetch', event => {
-  // تجاهل الطلبات الخارجية (sdk.twilio.com و غيرها) لتجنب مشاكل CORS
-  const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) {
-    return; // اتركها للمتصفح مباشرة
-  }
-
-  // HTML documents: network-first (عشان دايماً نجيب أحدث index.html)
-  if (event.request.destination === 'document' || event.request.headers.get('Accept').includes('text/html')) {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          // نحدّث الكاش بالنسخة الجديدة
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match(event.request).then(r => r || caches.match('/index.html')))
-    );
-    return;
-  }
-
-  // CSS و JS: network-first دائماً (عشان نضمن أحدث إصدار)
-  if (url.pathname.endsWith('.css') || url.pathname.endsWith('.js')) {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // باقي الملفات: cache-first
   event.respondWith(
     caches.match(event.request)
       .then(response => {
+        // إرجاع من الذاكرة أو جلب من الشبكة
         return response || fetch(event.request);
       })
       .catch(() => {
+        // في حالة عدم الاتصال
         if (event.request.destination === 'document') {
           return caches.match('/index.html');
         }

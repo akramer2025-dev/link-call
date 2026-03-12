@@ -7,13 +7,6 @@
     <meta name="copyright" content="© 2024-2026 ENG. AKRAM ELMASRY. All Rights Reserved.">
     <meta name="robots" content="noindex, nofollow">
     <title>لوحة تحكم المنصة - Super Admin</title>
-    <!-- Auth Guard -->
-    <script>
-        (function(){
-            var role = sessionStorage.getItem('userRole');
-            if (role !== 'admin') { window.location.replace('login.html'); }
-        })();
-    </script>
     <!-- Security Protection -->
     <script src="js/protection.js?v=1.0" defer></script>
     <style>
@@ -30,14 +23,14 @@
         }
         
         ::-webkit-scrollbar-track {
-            background: #161B22;
+            background: #1e2433;
             border-radius: 10px;
         }
         
         ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #00E5FF 0%, #00BCD4 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
-            border: 2px solid #161B22;
+            border: 2px solid #1e2433;
         }
         
         ::-webkit-scrollbar-thumb:hover {
@@ -46,11 +39,11 @@
         
         * {
             scrollbar-width: thin;
-            scrollbar-color: #00E5FF #161B22;
+            scrollbar-color: #667eea #1e2433;
         }
 
         :root {
-            --primary: #00E5FF;
+            --primary: #6c5ce7;
             --secondary: #a29bfe;
             --success: #00b894;
             --danger: #d63031;
@@ -66,7 +59,7 @@
 
         /* Header */
         .header {
-            background: linear-gradient(135deg, #00E5FF 0%, #00BCD4 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -452,14 +445,11 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <a href="admin.html" style="color: white; text-decoration: none; font-size: 22px; opacity: 0.8;" title="العودة للوحة الإدارة">🔙</a>
-                <div class="logo">
-                    <span>🏢</span>
-                    <div>
-                        <div>لوحة تحكم المنصة</div>
-                        <div style="font-size: 12px; opacity: 0.8;">www.akrammostafa.com</div>
-                    </div>
+            <div class="logo">
+                <span>🏢</span>
+                <div>
+                    <div>لوحة تحكم المنصة</div>
+                    <div style="font-size: 12px; opacity: 0.8;">www.akrammostafa.com</div>
                 </div>
             </div>
             <div class="user-info">
@@ -535,7 +525,7 @@
 
             <div class="controls">
                 <div class="search-box">
-                    <input type="text" id="search-companies" placeholder="🔍 البحث عن شركة..." autocomplete="nope">
+                    <input type="text" id="search-companies" placeholder="🔍 البحث عن شركة..." autocomplete="off">
                 </div>
                 <div class="filter-select">
                     <select id="filter-status">

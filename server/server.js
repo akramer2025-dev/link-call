@@ -261,36 +261,36 @@ app.use(rateLimiter(200, 60000)); // 200 طلب في الدقيقة
 app.use(cors());
 app.use(express.json({ limit: '10mb' })); // حد أقصى لحجم البيانات
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static('.'));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Routes للصفحات الرئيسية
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    res.sendFile(path.join(__dirname, '../public/login.html'));
 });
 
 app.get('/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 app.get('/login.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    res.sendFile(path.join(__dirname, '../public/login.html'));
 });
 
 // Routes للملفات الثابتة (CSS, JS, Images)
 app.get('/style.css', (req, res) => {
-    res.sendFile(path.join(__dirname, 'style.css'));
+    res.sendFile(path.join(__dirname, '../public/css/style.css'));
 });
 
 app.get('/login-style.css', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login-style.css'));
+    res.sendFile(path.join(__dirname, '../public/css/login-style.css'));
 });
 
 app.get('/app.js', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app.js'));
+    res.sendFile(path.join(__dirname, '../public/app.js'));
 });
 
 app.get('/logo.jpg', (req, res) => {
-    res.sendFile(path.join(__dirname, 'logo.jpg'));
+    res.sendFile(path.join(__dirname, '../public/images/logo.jpg'));
 });
 
 // توليد Token للعميل (للمكالمات من المتصفح مباشرة)

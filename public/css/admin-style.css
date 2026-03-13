@@ -1,25 +1,25 @@
 ﻿/* ========== متغيرات CSS ========== */
 :root {
-    --primary-color: #00E5FF;
-    --primary-dark: #5b4cdb;
-    --secondary-color: #00cec9;
-    --success-color: #00b894;
-    --warning-color: #fdcb6e;
-    --danger-color: #e74c3c;
-    --info-color: #74b9ff;
-    --purple-color: #a29bfe;
-    --orange-color: #e17055;
+    --primary-color: #00e5ff;
+    --primary-dark: #3b82f6;
+    --secondary-color: #1e293b;
+    --success-color: #10b981;
+    --warning-color: #fbbf24;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --purple-color: #8b5cf6;
+    --orange-color: #f97316;
     
-    --bg-dark: #1a1a2e;
-    --bg-darker: #16213e;
-    --bg-card: #1f1f3a;
-    --bg-card-hover: #2a2a4a;
+    --bg-dark: #0a1628;
+    --bg-darker: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #334155;
     
     --text-primary: #ffffff;
-    --text-secondary: #a0a0b0;
-    --text-muted: #6c6c7c;
+    --text-secondary: #e5e7eb;
+    --text-muted: #9ca3af;
     
-    --border-color: rgba(255, 255, 255, 0.1);
+    --border-color: rgba(0, 229, 255, 0.1);
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     
     --sidebar-width: 260px;
@@ -40,23 +40,23 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: #161B22;
+    background: #0a1628;
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #00E5FF 0%, #00BCD4 100%);
+    background: linear-gradient(135deg, #00e5ff 0%, #3b82f6 100%);
     border-radius: 10px;
-    border: 2px solid #161B22;
+    border: 2px solid #0a1628;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #7c8ef5 0%, #8a5ab8 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
 }
 
 * {
     scrollbar-width: thin;
-    scrollbar-color: #00E5FF #161B22;
+    scrollbar-color: #00e5ff #0a1628;
 }
 
 body {
@@ -128,7 +128,7 @@ body {
 }
 
 .nav-item.active {
-    background: rgba(108, 92, 231, 0.1);
+    background: rgba(0, 229, 255, 0.1);
     color: var(--primary-color);
     border-right-color: var(--primary-color);
 }
@@ -220,7 +220,7 @@ body {
 .search-box input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1);
 }
 
 .search-box .search-icon {
@@ -309,12 +309,12 @@ body {
 }
 
 .stat-trend.up {
-    background: rgba(0, 184, 148, 0.2);
+    background: rgba(16, 185, 129, 0.2);
     color: var(--success-color);
 }
 
 .stat-trend.down {
-    background: rgba(231, 76, 60, 0.2);
+    background: rgba(239, 68, 68, 0.2);
     color: var(--danger-color);
 }
 
@@ -406,7 +406,7 @@ body {
 }
 
 .recent-item:hover {
-    background: rgba(108, 92, 231, 0.1);
+    background: rgba(0, 229, 255, 0.1);
 }
 
 .recent-item .icon {
@@ -502,7 +502,7 @@ body {
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+    box-shadow: 0 5px 15px rgba(0, 229, 255, 0.4);
 }
 
 .btn-secondary {
@@ -581,7 +581,7 @@ body {
 }
 
 .data-table tbody tr:hover {
-    background: rgba(108, 92, 231, 0.05);
+    background: rgba(0, 229, 255, 0.05);
 }
 
 .status-badge {
@@ -592,17 +592,17 @@ body {
 }
 
 .status-badge.completed {
-    background: rgba(0, 184, 148, 0.2);
+    background: rgba(16, 185, 129, 0.2);
     color: var(--success-color);
 }
 
 .status-badge.missed {
-    background: rgba(231, 76, 60, 0.2);
+    background: rgba(239, 68, 68, 0.2);
     color: var(--danger-color);
 }
 
 .status-badge.busy {
-    background: rgba(253, 203, 110, 0.2);
+    background: rgba(251, 191, 36, 0.2);
     color: var(--warning-color);
 }
 
@@ -774,7 +774,7 @@ body {
 
 .transcript-item:hover,
 .transcript-item.active {
-    background: rgba(108, 92, 231, 0.2);
+    background: rgba(0, 229, 255, 0.2);
     border-right: 3px solid var(--primary-color);
 }
 
@@ -833,7 +833,7 @@ body {
 }
 
 .transcript-content .message.agent {
-    background: rgba(108, 92, 231, 0.2);
+    background: rgba(0, 229, 255, 0.2);
     margin-left: auto;
 }
 
@@ -961,12 +961,12 @@ body {
 }
 
 .setting-item .status.connected {
-    background: rgba(0, 184, 148, 0.2);
+    background: rgba(16, 185, 129, 0.2);
     color: var(--success-color);
 }
 
 .setting-item .status.disconnected {
-    background: rgba(231, 76, 60, 0.2);
+    background: rgba(239, 68, 68, 0.2);
     color: var(--danger-color);
 }
 
@@ -1510,10 +1510,10 @@ input:checked + .slider:before {
 
 @keyframes pulse {
     0%, 100% {
-        box-shadow: 0 0 0 0 rgba(0, 184, 148, 0.4);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
     }
     50% {
-        box-shadow: 0 0 0 10px rgba(0, 184, 148, 0);
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
     }
 }
 
@@ -1537,7 +1537,7 @@ input:checked + .slider:before {
 
 .online-user-item:hover {
     transform: translateX(-5px);
-    background: rgba(0, 184, 148, 0.1);
+    background: rgba(16, 185, 129, 0.1);
 }
 
 .online-avatar {
@@ -1580,7 +1580,7 @@ input:checked + .slider:before {
 }
 
 .online-duration {
-    background: rgba(0, 184, 148, 0.2);
+    background: rgba(16, 185, 129, 0.2);
     color: var(--success-color);
     padding: 4px 10px;
     border-radius: 15px;
@@ -1742,12 +1742,12 @@ input:checked + .slider:before {
 }
 
 .company-badge.active {
-    background: rgba(0, 184, 148, 0.2);
+    background: rgba(16, 185, 129, 0.2);
     color: var(--success-color);
 }
 
 .company-badge.inactive {
-    background: rgba(231, 76, 60, 0.2);
+    background: rgba(239, 68, 68, 0.2);
     color: var(--danger-color);
 }
 
